@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Archivo:wght@300..900&family=Special+Elite&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     html, body { margin: 0; padding: 0; background: #03050b; }
     * { box-sizing: border-box; }
@@ -50,15 +51,15 @@
 
   <!-- HEADER -->
   <header style="position: sticky; top: 0; z-index: 30; height: 74px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(18px, 4vw, 40px); border-bottom: 1px solid rgba(193,154,82,.18); background: #03050b; backdrop-filter: blur(14px);">
-    <a href="Tarih Ajani.dc.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
+    <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
       <img src="assets/logo.png" alt="Tarih Ajanı" style="height: 42px; width: auto;">
       <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">AKADEMİ</span>
     </a>
     <nav style="display: flex; align-items: center; gap: 4px;">
-      <a href="Tarih Ajani.dc.html" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ANA SAYFA</a>
-      <a href="Ekitap.dc.html" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">E-KİTAP</a>
-      <a href="Urunler.dc.html" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ÜRÜNLER</a>
-      <a href="Egitim.dc.html" style="color: #e6c478; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; font-weight: 700;">EĞİTİM</a>
+      <a href="/" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ANA SAYFA</a>
+      <a href="/ekitap" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">E-KİTAP</a>
+      <a href="/urunler" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ÜRÜNLER</a>
+      <a href="/egitim" style="color: #e6c478; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; font-weight: 700;">EĞİTİM</a>
       <sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
         <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; padding: 9px 13px;">{{ userName }}</span>
         <button onClick="{{ logout }}" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; font-size: 11px; letter-spacing: .1em; padding: 9px 14px; cursor: pointer;" style-hover="color: #e6c478;">ÇIKIŞ</button>
@@ -180,21 +181,49 @@
       <div style="position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 20%, #03050b 90%);"></div>
       <div style="position: relative; z-index: 2; width: min(420px, 100%); border: 1px solid rgba(193,154,82,.4); background: rgba(4,6,12,.94); backdrop-filter: blur(10px); padding: clamp(30px, 5vw, 46px); text-align: center; animation: ta-rise .5s ease both;">
         <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .26em;">EĞİTİM AKADEMİSİ · GİRİŞ</p>
-        <h1 style="margin: 12px 0 6px; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800;">Dersliğe giriş</h1>
-        <p style="margin: 0; color: #a4a9b5; font-size: 13.5px; line-height: 1.65;">E-posta ve şifrenle giriş yap. İlerlemen bu cihazda saklanır.</p>
-        <label style="display: grid; gap: 7px; margin-top: 24px; text-align: left; color: #8b91a8; font-size: 11px; text-transform: uppercase; letter-spacing: .12em;">E-posta
+        <h1 style="margin: 12px 0 14px; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800;">{{ authTitle }}</h1>
+        <div style="display: flex; gap: 4px; border: 1px solid rgba(193,154,82,.35); padding: 4px; background: #02040a;">
+          <button onClick="{{ setSignin }}" style="{{ signinTabStyle }}">GİRİŞ</button>
+          <button onClick="{{ setSignup }}" style="{{ signupTabStyle }}">ÜYE OL</button>
+        </div>
+        <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+          <label style="display: grid; gap: 7px; margin-top: 18px; text-align: left; color: #8b91a8; font-size: 11px; text-transform: uppercase; letter-spacing: .12em;">Ad Soyad
+            <input value="{{ nameDraft }}" onChange="{{ onNameDraft }}" onKeyDown="{{ onLoginKey }}" type="text" placeholder="Adınız ve soyadınız" style="border: 1px solid rgba(193,154,82,.25); background: #02040a; color: #fff; padding: 14px; font-size: 15px;">
+          </label>
+        </sc-if>
+        <label style="display: grid; gap: 7px; margin-top: 18px; text-align: left; color: #8b91a8; font-size: 11px; text-transform: uppercase; letter-spacing: .12em;">E-posta
           <input value="{{ emailDraft }}" onChange="{{ onEmailDraft }}" onKeyDown="{{ onLoginKey }}" type="email" placeholder="ajan@ornek.com" style="border: 1px solid rgba(193,154,82,.25); background: #02040a; color: #fff; padding: 14px; font-size: 15px;">
         </label>
         <label style="display: grid; gap: 7px; margin-top: 14px; text-align: left; color: #8b91a8; font-size: 11px; text-transform: uppercase; letter-spacing: .12em;">Şifre
           <input value="{{ pwDraft }}" onChange="{{ onPwDraft }}" onKeyDown="{{ onLoginKey }}" type="password" placeholder="••••••••" style="border: 1px solid rgba(193,154,82,.25); background: #02040a; color: #fff; padding: 14px; font-size: 15px;">
         </label>
-        <small style="display: block; margin-top: 8px; color: #676d7c; text-align: left; font-size: 11.5px;">Şifre alanı şu an zorunlu değil — e-posta ile giriş yeterli.</small>
+        <small style="display: block; margin-top: 8px; color: #676d7c; text-align: left; font-size: 11.5px;">Şifre en az 6 karakter. Kayıt olurken bu şifreyle bir daha giriş yaparsın.</small>
         <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
           <p style="margin: 12px 0 0; color: #e8a9a9; font-size: 13px; text-align: left;">{{ loginError }}</p>
         </sc-if>
-        <button onClick="{{ doLogin }}" style="margin-top: 18px; width: 100%; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 16px; font-weight: 800; font-size: 13px; letter-spacing: .13em; cursor: pointer;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35);">DERSLİĞE GİR →</button>
+        <button onClick="{{ doLogin }}" style="margin-top: 18px; width: 100%; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 16px; font-weight: 800; font-size: 13px; letter-spacing: .13em; cursor: pointer;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35);">{{ authBtnLabel }}</button>
         <button onClick="{{ closeLogin }}" style="margin-top: 10px; width: 100%; border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; padding: 13px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .13em; cursor: pointer;" style-hover="color: #e6c478;">← PROGRAM SAYFASINA DÖN</button>
-        <small style="display: block; margin-top: 14px; color: #676d7c; line-height: 1.5;">Üyeliğin yok mu? <a href="Tarih Ajani.dc.html#seviyeler" style="color: #e6c478;">Ajanlık seviyeleri</a>nde eğitim programı dahildir.</small>
+        <small style="display: block; margin-top: 14px; color: #676d7c; line-height: 1.5;">Üyeliğin yok mu? <a href="/#seviyeler" style="color: #e6c478;">Ajanlık seviyeleri</a>nde eğitim programı dahildir.</small>
+      </div>
+    </section>
+  </sc-if>
+
+  <!-- ERİŞİM KİLİDİ -->
+  <sc-if value="{{ showLocked }}" hint-placeholder-val="{{ false }}">
+    <section data-screen-label="Erişim Bekleniyor" style="position: relative; min-height: calc(100vh - 74px); display: grid; place-items: center; overflow: hidden; padding: 40px 20px;">
+      <img src="assets/dossier-bundle.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.32) saturate(.85);">
+      <div style="position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 20%, #03050b 90%);"></div>
+      <div style="position: relative; z-index: 2; width: min(480px, 100%); border: 1px solid rgba(193,154,82,.4); background: rgba(4,6,12,.94); backdrop-filter: blur(10px); padding: clamp(30px, 5vw, 46px); text-align: center; animation: ta-rise .5s ease both;">
+        <span style="display: inline-block; padding: 7px 16px; border: 2px solid rgba(201,162,90,.7); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; font-weight: 700; letter-spacing: .22em;">KİLİTLİ DOSYA</span>
+        <p style="margin: 18px 0 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .24em;">ERİŞİM DURUMU · {{ userName }}</p>
+        <h1 style="margin: 12px 0 12px; font-family: 'Playfair Display', serif; font-size: 27px; font-weight: 800; line-height: 1.2;">Eğitim erişimin henüz açık değil</h1>
+        <p style="margin: 0 0 22px; color: #a9adba; font-size: 14px; line-height: 1.7;">Bu program ödeme onayından sonra açılır. Satın aldıysan ve ödeme/dekont onayın işlendiyse erişimin kısa sürede tanımlanır — sonra "Erişimi kontrol et"e bas.</p>
+        <div style="display: grid; gap: 10px;">
+          <button onClick="{{ openBuy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12.5px; letter-spacing: .13em; padding: 15px;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35);">EĞİTİMİ SATIN AL →</button>
+          <button onClick="{{ recheckAccess }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .13em; padding: 13px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">ERİŞİMİ KONTROL ET</button>
+          <button onClick="{{ logout }}" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .13em; padding: 12px; cursor: pointer;" style-hover="color: #e6c478;">ÇIKIŞ YAP</button>
+        </div>
+        <small style="display: block; margin-top: 14px; color: #676d7c; line-height: 1.5;">Sorun mu var? <a href="mailto:iletisim@tarihajani.com" style="color: #e6c478;">iletisim@tarihajani.com</a></small>
       </div>
     </section>
   </sc-if>
@@ -299,7 +328,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script>
+<script type="text/x-dc" data-dc-script data-props="{&quot;supabaseUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://ddyuopqcvpzaysnfavqc.supabase.co&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;supabaseAnonKey&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;iban&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;TR06 0004 6002 6388 8000 0717 57&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}, &quot;accountHolder&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Tarih Ajanı&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}, &quot;shopierUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://www.shopier.com/tarihajani&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}}">
 class Component extends DCLogic {
   curriculum() {
     return [
@@ -328,11 +357,13 @@ class Component extends DCLogic {
     this.state = {
       user: saved.user || null,
       nameDraft: '', emailDraft: '', pwDraft: '', loginError: '',
+      authMode: 'signin', authBusy: false,
       prog: saved.prog || {},          // id -> seconds watched
       done: saved.done || {},          // id -> true
       lastId: saved.lastId || null,
       activeId: null, playing: false,
-      loginOpen: false, buyOpen: false, ibanCopied: false
+      loginOpen: false, buyOpen: false, ibanCopied: false,
+      hasAccess: false, accessChecked: false
     };
   }
 
@@ -361,11 +392,78 @@ class Component extends DCLogic {
     const cur = Math.min(total, (s.prog[s.activeId] || 0) + 1);
     const prog = { ...s.prog, [s.activeId]: cur };
     const done = cur >= total ? { ...s.done, [s.activeId]: true } : s.done;
-    this.setState({ prog, done, playing: cur < total }, () => { if (cur % 5 === 0 || cur >= total) this.persist(); });
+    this.setState({ prog, done, playing: cur < total }, () => { if (cur % 5 === 0 || cur >= total) { this.persist(); this.saveLesson(s.activeId); } });
   }
 
-  componentDidMount() { this._pt = setInterval(() => this.tick(), 1000); }
-  componentWillUnmount() { clearInterval(this._pt); this.persist(); }
+  componentDidMount() {
+    this._pt = setInterval(() => this.tick(), 1000);
+    this.initSupabase(0);
+  }
+  componentWillUnmount() {
+    clearInterval(this._pt);
+    this.persist();
+    if (this._authSub && this._authSub.data && this._authSub.data.subscription) this._authSub.data.subscription.unsubscribe();
+  }
+
+  initSupabase(tries) {
+    const url = (this.props.supabaseUrl || '').trim();
+    const key = (this.props.supabaseAnonKey || '').trim();
+    if (!url || !key) return;                       // not configured → local fallback
+    if (!window.supabase || !window.supabase.createClient) {
+      if (tries < 40) { setTimeout(() => this.initSupabase(tries + 1), 150); }
+      return;
+    }
+    this.sb = window.supabase.createClient(url, key);
+    const toUser = (u) => u ? { id: u.id, email: u.email, name: ((u.user_metadata && u.user_metadata.full_name) || (u.email || '').split('@')[0]) } : null;
+    this.sb.auth.getSession().then(({ data }) => {
+      const u = toUser(data && data.session && data.session.user);
+      this.setState({ user: u, loginOpen: false }, () => { this.persist(); if (u) { this.loadProgress(u.id); this.loadAccess(u.id); } });
+    });
+    this._authSub = this.sb.auth.onAuthStateChange((_evt, session) => {
+      const u = toUser(session && session.user);
+      this.setState({ user: u, loginOpen: u ? false : this.state.loginOpen, hasAccess: u ? this.state.hasAccess : false, accessChecked: u ? this.state.accessChecked : false }, () => { this.persist(); if (u) { this.loadProgress(u.id); this.loadAccess(u.id); } });
+    });
+  }
+
+  async loadProgress(userId) {
+    if (!this.sb || !userId) return;
+    try {
+      const { data, error } = await this.sb.from('course_progress').select('lesson_id,seconds,done').eq('user_id', userId);
+      if (error || !data) return;
+      const prog = { ...this.state.prog }, done = { ...this.state.done };
+      data.forEach(r => { if (typeof r.seconds === 'number') prog[r.lesson_id] = r.seconds; if (r.done) done[r.lesson_id] = true; });
+      this.setState({ prog, done }, () => this.persist());
+    } catch (e) {}
+  }
+
+  // profiles.has_access kontrolü — erişim kilidi
+  async loadAccess(userId) {
+    if (!this.sb || !userId) { this.setState({ accessChecked: true }); return; }
+    try {
+      const { data, error } = await this.sb.from('profiles').select('has_access').eq('id', userId).maybeSingle();
+      const ok = !error && data && data.has_access === true;
+      this.setState({ hasAccess: !!ok, accessChecked: true });
+    } catch (e) {
+      this.setState({ hasAccess: false, accessChecked: true });
+    }
+  }
+
+  saveLesson(lessonId) {
+    if (!this.sb || !lessonId) return;
+    const u = this.state.user;
+    if (!u || !u.id) return;
+    const row = { user_id: u.id, lesson_id: lessonId, seconds: this.state.prog[lessonId] || 0, done: !!this.state.done[lessonId], updated_at: new Date().toISOString() };
+    try { this.sb.from('course_progress').upsert(row, { onConflict: 'user_id,lesson_id' }).then(() => {}); } catch (e) {}
+  }
+
+  authErrTr(err) {
+    const m = ((err && err.message) || '').toLowerCase();
+    if (m.includes('invalid login')) return 'E-posta veya şifre hatalı.';
+    if (m.includes('already registered') || m.includes('already been registered')) return 'Bu e-posta zaten kayıtlı. Giriş yap.';
+    if (m.includes('password')) return 'Şifre en az 6 karakter olmalı.';
+    if (m.includes('email')) return 'Geçerli bir e-posta adresi gir.';
+    return 'Bir hata oluştu, tekrar dene.';
+  }
 
   fmt(sec) {
     const m = Math.floor(sec / 60), ss = sec % 60;
@@ -395,7 +493,9 @@ class Component extends DCLogic {
       guest: !s.user,
       showIntro: !s.user && !s.loginOpen,
       showLogin: !s.user && s.loginOpen,
-      showAcademy: !!s.user,
+      showAcademy: !!s.user && s.hasAccess,
+      showLocked: !!s.user && s.accessChecked && !s.hasAccess,
+      recheckAccess: () => { if (s.user) this.loadAccess(s.user.id); },
       userName: s.user ? s.user.name.toUpperCase() : '',
       openLogin: () => this.setState({ loginOpen: true, loginError: '' }),
       closeLogin: () => this.setState({ loginOpen: false }),
@@ -419,7 +519,15 @@ class Component extends DCLogic {
       })),
       totalLessons: all.length,
       totalMin: all.reduce((a, l) => a + l.dur, 0),
-      logout: () => { this.setState({ user: null }, () => this.persist()); },
+      logout: () => { if (this.sb) { this.sb.auth.signOut(); } this.setState({ user: null }, () => this.persist()); },
+      authMode: s.authMode, authBusy: s.authBusy,
+      isSignup: s.authMode === 'signup',
+      authTitle: s.authMode === 'signup' ? 'Üye ol' : 'Dersliğe giriş',
+      authBtnLabel: s.authBusy ? 'İŞLENİYOR…' : (s.authMode === 'signup' ? 'ÜYE OL →' : 'DERSLİĞE GİR →'),
+      signinTabStyle: { flex: 1, cursor: 'pointer', border: 0, padding: '11px', fontFamily: "'Special Elite', monospace", fontSize: '11px', letterSpacing: '.12em', background: s.authMode === 'signin' ? 'linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52)' : 'transparent', color: s.authMode === 'signin' ? '#171207' : '#a4a9b5' },
+      signupTabStyle: { flex: 1, cursor: 'pointer', border: 0, padding: '11px', fontFamily: "'Special Elite', monospace", fontSize: '11px', letterSpacing: '.12em', background: s.authMode === 'signup' ? 'linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52)' : 'transparent', color: s.authMode === 'signup' ? '#171207' : '#a4a9b5' },
+      setSignin: () => this.setState({ authMode: 'signin', loginError: '' }),
+      setSignup: () => this.setState({ authMode: 'signup', loginError: '' }),
       nameDraft: s.nameDraft, onNameDraft: e => this.setState({ nameDraft: e.target.value }),
       emailDraft: s.emailDraft, onEmailDraft: e => this.setState({ emailDraft: e.target.value }),
       onLoginKey: e => { if (e.key === 'Enter') this.loginNow(); },
@@ -449,11 +557,11 @@ class Component extends DCLogic {
         if (!activeL) return;
         const r = e.currentTarget.getBoundingClientRect();
         const p = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-        this.setState(st => ({ prog: { ...st.prog, [activeL.id]: Math.round(aTot * p) } }), () => this.persist());
+        this.setState(st => ({ prog: { ...st.prog, [activeL.id]: Math.round(aTot * p) } }), () => { this.persist(); this.saveLesson(activeL.id); });
       },
       markDone: () => {
         if (!activeL) return;
-        this.setState(st => ({ done: { ...st.done, [activeL.id]: true }, prog: { ...st.prog, [activeL.id]: aTot }, playing: false }), () => this.persist());
+        this.setState(st => ({ done: { ...st.done, [activeL.id]: true }, prog: { ...st.prog, [activeL.id]: aTot }, playing: false }), () => { this.persist(); this.saveLesson(activeL.id); });
       },
       closePlayer: () => this.setState({ activeId: null, playing: false }, () => this.persist()),
 
@@ -493,11 +601,37 @@ class Component extends DCLogic {
     };
   }
 
-  loginNow() {
+  async loginNow() {
     const s = this.state;
-    if (!/.+@.+\..+/.test(s.emailDraft)) { this.setState({ loginError: 'Geçerli bir e-posta adresi gir.' }); return; }
-    const name = s.emailDraft.trim().split('@')[0];
-    this.setState({ user: { name, email: s.emailDraft.trim() }, loginError: '', loginOpen: false }, () => this.persist());
+    const email = s.emailDraft.trim();
+    const pw = s.pwDraft;
+    if (!/.+@.+\..+/.test(email)) { this.setState({ loginError: 'Geçerli bir e-posta adresi gir.' }); return; }
+    if (this.sb) {
+      if (!pw || pw.length < 6) { this.setState({ loginError: 'Şifre en az 6 karakter olmalı.' }); return; }
+      this.setState({ authBusy: true, loginError: '' });
+      try {
+        if (s.authMode === 'signup') {
+          if (!s.nameDraft.trim()) { this.setState({ authBusy: false, loginError: 'Ad soyad gir.' }); return; }
+          const { error } = await this.sb.auth.signUp({ email, password: pw, options: { data: { full_name: s.nameDraft.trim() } } });
+          if (error) throw error;
+          const { data } = await this.sb.auth.getSession();
+          if (!data || !data.session) {
+            this.setState({ authBusy: false, authMode: 'signin', pwDraft: '', loginError: 'Kayıt alındı. E-postana gelen onay bağlantısına tıkla, sonra giriş yap.' });
+            return;
+          }
+        } else {
+          const { error } = await this.sb.auth.signInWithPassword({ email, password: pw });
+          if (error) throw error;
+        }
+        this.setState({ authBusy: false, loginError: '', loginOpen: false, pwDraft: '' });
+      } catch (err) {
+        this.setState({ authBusy: false, loginError: this.authErrTr(err) });
+      }
+      return;
+    }
+    // Supabase yapılandırılmadıysa: yerel giriş (geçici)
+    const name = email.split('@')[0];
+    this.setState({ user: { name, email }, loginError: '', loginOpen: false, hasAccess: true, accessChecked: true }, () => this.persist());
   }
 }
 </script>

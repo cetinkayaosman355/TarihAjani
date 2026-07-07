@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Archivo:wght@300..900&family=Special+Elite&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     html, body { margin: 0; padding: 0; background: #03050b; }
     * { box-sizing: border-box; }
@@ -49,15 +50,15 @@
 
   <!-- HEADER -->
   <header style="position: sticky; top: 0; z-index: 30; height: 74px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(18px, 4vw, 40px); border-bottom: 1px solid rgba(193,154,82,.18); background: #03050b; backdrop-filter: blur(14px);">
-    <a href="Tarih Ajani.dc.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
+    <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
       <img src="assets/logo.png" alt="Tarih Ajanı" style="height: 42px; width: auto;">
     </a>
     <nav style="display: flex; align-items: center; gap: 4px;">
-      <a href="Tarih Ajani.dc.html" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ANA SAYFA</a>
-      <a href="Ekitap.dc.html" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">E-KİTAP</a>
-      <a href="Urunler.dc.html" style="color: #e6c478; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; font-weight: 700;">ÜRÜNLER</a>
-      <a href="Egitim.dc.html" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">EĞİTİM</a>
-      <a href="Studio.dc.html" style="color: #171207; font-weight: 800; font-size: 12.5px; letter-spacing: .1em; text-decoration: none; padding: 11px 18px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 8px;" style-hover="box-shadow: 0 6px 30px rgba(230,196,120,.35);">STUDIO'YA GİR</a>
+      <a href="/" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ANA SAYFA</a>
+      <a href="/ekitap" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">E-KİTAP</a>
+      <a href="/urunler" style="color: #e6c478; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; font-weight: 700;">ÜRÜNLER</a>
+      <a href="/egitim" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">EĞİTİM</a>
+      <a href="/studio" style="color: #171207; font-weight: 800; font-size: 12.5px; letter-spacing: .1em; text-decoration: none; padding: 11px 18px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 8px;" style-hover="box-shadow: 0 6px 30px rgba(230,196,120,.35);">STUDIO'YA GİR</a>
     </nav>
   </header>
 
@@ -80,7 +81,7 @@
       <div style="margin-top: 22px; border: 1px solid rgba(193,154,82,.25); background: rgba(193,154,82,.05); padding: 16px;">
         <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .18em;">ÜYELİKLE GELİR</p>
         <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.6;">Ajan üyeliğinde Studio kredisi ve eğitimler dahildir.</p>
-        <a href="Tarih Ajani.dc.html#seviyeler" style="display: inline-block; margin-top: 10px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; text-decoration: none;" style-hover="text-decoration: underline;">ÜYELİKLERİ GÖR →</a>
+        <a href="/#seviyeler" style="display: inline-block; margin-top: 10px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; text-decoration: none;" style-hover="text-decoration: underline;">ÜYELİKLERİ GÖR →</a>
       </div>
     </aside>
 
@@ -112,7 +113,7 @@
   <footer style="border-top: 1px solid rgba(193,154,82,.15); padding: 26px clamp(20px, 4vw, 40px); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;">
     <span style="color: #676d7c; font-size: 12.5px;">© 2026 Tarih Ajanı</span>
     <div style="display: flex; gap: 18px; flex-wrap: wrap;">
-      <a href="Tarih Ajani.dc.html" style="color: #818797; font-size: 12.5px; text-decoration: none;" style-hover="color: #e6c478;">Ana Sayfa</a>
+      <a href="/" style="color: #818797; font-size: 12.5px; text-decoration: none;" style-hover="color: #e6c478;">Ana Sayfa</a>
       <a href="https://www.instagram.com/tarih.ajani" target="_blank" style="color: #818797; font-size: 12.5px; text-decoration: none;" style-hover="color: #e6c478;">Instagram @tarih.ajani</a>
       <a href="mailto:iletisim@tarihajani.com" style="color: #818797; font-size: 12.5px; text-decoration: none;" style-hover="color: #e6c478;">iletisim@tarihajani.com</a>
     </div>
@@ -227,7 +228,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;iban&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;TR06 0004 6002 6388 8000 0717 57&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}, &quot;accountHolder&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Tarih Ajanı&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}, &quot;shopierUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://www.shopier.com/tarihajani&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;supabaseUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://ddyuopqcvpzaysnfavqc.supabase.co&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;supabaseAnonKey&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;iban&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;TR06 0004 6002 6388 8000 0717 57&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}, &quot;accountHolder&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Tarih Ajanı&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}, &quot;shopierUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://www.shopier.com/tarihajani&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}}">
 class Component extends DCLogic {
   state = {
     cat: 'TÜMÜ',
@@ -237,6 +238,7 @@ class Component extends DCLogic {
   };
 
   componentDidMount() {
+    this.initSupabase(0);
     const h = (location.hash || '').toLowerCase();
     const map = { '#egitim': 'EĞİTİM', '#ekitap': 'E-KİTAP', '#studio': 'STUDIO KREDİ' };
     if (h === '#egitim' || h === '#satin-al') {
@@ -244,6 +246,28 @@ class Component extends DCLogic {
       if (it) { this.setState({ cat: 'EĞİTİM', checkout: { ...it, features: it.features.map(t => ({ t })) }, stage: 'detail', payMethod: 'iban', formError: '' }); return; }
     }
     if (map[h]) this.setState({ cat: map[h] });
+  }
+
+  initSupabase(tries) {
+    const url = (this.props.supabaseUrl || '').trim();
+    const key = (this.props.supabaseAnonKey || '').trim();
+    if (!url || !key) return;
+    if (!window.supabase || !window.supabase.createClient) {
+      if (tries < 40) setTimeout(() => this.initSupabase(tries + 1), 150);
+      return;
+    }
+    this.sb = window.supabase.createClient(url, key);
+  }
+
+  saveOrder() {
+    if (!this.sb) return;
+    const s = this.state, co = s.checkout || {};
+    const row = {
+      product_title: co.title || '', price: String(co.price || ''), kind: co.kind || '',
+      pay_method: s.payMethod, customer_name: s.fName.trim(),
+      email: s.fEmail.trim(), phone: s.fPhone.trim(), status: 'pending'
+    };
+    try { this.sb.from('orders').insert(row).then(() => {}); } catch (e) {}
   }
 
   shopDefs() {
@@ -372,6 +396,7 @@ class Component extends DCLogic {
       submitOrder: () => {
         if (!s.fName.trim() || !validEmail) { this.setState({ formError: 'Lütfen ad soyad ve geçerli bir e-posta gir.' }); return; }
         if (!s.fConsent) { this.setState({ formError: 'Devam etmek için onay kutusunu işaretle.' }); return; }
+        this.saveOrder();
         this.setState({ formError: '', stage: 'complete', ibanCopied: false });
       },
 

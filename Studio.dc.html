@@ -78,7 +78,7 @@
       <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 40% 55% at 84% 30%, rgba(230,180,90,.16), transparent 70%); animation: ta-flicker 3.2s steps(1) infinite;"></div>
       <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 40%, rgba(2,3,8,.75) 100%);"></div>
 
-      <a href="Tarih Ajani.dc.html" style="position: absolute; z-index: 3; top: 26px; left: 30px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .16em; text-decoration: none; padding: 10px 14px; border: 1px solid rgba(193,154,82,.3); background: rgba(3,5,11,.6);" style-hover="border-color: #c19a52; color: #e6c478;">← ANA SAYFA</a>
+      <a href="/" style="position: absolute; z-index: 3; top: 26px; left: 30px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .16em; text-decoration: none; padding: 10px 14px; border: 1px solid rgba(193,154,82,.3); background: rgba(3,5,11,.6);" style-hover="border-color: #c19a52; color: #e6c478;">← ANA SAYFA</a>
 
       <div style="position: relative; z-index: 2; width: min(470px, 100%); padding: 40px 44px 34px; border: 1px solid rgba(193,154,82,.4); background: rgba(4,6,12,.9); backdrop-filter: blur(6px); box-shadow: 0 35px 100px #000; text-align: center; animation: ta-rise .8s cubic-bezier(.2,.8,.2,1) both;">
         <img src="assets/logo.png" alt="Tarih Ajanı" style="height: 100px; margin: 0 auto; display: block;">
@@ -106,7 +106,7 @@
           <span>DEMO TALEBİ GÖNDER</span><span style="font-family: 'Special Elite', monospace;">→</span>
           </button>
           <small style="display: block; margin-top: 14px; color: #676d7c; line-height: 1.5;">Onaylanan demo hesabına 5 kredi tanımlanır. Üyeliğin varsa aynı e-posta ile giriş yapılır.</small>
-          <a href="Urunler.dc.html" style="display: inline-block; margin-top: 10px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; text-decoration: none;" style-hover="text-decoration: underline;">KREDİ PAKETLERİNİ GÖR →</a>
+          <a href="/urunler" style="display: inline-block; margin-top: 10px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; text-decoration: none;" style-hover="text-decoration: underline;">KREDİ PAKETLERİNİ GÖR →</a>
         </sc-if>
       </div>
 
@@ -145,7 +145,7 @@
           </div>
         </div>
         <nav style="display: flex; align-items: center; gap: 10px;">
-          <a href="Tarih Ajani.dc.html" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ANA SAYFA</a>
+          <a href="/" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ANA SAYFA</a>
           
           <div style="display: flex; border: 1px solid rgba(129,135,151,.3);">
             <button onClick="{{ modeWizard }}" style="{{ wizardTabStyle }}">SİHİRBAZ</button>
@@ -1066,7 +1066,7 @@ Senaryo bölüm sayısı formata uygun olsun: 60 sn için 3-4 kısa bölüm, 8-1
       { tier: 'AYLIK', credits: '1.000/ay', desc: 'Her ay yenilenir · 299 TL/ay', hl: false }
     ].map(p => ({
       ...p,
-      mail: 'Urunler.dc.html',
+      mail: '/urunler',
       style: {
         border: p.hl ? '1px solid ' + gold : '1px solid rgba(129,135,151,.25)',
         background: p.hl ? 'rgba(193,154,82,.07)' : 'rgba(8,11,19,.8)',
