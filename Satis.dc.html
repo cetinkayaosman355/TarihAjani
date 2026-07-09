@@ -4,6 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/png" href="/assets/logo-mark.png">
+<title>Satın Al · Tarih Ajanı</title>
+<meta name="description" content="Tarih Ajanı ürünlerini satın al: e-kitaplar, vaka dosyası paketleri, eğitim ve koleksiyon setleri. Shopier ile güvenli ödeme.">
+<link rel="canonical" href="https://tarihajani.com/satis">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tarih Ajanı">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:url" content="https://tarihajani.com/satis">
+<meta property="og:title" content="Satın Al · Tarih Ajanı">
+<meta property="og:description" content="Tarih Ajanı ürünlerini satın al: e-kitaplar, vaka dosyası paketleri, eğitim ve koleksiyon setleri. Shopier ile güvenli ödeme.">
+<meta property="og:image" content="https://tarihajani.com/assets/dossier-bundle.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Satın Al · Tarih Ajanı">
+<meta name="twitter:description" content="Tarih Ajanı ürünlerini satın al: e-kitaplar, vaka dosyası paketleri, eğitim ve koleksiyon setleri. Shopier ile güvenli ödeme.">
+<meta name="twitter:image" content="https://tarihajani.com/assets/dossier-bundle.jpg">
 <script src="./support.js"></script>
 </head>
 <body>
@@ -36,7 +50,7 @@
   <!-- NAV -->
   <header style="position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; padding: 14px clamp(18px, 4vw, 48px); background: rgba(3,5,11,.92); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(193,154,82,.18);">
     <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
-      <img src="assets/logo.png" alt="Tarih Ajanı" style="height: 32px; width: auto;">
+      <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 32px; width: auto;">
     </a>
     <nav class="nav-links" style="display: flex; gap: 22px; font-size: 12.5px; letter-spacing: .1em; color: #a4a9b5;">
       <a href="/ekitap" style="color: #a4a9b5; text-decoration: none;" style-hover="color: #e6c478;">E-KİTAP</a>
@@ -201,17 +215,17 @@ class Component extends DCLogic {
   catalog() {
     return {
       'egitim': { cat: 'EĞİTİM', kicker: 'ONLINE EĞİTİM PROGRAMI', title: 'Belgeden Hikâyeye — Eğitim Programı', price: '999', kind: 'EĞİTİM',
-        img: 'assets/product-course.png', priceKind: 'TEK SEFER · ÖMÜR BOYU ERİŞİM',
+        img: 'assets/product-course.webp', priceKind: 'TEK SEFER · ÖMÜR BOYU ERİŞİM',
         detail: 'Bir tarih belgesini izlenen bir hikâyeye dönüştürmenin tam yöntemi. Kaynak doğrulamadan sinematik anlatıya, senaryodan yayına kadar ajan disipliniyle işlenen 3 modül, 9 ders.',
         features: ['Modül 1 — Kanıt & Kaynak: arşiv tarama, çapraz doğrulama', 'Modül 2 — Anlatı & Senaryo: kanca, gerilim, "Ajanın Hükmü"', 'Modül 3 — Üretim & Yayın: görsel, kurgu, yayın paketi', '12+ şablon ve uygulamalı proje dosyası', 'Ömür boyu erişim ve güncellemeler'],
         badges: [['3', 'MODÜL'], ['9', 'DERS'], ['∞', 'ERİŞİM']] },
       'gizli-uygarliklar': { cat: 'E-KİTAP', kicker: 'DİJİTAL KİTAP SETİ', title: 'Gizli Uygarlıklar — E-Kitap Seti', price: '279', kind: 'DİJİTAL DOSYA',
-        img: 'assets/product-ebooks.png', priceKind: 'TEK SEFERLİK ERİŞİM',
+        img: 'assets/product-ebooks.webp', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Yayınlanan vaka dosyalarının genişletilmiş kitap hâlleri. Etrüskler, Sümerler, Truva ve İbn Fadlan — dördü de kaynaklarıyla, tek sette.',
         features: ['4 dijital kitap, genişletilmiş içerik', 'Her dosya birincil kaynak referanslarıyla', 'Okuma listeleri ve arşiv bağlantıları', 'Anında dijital teslim'],
         badges: [['4', 'KİTAP'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'studio-rehberi': { cat: 'REHBER', kicker: 'ÜRETİM REHBERİ', title: 'Stüdyo Rehberi', price: '349', kind: 'DİJİTAL DOSYA',
-        img: 'assets/product-studio-guide.png', priceKind: 'TEK SEFERLİK ERİŞİM',
+        img: 'assets/product-studio-guide.webp', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarih videosu üretiminin baştan sona iş akışı: ekipman, senaryo, ses, kurgu ve yayın. Kopyalamaya hazır kontrol listeleriyle.',
         features: ['Stüdyo ve ekipman kontrol listesi', 'Senaryodan yayına iş akışı', 'Ses ve kurgu ayar rehberi', 'Örnek bölüm üretim planı'],
         badges: [['5', 'BÖLÜM'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
@@ -221,22 +235,22 @@ class Component extends DCLogic {
         features: ['5 vaka, kitap formatında', 'İlk dosya ücretsiz okunur', 'Kanıtla açılır, "Ajanın Hükmü" ile kapanır', 'Anında dijital teslim'],
         badges: [['5', 'DOSYA'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'hazir-arsiv': { cat: 'ARŞİV', kicker: 'HAZIR İÇERİK', title: 'Hazır Hikâye Arşivi — 5 Dosya', price: '499', kind: 'DİJİTAL DOSYA',
-        img: 'assets/product-casefiles.png', priceKind: 'TEK SEFERLİK ERİŞİM',
+        img: 'assets/product-casefiles.webp', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Yayınlanan 5 vakanın eksiksiz üretim dosyaları: senaryo, kaynakça ve okuma listeleriyle kullanıma hazır.',
         features: ['5 tam üretim dosyası', 'Senaryo + kaynakça dahil', 'Kendi içeriğine uyarlanabilir', 'Anında dijital teslim'],
         badges: [['5', 'DOSYA'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'vaka-defteri': { cat: 'FİZİKİ', kicker: 'FİZİKİ ÜRÜN', title: 'Ajan Vaka Defteri', price: '599', kind: 'FİZİKİ ÜRÜN',
-        img: 'assets/product-notebook.png', priceKind: 'KARGO DAHİL',
+        img: 'assets/product-notebook.webp', priceKind: 'KARGO DAHİL',
         detail: 'Sert kapaklı, mühür baskılı fiziki soruşturma defteri. Vaka şablonları ve kanıt sayfalarıyla — kendi dosyanı aç.',
         features: ['Sert kapak, mühür baskı', 'Vaka ve kanıt şablon sayfaları', 'Türkiye içi kargo ücretsiz', 'Sınırlı üretim'],
         badges: [['A5', 'BOYUT'], ['192', 'SAYFA'], ['★', 'SINIRLI']] },
       'koleksiyon': { cat: 'FİZİKİ', kicker: 'KOLEKSİYON SETİ', title: 'Dosya Kutusu — Koleksiyon Seti', price: '1290', kind: 'FİZİKİ ÜRÜN',
-        img: 'assets/product-collector.png', priceKind: 'KARGO DAHİL',
+        img: 'assets/product-collector.webp', priceKind: 'KARGO DAHİL',
         detail: 'Mühür baskılı sert kutu, üç fiziki dosya ve ajan rozetiyle sınırlı koleksiyon seti. Koleksiyonerler için.',
         features: ['Sert mühürlü kutu', '3 fiziki dosya + ajan rozeti', 'Türkiye içi kargo ücretsiz', 'Numaralı sınırlı üretim'],
         badges: [['3', 'DOSYA'], ['★', 'ROZET'], ['№', 'NUMARALI']] },
       'studio-5': { cat: 'STUDIO KREDİ', kicker: 'ÜRETİM KREDİSİ', title: 'Studio — Ajan Paketi · 5 Kredi', price: '299', kind: 'STUDIO KREDİSİ',
-        img: 'assets/product-studio-guide.png', priceKind: 'TEK SEFERLİK',
+        img: 'assets/product-studio-guide.webp', priceKind: 'TEK SEFERLİK',
         detail: 'Studio üretim sisteminde 5 eksiksiz dosya hakkı: senaryo, seslendirme, kapak ve sahne promptları, YouTube + Instagram yayın paketi.',
         features: ['5 üretim kredisi', 'Tüm çıktı sekmelerine erişim', 'Üretim geçmişi kaydı'],
         badges: [['5', 'KREDİ'], ['★', 'STUDIO'], ['∞', 'ERİŞİM']] },
@@ -251,32 +265,32 @@ class Component extends DCLogic {
         features: ['40 üretim kredisi', 'Öncelikli üretim kuyruğu', 'Ekip kullanımına uygun'],
         badges: [['40', 'KREDİ'], ['★', 'STUDIO'], ['∞', 'ERİŞİM']] },
       'uyelik-gozlemci': { cat: 'ÜYELİK', kicker: 'AYLIK ÜYELİK', title: 'Gözlemci — Aylık Üyelik', price: '599', kind: 'ÜYELİK',
-        img: 'assets/product-collector.png', priceKind: 'AYLIK · İSTEDİĞİNDE İPTAL',
+        img: 'assets/product-collector.webp', priceKind: 'AYLIK · İSTEDİĞİNDE İPTAL',
         detail: 'Arşive adım at: hazır hikâye dosyaları, aylık 1.000 Studio kredisiyle küçük ölçekli üretim ve aylık yeni vaka dosyası. Tek tıkla iptal.',
         features: ['Hazır hikâye arşivine erişim', 'Aylık 1.000 Studio kredisi', 'Aylık yeni vaka dosyası', 'İstediğinde iptal'],
         badges: [['AY', 'DÖNEM'], ['1K', 'KREDİ'], ['★', 'ÜYELİK']] },
       'uyelik-ajan': { cat: 'ÜYELİK', kicker: 'AYLIK ÜYELİK', title: 'Ajan — Aylık Üyelik', price: '1299', kind: 'ÜYELİK',
-        img: 'assets/product-collector.png', priceKind: 'AYLIK · İSTEDİĞİNDE İPTAL',
+        img: 'assets/product-collector.webp', priceKind: 'AYLIK · İSTEDİĞİNDE İPTAL',
         detail: 'Üret ve yayınla: tüm dijital kitaplar, hazır arşivin tamamı, aylık 5.000 Studio kredisiyle orta ölçekli üretim ve eğitim modülleri. Tek tıkla iptal.',
         features: ['Tüm dijital kitap arşivi', 'Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri'],
         badges: [['AY', 'DÖNEM'], ['5K', 'KREDİ'], ['★', 'ÜYELİK']] },
       'uyelik-basmufettis': { cat: 'ÜYELİK', kicker: 'AYLIK ÜYELİK', title: 'Başmüfettiş — Aylık Üyelik', price: '1999', kind: 'ÜYELİK',
-        img: 'assets/product-collector.png', priceKind: 'AYLIK · İSTEDİĞİNDE İPTAL',
+        img: 'assets/product-collector.webp', priceKind: 'AYLIK · İSTEDİĞİNDE İPTAL',
         detail: 'En üst erişim: Ajan içeriğinin tamamı, aylık 15.000 Studio kredisi, öncelikli üretim ve birebir mentorluk görüşmesi.',
         features: ['Ajan içeriğinin tamamı', 'Aylık 15.000 Studio kredisi', 'Öncelikli üretim', 'Birebir mentorluk görüşmesi'],
         badges: [['AY', 'DÖNEM'], ['15K', 'KREDİ'], ['★', 'ÜYELİK']] },
       'uyelik-gozlemci-yil': { cat: 'ÜYELİK', kicker: 'YILLIK ÜYELİK', title: 'Gözlemci — Yıllık Üyelik', price: '5990', kind: 'ÜYELİK',
-        img: 'assets/product-collector.png', priceKind: 'YILLIK · 2 AY HEDİYE · İSTEDİĞİNDE İPTAL',
+        img: 'assets/product-collector.webp', priceKind: 'YILLIK · 2 AY HEDİYE · İSTEDİĞİNDE İPTAL',
         detail: 'Gözlemci erişiminin yıllık hali: hazır hikâye arşivi, aylık 1.000 Studio kredisi ve aylık yeni vaka dosyası. Yıllık ödemede 2 ay hediye.',
         features: ['Hazır hikâye arşivine erişim', 'Aylık 1.000 Studio kredisi', 'Aylık yeni vaka dosyası', 'Yıllık ödemede 2 ay hediye'],
         badges: [['YIL', 'DÖNEM'], ['1K', 'KREDİ/AY'], ['★', 'ÜYELİK']] },
       'uyelik-ajan-yil': { cat: 'ÜYELİK', kicker: 'YILLIK ÜYELİK', title: 'Ajan — Yıllık Üyelik', price: '12990', kind: 'ÜYELİK',
-        img: 'assets/product-collector.png', priceKind: 'YILLIK · 2 AY HEDİYE · İSTEDİĞİNDE İPTAL',
+        img: 'assets/product-collector.webp', priceKind: 'YILLIK · 2 AY HEDİYE · İSTEDİĞİNDE İPTAL',
         detail: 'Ajan erişiminin yıllık hali: tüm dijital kitaplar, hazır arşivin tamamı, aylık 5.000 Studio kredisi ve eğitim modülleri. Yıllık ödemede 2 ay hediye.',
         features: ['Tüm dijital kitap arşivi', 'Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri', 'Yıllık ödemede 2 ay hediye'],
         badges: [['YIL', 'DÖNEM'], ['5K', 'KREDİ/AY'], ['★', 'ÜYELİK']] },
       'uyelik-basmufettis-yil': { cat: 'ÜYELİK', kicker: 'YILLIK ÜYELİK', title: 'Başmüfettiş — Yıllık Üyelik', price: '19990', kind: 'ÜYELİK',
-        img: 'assets/product-collector.png', priceKind: 'YILLIK · 2 AY HEDİYE · İSTEDİĞİNDE İPTAL',
+        img: 'assets/product-collector.webp', priceKind: 'YILLIK · 2 AY HEDİYE · İSTEDİĞİNDE İPTAL',
         detail: 'En üst erişimin yıllık hali: Ajan içeriğinin tamamı, aylık 15.000 Studio kredisi, öncelikli üretim ve birebir mentorluk. Yıllık ödemede 2 ay hediye.',
         features: ['Ajan içeriğinin tamamı', 'Aylık 15.000 Studio kredisi', 'Öncelikli üretim', 'Birebir mentorluk görüşmesi', 'Yıllık ödemede 2 ay hediye'],
         badges: [['YIL', 'DÖNEM'], ['15K', 'KREDİ/AY'], ['★', 'ÜYELİK']] }

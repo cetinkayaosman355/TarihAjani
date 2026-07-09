@@ -105,7 +105,7 @@
   <!-- HEADER -->
   <header style="position: fixed; z-index: 30; top: 0; left: 0; right: 0; height: 84px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(18px, 4vw, 40px); background: #03050b;">
     <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
-      <img src="assets/logo.png" alt="Tarih Ajanı" style="height: 50px; width: auto;">
+      <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 50px; width: auto;">
     </a>
     <nav style="display: flex; align-items: center; gap: 4px;">
       <div style="position: relative;" onMouseEnter="{{ openEkitap }}" onMouseLeave="{{ closeNav }}">
@@ -498,7 +498,7 @@
   <footer style="border-top: 1px solid rgba(193,154,82,.15); padding: 30px clamp(20px, 4vw, 40px); display: grid; gap: 16px;">
     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="assets/logo.png" alt="Tarih Ajanı" style="height: 40px; width: auto;">
+        <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 40px; width: auto;">
         <span style="color: #676d7c; font-size: 12.5px;">© 2026 Tarih Ajanı</span>
       </div>
       <div style="display: flex; gap: 18px; flex-wrap: wrap;">
@@ -744,7 +744,7 @@ class Component extends DCLogic {
 
     const productDefs = [
       {
-        kicker: 'DİJİTAL KİTAPLAR', tag: 'KAYIT 01', title: 'Gizli Uygarlıklar — E-Kitap Seti', img: 'assets/product-ebooks.png',
+        kicker: 'DİJİTAL KİTAPLAR', tag: 'KAYIT 01', title: 'Gizli Uygarlıklar — E-Kitap Seti', img: 'assets/product-ebooks.webp',
         alt: 'Lacivert ciltli Osmanlı kitap serisi ve tablette eski harita', price: '279', kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         desc: '4 dijital kitap — Etrüskler, Sümerler, Truva ve İbn Fadlan dosyaları.',
         detail: 'Etrüsklerden Sümerlere, ders kitaplarının kenarında kalan uygarlıkları kaynaklarıyla inceleyen dijital dosya koleksiyonu. Tek seferlik erişim; gelecek güncellemeler dahildir.',
@@ -752,7 +752,7 @@ class Component extends DCLogic {
         cta: 'DOSYAYI İNCELE', buyable: true, flip: false, nav: '/ekitap', sellSlug: 'gizli-uygarliklar'
       },
       {
-        kicker: 'STUDIO REHBERİ', tag: 'KAYIT 02', title: 'Tarih Anlatıcılığı — Stüdyo Rehberi', img: 'assets/product-studio-guide.png',
+        kicker: 'STUDIO REHBERİ', tag: 'KAYIT 02', title: 'Tarih Anlatıcılığı — Stüdyo Rehberi', img: 'assets/product-studio-guide.webp',
         alt: 'Gece çalışma masası: laptopta arşiv, banker lambası, spiralli defter', price: '349', kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         desc: 'Dijital rehber — tarih videosu üretiminin baştan sona iş akışı.',
         detail: 'Araştırmadan mikrofona, senaryodan kurguya: güçlü bir tarih videosunun üretim zinciri ve uygulanabilir kontrol listeleri.',
@@ -760,7 +760,7 @@ class Component extends DCLogic {
         cta: 'HİKÂYE ÜRET', buyable: true, flip: true, nav: '/studio', sellSlug: 'studio-rehberi'
       },
       {
-        kicker: 'EĞİTİM PROGRAMI', tag: 'KAYIT 03', title: 'Belgeden Hikâyeye — Eğitim Programı', img: 'assets/product-course.png',
+        kicker: 'EĞİTİM PROGRAMI', tag: 'KAYIT 03', title: 'Belgeden Hikâyeye — Eğitim Programı', img: 'assets/product-course.webp',
         alt: 'Vintage mikrofon, kulaklık ve storyboard klasörü', price: '999', kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         desc: 'Online eğitim — 3 modül, 9 ders; kaynak doğrulamadan yayına.',
         detail: 'Kaynak doğrulama, arşiv tarama ve sinematik anlatı kurma üzerine yapılandırılmış kapsamlı eğitim programı. Teknik ön koşul yoktur; sıfırdan başlayanlara uygundur.',
@@ -863,27 +863,27 @@ class Component extends DCLogic {
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Beş kısa vaka hikâyesini bir arada sunan giriş seviyesi dijital kitap. Tek seferlik erişim; anında e-posta ile teslim.',
         features: ['5 kısa tarih hikâyesi', 'Mobil ve tarayıcıda okuma', 'Anında e-posta teslimi'] },
-      { cat: 'E-KİTAP', title: 'Gizli Uygarlıklar — E-Kitap Seti', price: '279', img: 'assets/product-ebooks.png',
+      { cat: 'E-KİTAP', title: 'Gizli Uygarlıklar — E-Kitap Seti', price: '279', img: 'assets/product-ebooks.webp',
         blurb: '4 kapsamlı dijital kitap; kaynakça ve ileri okuma listesiyle.',
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Etrüsklerden Sümerlere, ders kitaplarının kenarında kalan uygarlıkları kaynaklarıyla inceleyen dijital dosya koleksiyonu.',
         features: ['Etrüskler: Roma’nın Gizli Öğretmeni', 'Sümerlerin Sırrı: 5.000 Yıldır Çözülemedi', 'Truva Savaşı Gerçek miydi?', 'İbn Fadlan: Türkler ve Vikingler Notları'] },
-      { cat: 'E-KİTAP', title: 'Tarih Anlatıcılığı — Stüdyo Rehberi', price: '349', img: 'assets/product-studio-guide.png',
+      { cat: 'E-KİTAP', title: 'Tarih Anlatıcılığı — Stüdyo Rehberi', price: '349', img: 'assets/product-studio-guide.webp',
         blurb: 'Araştırmadan mikrofona: üretim zinciri ve kontrol listeleri.',
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Araştırmadan mikrofona, senaryodan kurguya: güçlü bir tarih videosunun üretim zinciri ve uygulanabilir kontrol listeleri.',
         features: ['Stüdyo ekipman kontrol listesi', 'Senaryodan yayına iş akışı', 'Ses ve kurgu ayar rehberi', 'Örnek bölüm üretim planı'] },
-      { cat: 'HAZIR İÇERİK', title: 'Hazır Hikâye Arşivi — 5 Dosya', price: '499', img: 'assets/product-casefiles.png',
+      { cat: 'HAZIR İÇERİK', title: 'Hazır Hikâye Arşivi — 5 Dosya', price: '499', img: 'assets/product-casefiles.webp',
         blurb: 'Yayınlanan 5 vakanın eksiksiz üretim dosyaları: senaryo, promptlar, yayın paketi.',
         kind: 'HAZIR İÇERİK DOSYASI', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Yayınlanmış 5 vakanın senaryosu, seslendirme metni, kapak ve sahne promptları, video promptları ve YouTube + Instagram yayın paketi — kopyalamaya ve düzenlemeye hazır.',
         features: ['5 eksiksiz üretim dosyası', 'Kopyalanabilir görsel/video promptları', 'YouTube + Instagram yayın paketleri', 'Kredi harcamadan sınırsız açma'] },
-      { cat: 'EĞİTİM', title: 'Belgeden Hikâyeye — Eğitim Programı', price: '999', img: 'assets/product-course.png',
+      { cat: 'EĞİTİM', title: 'Belgeden Hikâyeye — Eğitim Programı', price: '999', img: 'assets/product-course.webp',
         blurb: 'Kaynak doğrulama, arşiv tarama ve sinematik anlatı kurma.',
         kind: 'EĞİTİM PROGRAMI', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Kaynak doğrulama, arşiv tarama ve sinematik anlatı kurma üzerine yapılandırılmış kapsamlı eğitim programı. Teknik ön koşul yoktur.',
         features: ['Kaynak doğrulama sistemi', 'Hikâyeleştirme ve senaryo modülleri', 'Görsel ve ses üretim şablonları', 'Uygulamalı proje çalışma dosyası'] },
-      { cat: 'STUDIO KREDİ', title: 'Studio — Ajan Paketi · 5 Kredi', price: '299', img: 'assets/product-studio-guide.png',
+      { cat: 'STUDIO KREDİ', title: 'Studio — Ajan Paketi · 5 Kredi', price: '299', img: 'assets/product-studio-guide.webp',
         blurb: '5 eksiksiz üretim dosyası: senaryo, ses, yayın paketi.',
         kind: 'STUDIO KREDİSİ', priceKind: 'TEK SEFERLİK',
         detail: 'Studio üretim sisteminde 5 eksiksiz dosya hakkı: senaryo, seslendirme ayarları, kapak ve sahne promptları, YouTube + Instagram yayın paketi.',
@@ -898,12 +898,12 @@ class Component extends DCLogic {
         kind: 'STUDIO KREDİSİ', priceKind: 'TEK SEFERLİK',
         detail: 'Studio üretim sisteminde 40 dosya hakkı. Yoğun üretim temposu ve ekip kullanımı için en kapsamlı paket.',
         features: ['40 üretim kredisi', 'Öncelikli üretim kuyruğu', 'Ekip kullanımına uygun'] },
-      { cat: 'FİZİKİ ÜRÜN', title: 'Ajan Vaka Defteri', price: '599', img: 'assets/product-notebook.png',
+      { cat: 'FİZİKİ ÜRÜN', title: 'Ajan Vaka Defteri', price: '599', img: 'assets/product-notebook.webp',
         blurb: 'Sert kapaklı, mühür baskılı fiziki soruşturma defteri. Ön sipariş.',
         kind: 'FİZİKİ ÜRÜN · ÖN SİPARİŞ', priceKind: 'KARGO DAHİL',
         detail: 'Sert kapaklı, mühür baskılı fiziki soruşturma defteri: vaka şablonları, kanıt listeleri ve zaman çizelgesi sayfalarıyla. Ön sipariş — Türkiye içi kargo dahildir.',
         features: ['Mühür baskılı sert kapak', 'Vaka şablonu sayfaları', 'Ön sipariş · sıralı üretim', 'Türkiye içi ücretsiz kargo'] },
-      { cat: 'FİZİKİ ÜRÜN', title: 'Dosya Kutusu — Koleksiyon Seti', price: '1.290', img: 'assets/product-collector.png',
+      { cat: 'FİZİKİ ÜRÜN', title: 'Dosya Kutusu — Koleksiyon Seti', price: '1.290', img: 'assets/product-collector.webp',
         blurb: 'Vaka defteri + metal rozet + mühür seti, koleksiyon kutusunda. Ön sipariş.',
         kind: 'FİZİKİ ÜRÜN · ÖN SİPARİŞ', priceKind: 'KARGO DAHİL',
         detail: 'Koleksiyon kutusunda: Ajan vaka defteri, metal ajan rozeti ve mühür mumu seti. Ön sipariş — Türkiye içi kargo dahildir.',
