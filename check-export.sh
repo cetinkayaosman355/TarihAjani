@@ -34,7 +34,7 @@ tamam "meta kontrolü bitti"
 # 4) _redirects SEO kuralları
 grep -qE '^/ +/Tarih%20Ajani\.dc\.html +200!' _redirects || hata "_redirects: kök URL 200! kuralı eksik"
 grep -q '301!' _redirects || hata "_redirects: eski .dc.html -> temiz URL 301 kuralları eksik"
-for route in /egitim /ekitap /urunler /studio /vaka-dosyalari /zaman-tuneli /admin /satis; do
+for route in /egitim /ekitap /urunler /studio /vaka-dosyalari /zaman-tuneli /admin /satis /bulten; do
   grep -q "^$route " _redirects || hata "_redirects: $route rotası eksik"
 done
 tamam "_redirects kontrolü bitti"
