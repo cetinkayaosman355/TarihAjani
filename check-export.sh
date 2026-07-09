@@ -56,6 +56,16 @@ for d in publish*; do
   [ -d "$d" ] && hata "repo kökünde taşınmamış klasör: $d"
 done
 
+# 8) Google Search Console doğrulama dosyası duruyor mu (SİLİNMEMELİ)
+if [ ! -f "google9122dee364ae85d0.html" ]; then
+  hata "google9122dee364ae85d0.html silinmiş! Google site sahipliği düşer — geri eklenmeli."
+fi
+
+# 9) Bülten, 404 ve başlık dosyaları duruyor mu
+for f in bulten.html bulten-tesekkurler.html 404.html _headers; do
+  [ -f "$f" ] || hata "$f silinmiş — geri eklenmeli"
+done
+
 echo "─────────────────────────────"
 if [ $FAIL -eq 0 ]; then
   echo "🎉 Tüm kontroller geçti."
