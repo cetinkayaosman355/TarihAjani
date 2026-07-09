@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Satın Al · Tarih Ajanı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..700&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #06070d; scroll-behavior: smooth; }
+    * { box-sizing: border-box; }
+    ::selection { background: rgba(193,154,82,.35); }
+    input:focus, select:focus { outline: 1px solid rgba(193,154,82,.6); }
+    a { color: #e6c478; }
+    a:hover { color: #f2ecd9; }
+    @media (max-width: 860px) {
+      .split { grid-template-columns: 1fr !important; }
+      .stick { position: static !important; }
+      .nav-links { display: none !important; }
+    }
+  </style>
+  <script>window.__taFadeBg='#06070d';</script>
+  <script src="page-transition.js"></script>
+</helmet>
+
+<div style="font-family: 'Hanken Grotesk', system-ui, sans-serif; color: #e9dfc8; background: #03050b; min-height: 100vh;">
+
+  <!-- NAV -->
+  <header style="position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; padding: 14px clamp(18px, 4vw, 48px); background: rgba(3,5,11,.92); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(193,154,82,.18);">
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+      <img src="assets/logo.png" alt="Tarih Ajanı" style="height: 32px; width: auto;">
+    </a>
+    <nav class="nav-links" style="display: flex; gap: 22px; font-size: 12.5px; letter-spacing: .1em; color: #a4a9b5;">
+      <a href="/ekitap" style="color: #a4a9b5; text-decoration: none;" style-hover="color: #e6c478;">E-KİTAP</a>
+      <a href="/urunler" style="color: #a4a9b5; text-decoration: none;" style-hover="color: #e6c478;">ÜRÜNLER</a>
+      <a href="/egitim" style="color: #a4a9b5; text-decoration: none;" style-hover="color: #e6c478;">EĞİTİM</a>
+    </nav>
+    <a href="/urunler" style="font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; color: #a4a9b5; text-decoration: none; border: 1px solid rgba(129,135,151,.3); padding: 10px 15px;" style-hover="color: #e6c478;">← TÜM ÜRÜNLER</a>
+  </header>
+
+  <!-- ÜRÜN DETAY -->
+  <section style="width: min(1200px, 100%); margin: 0 auto; padding: clamp(26px, 4vw, 52px) clamp(18px, 4vw, 40px) 40px;">
+    <div style="font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; color: #676d7c; margin-bottom: 22px;">
+      <a href="/" style="color: #676d7c; text-decoration: none;">Ana Sayfa</a> · <a href="/urunler" style="color: #676d7c; text-decoration: none;">Ürünler</a> · <span style="color: #c19a52;">{{ cat }}</span>
+    </div>
+
+    <div class="split" style="display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 4vw, 56px); align-items: start;">
+
+      <!-- SOL: görsel -->
+      <div class="stick" style="position: sticky; top: 92px;">
+        <div style="position: relative; border: 1px solid rgba(193,154,82,.3); overflow: hidden; background: #070a12;">
+          <div style="aspect-ratio: 4/5; overflow: hidden;">
+            <img src="{{ img }}" alt="{{ title }}" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <span style="position: absolute; top: 14px; left: 14px; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; color: #e6c478; background: rgba(3,5,11,.82); border: 1px solid rgba(193,154,82,.4); padding: 6px 11px;">{{ cat }}</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px;">
+          <div style="border: 1px solid rgba(129,135,151,.2); padding: 12px; text-align: center;"><div style="font-family: 'Special Elite', monospace; font-size: 10px; color: #c19a52;">{{ badge1 }}</div><div style="font-size: 10.5px; color: #7c8393; margin-top: 4px;">{{ badge1s }}</div></div>
+          <div style="border: 1px solid rgba(129,135,151,.2); padding: 12px; text-align: center;"><div style="font-family: 'Special Elite', monospace; font-size: 10px; color: #c19a52;">{{ badge2 }}</div><div style="font-size: 10.5px; color: #7c8393; margin-top: 4px;">{{ badge2s }}</div></div>
+          <div style="border: 1px solid rgba(129,135,151,.2); padding: 12px; text-align: center;"><div style="font-family: 'Special Elite', monospace; font-size: 10px; color: #c19a52;">{{ badge3 }}</div><div style="font-size: 10.5px; color: #7c8393; margin-top: 4px;">{{ badge3s }}</div></div>
+        </div>
+      </div>
+
+      <!-- SAĞ: bilgi + satın al -->
+      <div>
+        <p style="margin: 0 0 10px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .24em; color: #c19a52;">{{ kicker }}</p>
+        <h1 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(30px, 4vw, 46px); font-weight: 800; line-height: 1.08;">{{ title }}</h1>
+        <p style="margin: 18px 0 0; font-size: 16px; line-height: 1.75; color: #b6bcc9;">{{ detail }}</p>
+
+        <div style="display: flex; align-items: baseline; gap: 14px; margin: 26px 0 22px;">
+          <span style="font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 800; color: #e6c478;">{{ priceLabel }}</span>
+          <span style="font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; color: #7c8393;">{{ priceKind }}</span>
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <button onClick="{{ buyNow }}" style="flex: 1; min-width: 180px; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 13px; letter-spacing: .12em; padding: 18px 26px;" style-hover="box-shadow: 0 12px 44px rgba(230,196,120,.35);">SATIN AL →</button>
+          <button onClick="{{ addCart }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; cursor: pointer; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; padding: 18px 24px;" style-hover="background: rgba(193,154,82,.1);">{{ cartLabel }}</button>
+        </div>
+
+        <!-- ne var içinde -->
+        <div style="margin-top: 34px; border-top: 1px solid rgba(129,135,151,.15); padding-top: 26px;">
+          <p style="margin: 0 0 16px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em; color: #c19a52;">İÇİNDE NE VAR</p>
+          <ul style="margin: 0; padding: 0; list-style: none; display: grid; gap: 12px;">
+            <sc-for list="{{ features }}" as="f" hint-placeholder-count="4">
+              <li style="display: flex; gap: 12px; align-items: flex-start; font-size: 14.5px; line-height: 1.55; color: #cfc8b4;"><span style="color: #c19a52; flex-shrink: 0;">◆</span><span>{{ f.t }}</span></li>
+            </sc-for>
+          </ul>
+        </div>
+
+        <div style="margin-top: 26px; display: flex; align-items: center; gap: 12px; border: 1px solid rgba(129,135,151,.18); padding: 16px 18px; background: #070a12;">
+          <span style="font-size: 22px;">🔒</span>
+          <p style="margin: 0; font-size: 12.5px; line-height: 1.55; color: #818797;">Güvenli ödeme · Kredi kartı (Shopier) veya havale/EFT. Dijital ürünlerde erişim onay sonrası anında açılır.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SİPARİŞ FORMU (satın al'a basınca kayar) -->
+  <section id="siparis" style="scroll-margin-top: 80px; background: #05070d; border-top: 1px solid rgba(193,154,82,.18); padding: clamp(40px, 6vw, 72px) clamp(18px, 4vw, 40px);">
+    <div style="width: min(720px, 100%); margin: 0 auto;">
+      <sc-if value="{{ ordered }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align: center; border: 1px solid rgba(193,154,82,.4); padding: clamp(32px, 5vw, 54px); background: #070a12;">
+          <div style="width: 62px; height: 62px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c0392b, #7c1f16 70%); border: 3px solid #8e2a1d; color: #f4e4c1; font-family: 'Playfair Display', serif; font-weight: 800; font-size: 22px; display: grid; place-items: center;">TA</div>
+          <h2 style="margin: 20px 0 10px; font-family: 'Playfair Display', serif; font-size: 27px; font-weight: 800;">Siparişin alındı, ajan.</h2>
+          <p style="margin: 0 auto; max-width: 44ch; color: #a9adba; line-height: 1.7; font-size: 15px;">Talebin bize ulaştı. Havale/EFT seçtiysen dekontunu <a href="mailto:iletisim@tarihajani.com">iletisim@tarihajani.com</a> adresine ilet; ödeme onaylanınca erişimin açılır ve e-posta ile bilgilendirilirsin.</p>
+          <div style="margin-top: 22px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a href="/" style="font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; color: #171207; background: linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52); padding: 14px 26px; text-decoration: none;">ANA SAYFA</a>
+            <a href="/urunler" style="font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; color: #e6c478; border: 1px solid rgba(193,154,82,.5); padding: 14px 26px; text-decoration: none;">DİĞER ÜRÜNLER</a>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ formOpen }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <p style="margin: 0 0 8px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .24em; color: #c19a52;">SİPARİŞ FORMU</p>
+          <h2 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: clamp(24px, 3.4vw, 34px); font-weight: 800;">Siparişini tamamla</h2>
+          <p style="margin: 0 0 26px; color: #818797; font-size: 14px;">{{ title }} · <span style="color: #e6c478;">{{ priceLabel }}</span></p>
+
+          <div style="display: grid; gap: 14px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;" class="split">
+              <input value="{{ fName }}" onChange="{{ onFName }}" placeholder="Ad Soyad" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 15px; font-size: 14px; font-family: inherit;">
+              <input value="{{ fPhone }}" onChange="{{ onFPhone }}" placeholder="Telefon" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 15px; font-size: 14px; font-family: inherit;">
+            </div>
+            <input value="{{ fEmail }}" onChange="{{ onFEmail }}" type="email" placeholder="E-posta adresin" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 15px; font-size: 14px; font-family: inherit;">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px;">
+              <button onClick="{{ pickIban }}" style="{{ ibanBtnStyle }}">HAVALE / EFT</button>
+              <button onClick="{{ pickCard }}" style="{{ cardBtnStyle }}">KREDİ KARTI</button>
+            </div>
+
+            <sc-if value="{{ showIban }}" hint-placeholder-val="{{ true }}">
+              <div style="border: 1px solid rgba(193,154,82,.3); background: #070a12; padding: 16px 18px;">
+                <div style="font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; color: #818797;">IBAN · TARİH AJANI</div>
+                <div style="margin-top: 8px; font-family: 'Special Elite', monospace; font-size: 14px; color: #e6c478; letter-spacing: .04em; word-break: break-all;">TR06 0004 6002 6388 8000 0717 57</div>
+                <div style="margin-top: 8px; font-size: 12px; color: #818797;">Açıklamaya ad-soyad ve ürün adını yaz. Dekontu iletisim@tarihajani.com adresine ilet.</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ showCard }}" hint-placeholder-val="{{ false }}">
+              <div style="border: 1px solid rgba(193,154,82,.3); background: #070a12; padding: 16px 18px; font-size: 13px; color: #a9adba; line-height: 1.6;">Kredi kartı ödemesi Shopier güvenli ödeme sayfasında tamamlanır. "Siparişi Gönder"e bastıktan sonra ödeme bağlantısı e-postana iletilir.</div>
+            </sc-if>
+
+            <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 0; color: #e08a80; font-size: 13.5px;">{{ formError }}</p>
+            </sc-if>
+
+            <button onClick="{{ submitOrder }}" disabled="{{ sending }}" style="margin-top: 6px; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 13px; letter-spacing: .12em; padding: 18px;" style-hover="box-shadow: 0 12px 44px rgba(230,196,120,.35);">{{ submitLabel }}</button>
+            <p style="margin: 0; text-align: center; font-size: 11.5px; color: #676d7c;">Siparişi göndererek Ön Bilgilendirme ve Mesafeli Satış koşullarını kabul edersin.</p>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="padding: 26px clamp(18px, 4vw, 40px); border-top: 1px solid rgba(193,154,82,.15); text-align: center;">
+    <p style="margin: 0; font-size: 12px; color: #676d7c;">© 2026 Tarih Ajanı · <a href="/" style="color: #818797; text-decoration: none;">tarihajani.com</a></p>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    slug: 'egitim', overrides: {},
+    fName: '', fEmail: '', fPhone: '', payMethod: 'iban',
+    formOpen: true, ordered: false, sending: false, formError: '', cartLabel: 'SEPETE EKLE',
+    added: false
+  };
+
+  SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+  SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+
+  componentDidMount() {
+    try {
+      if (window.supabase && window.supabase.createClient) this.sb = window.supabase.createClient(this.SB_URL, this.SB_KEY);
+    } catch (e) {}
+    const h = (location.hash || '').replace('#', '').toLowerCase();
+    if (h && this.catalog()[h]) this.setState({ slug: h });
+    // admin'den güncellenen fiyat/başlıkları çek
+    this.loadProducts();
+  }
+
+  async loadProducts() {
+    if (!this.sb) return;
+    try {
+      const { data, error } = await this.sb.from('products').select('slug,title,price');
+      if (error || !data) return;
+      const ov = {};
+      data.forEach(p => { ov[p.slug] = { title: p.title, price: String(p.price) }; });
+      this.setState({ overrides: ov });
+    } catch (e) {}
+  }
+
+  catalog() {
+    return {
+      'egitim': { cat: 'EĞİTİM', kicker: 'ONLINE EĞİTİM PROGRAMI', title: 'Belgeden Hikâyeye — Eğitim Programı', price: '999', kind: 'EĞİTİM',
+        img: 'assets/product-course.png', priceKind: 'TEK SEFER · ÖMÜR BOYU ERİŞİM',
+        detail: 'Bir tarih belgesini izlenen bir hikâyeye dönüştürmenin tam yöntemi. Kaynak doğrulamadan sinematik anlatıya, senaryodan yayına kadar ajan disipliniyle işlenen 3 modül, 9 ders.',
+        features: ['Modül 1 — Kanıt & Kaynak: arşiv tarama, çapraz doğrulama', 'Modül 2 — Anlatı & Senaryo: kanca, gerilim, "Ajanın Hükmü"', 'Modül 3 — Üretim & Yayın: görsel, kurgu, yayın paketi', '12+ şablon ve uygulamalı proje dosyası', 'Ömür boyu erişim ve güncellemeler'],
+        badges: [['3', 'MODÜL'], ['9', 'DERS'], ['∞', 'ERİŞİM']] },
+      'gizli-uygarliklar': { cat: 'E-KİTAP', kicker: 'DİJİTAL KİTAP SETİ', title: 'Gizli Uygarlıklar — E-Kitap Seti', price: '279', kind: 'DİJİTAL DOSYA',
+        img: 'assets/product-ebooks.png', priceKind: 'TEK SEFERLİK ERİŞİM',
+        detail: 'Yayınlanan vaka dosyalarının genişletilmiş kitap hâlleri. Etrüskler, Sümerler, Truva ve İbn Fadlan — dördü de kaynaklarıyla, tek sette.',
+        features: ['4 dijital kitap, genişletilmiş içerik', 'Her dosya birincil kaynak referanslarıyla', 'Okuma listeleri ve arşiv bağlantıları', 'Anında dijital teslim'],
+        badges: [['4', 'KİTAP'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
+      'studio-rehberi': { cat: 'REHBER', kicker: 'ÜRETİM REHBERİ', title: 'Stüdyo Rehberi', price: '349', kind: 'DİJİTAL DOSYA',
+        img: 'assets/product-studio-guide.png', priceKind: 'TEK SEFERLİK ERİŞİM',
+        detail: 'Tarih videosu üretiminin baştan sona iş akışı: ekipman, senaryo, ses, kurgu ve yayın. Kopyalamaya hazır kontrol listeleriyle.',
+        features: ['Stüdyo ve ekipman kontrol listesi', 'Senaryodan yayına iş akışı', 'Ses ve kurgu ayar rehberi', 'Örnek bölüm üretim planı'],
+        badges: [['5', 'BÖLÜM'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
+      '5li-hikaye': { cat: 'E-KİTAP', kicker: 'GİRİŞ KİTABI', title: '5’li Hikâye — Dijital Kitap', price: '49', kind: 'DİJİTAL DOSYA',
+        img: 'assets/books.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
+        detail: 'Tarih Ajanı arşivinden beş vaka, kitap formatında. Arşive ilk adım için ideal giriş dosyası.',
+        features: ['5 vaka, kitap formatında', 'İlk dosya ücretsiz okunur', 'Kanıtla açılır, "Ajanın Hükmü" ile kapanır', 'Anında dijital teslim'],
+        badges: [['5', 'DOSYA'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
+      'hazir-arsiv': { cat: 'ARŞİV', kicker: 'HAZIR İÇERİK', title: 'Hazır Hikâye Arşivi — 5 Dosya', price: '499', kind: 'DİJİTAL DOSYA',
+        img: 'assets/product-casefiles.png', priceKind: 'TEK SEFERLİK ERİŞİM',
+        detail: 'Yayınlanan 5 vakanın eksiksiz üretim dosyaları: senaryo, kaynakça ve okuma listeleriyle kullanıma hazır.',
+        features: ['5 tam üretim dosyası', 'Senaryo + kaynakça dahil', 'Kendi içeriğine uyarlanabilir', 'Anında dijital teslim'],
+        badges: [['5', 'DOSYA'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
+      'vaka-defteri': { cat: 'FİZİKİ', kicker: 'FİZİKİ ÜRÜN', title: 'Ajan Vaka Defteri', price: '599', kind: 'FİZİKİ ÜRÜN',
+        img: 'assets/product-notebook.png', priceKind: 'KARGO DAHİL',
+        detail: 'Sert kapaklı, mühür baskılı fiziki soruşturma defteri. Vaka şablonları ve kanıt sayfalarıyla — kendi dosyanı aç.',
+        features: ['Sert kapak, mühür baskı', 'Vaka ve kanıt şablon sayfaları', 'Türkiye içi kargo ücretsiz', 'Sınırlı üretim'],
+        badges: [['A5', 'BOYUT'], ['192', 'SAYFA'], ['★', 'SINIRLI']] },
+      'koleksiyon': { cat: 'FİZİKİ', kicker: 'KOLEKSİYON SETİ', title: 'Dosya Kutusu — Koleksiyon Seti', price: '1290', kind: 'FİZİKİ ÜRÜN',
+        img: 'assets/product-collector.png', priceKind: 'KARGO DAHİL',
+        detail: 'Mühür baskılı sert kutu, üç fiziki dosya ve ajan rozetiyle sınırlı koleksiyon seti. Koleksiyonerler için.',
+        features: ['Sert mühürlü kutu', '3 fiziki dosya + ajan rozeti', 'Türkiye içi kargo ücretsiz', 'Numaralı sınırlı üretim'],
+        badges: [['3', 'DOSYA'], ['★', 'ROZET'], ['№', 'NUMARALI']] },
+      'studio-5': { cat: 'STUDIO KREDİ', kicker: 'ÜRETİM KREDİSİ', title: 'Studio — Ajan Paketi · 5 Kredi', price: '299', kind: 'STUDIO KREDİSİ',
+        img: 'assets/product-studio-guide.png', priceKind: 'TEK SEFERLİK',
+        detail: 'Studio üretim sisteminde 5 eksiksiz dosya hakkı: senaryo, seslendirme, kapak ve sahne promptları, YouTube + Instagram yayın paketi.',
+        features: ['5 üretim kredisi', 'Tüm çıktı sekmelerine erişim', 'Üretim geçmişi kaydı'],
+        badges: [['5', 'KREDİ'], ['★', 'STUDIO'], ['∞', 'ERİŞİM']] },
+      'studio-15': { cat: 'STUDIO KREDİ', kicker: 'ÜRETİM KREDİSİ', title: 'Studio — Saha Paketi · 15 Kredi', price: '699', kind: 'STUDIO KREDİSİ',
+        img: 'assets/study-wall.jpg', priceKind: 'TEK SEFERLİK',
+        detail: 'Studio üretim sisteminde 15 dosya hakkı. Düzenli video üretenler için kredi başına en dengeli paket.',
+        features: ['15 üretim kredisi', 'Öncelikli üretim kuyruğu', 'Üretim geçmişi kaydı'],
+        badges: [['15', 'KREDİ'], ['★', 'STUDIO'], ['∞', 'ERİŞİM']] },
+      'studio-40': { cat: 'STUDIO KREDİ', kicker: 'ÜRETİM KREDİSİ', title: 'Studio — Arşiv Paketi · 40 Kredi', price: '1490', kind: 'STUDIO KREDİSİ',
+        img: 'assets/dossier-bundle.jpg', priceKind: 'TEK SEFERLİK',
+        detail: 'Studio üretim sisteminde 40 dosya hakkı. Yoğun üretim temposu ve ekip kullanımı için en kapsamlı paket.',
+        features: ['40 üretim kredisi', 'Öncelikli üretim kuyruğu', 'Ekip kullanımına uygun'],
+        badges: [['40', 'KREDİ'], ['★', 'STUDIO'], ['∞', 'ERİŞİM']] },
+      'uyelik-gozlemci': { cat: 'ÜYELİK', kicker: 'AYLIK ÜYELİK', title: 'Gözlemci — Aylık Üyelik', price: '599', kind: 'ÜYELİK',
+        img: 'assets/product-collector.png', priceKind: 'AYLIK · İSTEDİĞİNDE İPTAL',
+        detail: 'Arşive adım at: hazır hikâye dosyaları, aylık 1.000 Studio kredisiyle küçük ölçekli üretim ve aylık yeni vaka dosyası. Tek tıkla iptal.',
+        features: ['Hazır hikâye arşivine erişim', 'Aylık 1.000 Studio kredisi', 'Aylık yeni vaka dosyası', 'İstediğinde iptal'],
+        badges: [['AY', 'DÖNEM'], ['1K', 'KREDİ'], ['★', 'ÜYELİK']] },
+      'uyelik-ajan': { cat: 'ÜYELİK', kicker: 'AYLIK ÜYELİK', title: 'Ajan — Aylık Üyelik', price: '1299', kind: 'ÜYELİK',
+        img: 'assets/product-collector.png', priceKind: 'AYLIK · İSTEDİĞİNDE İPTAL',
+        detail: 'Üret ve yayınla: tüm dijital kitaplar, hazır arşivin tamamı, aylık 5.000 Studio kredisiyle orta ölçekli üretim ve eğitim modülleri. Tek tıkla iptal.',
+        features: ['Tüm dijital kitap arşivi', 'Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri'],
+        badges: [['AY', 'DÖNEM'], ['5K', 'KREDİ'], ['★', 'ÜYELİK']] },
+      'uyelik-basmufettis': { cat: 'ÜYELİK', kicker: 'AYLIK ÜYELİK', title: 'Başmüfettiş — Aylık Üyelik', price: '1999', kind: 'ÜYELİK',
+        img: 'assets/product-collector.png', priceKind: 'AYLIK · İSTEDİĞİNDE İPTAL',
+        detail: 'En üst erişim: Ajan içeriğinin tamamı, aylık 15.000 Studio kredisi, öncelikli üretim ve birebir mentorluk görüşmesi.',
+        features: ['Ajan içeriğinin tamamı', 'Aylık 15.000 Studio kredisi', 'Öncelikli üretim', 'Birebir mentorluk görüşmesi'],
+        badges: [['AY', 'DÖNEM'], ['15K', 'KREDİ'], ['★', 'ÜYELİK']] },
+      'uyelik-gozlemci-yil': { cat: 'ÜYELİK', kicker: 'YILLIK ÜYELİK', title: 'Gözlemci — Yıllık Üyelik', price: '5990', kind: 'ÜYELİK',
+        img: 'assets/product-collector.png', priceKind: 'YILLIK · 2 AY HEDİYE · İSTEDİĞİNDE İPTAL',
+        detail: 'Gözlemci erişiminin yıllık hali: hazır hikâye arşivi, aylık 1.000 Studio kredisi ve aylık yeni vaka dosyası. Yıllık ödemede 2 ay hediye.',
+        features: ['Hazır hikâye arşivine erişim', 'Aylık 1.000 Studio kredisi', 'Aylık yeni vaka dosyası', 'Yıllık ödemede 2 ay hediye'],
+        badges: [['YIL', 'DÖNEM'], ['1K', 'KREDİ/AY'], ['★', 'ÜYELİK']] },
+      'uyelik-ajan-yil': { cat: 'ÜYELİK', kicker: 'YILLIK ÜYELİK', title: 'Ajan — Yıllık Üyelik', price: '12990', kind: 'ÜYELİK',
+        img: 'assets/product-collector.png', priceKind: 'YILLIK · 2 AY HEDİYE · İSTEDİĞİNDE İPTAL',
+        detail: 'Ajan erişiminin yıllık hali: tüm dijital kitaplar, hazır arşivin tamamı, aylık 5.000 Studio kredisi ve eğitim modülleri. Yıllık ödemede 2 ay hediye.',
+        features: ['Tüm dijital kitap arşivi', 'Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri', 'Yıllık ödemede 2 ay hediye'],
+        badges: [['YIL', 'DÖNEM'], ['5K', 'KREDİ/AY'], ['★', 'ÜYELİK']] },
+      'uyelik-basmufettis-yil': { cat: 'ÜYELİK', kicker: 'YILLIK ÜYELİK', title: 'Başmüfettiş — Yıllık Üyelik', price: '19990', kind: 'ÜYELİK',
+        img: 'assets/product-collector.png', priceKind: 'YILLIK · 2 AY HEDİYE · İSTEDİĞİNDE İPTAL',
+        detail: 'En üst erişimin yıllık hali: Ajan içeriğinin tamamı, aylık 15.000 Studio kredisi, öncelikli üretim ve birebir mentorluk. Yıllık ödemede 2 ay hediye.',
+        features: ['Ajan içeriğinin tamamı', 'Aylık 15.000 Studio kredisi', 'Öncelikli üretim', 'Birebir mentorluk görüşmesi', 'Yıllık ödemede 2 ay hediye'],
+        badges: [['YIL', 'DÖNEM'], ['15K', 'KREDİ/AY'], ['★', 'ÜYELİK']] }
+    };
+  }
+
+  saveOrder() {
+    if (!this.sb) return;
+    const s = this.state, p = this.catalog()[s.slug] || {};
+    const row = {
+      product_title: p.title || '', price: String(p.price || ''), kind: p.kind || '',
+      pay_method: s.payMethod, customer_name: s.fName.trim(),
+      email: s.fEmail.trim(), phone: s.fPhone.trim(), status: 'pending'
+    };
+    try { this.sb.from('orders').insert(row).then(() => {}); } catch (e) {}
+  }
+
+  renderVals() {
+    const s = this.state;
+    const base = this.catalog()[s.slug] || this.catalog()['egitim'];
+    const isYil = /-yil$/.test(s.slug);
+    const monthlySlug = isYil ? s.slug.replace(/-yil$/, '') : s.slug;
+    const ov = (s.overrides || {})[monthlySlug];
+    let p = base;
+    if (ov) {
+      let price = base.price;
+      if (ov.price != null && ov.price !== '') {
+        price = isYil ? String(Math.round(parseFloat(ov.price) * 10)) : String(ov.price);
+      }
+      const title = isYil ? base.title : (ov.title || base.title);
+      p = { ...base, title: title, price: price };
+    }
+    const b = p.badges || [['', ''], ['', ''], ['', '']];
+    const payBtn = (active) => ({
+      cursor: 'pointer', border: active ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+      background: active ? 'rgba(193,154,82,.12)' : 'transparent',
+      color: active ? '#e6c478' : '#a4a9b5', fontFamily: "'Special Elite', monospace",
+      fontSize: '11.5px', letterSpacing: '.08em', padding: '14px'
+    });
+
+    return {
+      cat: p.cat, kicker: p.kicker, title: p.title, detail: p.detail, img: p.img,
+      priceLabel: p.price + ' TL', priceKind: p.priceKind,
+      features: (p.features || []).map(t => ({ t })),
+      badge1: b[0][0], badge1s: b[0][1], badge2: b[1][0], badge2s: b[1][1], badge3: b[2][0], badge3s: b[2][1],
+
+      buyNow: () => { const el = document.getElementById('siparis'); if (el) el.scrollIntoView({ behavior: 'smooth' }); },
+      addCart: () => { this.setState({ added: true, cartLabel: '✓ EKLENDİ' }); setTimeout(() => { const el = document.getElementById('siparis'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }, 250); },
+      cartLabel: s.cartLabel,
+
+      formOpen: !s.ordered, ordered: s.ordered,
+      fName: s.fName, onFName: e => this.setState({ fName: e.target.value }),
+      fEmail: s.fEmail, onFEmail: e => this.setState({ fEmail: e.target.value }),
+      fPhone: s.fPhone, onFPhone: e => this.setState({ fPhone: e.target.value }),
+      pickIban: () => this.setState({ payMethod: 'iban' }),
+      pickCard: () => this.setState({ payMethod: 'card' }),
+      showIban: s.payMethod === 'iban', showCard: s.payMethod === 'card',
+      ibanBtnStyle: payBtn(s.payMethod === 'iban'), cardBtnStyle: payBtn(s.payMethod === 'card'),
+      formError: s.formError, sending: s.sending,
+      submitLabel: s.sending ? 'GÖNDERİLİYOR…' : 'SİPARİŞİ GÖNDER →',
+      submitOrder: async () => {
+        if (s.sending) return;
+        if (!s.fName.trim() || !/.+@.+\..+/.test(s.fEmail)) { this.setState({ formError: 'Lütfen ad soyad ve geçerli e-posta gir.' }); return; }
+        this.setState({ sending: true, formError: '' });
+        this.saveOrder();
+        try {
+          await fetch(this.SB_URL + '/functions/v1/send-emails', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.SB_KEY },
+            body: JSON.stringify({ type: 'order', order: { id: 'TA-' + Date.now(), title: p.title, price: p.price, name: s.fName.trim(), email: s.fEmail.trim(), phone: s.fPhone.trim(), payment: s.payMethod === 'card' ? 'card' : 'iban', category: p.kind === 'FİZİKİ ÜRÜN' ? 'fiziki' : (p.kind === 'EĞİTİM' ? 'dijital' : 'dijital') } })
+          });
+        } catch (e) {}
+        this.setState({ sending: false, ordered: true });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
