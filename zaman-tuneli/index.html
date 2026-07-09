@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <link rel="canonical" href="https://tarihajani.com/zaman-tuneli" />
+<link rel="icon" type="image/png" href="/assets/logo-mark.png" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Tarih Ajanı" />
 <meta property="og:locale" content="tr_TR" />
@@ -40,7 +41,7 @@
     body:after{content:"";position:fixed;inset:-50%;z-index:4;pointer-events:none;opacity:.032;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");transform:rotate(.01deg);mix-blend-mode:soft-light}
     #universe{position:fixed;inset:0;z-index:0;width:100%;height:100%;display:block}
     .hero-art{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;perspective:1100px;transform-style:preserve-3d;will-change:opacity;transition:opacity .7s ease}.webgl-art-ready .hero-art{opacity:0!important}
-    .art-base,.art-depth{position:absolute;inset:-4%;background:url("./assets/hero.png") center center/cover no-repeat;will-change:transform;transform-origin:50% 50%}
+    .art-base,.art-depth{position:absolute;inset:-4%;background:url("/zaman-tuneli/assets/hero.png") center center/cover no-repeat;will-change:transform;transform-origin:50% 50%}
     .art-base{filter:saturate(.88) contrast(1.07) brightness(.76);transform:scale(1.035)}
     .art-depth{inset:-5%;filter:saturate(1.03) contrast(1.09) brightness(.93) drop-shadow(0 30px 50px rgba(0,0,0,.48));-webkit-mask-image:radial-gradient(ellipse 34% 47% at 50% 50%,#000 0%,#000 67%,transparent 93%);mask-image:radial-gradient(ellipse 34% 47% at 50% 50%,#000 0%,#000 67%,transparent 93%);transform:translateZ(45px) scale(1.045)}
     .art-glow{position:absolute;inset:0;background:radial-gradient(circle at 71% 2%,rgba(230,196,120,.18),transparent 31%),radial-gradient(circle at 50% 49%,rgba(79,209,224,.075),transparent 29%);mix-blend-mode:screen;opacity:.8}
@@ -116,7 +117,7 @@
   </style>
 </head>
 <body>
-  <a class="site-return" href="../Tarih Ajani.dc.html">TA · ANA SAYFA</a>
+  <a class="site-return" href="/">TA · ANA SAYFA</a>
   <canvas id="universe" aria-hidden="true"></canvas>
   <div class="hero-art" aria-hidden="true"><div class="art-base"></div><div class="art-depth"></div><div class="art-glow"></div><div class="art-scan"></div></div>
   <main>
@@ -124,7 +125,7 @@
       <div class="content">
         <h1 id="title">TARİH <span>AJANI</span></h1>
         <p class="slogan">Tarih saklar, ajan bulur.</p>
-        <div class="actions"><a class="btn primary" href="../Studio.dc.html">STUDIO'YA GİR</a><a class="btn secondary" href="#arsiv">ZAMAN SARMALINI KEŞFET</a></div>
+        <div class="actions"><a class="btn primary" href="/studio">STUDIO'YA GİR</a><a class="btn secondary" href="#arsiv">ZAMAN SARMALINI KEŞFET</a></div>
       </div>
       <div class="scroll-hint">ZAMAN TÜNELİNE GİR</div>
     </section>
@@ -184,7 +185,7 @@
       void main(){vec2 q=(vUv-vec2(.5))*vec2(1.78,1.);float d=length(q);vec3 base=texture2D(map,vUv).rgb;vec3 inner=texture2D(map,rotateClock(vUv,time*.006)).rgb;vec3 outer=texture2D(map,rotateClock(vUv,-time*.0022)).rgb;float innerMask=1.-smoothstep(.17,.29,d);float outerMask=smoothstep(.29,.35,d)*(1.-smoothstep(.49,.57,d));vec3 c=mix(base,inner,innerMask*.88);c=mix(c,outer,outerMask*.72);vec2 lightPos=vec2(.72,.83)+mouse*vec2(.035,-.025);float light=pow(max(0.,1.-distance(vUv,lightPos)*1.45),3.);c*=.9+vDepth*.14;c+=vec3(1.,.72,.35)*light*vDepth*.08;gl_FragColor=vec4(c,opacity);}
     `});
     const artGeometry=new THREE.PlaneGeometry(27.75,15.61,180,102),artMesh=new THREE.Mesh(artGeometry,artMaterial);artMesh.position.set(.25,0,-2);artMesh.renderOrder=-100;scene.add(artMesh);
-    const heroTexture=new THREE.TextureLoader().load('./assets/hero.png',tex=>{tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=renderer.capabilities.getMaxAnisotropy();artUniforms.map.value=tex;requestAnimationFrame(()=>requestAnimationFrame(()=>document.documentElement.classList.add('webgl-art-ready')))});heroTexture.colorSpace=THREE.SRGBColorSpace;artUniforms.map.value=heroTexture;
+    const heroTexture=new THREE.TextureLoader().load('/zaman-tuneli/assets/hero.png',tex=>{tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=renderer.capabilities.getMaxAnisotropy();artUniforms.map.value=tex;requestAnimationFrame(()=>requestAnimationFrame(()=>document.documentElement.classList.add('webgl-art-ready')))});heroTexture.colorSpace=THREE.SRGBColorSpace;artUniforms.map.value=heroTexture;
 
     const universe=new THREE.Group(), machine=new THREE.Group(), gears=new THREE.Group(), rings=new THREE.Group(); universe.add(machine,rings); machine.add(gears); scene.add(universe);machine.visible=false;rings.visible=false;
     const mats=[
