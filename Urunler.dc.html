@@ -3,10 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ürünler · Tarih Ajanı</title>
+<link rel="icon" type="image/png" href="/assets/logo-mark.png">
 <meta name="description" content="Tarih Ajanı dijital ürünleri: vaka dosyası paketleri, video promptları, üretim rehberleri ve koleksiyon setleri. Shopier ile güvenli ödeme.">
 <link rel="canonical" href="https://tarihajani.com/urunler">
-<link rel="icon" type="image/png" href="/assets/logo-mark.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tarih Ajanı">
 <meta property="og:locale" content="tr_TR">
@@ -24,13 +23,12 @@
 <x-dc>
 <helmet>
   <title>Tarih Ajanı · Ürünler</title>
-  <link rel="icon" type="image/png" href="assets/logo-mark.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Archivo:wght@300..900&family=Special+Elite&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    html, body { margin: 0; padding: 0; background: #03050b; }
+    html, body { margin: 0; padding: 0; background: #06070d; }
     * { box-sizing: border-box; }
     input:focus, textarea:focus { outline: 1px solid rgba(193,154,82,.6); }
     ::selection { background: rgba(193,154,82,.35); }
@@ -60,9 +58,11 @@
       [style*="min-height: 340px"] { min-height: 170px !important; }
     }
 </style>
+  <script>window.__taFadeBg='#06070d';</script>
+  <script src="page-transition.js"></script>
 </helmet>
 
-<div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: Archivo, system-ui, sans-serif;">
+<div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
 
   <!-- HEADER -->
   <header style="position: sticky; top: 0; z-index: 30; height: 74px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(18px, 4vw, 40px); border-bottom: 1px solid rgba(193,154,82,.18); background: #03050b; backdrop-filter: blur(14px);">
@@ -130,7 +130,7 @@
     <span style="color: #676d7c; font-size: 12.5px;">© 2026 Tarih Ajanı</span>
     <div style="display: flex; gap: 18px; flex-wrap: wrap;">
       <a href="/" style="color: #818797; font-size: 12.5px; text-decoration: none;" style-hover="color: #e6c478;">Ana Sayfa</a>
-      <a href="https://www.instagram.com/tarih.ajani" target="_blank" rel="noopener noreferrer" style="color: #818797; font-size: 12.5px; text-decoration: none;" style-hover="color: #e6c478;">Instagram @tarih.ajani</a>
+      <a href="https://www.instagram.com/tarih.ajani" target="_blank" style="color: #818797; font-size: 12.5px; text-decoration: none;" style-hover="color: #e6c478;">Instagram @tarih.ajani</a>
       <a href="mailto:iletisim@tarihajani.com" style="color: #818797; font-size: 12.5px; text-decoration: none;" style-hover="color: #e6c478;">iletisim@tarihajani.com</a>
     </div>
   </footer>
@@ -194,7 +194,7 @@
             <sc-if value="{{ isCard }}" hint-placeholder-val="{{ false }}">
               <div style="border: 1px solid rgba(193,154,82,.3); background: rgba(193,154,82,.05); padding: 20px; margin-top: 14px;">
                 <p style="margin: 0 0 12px; color: #cfd3e0; font-size: 13.5px; line-height: 1.6;">Kredi kartı ödemesi resmi Shopier mağazamız üzerinden alınır. Ödeme sonrası erişim bilgilerin e-posta adresine gönderilir.</p>
-                <a href="{{ shopierUrl }}" target="_blank" rel="noopener noreferrer" style="display: block; text-align: center; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .18em; padding: 15px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.35);">SHOPIER İLE ÖDE ↗</a>
+                <a href="{{ shopierUrl }}" target="_blank" style="display: block; text-align: center; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .18em; padding: 15px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.35);">SHOPIER İLE ÖDE ↗</a>
               </div>
             </sc-if>
 
@@ -257,6 +257,20 @@ class Component extends DCLogic {
     this.initSupabase(0);
     const h = (location.hash || '').toLowerCase();
     const map = { '#egitim': 'EĞİTİM', '#ekitap': 'E-KİTAP', '#studio': 'STUDIO KREDİ' };
+    // Ürün derin bağlantısı: /urunler#u-<slug>  → ilgili ürünü aç
+    if (h.indexOf('#u-') === 0) {
+      const slug = h.slice(3);
+      const slugMap = {
+        'gizli-uygarliklar': 'gizli uygarl', 'studio-rehberi': 'st\u00fcdyo rehber', 'egitim': 'belgeden hik\u00e2ye',
+        '5li-hikaye': '5\u2019li hik\u00e2ye', 'hazir-arsiv': 'haz\u0131r hik\u00e2ye', 'vaka-defteri': 'ajan vaka defteri',
+        'koleksiyon': 'dosya kutusu', 'studio-5': 'ajan paketi', 'studio-15': 'saha paketi', 'studio-40': 'ar\u015fiv paketi'
+      };
+      const needle = slugMap[slug];
+      if (needle) {
+        const it = this.shopDefs().find(d => d.title.toLowerCase().indexOf(needle) !== -1);
+        if (it) { this.setState({ cat: 'TÜMÜ', checkout: { ...it, features: it.features.map(t => ({ t })) }, stage: 'detail', payMethod: 'iban', formError: '' }); return; }
+      }
+    }
     if (h === '#egitim' || h === '#satin-al') {
       const it = this.shopDefs().find(d => d.cat === 'EĞİTİM');
       if (it) { this.setState({ cat: 'EĞİTİM', checkout: { ...it, features: it.features.map(t => ({ t })) }, stage: 'detail', payMethod: 'iban', formError: '' }); return; }

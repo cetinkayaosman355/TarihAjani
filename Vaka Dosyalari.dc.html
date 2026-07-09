@@ -3,10 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vaka Dosyaları — 5 Hikâye · Tarih Ajanı E-Kitap</title>
+<link rel="icon" type="image/png" href="/assets/logo-mark.png">
 <meta name="description" content="Etrüskler, Sümerler, İbn Fadlan, Türkistan'da Japonya Planı ve Truva — beş vaka dosyasını içeren e-kitabın okuma odası.">
 <link rel="canonical" href="https://tarihajani.com/vaka-dosyalari">
-<link rel="icon" type="image/png" href="/assets/logo-mark.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tarih Ajanı">
 <meta property="og:locale" content="tr_TR">
@@ -24,12 +23,11 @@
 <x-dc>
 <helmet>
   <title>Vaka Dosyaları — 5 Hikâye · Tarih Ajanı E-Kitap</title>
-  <link rel="icon" type="image/png" href="assets/logo-mark.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Archivo:wght@300..900&family=Special+Elite&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet">
   <style>
-    html, body { margin: 0; padding: 0; background: #03050b; }
+    html, body { margin: 0; padding: 0; background: #06070d; }
     * { box-sizing: border-box; }
     ::selection { background: rgba(193,154,82,.35); }
     @keyframes ta-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
@@ -58,13 +56,15 @@
       [style*="min-height: 340px"] { min-height: 170px !important; }
     }
 </style>
+  <script>window.__taFadeBg='#06070d';</script>
+  <script src="page-transition.js"></script>
 </helmet>
 
-<div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: Archivo, system-ui, sans-serif;">
+<div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
 
   <!-- HEADER -->
   <header style="position: sticky; top: 0; z-index: 30; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(18px, 4vw, 40px); border-bottom: 1px solid rgba(193,154,82,.18); background: rgba(3,5,11,.93); backdrop-filter: blur(14px);">
-    <a href="/ekitap" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
+    <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
       <img src="assets/logo.png" alt="Tarih Ajanı" style="height: 42px; width: auto;">
       <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">E-KİTAP</span>
     </a>
@@ -192,7 +192,7 @@ class Component extends DCLogic {
             border: on ? '1px solid rgba(193,154,82,.55)' : '1px solid rgba(129,135,151,.18)',
             borderLeft: on ? '3px solid #c19a52' : '3px solid transparent',
             background: on ? 'rgba(193,154,82,.08)' : 'transparent',
-            color: on ? '#f2ecd9' : '#a4a9b5', fontFamily: 'Archivo, sans-serif'
+            color: on ? '#f2ecd9' : '#a4a9b5', fontFamily: ''Hanken Grotesk', sans-serif'
           }
         };
       }),
