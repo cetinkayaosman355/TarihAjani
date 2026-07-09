@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#05070F" />
   <title>TARİH AJANI — Zaman Kontrol Merkezi</title>
   <meta name="description" content="Tarih saklar, ajan bulur. Tarihin gizli dosyalarına açılan zaman kontrol merkezi." />
+  <link rel="icon" type="image/png" href="/assets/logo-mark.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,500&family=Special+Elite&display=swap" rel="stylesheet" />
@@ -19,7 +20,7 @@
     body:after{content:"";position:fixed;inset:-50%;z-index:4;pointer-events:none;opacity:.032;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");transform:rotate(.01deg);mix-blend-mode:soft-light}
     #universe{position:fixed;inset:0;z-index:0;width:100%;height:100%;display:block}
     .hero-art{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;perspective:1100px;transform-style:preserve-3d;will-change:opacity;transition:opacity .7s ease}.webgl-art-ready .hero-art{opacity:0!important}
-    .art-base,.art-depth{position:absolute;inset:-4%;background:url("./assets/hero.png") center center/cover no-repeat;will-change:transform;transform-origin:50% 50%}
+    .art-base,.art-depth{position:absolute;inset:-4%;background:url("/zaman-tuneli/assets/hero.png") center center/cover no-repeat;will-change:transform;transform-origin:50% 50%}
     .art-base{filter:saturate(.88) contrast(1.07) brightness(.76);transform:scale(1.035)}
     .art-depth{inset:-5%;filter:saturate(1.03) contrast(1.09) brightness(.93) drop-shadow(0 30px 50px rgba(0,0,0,.48));-webkit-mask-image:radial-gradient(ellipse 34% 47% at 50% 50%,#000 0%,#000 67%,transparent 93%);mask-image:radial-gradient(ellipse 34% 47% at 50% 50%,#000 0%,#000 67%,transparent 93%);transform:translateZ(45px) scale(1.045)}
     .art-glow{position:absolute;inset:0;background:radial-gradient(circle at 71% 2%,rgba(230,196,120,.18),transparent 31%),radial-gradient(circle at 50% 49%,rgba(79,209,224,.075),transparent 29%);mix-blend-mode:screen;opacity:.8}
@@ -84,7 +85,7 @@
   </style>
 </head>
 <body>
-  <a class="site-return" href="../Tarih Ajani.dc.html">TA · ANA SAYFA</a>
+  <a class="site-return" href="/">TA · ANA SAYFA</a>
   <canvas id="universe" aria-hidden="true"></canvas>
   <div class="hero-art" aria-hidden="true"><div class="art-base"></div><div class="art-depth"></div><div class="art-glow"></div><div class="art-scan"></div></div>
   <main>
@@ -92,7 +93,7 @@
       <div class="content">
         <h1 id="title">TARİH <span>AJANI</span></h1>
         <p class="slogan">Tarih saklar, ajan bulur.</p>
-        <div class="actions"><a class="btn primary" href="../Studio.dc.html">STUDIO'YA GİR</a><a class="btn secondary" href="#arsiv">ZAMAN SARMALINI KEŞFET</a></div>
+        <div class="actions"><a class="btn primary" href="/studio">STUDIO'YA GİR</a><a class="btn secondary" href="#arsiv">ZAMAN SARMALINI KEŞFET</a></div>
       </div>
       <div class="scroll-hint">ZAMAN TÜNELİNE GİR</div>
     </section>
