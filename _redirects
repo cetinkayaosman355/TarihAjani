@@ -1,6 +1,5 @@
-# Ana sayfa — kök URL, JS yönlendirmesi yerine gerçek içeriği doğrudan sunar (SEO)
-/                  /Tarih%20Ajani.dc.html     200!
-
+/admin             /Admin.dc.html             200
+/satis             /Satis.dc.html             200
 # Temiz URL'ler (Netlify rewrite — adres çubuğunda ".dc" görünmez)
 # Sol: ziyaretçinin gördüğü temiz adres  ·  Orta: gerçek dosya  ·  200 = rewrite
 /egitim            /Egitim.dc.html            200
@@ -10,10 +9,4 @@
 /vaka-dosyalari    /Vaka%20Dosyalari.dc.html  200
 /zaman-tuneli      /zaman-tuneli/index.html   200
 
-# Eski .dc.html adresleri → temiz URL (301: tek kanonik adres, çift içerik önlenir)
-/Tarih%20Ajani.dc.html     /                  301!
-/Egitim.dc.html            /egitim            301!
-/Ekitap.dc.html            /ekitap            301!
-/Urunler.dc.html           /urunler           301!
-/Studio.dc.html            /studio            301!
-/Vaka%20Dosyalari.dc.html  /vaka-dosyalari    301!
+# Ana sayfa zaten index.html üzerinden açılıyor.

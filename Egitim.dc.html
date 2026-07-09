@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Eğitim Akademisi · Tarih Ajanı</title>
 <meta name="description" content="Tarih içeriği üretmeyi öğren: kaynak doğrulama, vaka kurgusu, senaryo yazımı, seslendirme ve yayın stratejisi. 9 derslik ajan eğitimi.">
 <link rel="canonical" href="https://tarihajani.com/egitim">
-<link rel="icon" type="image/png" href="/assets/logo-mark.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tarih Ajanı">
 <meta property="og:locale" content="tr_TR">
@@ -27,13 +25,12 @@
 <x-dc>
 <helmet>
   <title>Tarih Ajanı · Eğitim Akademisi</title>
-  <link rel="icon" type="image/png" href="assets/logo-mark.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Archivo:wght@300..900&family=Special+Elite&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    html, body { margin: 0; padding: 0; background: #03050b; }
+    html, body { margin: 0; padding: 0; background: #06070d; }
     * { box-sizing: border-box; }
     ::selection { background: rgba(193,154,82,.35); }
     input:focus { outline: 1px solid rgba(193,154,82,.6); }
@@ -64,9 +61,11 @@
       [style*="min-height: 340px"] { min-height: 170px !important; }
     }
 </style>
+  <script>window.__taFadeBg='#06070d';</script>
+  <script src="page-transition.js"></script>
 </helmet>
 
-<div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: Archivo, system-ui, sans-serif;">
+<div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
 
   <!-- HEADER -->
   <header style="position: sticky; top: 0; z-index: 30; height: 74px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(18px, 4vw, 40px); border-bottom: 1px solid rgba(193,154,82,.18); background: #03050b; backdrop-filter: blur(14px);">
@@ -114,7 +113,7 @@
               <small style="color: #a4a9b5; font-size: 12.5px;">{{ accountHolder }} · Açıklama: Eğitim Programı</small>
               <button onClick="{{ copyIban }}" style="justify-self: start; margin-top: 6px; border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; padding: 9px 16px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ ibanBtnLabel }}</button>
             </div>
-            <a href="{{ shopierUrl }}" target="_blank" rel="noopener noreferrer" style="text-decoration: none; text-align: center; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 13px; letter-spacing: .13em; padding: 16px; cursor: pointer;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35);">KREDİ KARTIYLA ÖDE (SHOPIER) →</a>
+            <a href="{{ shopierUrl }}" target="_blank" style="text-decoration: none; text-align: center; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 13px; letter-spacing: .13em; padding: 16px; cursor: pointer;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35);">KREDİ KARTIYLA ÖDE (SHOPIER) →</a>
             <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6; text-align: center;">Ödeme sonrası dekont/onayı <a href="mailto:iletisim@tarihajani.com" style="color: #e6c478;">iletisim@tarihajani.com</a> adresine ilet; derslik erişimin aynı gün açılır.</p>
           </div>
         </div>

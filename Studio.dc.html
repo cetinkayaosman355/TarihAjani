@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Studio · Tarih Ajanı</title>
 <meta name="description" content="AI destekli üretim stüdyosu: tarih videoların için senaryo, YouTube yayın paketi, kapak tasarımı ve görsel promptları tek seferde üret.">
 <link rel="canonical" href="https://tarihajani.com/studio">
-<link rel="icon" type="image/png" href="/assets/logo-mark.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tarih Ajanı">
 <meta property="og:locale" content="tr_TR">
@@ -24,14 +22,13 @@
 <x-dc>
 <helmet>
   <title>Tarih Ajanı · Studio</title>
-  <link rel="icon" type="image/png" href="assets/logo-mark.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Archivo:wght@300..900&amp;family=Special+Elite&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Hanken+Grotesk:wght@300..800&amp;family=Special+Elite&amp;display=swap" rel="stylesheet">
   <style>
-    html, body { margin: 0; padding: 0; background: #03050b; }
+    html, body { margin: 0; padding: 0; background: #06070d; }
     * { box-sizing: border-box; }
-    input, textarea, button { font-family: Archivo, system-ui, sans-serif; }
+    input, textarea, button { font-family: 'Hanken Grotesk', system-ui, sans-serif; }
     input:focus, textarea:focus { outline: 1px solid rgba(193,154,82,.6); }
     ::selection { background: rgba(193,154,82,.35); }
     @keyframes ta-beam {
@@ -76,9 +73,11 @@
       [style*="min-height: 340px"] { min-height: 170px !important; }
     }
 </style>
+  <script>window.__taFadeBg='#06070d';</script>
+  <script src="page-transition.js"></script>
 </helmet>
 
-<div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: Archivo, system-ui, sans-serif;">
+<div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
 
   <!-- ══════════ GİRİŞ EKRANI ══════════ -->
   <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
@@ -154,7 +153,7 @@
       <!-- header -->
       <header style="position: sticky; top: 0; z-index: 20; height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 28px; border-bottom: 1px solid rgba(193,154,82,.2); background: rgba(3,5,11,.94); backdrop-filter: blur(14px);">
         <div style="display: flex; align-items: center; gap: 14px;">
-          <img src="assets/logo.png" alt="Tarih Ajanı" style="height: 42px; width: auto;">
+          <a href="/" style="display: flex;"><img src="assets/logo.png" alt="Tarih Ajanı" style="height: 42px; width: auto;"></a>
           <div>
             <div style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 17px;">Ajan Studio</div>
             <div style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">SENARYO ÜRETİM MERKEZİ</div>
@@ -172,9 +171,25 @@
             <span style="width: 7px; height: 7px; border-radius: 50%; background: #c19a52; animation: ta-pulse 2s infinite;"></span>
             <span>KREDİ {{ credits }}</span><span style="opacity:.6;">+</span>
           </button>
-          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(129,135,151,.25); color: #a4a9b5; font-size: 12px;">
-            <span style="width: 26px; height: 26px; border-radius: 50%; background: #10131d; border: 1px solid rgba(193,154,82,.4); display: grid; place-items: center; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 12px;">{{ agentInitial }}</span>
-            <span>{{ agentName }}</span>
+          <div style="position: relative;">
+            <button onClick="{{ toggleUserMenu }}" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(129,135,151,.25); background: transparent; color: #a4a9b5; font-size: 12px; font-family: inherit; cursor: pointer;" style-hover="border-color: rgba(193,154,82,.4); color: #e6c478;">
+              <span style="width: 26px; height: 26px; border-radius: 50%; background: #10131d; border: 1px solid rgba(193,154,82,.4); display: grid; place-items: center; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 12px;">{{ agentInitial }}</span>
+              <span>{{ agentName }}</span>
+              <span style="{{ userCaretStyle }}">▾</span>
+            </button>
+            <sc-if value="{{ userMenuOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position: absolute; top: calc(100% + 8px); right: 0; z-index: 40; width: 210px; border: 1px solid rgba(193,154,82,.35); background: #05070d; box-shadow: 0 24px 60px rgba(0,0,0,.6);">
+                <div style="padding: 14px 16px; border-bottom: 1px solid rgba(129,135,151,.15);">
+                  <div style="color: #f2ecd9; font-size: 13.5px; font-weight: 600;">{{ agentName }}</div>
+                  <div style="color: #676d7c; font-size: 11.5px; margin-top: 2px;">{{ agentEmail }}</div>
+                  <div style="margin-top: 8px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">KREDİ · {{ credits }}</div>
+                </div>
+                <a href="/egitim" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cfc8b4; font-size: 13px; text-decoration: none;" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">Eğitimlerim</a>
+                <a href="/urunler" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cfc8b4; font-size: 13px; text-decoration: none; border-top: 1px solid rgba(129,135,151,.1);" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">Siparişlerim</a>
+                <button onClick="{{ openCredits }}" style="width: 100%; text-align: left; display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cfc8b4; font-size: 13px; background: transparent; border: 0; border-top: 1px solid rgba(129,135,151,.1); cursor: pointer; font-family: inherit;" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">Kredi Yükle</button>
+                <button onClick="{{ logout }}" style="width: 100%; text-align: left; display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #e08a80; font-size: 13px; background: transparent; border: 0; border-top: 1px solid rgba(129,135,151,.15); cursor: pointer; font-family: inherit;" style-hover="background: rgba(192,57,43,.1);">Çıkış Yap</button>
+              </div>
+            </sc-if>
           </div>
         </nav>
       </header>
@@ -408,10 +423,15 @@
                 </div>
                 <sc-for list="{{ resGorsel }}" as="gp" hint-placeholder-count="3">
                   <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 18px 22px; display: grid; gap: 8px;">
-                    <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center;">
-                      <span style="font-weight: 700; font-size: 14px;">{{ gp.sahne }}</span>
-                      <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="border: 1px solid rgba(193,154,82,.5); color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; padding: 4px 9px; white-space: nowrap;">{{ gp.no }}</span>
+                        <span style="font-weight: 700; font-size: 14px;">{{ gp.sahne }}</span>
+                      </div>
+                      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button onClick="{{ genImage }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">◈ GÖRSEL ÜRET</button>
+                        <button onClick="{{ gp.regen }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.regenLabel }}</button>
+                        <button onClick="{{ gp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
                         <button onClick="{{ gp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ gp.copyLabel }}</button>
                       </div>
                     </div>
@@ -426,9 +446,16 @@
               <div style="display: grid; gap: 14px;">
                 <sc-for list="{{ resVideo }}" as="vp" hint-placeholder-count="3">
                   <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 18px 22px; display: grid; gap: 8px;">
-                    <div style="display: flex; justify-content: space-between; gap: 10px;">
-                      <span style="font-weight: 700; font-size: 14px;">{{ vp.sahne }}</span>
-                      <button onClick="{{ vp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ vp.copyLabel }}</button>
+                    <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="border: 1px solid rgba(193,154,82,.5); color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; padding: 4px 9px; white-space: nowrap;">{{ vp.no }}</span>
+                        <span style="font-weight: 700; font-size: 14px;">{{ vp.sahne }}</span>
+                      </div>
+                      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button onClick="{{ vp.regen }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ vp.regenLabel }}</button>
+                        <button onClick="{{ vp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
+                        <button onClick="{{ vp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ vp.copyLabel }}</button>
+                      </div>
                     </div>
                     <code style="display: block; color: #b9c2d8; font-size: 13px; line-height: 1.6; font-family: 'Special Elite', monospace; white-space: pre-wrap;">{{ vp.prompt }}</code>
                   </div>
@@ -528,7 +555,7 @@
               <sc-for list="{{ history }}" as="h" hint-placeholder-count="2">
                 <div style="display: flex; justify-content: space-between; gap: 14px; color: #a4a9b5; font-size: 13px; padding: 9px 12px; background: rgba(8,11,19,.7); border: 1px solid rgba(129,135,151,.15);">
                   <span style="color: #cfc8b4;">{{ h.title }}</span>
-                  <span style="display: flex; gap: 16px; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px;"><span>{{ h.date }}</span><span style="color: #c19a52;">−100 KREDİ</span></span>
+                  <span style="display: flex; gap: 16px; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px;"><span>{{ h.date }}</span><span style="color: #c19a52;">{{ h.cost }}</span></span>
                 </div>
               </sc-for>
             </div>
@@ -618,6 +645,7 @@ class Component extends DCLogic {
     this.state = {
       screen: saved.agent ? 'studio' : 'login',
       agentDraft: '',
+      userMenuOpen: false,
       agentName: saved.agent || '',
       regEmail: saved.email || '',
       regPending: false, regError: '',
@@ -628,7 +656,7 @@ class Component extends DCLogic {
       imgNotice: false, imgPrompt: '', imgProvider: 'gpt', imgQueue: [],
       step: 1,
       idea: '',
-      tone: 'merak', voice: 'erkek', style: 'sinematik', duration: 'standart', model: 'claude',
+      tone: 'merak', voice: 'erkek', style: 'sinematik', duration: 'standart', model: 'claude', aspect: 'yatay', regenKey: null,
       generating: false, genMsg: '', genError: '', genPct: 0,
       result: null, fileNo: '',
       tab: 'senaryo',
@@ -682,6 +710,11 @@ class Component extends DCLogic {
         { id: 'hollywood', name: 'Hollywood Gerçekçi', desc: 'Fotogerçekçi kadrajlar, film ışığı' },
         { id: 'sinematik', name: 'Karanlık Sinematik', desc: 'Mum ışığı, gölge, noir atmosfer' },
         { id: 'gravur', name: 'Tarihî Gravür', desc: 'Bakır baskı dokusu, dönem illüstrasyonu' }
+      ],
+      aspect: [
+        { id: 'yatay', name: 'Yatay · 16:9', desc: 'YouTube ana video kadrajı' },
+        { id: 'dikey', name: 'Dikey · 9:16', desc: 'Shorts · Reels · TikTok' },
+        { id: 'kare', name: 'Kare · 1:1', desc: 'Instagram gönderi kadrajı' }
       ],
       duration: [
         { id: 'kisa', name: 'Kısa Vaka · 60 sn', desc: 'Shorts / Reels için tek nefeste' },
@@ -888,34 +921,91 @@ class Component extends DCLogic {
     ];
   }
 
+  promptMaps() {
+    return {
+      ton: {
+        merak: 'soru soran, ipucu bırakan, dedektif üslubu; her sahne merakı büyütsün',
+        dramatik: 'yüksek gerilim, sinematik duygu yükü, kısa vurucu cümleler',
+        belgesel: 'kaynak odaklı, ölçülü ve otoriter; sakin ama etkileyici'
+      },
+      ses: {
+        erkek: 'derin, güven veren klasik belgesel anlatımı; dengeli tempo',
+        'erkek-gizemli': 'alçak tonlu, sır verir gibi; kısa cümleler, fısıltı ritmi',
+        'kadin-belgesel': 'net, akıcı, profesyonel sunum; temiz ve bilgilendirici'
+      },
+      stil: {
+        hollywood: 'cinematic ultra-photorealistic film still, ARRI Alexa, anamorphic, extreme detail, natural film lighting',
+        sinematik: 'dark cinematic film still, candlelit chiaroscuro, deep shadows, noir moody atmosphere, ultra-photorealistic, anamorphic',
+        gravur: 'antique engraving illustration, etched copperplate texture, period historical artwork, fine cross-hatching, muted aged tones'
+      },
+      // format matrisi: senaryo bölümü / toplam seslendirme kelimesi / sahne (görsel+video) promptu adedi
+      format: {
+        kisa: { bolum: '3-4 kısa bölüm', kelime: '110-150', sahne: '6-8', etiket: '60 sn' },
+        standart: { bolum: '5-7 bölüm', kelime: '1200-1700', sahne: '10-14', etiket: '8-12 dk' },
+        derin: { bolum: '8-10 bölüm', kelime: '2800-4000', sahne: '16-20', etiket: '20+ dk' }
+      }
+    };
+  }
+
   buildPrompt() {
     const s = this.state;
-    const tone = this.find('tone', s.tone).name;
-    const voice = this.find('voice', s.voice).name;
-    const style = this.find('style', s.style).name;
-    const dur = this.find('duration', s.duration).name;
-    return `Sen "Tarih Ajanı" adlı Türkçe tarih YouTube kanalının kıdemli senaristi ve yapım yönetmenisin. Kanal, tarihi bir dedektif titizliğiyle araştırır: her iddia belgeye dayanır, anlatım bir vaka dosyası gibi kurgulanır, izleyici ipuçlarıyla sürüklenir.
+    const m = this.promptMaps();
+    const tonStr = m.ton[s.tone] || m.ton.merak;
+    const sesStr = m.ses[s.voice] || m.ses.erkek;
+    const stilStr = m.stil[s.style] || m.stil.sinematik;
+    const fmt = m.format[s.duration] || m.format.standart;
+    const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
+    // Tarihî Gravür fotogerçekçi değildir; anti-artifact satırı stile göre değişir
+    const antiArtifact = s.style === 'gravur'
+      ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
+      : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
 
-KONU: ${s.idea}
-TON: ${tone}
-SESLENDİRME: ${voice}
-GÖRSEL STİL: ${style}
-FORMAT: ${dur}
+    return `Sen "Tarih Ajanı" adlı Türkçe tarih YouTube kanalının kıdemli senaristi ve yapım yönetmenisin. Kanal, tarihi bir dedektif titizliğiyle araştırır: her iddia belgeye dayanır, anlatım bir vaka dosyası gibi kurgulanır, izleyici ilk saniyeden ipuçlarıyla sürüklenir.
 
-Bu konu için eksiksiz bir üretim dosyası hazırla. YALNIZCA geçerli JSON döndür, başka hiçbir şey yazma. Şema:
+BU ÜRETİMİN PARAMETRELERİ:
+- KONU: ${s.idea}
+- Anlatım tonu: ${tonStr}
+- Seslendirme tarzı: ${sesStr}
+- Görsel stil çekirdeği (her görsel/video promptunun BAŞINA birebir konur): ${stilStr}
+- Kadraj / en-boy oranı (her görsel/video promptunda birebir geçer): ${oran}
+- Format: ${fmt.etiket} — hedef: ${fmt.bolum}, toplam ${fmt.kelime} kelime seslendirme, ${fmt.sahne} sahne promptu
+
+ÇIKTI KURALI (EN ÖNEMLİ):
+Yanıtın SADECE geçerli bir JSON nesnesi olsun. Kod bloğu işareti, önsöz, açıklama, selamlama EKLEME. İlk karakter { olmalı, son karakter } olmalı.
+
+GÖRSEL & VİDEO PROMPT KURALLARI (tümü İngilizce):
+- Her sahne için AYRI bir görsel promptu (gorsel_promptlar) ve AYRI bir video promptu (video_promptlar) üret; ikisi de İngilizce.
+- Her görsel/video promptu görsel stil çekirdeğiyle BAŞLAR ("${stilStr}"), ardından "${oran}" ve sahne tarifi gelir.
+- Her görsel promptu ŞU satırla BİTER: "${antiArtifact}"
+- Her video promptu tek bir kamera hareketi/aksiyon tarif eder (5-8 sn) ve ŞU satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker."
+- Görsellerde ASLA yazı, logo veya altyazı olmasın (metin sonradan montajda eklenir).
+- Bir karakter birden çok sahnede geçerse, sabit kimlik tarifini (yaş, ten, saç, kıyafet, ayırt edici detay) her ilgili promptun başında birebir tekrar et.
+
+ANLATIM KURALLARI:
+- İlk bölüm güçlü bir kancadır (ilk 3 saniye = maksimum merak).
+- Seslendirmeyi belirtilen seslendirme tarzına uygun yaz; toplam kelime bütçesine uy.
+- Sonda açık bir merak sorusuyla bitir.
+
+TARİHSEL DÜRÜSTLÜK:
+- Efsane/abartı varsa "rivayete göre / anlatıldığına göre" çerçevesi kullan.
+- Emin olmadığın tarih, isim veya ayrıntıyı UYDURMA; anlatımı genel tut, bilinmeyeni spekülasyon olarak işaretle.
+- Hassas konularda (din, ölüm, izole topluluklar) saygılı ol.
+
+ŞU JSON ŞEMASINA BİREBİR UY:
 {
  "baslik": "dosyanın çarpıcı Türkçe başlığı",
  "logline": "tek cümlelik merak uyandıran özet",
  "senaryo": [{"bolum": "bölüm adı (ör. Açılış — ...)", "sure": "zaman aralığı", "metin": "o bölümün tam seslendirme senaryosu, akıcı Türkçe"}],
- "seslendirme_notu": "ElevenLabs için okuma temposu ve vurgu yönergeleri, 2-3 cümle",
+ "seslendirme_notu": "ElevenLabs için okuma temposu ve vurgu yönergeleri + olayın gerçek/efsane ayrımı, 2-3 cümle",
  "youtube": {"baslik": "70 karakteri geçmeyen tıklanabilir başlık", "aciklama": "3 paragraf + zaman damgaları içeren açıklama", "etiketler": ["12-16 adet etiket"]},
  "instagram": {"aciklama": "hook ile başlayan 2 kısa paragraf", "hashtagler": ["10-14 hashtag"]},
- "kapak": [{"ad": "Kapak A", "prompt": "English image-generation prompt for the thumbnail, ${style} aesthetic, 16:9", "yazi": "kapak üzerine bindirilecek 2-4 kelimelik çarpıcı Türkçe yazı", "not": "Türkçe kompozisyon notu"}, {"ad": "Kapak B", "prompt": "alternative English prompt", "yazi": "alternatif kapak yazısı", "not": "Türkçe not"}],
- "gorsel_promptlar": [{"sahne": "senaryodaki sahne adı", "prompt": "English image prompt, ${style} aesthetic"}],
- "video_promptlar": [{"sahne": "sahne adı", "prompt": "English video-generation prompt (camera move, lighting, mood), 5-8 seconds, ${style} aesthetic"}],
+ "kapak": [{"ad": "Kapak A", "prompt": "İngilizce kapak promptu; görsel stil çekirdeğiyle başlar, ${oran}, üst/alt boşluk metne uygun, anti-artifact satırıyla biter", "yazi": "kapağa bindirilecek 2-4 kelimelik çarpıcı Türkçe yazı", "not": "Türkçe kompozisyon notu"}, {"ad": "Kapak B", "prompt": "alternatif İngilizce prompt (aynı kurallar)", "yazi": "alternatif kapak yazısı", "not": "Türkçe not"}],
+ "gorsel_promptlar": [{"sahne": "senaryodaki sahne adı", "prompt": "İngilizce görsel promptu (yukarıdaki kurallar)"}],
+ "video_promptlar": [{"sahne": "sahne adı", "prompt": "İngilizce video promptu (yukarıdaki kurallar)"}],
  "uretim_notu": "kurgu, müzik ve ritim önerisi, 2-3 cümle"
 }
-Senaryo bölüm sayısı formata uygun olsun: 60 sn için 3-4 kısa bölüm, 8-12 dk için 5-7 bölüm, 20+ dk için 8-10 bölüm. gorsel_promptlar ve video_promptlar en az 5'er adet olsun. Tarihî doğruluk esastır; bilinmeyeni spekülasyon olarak işaretle.`;
+
+Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} adet olsun ve her biri yukarıdaki kurallara birebir uysun.`;
   }
 
   async startGenerate() {
@@ -1000,6 +1090,7 @@ Senaryo bölüm sayısı formata uygun olsun: 60 sn için 3-4 kısa bölüm, 8-1
       { key: 'tone', title: 'Anlatım Tonu', hint: 'Dosyanın duygusal rengi' },
       { key: 'voice', title: 'Seslendirme', hint: 'ElevenLabs ses karakteri' },
       { key: 'style', title: 'Görsel Stil', hint: 'Kapak ve sahne üretim estetiği' },
+      { key: 'aspect', title: 'En-Boy Oranı', hint: 'Görsel ve video kadrajı' },
       { key: 'duration', title: 'Format', hint: 'Hedef platform ve süre' }
     ].map(g => ({
       title: g.title, hint: g.hint,
@@ -1112,6 +1203,14 @@ Senaryo bölüm sayısı formata uygun olsun: 60 sn için 3-4 kısa bölüm, 8-1
       regError: s.regError,
       agentName: s.agentName || 'Ajan',
       agentInitial: (s.agentName || 'A').trim().charAt(0).toUpperCase(),
+      agentEmail: s.regEmail || 'ajan@tarihajani.com',
+      userMenuOpen: s.userMenuOpen,
+      userCaretStyle: { fontSize: '10px', color: '#676d7c', transition: 'transform .2s', transform: s.userMenuOpen ? 'rotate(180deg)' : 'none' },
+      toggleUserMenu: () => this.setState(st => ({ userMenuOpen: !st.userMenuOpen })),
+      logout: () => {
+        try { localStorage.removeItem('ta_studio_v5'); } catch (e) {}
+        this.setState({ userMenuOpen: false, screen: 'login', agentName: '', agentDraft: '', regEmail: '' });
+      },
 
       steps: stepDefs,
       isStep1: s.mode === 'wizard' && s.step === 1,
@@ -1256,7 +1355,7 @@ Senaryo bölüm sayısı formata uygun olsun: 60 sn için 3-4 kısa bölüm, 8-1
 
       optionGroups: groups,
       startGenerate: () => this.startGenerate(),
-      pickSummary: this.find('model', s.model).name + ' · ' + this.find('tone', s.tone).name + ' · ' + this.find('voice', s.voice).name + ' · ' + this.find('style', s.style).name,
+      pickSummary: this.find('model', s.model).name + ' · ' + this.find('tone', s.tone).name + ' · ' + this.find('voice', s.voice).name + ' · ' + this.find('style', s.style).name + ' · ' + this.find('aspect', s.aspect).name,
       genMsg: s.genMsg, genError: s.genError,
       genBarStyle: { height: '100%', width: s.genPct + '%', background: 'linear-gradient(90deg, #a77d35, #e6c478)', transition: 'width 1s ease' },
 
@@ -1286,8 +1385,8 @@ Senaryo bölüm sayısı formata uygun olsun: 60 sn için 3-4 kısa bölüm, 8-1
       hasAudio: !!s.audioUrl, audioUrl: s.audioUrl,
 
       resKapak: mkCopy(r.kapak, 'kp'),
-      resGorsel: mkCopy(r.gorsel_promptlar, 'gp'),
-      resVideo: mkCopy(r.video_promptlar, 'vp'),
+      resGorsel: mkCopy(r.gorsel_promptlar, 'gp').map((x, i) => this.sceneExtras(x, i, 'gp')),
+      resVideo: mkCopy(r.video_promptlar, 'vp').map((x, i) => this.sceneExtras(x, i, 'vp')),
       resYtTitle: yt.baslik || '', resYtDesc: yt.aciklama || '',
       resYtTags: (yt.etiketler || []).map(t => ({ t })),
       resIgDesc: ig.aciklama || '',
@@ -1302,7 +1401,7 @@ Senaryo bölüm sayısı formata uygun olsun: 60 sn için 3-4 kısa bölüm, 8-1
       newFile: () => this.setState({ step: 1, idea: '', result: null, audioUrl: '', genError: '' }),
 
       credits: s.credits,
-      history: (s.history || []).map(h => ({ title: h.title, date: h.date })),
+      history: (s.history || []).map(h => ({ title: h.title, date: h.date, cost: '−' + (h.cost || 100) + ' KREDİ' })),
       showHistory: s.step !== 3 && s.screen === 'studio' && (s.history || []).length > 0,
       openCredits: () => this.setState({ creditModal: true }),
       closeCredits: () => this.setState({ creditModal: false }),
@@ -1355,6 +1454,8 @@ Senaryo bölüm sayısı formata uygun olsun: 60 sn için 3-4 kısa bölüm, 8-1
   editCurrentText() {
     const s = this.state, r = s.result || {}, t = s.editTarget;
     if (!t) return '';
+    if (t.type === 'gp') return (((r.gorsel_promptlar || [])[t.i]) || {}).prompt || '';
+    if (t.type === 'vp') return (((r.video_promptlar || [])[t.i]) || {}).prompt || '';
     if (t.type === 'yt') return (r.youtube || {}).aciklama || '';
     if (t.type === 'ig') return (r.instagram || {}).aciklama || '';
     if (t.type === 'sec') return ((r.senaryo || [])[t.i] || {}).metin || '';
@@ -1370,6 +1471,8 @@ Senaryo bölüm sayısı formata uygun olsun: 60 sn için 3-4 kısa bölüm, 8-1
     if (t.type === 'yt' && r.youtube) r.youtube.aciklama = last.content;
     else if (t.type === 'ig' && r.instagram) r.instagram.aciklama = last.content;
     else if (t.type === 'sec' && r.senaryo && r.senaryo[t.i]) r.senaryo[t.i].metin = last.content;
+    else if (t.type === 'gp' && r.gorsel_promptlar && r.gorsel_promptlar[t.i]) r.gorsel_promptlar[t.i].prompt = last.content;
+    else if (t.type === 'vp' && r.video_promptlar && r.video_promptlar[t.i]) r.video_promptlar[t.i].prompt = last.content;
     this.setState({ result: r, editTarget: null, editLabel: '', chatOpen: false });
   }
 
@@ -1377,27 +1480,80 @@ Senaryo bölüm sayısı formata uygun olsun: 60 sn için 3-4 kısa bölüm, 8-1
     this.setState({ editTarget: { type, i }, editLabel: label, chatOpen: true });
   }
 
+  sceneExtras(x, i, kind) {
+    const s = this.state;
+    const busy = s.regenKey === kind + i;
+    return {
+      ...x,
+      no: 'SAHNE ' + (i + 1),
+      edit: () => this.startEdit(kind, i, (kind === 'gp' ? 'Görsel promptu · Sahne ' : 'Video promptu · Sahne ') + (i + 1)),
+      regen: () => this.regenScene(kind, i),
+      regenLabel: busy ? '⟳ ÜRETİLİYOR…' : '↻ YENİLE · 5 KR'
+    };
+  }
+
+  async regenScene(kind, i) {
+    const s = this.state;
+    if (s.regenKey || !s.result) return;
+    if (s.credits < 5) { this.setState({ creditModal: true }); return; }
+    const arr = kind === 'gp' ? (s.result.gorsel_promptlar || []) : (s.result.video_promptlar || []);
+    const item = arr[i];
+    if (!item) return;
+    this.setState({ regenKey: kind + i });
+    try {
+      const m = this.promptMaps();
+      const stilStr = m.stil[s.style] || m.stil.sinematik;
+      const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
+      const anti = s.style === 'gravur'
+        ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
+        : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
+      const tail = kind === 'vp' ? 'Stable face and anatomy, no warping, no morphing, no flicker.' : anti;
+      const what = kind === 'gp' ? 'image-generation prompt' : 'video-generation prompt describing ONE camera move/action, 5-8 seconds';
+      const reply = await this.askAI('Rewrite the following ' + what + ' for the scene "' + (item.sahne || '') + '" of a Turkish history-mystery YouTube video. Produce a NEW, improved variation (different composition or angle), in English. It MUST start with this exact style core: "' + stilStr + '", must include "' + oran + '", and must END with this exact line: "' + tail + '". Return ONLY the prompt text, no quotes or explanation.\n\nCurrent prompt:\n' + (item.prompt || ''), 600);
+      const r = JSON.parse(JSON.stringify(this.state.result));
+      const tgt = kind === 'gp' ? r.gorsel_promptlar : r.video_promptlar;
+      if (tgt && tgt[i]) tgt[i].prompt = reply.trim().replace(/^["']|["']$/g, '');
+      const entry = { title: 'Sahne yenileme — ' + (item.sahne || 'Sahne ' + (i + 1)), date: new Date().toLocaleDateString('tr-TR'), cost: 5 };
+      this.setState(st => ({ result: r, regenKey: null, credits: st.credits - 5, history: [entry, ...st.history].slice(0, 12) }), () => this.persist());
+    } catch (e) {
+      this.setState({ regenKey: null });
+    }
+  }
+
   async askAI(prompt, maxTokens) {
-    if (!window.claude || !window.claude.complete) throw new Error('AI köprüsü bu ortamda yok (yayındaki sitede backend gerekir).');
     const norm = (r) => {
       if (typeof r === 'string') return r;
       if (r && r.content && r.content[0] && r.content[0].text) return r.content[0].text;
       if (r && r.completion) return r.completion;
       throw new Error('Beklenmeyen yanıt biçimi');
     };
-    // string biçimi asıl API; nesne biçimi yedek
-    try {
-      return norm(await window.claude.complete(prompt));
-    } catch (e) {
-      return norm(await window.claude.complete({ model: 'claude-sonnet-4-5', max_tokens: maxTokens || 4000, messages: [{ role: 'user', content: prompt }] }));
+    // 1) Bu ortamda: window.claude köprüsü
+    if (window.claude && window.claude.complete) {
+      try { return norm(await window.claude.complete(prompt)); }
+      catch (e) {
+        try { return norm(await window.claude.complete({ model: 'claude-sonnet-4-5', max_tokens: maxTokens || 4000, messages: [{ role: 'user', content: prompt }] })); }
+        catch (e2) { /* aşağıdaki canlı backend'e düş */ }
+      }
     }
+    // 2) Canlı site: studio-generate edge function (seçili model: claude / openai)
+    const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const prov = this.state.model === 'openai' || this.state.model === 'gpt' ? 'openai' : 'claude';
+    const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000 })
+    });
+    const data = await r.json().catch(() => ({ ok: false, error: 'Sunucu yanıtı okunamadı' }));
+    if (!r.ok || !data.ok) throw new Error(data.error || ('studio-generate hatası (' + r.status + ')'));
+    return norm(data.text || data.result || '');
   }
 
   async suggestIdeaNow() {
     if (this.state.suggestBusy) return;
     this.setState({ suggestBusy: true });
     try {
-      const reply = await this.askAI('Türkçe tarih YouTube kanalı "Tarih Ajanı" için tek cümlelik, merak uyandıran, az bilinen bir video konusu öner. Dedektif/vaka tonu olsun. YALNIZCA o tek cümleyi döndür.', 300);
+      const reply = await this.askAI('Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan bir editörsün. Az bilinen, "bunu nasıl bilmiyordum" dedirten, ilk cümlede kilitleyen, görsel açıdan zengin, klişe olmayan tek bir video konusu öner (dedektif/vaka tonu). Somut bir olay/kişi/nesne olsun, jenerik olmasın. YALNIZCA o tek cümlelik konu başlığını döndür; tırnak, açıklama veya önek ekleme.', 300);
       this.setState({ idea: reply.trim().replace(/^["']|["']$/g, ''), suggestBusy: false });
     } catch (e) {
       this.setState({ suggestBusy: false, idea: this.state.idea || '', genError: '' });
@@ -1411,7 +1567,7 @@ Senaryo bölüm sayısı formata uygun olsun: 60 sn için 3-4 kısa bölüm, 8-1
     this.setState({ shortBusy: true });
     try {
       const full = (s.result.senaryo || []).map(x => x.metin).join('\n\n');
-      const reply = await this.askAI('Aşağıdaki tarih videosu senaryosunun 30 saniyelik YouTube Shorts versiyonunu yaz: ilk 2 saniyede hook, tek nefeste akan, sonunda kanala çağrı. YALNIZCA seslendirme metnini döndür.\n\n' + full.slice(0, 6000), 900);
+      const reply = await this.askAI('Aşağıdaki tarih videosu senaryosunun 30 saniyelik dikey Shorts versiyonunu yaz. Kurallar: ilk 3 saniyede kilitleyen bir kanca; tek nefeste akan, kısa vurucu cümleler; toplam 55-75 kelime; sonda açık bir merak sorusuyla bitir (marka sloganı/kanal adı YOK). YALNIZCA seslendirme metnini döndür; açıklama veya başlık ekleme.\n\n' + full.slice(0, 6000), 900);
       const r = JSON.parse(JSON.stringify(s.result));
       r.senaryo = [...(r.senaryo || []), { bolum: 'Shorts — 30 sn Versiyon', sure: '0:00–0:30', metin: reply.trim() }];
       this.setState({ result: r, shortBusy: false });
