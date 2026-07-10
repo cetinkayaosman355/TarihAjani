@@ -216,12 +216,26 @@ class Component extends DCLogic {
       this._session = data && data.session;
       const u = this._session && this._session.user;
       if (u) this.onSession(u);
+      else this.clearStaleLogin();   // Supabase yetkili: gerçek oturum yoksa çıkış say
     });
     this._authSub = this.sb.auth.onAuthStateChange((_evt, session) => {
       this._session = session;
       const u = session && session.user;
       if (u) this.onSession(u);
+      else this.clearStaleLogin();
     });
+  }
+
+  // Supabase yapılandırıldı ama oturum yok → eski localStorage kimliğini temizle,
+  // giriş/kayıt formunu göster (Osman gibi eski yerel kimlik takılı kalmasın)
+  clearStaleLogin() {
+    try {
+      localStorage.removeItem('ta_account_v1');
+      const st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}');
+      delete st.agent; delete st.email;
+      localStorage.setItem('ta_studio_v5', JSON.stringify(st));
+    } catch (e) {}
+    if (this.state.loggedIn) this.setState({ loggedIn: false, name: '', email: '', credits: 0, tier: 'gozlemci' });
   }
 
   // Oturum açıldığında profili sunucudan (credits/balance) çek — gerçek kaynak burası
