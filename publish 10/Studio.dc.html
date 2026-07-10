@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="AI destekli üretim stüdyosu: tarih videoların için senaryo, YouTube yayın paketi, kapak tasarımı ve görsel promptları tek seferde üret.">
+<link rel="canonical" href="https://tarihajani.com/studio">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tarih Ajanı">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:url" content="https://tarihajani.com/studio">
+<meta property="og:title" content="Studio · Tarih Ajanı">
+<meta property="og:description" content="AI destekli üretim stüdyosu: tarih videoların için senaryo, YouTube yayın paketi, kapak tasarımı ve görsel promptları tek seferde üret.">
+<meta property="og:image" content="https://tarihajani.com/assets/evidence-board.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Studio · Tarih Ajanı">
+<meta name="twitter:description" content="AI destekli üretim stüdyosu: tarih videoların için senaryo, YouTube yayın paketi, kapak tasarımı ve görsel promptları tek seferde üret.">
+<meta name="twitter:image" content="https://tarihajani.com/assets/evidence-board.jpg">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Tarih Ajanı · Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Hanken+Grotesk:wght@300..800&amp;family=Special+Elite&amp;display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; padding: 0; background: #06070d; }
+    * { box-sizing: border-box; }
+    input, textarea, button { font-family: 'Hanken Grotesk', system-ui, sans-serif; }
+    input:focus, textarea:focus { outline: 1px solid rgba(193,154,82,.6); }
+    ::selection { background: rgba(193,154,82,.35); }
+    @keyframes ta-beam {
+      0%   { left: 22%; top: 62%; }
+      18%  { left: 55%; top: 68%; }
+      36%  { left: 74%; top: 44%; }
+      52%  { left: 60%; top: 30%; }
+      70%  { left: 34%; top: 38%; }
+      86%  { left: 14%; top: 52%; }
+      100% { left: 22%; top: 62%; }
+    }
+    @keyframes ta-flicker {
+      0%, 100% { opacity: .55; } 8% { opacity: .42; } 22% { opacity: .6; }
+      37% { opacity: .48; } 54% { opacity: .62; } 71% { opacity: .5; } 88% { opacity: .58; }
+    }
+    @keyframes ta-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes ta-pulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+    @keyframes ta-spin { to { transform: rotate(360deg); } }
+    @keyframes ta-scan { 0% { background-position: 0 0; } 100% { background-position: 0 40px; } }
+  
+    /* ── MOBİL UYUM ── */
+    @media (max-width: 820px) {
+      header { height: auto !important; min-height: 58px; flex-wrap: wrap !important; padding: 10px 14px !important; row-gap: 2px; }
+      header nav { flex-wrap: wrap !important; gap: 2px !important; justify-content: flex-end; }
+      header nav a { padding: 7px 8px !important; font-size: 10.5px !important; }
+      header img { height: 32px !important; }
+      aside { position: static !important; top: auto !important; }
+      [style*="grid-template-columns: 250px"], [style*="grid-template-columns: 230px"] { grid-template-columns: 1fr !important; }
+      [style*="grid-template-columns: 1.5fr 1fr"] { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 600px) {
+      [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+      [style*="padding: 120px"] { padding-top: 130px !important; }
+    }
+
+    /* ── BUTON & BAŞLIK DÜZELTMELERİ ── */
+    a[style*="linear-gradient(110deg"], a[style*="border: 1px solid rgba(129,135,151"], a[style*="border: 1px solid rgba(193,154,82"] { display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap; }
+    @media (max-width: 820px) {
+      header > a { flex-shrink: 0; }
+      header nav { justify-content: center !important; width: 100%; }
+      header nav a { white-space: nowrap; }
+      [style*="min-height: 340px"] { min-height: 170px !important; }
+    }
+</style>
+  <script>window.__taFadeBg='#06070d';</script>
+  <script src="page-transition.js"></script>
+</helmet>
+
+<div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+
+  <!-- ══════════ GİRİŞ EKRANI ══════════ -->
+  <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
+    <div style="position: relative; min-height: 100vh; overflow: hidden; display: grid; place-items: center; padding: 30px;">
+      <!-- karartılmış masa -->
+      <div style="position: absolute; inset: 0; background: url('assets/hero-desk.jpg') center/cover fixed; filter: brightness(.38) saturate(.85);"></div>
+      <!-- gezinen büyüteç ışık huzmesi -->
+      <div style="position: absolute; width: {{ beamPx }}; height: {{ beamPx }}; margin-left: calc({{ beamPxNeg }} / 2); margin-top: calc({{ beamPxNeg }} / 2); border-radius: 50%; overflow: hidden; border: 2px solid rgba(193,154,82,.55); box-shadow: 0 0 0 6px rgba(3,5,11,.35), 0 0 90px rgba(230,196,120,.35), inset 0 0 40px rgba(230,196,120,.18); animation: ta-beam 20s ease-in-out infinite;">
+        <div style="position: absolute; inset: 0; background: url('assets/hero-desk.jpg') center/cover fixed; filter: brightness(1.18) saturate(1.08) contrast(1.05);"></div>
+        <div style="position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, transparent 55%, rgba(2,4,10,.5) 100%);"></div>
+      </div>
+      <!-- mum titremesi -->
+      <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 40% 55% at 84% 30%, rgba(230,180,90,.16), transparent 70%); animation: ta-flicker 3.2s steps(1) infinite;"></div>
+      <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 40%, rgba(2,3,8,.75) 100%);"></div>
+
+      <a href="/" style="position: absolute; z-index: 3; top: 26px; left: 30px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .16em; text-decoration: none; padding: 10px 14px; border: 1px solid rgba(193,154,82,.3); background: rgba(3,5,11,.6);" style-hover="border-color: #c19a52; color: #e6c478;">← ANA SAYFA</a>
+
+      <div style="position: relative; z-index: 2; width: min(470px, 100%); padding: 40px 44px 34px; border: 1px solid rgba(193,154,82,.4); background: rgba(4,6,12,.9); backdrop-filter: blur(6px); box-shadow: 0 35px 100px #000; text-align: center; animation: ta-rise .8s cubic-bezier(.2,.8,.2,1) both;">
+        <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 100px; margin: 0 auto; display: block;">
+        <p style="margin: 16px 0 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .17em;">GİZLİLİK DERECELİ · STUDIO ERİŞİMİ</p>
+        <h1 style="margin: 12px 0 8px; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 36px; line-height: 1.1;">Ajan <span style="color: #c19a52;">Studio</span></h1>
+        <p style="margin: 0; color: #a4a9b5; line-height: 1.6; font-size: 15px;">Fikrini söyle; senaryo, seslendirme ve yayın paketi dosya halinde önüne gelsin.</p>
+        <sc-if value="{{ regPending }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top: 26px; border: 1px solid rgba(193,154,82,.35); background: rgba(193,154,82,.06); padding: 22px; display: grid; gap: 10px;">
+            <span style="width: 40px; height: 40px; margin: 0 auto; border-radius: 50%; border: 2px solid rgba(193,154,82,.25); border-top-color: #c19a52; animation: ta-spin 1.1s linear infinite;"></span>
+            <p style="margin: 0; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">DEMO TALEBİN DEĞERLENDİRİLİYOR…</p>
+            <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.6;">Onaylandığında hesabına 5 kredi tanımlanır ve dosya masana açılır.</p>
+          </div>
+        </sc-if>
+        <sc-if value="{{ regForm }}" hint-placeholder-val="{{ true }}">
+          <label style="display: grid; gap: 7px; margin-top: 26px; text-align: left; color: #8b91a8; font-size: 11px; text-transform: uppercase; letter-spacing: .12em;">Kod Adın
+            <input value="{{ agentDraft }}" onChange="{{ onAgentDraft }}" placeholder="ör. Ajan Osman" style="border: 1px solid rgba(193,154,82,.25); background: #02040a; color: #fff; padding: 14px; font-size: 15px;">
+          </label>
+          <label style="display: grid; gap: 7px; margin-top: 14px; text-align: left; color: #8b91a8; font-size: 11px; text-transform: uppercase; letter-spacing: .12em;">E-posta
+            <input value="{{ regEmail }}" onChange="{{ onRegEmail }}" onKeyDown="{{ onLoginKey }}" type="email" placeholder="ajan@ornek.com" style="border: 1px solid rgba(193,154,82,.25); background: #02040a; color: #fff; padding: 14px; font-size: 15px;">
+          </label>
+          <sc-if value="{{ regError }}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 12px 0 0; color: #e8a9a9; font-size: 13px; text-align: left;">{{ regError }}</p>
+          </sc-if>
+          <button onClick="{{ doLogin }}" style="margin-top: 18px; width: 100%; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 16px; font-weight: 800; font-size: 13px; letter-spacing: .13em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35); transform: translateY(-1px);">
+          <span>DEMO TALEBİ GÖNDER</span><span style="font-family: 'Special Elite', monospace;">→</span>
+          </button>
+          <small style="display: block; margin-top: 14px; color: #676d7c; line-height: 1.5;">Onaylanan demo hesabına 5 kredi tanımlanır. Üyeliğin varsa aynı e-posta ile giriş yapılır.</small>
+          <a href="/uyelik" style="display: inline-block; margin-top: 12px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .14em; text-decoration: none; border: 1px solid rgba(193,154,82,.5); padding: 10px 16px;" style-hover="background: rgba(193,154,82,.12);">ÜYELİK PANELİNDEN GİRİŞ YAP →</a>
+          <a href="/urunler" style="display: inline-block; margin-top: 10px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; text-decoration: none;" style-hover="text-decoration: underline;">KREDİ PAKETLERİNİ GÖR →</a>
+        </sc-if>
+      </div>
+
+      <div style="position: relative; z-index: 2; width: min(960px, 100%); margin-top: 26px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); border: 1px solid rgba(193,154,82,.3); background: rgba(4,6,12,.88); backdrop-filter: blur(6px); animation: ta-rise .8s .2s cubic-bezier(.2,.8,.2,1) both;">
+        <div style="padding: clamp(24px, 3.4vw, 38px); display: grid; gap: 10px; align-content: start; border-right: 1px solid rgba(193,154,82,.15);">
+          <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .24em;">AJAN STUDIO NEDİR?</p>
+          <p style="margin: 0; color: #cfd3e0; font-size: 14.5px; line-height: 1.7;">Bir tarih fikrini yaz. Sistem sana kısa video senaryosu, seslendirme metni, kapak promptu, sahne promptları, YouTube başlığı, Instagram açıklaması ve yayın paketini tek dosyada hazırlar.</p>
+          <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.65;">Her üretim 1 kredi harcar; çıktılar kopyalamaya ve düzenlemeye hazırdır.</p>
+        </div>
+        <div style="padding: clamp(24px, 3.4vw, 38px); display: grid; gap: 12px; align-content: start;">
+          <p style="margin: 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">ÖRNEK FİKİR</p>
+          <p style="margin: 0; color: #e6c478; font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700;">"Attila'nın kayıp mezarı"</p>
+          <p style="margin: 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">SİSTEM ÇIKTISI</p>
+          <ul style="margin: 0; padding: 0; list-style: none; display: grid; gap: 8px;">
+            <li style="display: flex; gap: 10px; color: #cfd3e0; font-size: 13.5px;"><span style="color: #c19a52; font-size: 11px; margin-top: 2px;">◆</span><span>60 saniyelik senaryo + seslendirme metni</span></li>
+            <li style="display: flex; gap: 10px; color: #cfd3e0; font-size: 13.5px;"><span style="color: #c19a52; font-size: 11px; margin-top: 2px;">◆</span><span>6 sahne promptu + kapak görsel promptu</span></li>
+            <li style="display: flex; gap: 10px; color: #cfd3e0; font-size: 13.5px;"><span style="color: #c19a52; font-size: 11px; margin-top: 2px;">◆</span><span>YouTube başlığı, açıklaması ve etiketler</span></li>
+            <li style="display: flex; gap: 10px; color: #cfd3e0; font-size: 13.5px;"><span style="color: #c19a52; font-size: 11px; margin-top: 2px;">◆</span><span>Instagram açıklaması + yayın paketi</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ══════════ STUDIO ══════════ -->
+  <sc-if value="{{ showStudio }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 100vh; display: flex; flex-direction: column;">
+
+      <!-- header -->
+      <header style="position: sticky; top: 0; z-index: 20; height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 28px; border-bottom: 1px solid rgba(193,154,82,.2); background: rgba(3,5,11,.94); backdrop-filter: blur(14px);">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <a href="/" style="display: flex;"><img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 42px; width: auto;"></a>
+          <div>
+            <div style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 17px;">Ajan Studio</div>
+            <div style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">SENARYO ÜRETİM MERKEZİ</div>
+          </div>
+        </div>
+        <nav style="display: flex; align-items: center; gap: 10px;">
+          <a href="/" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ANA SAYFA</a>
+          
+          <div style="display: flex; border: 1px solid rgba(129,135,151,.3);">
+            <button onClick="{{ modeWizard }}" style="{{ wizardTabStyle }}">SİHİRBAZ</button>
+            <button onClick="{{ modeArsiv }}" style="{{ arsivTabStyle }}">HAZIR ARŞİV</button>
+            <button onClick="{{ modeHistory }}" style="{{ chatTabStyle }}">GEÇMİŞ</button>
+          </div>
+          <button onClick="{{ openCredits }}" title="Kredi paketleri" style="display: flex; align-items: center; gap: 8px; border: 1px solid rgba(193,154,82,.4); background: rgba(193,154,82,.08); color: #e6c478; padding: 9px 14px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="background: rgba(193,154,82,.18);">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #c19a52; animation: ta-pulse 2s infinite;"></span>
+            <span>KREDİ {{ credits }}</span><span style="opacity:.6;">+</span>
+          </button>
+          <div style="position: relative;">
+            <button onClick="{{ toggleUserMenu }}" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(129,135,151,.25); background: transparent; color: #a4a9b5; font-size: 12px; font-family: inherit; cursor: pointer;" style-hover="border-color: rgba(193,154,82,.4); color: #e6c478;">
+              <span style="width: 26px; height: 26px; border-radius: 50%; background: #10131d; border: 1px solid rgba(193,154,82,.4); display: grid; place-items: center; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 12px;">{{ agentInitial }}</span>
+              <span>{{ agentName }}</span>
+              <span style="{{ userCaretStyle }}">▾</span>
+            </button>
+            <sc-if value="{{ userMenuOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position: absolute; top: calc(100% + 8px); right: 0; z-index: 40; width: 210px; border: 1px solid rgba(193,154,82,.35); background: #05070d; box-shadow: 0 24px 60px rgba(0,0,0,.6);">
+                <div style="padding: 14px 16px; border-bottom: 1px solid rgba(129,135,151,.15);">
+                  <div style="color: #f2ecd9; font-size: 13.5px; font-weight: 600;">{{ agentName }}</div>
+                  <div style="color: #676d7c; font-size: 11.5px; margin-top: 2px;">{{ agentEmail }}</div>
+                  <div style="margin-top: 8px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">KREDİ · {{ credits }}</div>
+                </div>
+                <a href="/egitim" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cfc8b4; font-size: 13px; text-decoration: none;" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">Eğitimlerim</a>
+                <a href="/urunler" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cfc8b4; font-size: 13px; text-decoration: none; border-top: 1px solid rgba(129,135,151,.1);" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">Siparişlerim</a>
+                <button onClick="{{ openCredits }}" style="width: 100%; text-align: left; display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cfc8b4; font-size: 13px; background: transparent; border: 0; border-top: 1px solid rgba(129,135,151,.1); cursor: pointer; font-family: inherit;" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">Kredi Yükle</button>
+                <button onClick="{{ logout }}" style="width: 100%; text-align: left; display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #e08a80; font-size: 13px; background: transparent; border: 0; border-top: 1px solid rgba(129,135,151,.15); cursor: pointer; font-family: inherit;" style-hover="background: rgba(192,57,43,.1);">Çıkış Yap</button>
+              </div>
+            </sc-if>
+          </div>
+        </nav>
+      </header>
+
+      <!-- adım göstergesi -->
+      <div style="{{ stepRowStyle }}">
+        <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+          <div onClick="{{ st.go }}" style="{{ st.wrapStyle }}">
+            <div style="{{ st.dotStyle }}">{{ st.n }}</div>
+            <div style="{{ st.labelStyle }}">{{ st.label }}</div>
+            <sc-if value="{{ st.hasLine }}" hint-placeholder-val="{{ false }}"><div style="{{ st.lineStyle }}"></div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <main style="flex: 1; width: min(1060px, 100%); margin: 0 auto; padding: 34px 24px 80px;">
+
+        <!-- GEÇMİŞ -->
+        <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+          <div style="animation: ta-rise .5s ease both; max-width: 780px; margin: 0 auto;">
+            <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ARŞİV KAYITLARI</p>
+            <h2 style="margin: 10px 0 22px; font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700;">Geçmiş üretimler</h2>
+            <sc-if value="{{ historyEmpty }}" hint-placeholder-val="{{ true }}">
+              <p style="margin: 0; color: #676d7c; font-size: 14.5px; line-height: 1.7; border: 1px dashed rgba(129,135,151,.3); padding: 34px; text-align: center;">Henüz üretim yok. Sihirbaz'dan ilk dosyanı oluşturduğunda burada listelenir; tıklayıp açabilir, üzerinde değişiklik yapabilirsin.</p>
+            </sc-if>
+            <div style="display: grid; gap: 10px;">
+              <sc-for list="{{ savedList }}" as="h" hint-placeholder-count="2">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 14px; border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 18px 20px;" style-hover="border-color: rgba(193,154,82,.5);">
+                  <div>
+                    <p style="margin: 0 0 4px; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">{{ h.meta }}</p>
+                    <strong style="color: #f2ecd9; font-size: 15.5px; font-family: 'Playfair Display', serif;">{{ h.title }}</strong>
+                  </div>
+                  <sc-if value="{{ h.canOpen }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ h.openFile }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .14em; padding: 11px 18px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.3);">DOSYAYI AÇ</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- HAZIR ARŞİV -->
+        <sc-if value="{{ showDoc }}" hint-placeholder-val="{{ false }}">
+          <div style="animation: ta-rise .5s ease both; max-width: 880px;">
+            <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; border-bottom: 1px solid rgba(193,154,82,.25); padding-bottom: 18px;">
+              <div>
+                <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">{{ docNo }} · {{ docEra }}</p>
+                <h2 style="margin: 8px 0 0; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; line-height: 1.15;">{{ docTitle }}</h2>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button onClick="{{ docCopyAll }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ docCopyAllLabel }}</button>
+                <button onClick="{{ docClose }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="color: #e6c478;">← ARŞİVE DÖN</button>
+              </div>
+            </div>
+            <sc-if value="{{ docHasPages }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px;">
+                <sc-for list="{{ docPages }}" as="dp" hint-placeholder-count="4">
+                  <button onClick="{{ dp.pick }}" style="{{ dp.style }}">{{ dp.ad }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <div style="display: grid; gap: 12px; margin-top: 22px;">
+              <sc-for list="{{ docBlocks }}" as="db" hint-placeholder-count="6">
+                <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 16px 20px; display: grid; gap: 8px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">{{ db.head }}</span>
+                    <button onClick="{{ db.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer; white-space: nowrap;" style-hover="color: #e6c478;">{{ db.copyLabel }}</button>
+                  </div>
+                  <p style="margin: 0; color: #cfc8b4; line-height: 1.7; white-space: pre-wrap; font-size: 14px; overflow-wrap: break-word;">{{ db.text }}</p>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isArsivGrid }}" hint-placeholder-val="{{ false }}">
+          <div style="animation: ta-rise .5s ease both;">
+            <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">HAZIR ÜRETİM DOSYALARI</p>
+            <h2 style="margin: 10px 0 8px; font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700;">Hikâye arşivinden aç</h2>
+            <p style="margin: 0 0 26px; color: #a4a9b5; line-height: 1.65; max-width: 640px;">Yayınladığımız vakaların eksiksiz üretim dosyaları: senaryo, seslendirme, kapak ve sahne promptları, video promptları ve yayın paketi — hazır. Bir dosyayı aç, kopyala ya da kendi versiyonun için düzenle. <strong style="color: #e6c478;">Arşivden dosya açmak kredi harcamaz.</strong></p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+              <sc-for list="{{ arsivList }}" as="af" hint-placeholder-count="5">
+                <div style="display: flex; flex-direction: column; gap: 10px; border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 24px;" style-hover="border-color: rgba(193,154,82,.6);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">{{ af.no }}</span>
+                    <span style="border: 1px solid rgba(122,168,116,.5); color: #a8c8a2; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; padding: 4px 9px;">HAZIR</span>
+                  </div>
+                  <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: #f2ecd9; line-height: 1.3;">{{ af.title }}</h3>
+                  <p style="margin: 0; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em;">{{ af.era }}</p>
+                  <p style="margin: 0; color: #a4a9b5; font-size: 13.5px; line-height: 1.6; flex: 1;">{{ af.teaser }}</p>
+                  <button onClick="{{ af.openFile }}" style="margin-top: 6px; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 14px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">DOSYAYI AÇ →</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ADIM 1 · FİKİR -->
+        <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ false }}">
+          <div style="animation: ta-rise .5s ease both; max-width: 720px; margin: 0 auto;">
+            <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ADIM 1 / 4 · VAKA TALEBİ</p>
+            <h2 style="margin: 10px 0 8px; font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 700; line-height: 1.1;">Hangi dosyayı açalım?</h2>
+            <p style="margin: 0 0 22px; color: #a4a9b5; line-height: 1.65;">Bir olay, kişi, dönem ya da soru yaz. Ajan arşivi tarar; senaryodan yayın paketine kadar her şeyi hazırlar.</p>
+            <textarea value="{{ idea }}" onChange="{{ onIdea }}" rows="4" placeholder="ör. Fatih'in ölümünün ardındaki zehir şüphesi… ya da Enigma'yı kıran görünmez kadınlar…" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 18px; font-size: 17px; line-height: 1.6; min-height: 130px;"></textarea>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;">
+              <button onClick="{{ suggestIdea }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 8px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">◈ {{ suggestLabel }}</button>
+              <sc-for list="{{ ideaChips }}" as="chip" hint-placeholder-count="3">
+                <button onClick="{{ chip.use }}" style="border: 1px solid rgba(129,135,151,.3); background: rgba(8,11,19,.8); color: #a4a9b5; padding: 8px 14px; font-size: 12.5px; cursor: pointer;" style-hover="border-color: rgba(193,154,82,.6); color: #e6c478;">{{ chip.text }}</button>
+              </sc-for>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 26px;">
+              <button onClick="{{ toStep2 }}" disabled="{{ ideaEmpty }}" style="{{ nextBtnStyle }}" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">SEÇENEKLERE GEÇ →</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ADIM 2 · SEÇENEKLER -->
+        <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+          <div style="animation: ta-rise .5s ease both;">
+            <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ADIM 2 / 4 · ÜRETİM TARZI</p>
+            <h2 style="margin: 10px 0 22px; font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 700;">Dosya nasıl anlatılsın?</h2>
+            <div style="display: grid; gap: 26px;">
+              <sc-for list="{{ optionGroups }}" as="grp" hint-placeholder-count="4">
+                <div>
+                  <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;">
+                    <span style="color: #e9dfc8; font-weight: 700; font-size: 15px; letter-spacing: .04em;">{{ grp.title }}</span>
+                    <span style="color: #676d7c; font-size: 12px;">{{ grp.hint }}</span>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <sc-for list="{{ grp.options }}" as="opt" hint-placeholder-count="3">
+                      <button onClick="{{ opt.pick }}" style="{{ opt.cardStyle }}" style-hover="border-color: rgba(193,154,82,.7);">
+                        <span style="{{ opt.nameStyle }}">{{ opt.name }}</span>
+                        <span style="color: #818797; font-size: 12px; line-height: 1.45;">{{ opt.desc }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+              <button onClick="{{ toStep1 }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 14px 22px; font-size: 13px; letter-spacing: .1em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">← FİKRE DÖN</button>
+              <button onClick="{{ startGenerate }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 14px 26px; font-weight: 800; font-size: 13px; letter-spacing: .12em; cursor: pointer;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">DOSYAYI OLUŞTUR · 100 KREDİ →</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ADIM 3 · ÜRETİM -->
+        <sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width: 560px; margin: 60px auto 0; text-align: center; animation: ta-rise .5s ease both;">
+            <div style="width: 74px; height: 74px; margin: 0 auto 24px; border-radius: 50%; border: 2px solid rgba(193,154,82,.25); border-top-color: #c19a52; animation: ta-spin 1.1s linear infinite;"></div>
+            <h2 style="margin: 0 0 10px; font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700;">Dosya hazırlanıyor</h2>
+            <p style="margin: 0 0 26px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .16em; animation: ta-pulse 1.6s infinite;">{{ genMsg }}</p>
+            <div style="height: 5px; background: rgba(129,135,151,.18); overflow: hidden;">
+              <div style="{{ genBarStyle }}"></div>
+            </div>
+            <p style="margin: 18px 0 0; color: #676d7c; font-size: 13px; line-height: 1.6;">"{{ ideaShort }}" · {{ pickSummary }}</p>
+            <sc-if value="{{ genError }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top: 24px; border: 1px solid rgba(200,80,80,.5); background: rgba(120,30,30,.15); color: #e8a9a9; padding: 16px; font-size: 14px; line-height: 1.5; text-align: left;">{{ genError }}</div>
+              <button onClick="{{ startGenerate }}" style="margin-top: 14px; border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 22px; font-size: 13px; letter-spacing: .1em; cursor: pointer;">TEKRAR DENE</button>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- ADIM 4 · DOSYA -->
+        <sc-if value="{{ isStep4 }}" hint-placeholder-val="{{ false }}">
+          <div style="animation: ta-rise .5s ease both;">
+            <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; border-bottom: 1px solid rgba(193,154,82,.25); padding-bottom: 18px;">
+              <div>
+                <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">DOSYA AÇILDI · {{ fileNo }}</p>
+                <h2 style="margin: 8px 0 6px; font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; line-height: 1.15;">{{ resTitle }}</h2>
+                <p style="margin: 0; color: #a4a9b5; max-width: 640px; line-height: 1.6;">{{ resLogline }}</p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button onClick="{{ copyAll }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ copyAllLabel }}</button>
+                <button onClick="{{ newFile }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px 18px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;">+ YENİ DOSYA</button>
+              </div>
+            </div>
+
+            <!-- sekmeler -->
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 20px 0 24px;">
+              <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="5">
+                <button onClick="{{ tb.go }}" style="{{ tb.style }}">{{ tb.label }}</button>
+              </sc-for>
+            </div>
+
+            <!-- SENARYO -->
+            <sc-if value="{{ tabSenaryo }}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; gap: 14px;">
+                <sc-for list="{{ resSenaryo }}" as="sec" hint-placeholder-count="4">
+                  <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 22px 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px;">
+                      <span style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 19px; color: #e6c478;">{{ sec.bolum }}</span>
+                      <span style="display: flex; gap: 10px; align-items: center;">
+                        <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px;">{{ sec.sure }}</span>
+                        <button onClick="{{ sec.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
+                      </span>
+                    </div>
+                    <p style="margin: 0; color: #cfc8b4; line-height: 1.75; white-space: pre-wrap; font-size: 15px;">{{ sec.metin }}</p>
+                  </div>
+                </sc-for>
+                <button onClick="{{ addShort }}" style="border: 1px dashed rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .14em; padding: 15px; cursor: pointer;" style-hover="background: rgba(193,154,82,.08);">{{ shortLabel }}</button>
+              </div>
+            </sc-if>
+
+            <!-- SESLENDİRME -->
+            <sc-if value="{{ tabSes }}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; align-items: start;">
+                <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 22px 24px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="font-weight: 700; letter-spacing: .04em;">Seslendirme Metni</span>
+                    <button onClick="{{ copyVoice }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 7px 12px; font-size: 11px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ copyVoiceLabel }}</button>
+                  </div>
+                  <p style="margin: 0; color: #cfc8b4; line-height: 1.8; white-space: pre-wrap; font-size: 15px;">{{ resVoiceText }}</p>
+                </div>
+                <div style="display: grid; gap: 14px;">
+                  <div style="border: 1px solid rgba(193,154,82,.35); background: rgba(193,154,82,.05); padding: 20px 22px;">
+                    <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">ELEVENLABS AYARLARI</p>
+                    <div style="display: grid; gap: 8px; margin-top: 12px; font-size: 13.5px; color: #cfc8b4;">
+                      <div style="display: flex; justify-content: space-between; gap: 10px;"><span style="color: #818797;">Ses</span><span>{{ voiceName }}</span></div>
+                      <div style="display: flex; justify-content: space-between; gap: 10px;"><span style="color: #818797;">Model</span><span>eleven_multilingual_v2</span></div>
+                      <div style="display: flex; justify-content: space-between; gap: 10px;"><span style="color: #818797;">Stability</span><span>{{ elStability }}</span></div>
+                      <div style="display: flex; justify-content: space-between; gap: 10px;"><span style="color: #818797;">Similarity</span><span>0.80</span></div>
+                      <div style="display: flex; justify-content: space-between; gap: 10px;"><span style="color: #818797;">Style</span><span>{{ elStyle }}</span></div>
+                    </div>
+                    <button onClick="{{ copyElJson }}" style="margin-top: 14px; width: 100%; border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 10px; font-size: 11px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ copyElLabel }}</button>
+                  </div>
+                  <div style="border: 1px solid rgba(129,135,151,.25); background: #070a12; padding: 20px 22px;">
+                    <p style="margin: 0 0 6px; font-weight: 700; font-size: 14px;">Sesi burada üret <span style="color: #676d7c; font-weight: 400;">(isteğe bağlı)</span></p>
+                    <p style="margin: 0 0 12px; color: #818797; font-size: 12.5px; line-height: 1.5;">ElevenLabs API anahtarını gir; seslendirme doğrudan burada üretilsin. Anahtar yalnızca bu tarayıcıda saklanır.</p>
+                    <input type="password" value="{{ elKey }}" onChange="{{ onElKey }}" placeholder="xi-api-key" style="width: 100%; border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 11px; font-size: 13px;">
+                    <button onClick="{{ genAudio }}" disabled="{{ ttsBusy }}" style="margin-top: 10px; width: 100%; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;">{{ ttsLabel }}</button>
+                    <sc-if value="{{ ttsError }}" hint-placeholder-val="{{ false }}">
+                      <p style="margin: 10px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">{{ ttsError }}</p>
+                    </sc-if>
+                    <sc-if value="{{ hasAudio }}" hint-placeholder-val="{{ false }}">
+                      <audio controls="{{ true }}" src="{{ audioUrl }}" style="width: 100%; margin-top: 12px;"></audio>
+                    </sc-if>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- GÖRSEL PROMPTLARI -->
+            <sc-if value="{{ tabGorsel }}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; gap: 14px;">
+                <sc-if value="{{ imgNotice }}" hint-placeholder-val="{{ false }}">
+                  <div style="border: 1px solid rgba(193,154,82,.4); background: rgba(193,154,82,.08); color: #e6c478; padding: 14px 18px; font-size: 13.5px; line-height: 1.6;">Görsel üretim API bağlantısı yakında ekleniyor. Şimdilik promptu kopyalayıp Midjourney, DALL·E ya da Ideogram'da kullanabilirsin.</div>
+                </sc-if>
+                <div style="border: 1px solid rgba(193,154,82,.35); background: rgba(193,154,82,.05); padding: 18px 22px;">
+                  <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">KAPAK GÖRSELLERİ · {{ styleName }}</p>
+                  <div style="display: grid; gap: 12px; margin-top: 12px;">
+                    <sc-for list="{{ resKapak }}" as="kp" hint-placeholder-count="2">
+                      <div style="display: grid; gap: 6px; border-top: 1px dashed rgba(193,154,82,.25); padding-top: 12px;">
+                        <div style="display: flex; justify-content: space-between; gap: 10px;">
+                          <span style="font-weight: 700; font-size: 14px; color: #e6c478;">{{ kp.ad }}</span>
+                          <button onClick="{{ kp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ kp.copyLabel }}</button>
+                        </div>
+                        <code style="display: block; color: #b9c2d8; font-size: 13px; line-height: 1.6; font-family: 'Special Elite', monospace; white-space: pre-wrap;">{{ kp.prompt }}</code>
+                        <span style="color: #e6c478; font-size: 12.5px; font-weight: 600;">Kapak üzerindeki yazı: “{{ kp.yazi }}”</span>
+                        <span style="color: #676d7c; font-size: 12.5px;">{{ kp.not }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <sc-for list="{{ resGorsel }}" as="gp" hint-placeholder-count="3">
+                  <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 18px 22px; display: grid; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="border: 1px solid rgba(193,154,82,.5); color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; padding: 4px 9px; white-space: nowrap;">{{ gp.no }}</span>
+                        <span style="font-weight: 700; font-size: 14px;">{{ gp.sahne }}</span>
+                      </div>
+                      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button onClick="{{ genImage }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">◈ GÖRSEL ÜRET</button>
+                        <button onClick="{{ gp.regen }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.regenLabel }}</button>
+                        <button onClick="{{ gp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
+                        <button onClick="{{ gp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ gp.copyLabel }}</button>
+                      </div>
+                    </div>
+                    <code style="display: block; color: #b9c2d8; font-size: 13px; line-height: 1.6; font-family: 'Special Elite', monospace; white-space: pre-wrap;">{{ gp.prompt }}</code>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- VİDEO PROMPTLARI -->
+            <sc-if value="{{ tabVideo }}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; gap: 14px;">
+                <sc-for list="{{ resVideo }}" as="vp" hint-placeholder-count="3">
+                  <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 18px 22px; display: grid; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="border: 1px solid rgba(193,154,82,.5); color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; padding: 4px 9px; white-space: nowrap;">{{ vp.no }}</span>
+                        <span style="font-weight: 700; font-size: 14px;">{{ vp.sahne }}</span>
+                      </div>
+                      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button onClick="{{ vp.regen }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ vp.regenLabel }}</button>
+                        <button onClick="{{ vp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
+                        <button onClick="{{ vp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ vp.copyLabel }}</button>
+                      </div>
+                    </div>
+                    <code style="display: block; color: #b9c2d8; font-size: 13px; line-height: 1.6; font-family: 'Special Elite', monospace; white-space: pre-wrap;">{{ vp.prompt }}</code>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- GÖRSEL STÜDYO -->
+            <sc-if value="{{ tabImgStudio }}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; gap: 16px; max-width: 760px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+                  <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 46ch;">Prompt yaz ya da kapak promptunu al; seçtiğin motorla görsel üret. Üretimler bu rafta birikir.</p>
+                  <div style="display: flex; gap: 8px;">
+                    <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
+                      <button onClick="{{ ip.pick }}" style="{{ ip.style }}">{{ ip.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir, 16:9" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <button onClick="{{ imgFromKapak }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 12px; letter-spacing: .08em; padding: 12px 18px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">KAPAK PROMPTUNU AL</button>
+                  <button onClick="{{ queueImage }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">◈ GÖRSEL ÜRET</button>
+                </div>
+                <sc-if value="{{ hasImgQueue }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
+                    <sc-for list="{{ imgQueue }}" as="iq" hint-placeholder-count="2">
+                      <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12;">
+                        <div style="aspect-ratio: 16/9; display: grid; place-items: center; background: repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px);">
+                          <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; text-align: center; padding: 10px;">{{ iq.status }}</span>
+                        </div>
+                        <p style="margin: 0; color: #818797; font-size: 11.5px; line-height: 1.5; padding: 10px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ iq.prompt }}</p>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Görsel motoru API anahtarları (OpenAI · Gemini · Midjourney) bağlandığında üretimler burada gerçek görsel olarak görünecek.</p>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- YAYIN PAKETİ -->
+            <sc-if value="{{ tabYayin }}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start;">
+                <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 22px 24px; display: grid; gap: 14px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 700;">YouTube</span>
+                    <span style="display: flex; gap: 8px;">
+                      <button onClick="{{ editYt }}" style="border: 1px solid rgba(193,154,82,.45); background: transparent; color: #e6c478; padding: 6px 11px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">✎ DÜZENLE</button>
+                      <button onClick="{{ copyYt }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 6px 11px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ copyYtLabel }}</button>
+                    </span>
+                  </div>
+                  <div>
+                    <p style="margin: 0 0 4px; color: #818797; font-size: 11px; letter-spacing: .12em;">BAŞLIK</p>
+                    <p style="margin: 0; color: #f2ecd9; font-size: 16px; font-weight: 600; line-height: 1.4;">{{ resYtTitle }}</p>
+                  </div>
+                  <div>
+                    <p style="margin: 0 0 4px; color: #818797; font-size: 11px; letter-spacing: .12em;">AÇIKLAMA</p>
+                    <p style="margin: 0; color: #cfc8b4; font-size: 13.5px; line-height: 1.7; white-space: pre-wrap;">{{ resYtDesc }}</p>
+                  </div>
+                  <div>
+                    <p style="margin: 0 0 6px; color: #818797; font-size: 11px; letter-spacing: .12em;">ETİKETLER</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                      <sc-for list="{{ resYtTags }}" as="tag" hint-placeholder-count="6">
+                        <span style="border: 1px solid rgba(193,154,82,.3); color: #cfc8b4; padding: 4px 10px; font-size: 12px;">{{ tag.t }}</span>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+                <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 22px 24px; display: grid; gap: 14px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 700;">Instagram</span>
+                    <span style="display: flex; gap: 8px;">
+                      <button onClick="{{ editIg }}" style="border: 1px solid rgba(193,154,82,.45); background: transparent; color: #e6c478; padding: 6px 11px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">✎ DÜZENLE</button>
+                      <button onClick="{{ copyIg }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 6px 11px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ copyIgLabel }}</button>
+                    </span>
+                  </div>
+                  <p style="margin: 0; color: #cfc8b4; font-size: 13.5px; line-height: 1.7; white-space: pre-wrap;">{{ resIgDesc }}</p>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <sc-for list="{{ resIgTags }}" as="hs" hint-placeholder-count="6">
+                      <span style="color: #7ba0c9; font-size: 12.5px;">{{ hs.t }}</span>
+                    </sc-for>
+                  </div>
+                  <div style="border-top: 1px dashed rgba(193,154,82,.25); padding-top: 12px;">
+                    <p style="margin: 0 0 4px; color: #818797; font-size: 11px; letter-spacing: .12em;">ÜRETİM NOTU</p>
+                    <p style="margin: 0; color: #cfc8b4; font-size: 13px; line-height: 1.6;">{{ resNote }}</p>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- KREDİ GEÇMİŞİ -->
+        <sc-if value="{{ showHistory }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top: 50px; border-top: 1px solid rgba(129,135,151,.2); padding-top: 22px;">
+            <p style="margin: 0 0 12px; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">KREDİ GEÇMİŞİ</p>
+            <div style="display: grid; gap: 6px;">
+              <sc-for list="{{ history }}" as="h" hint-placeholder-count="2">
+                <div style="display: flex; justify-content: space-between; gap: 14px; color: #a4a9b5; font-size: 13px; padding: 9px 12px; background: rgba(8,11,19,.7); border: 1px solid rgba(129,135,151,.15);">
+                  <span style="color: #cfc8b4;">{{ h.title }}</span>
+                  <span style="display: flex; gap: 16px; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px;"><span>{{ h.date }}</span><span style="color: #c19a52;">{{ h.cost }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </main>
+    </div>
+  </sc-if>
+
+  <!-- AJANLA KONUŞ · YAN PANEL -->
+  <sc-if value="{{ showStudio }}" hint-placeholder-val="{{ false }}">
+    <button onClick="{{ toggleChat }}" style="position: fixed; z-index: 55; bottom: 24px; right: 24px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(193,154,82,.6); background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 14px 20px; cursor: pointer; box-shadow: 0 12px 40px rgba(0,0,0,.6);" style-hover="box-shadow: 0 12px 50px rgba(230,196,120,.45); transform: translateY(-2px);">◈ AJANLA KONUŞ</button>
+    <div style="{{ chatPanelStyle }}">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid rgba(193,154,82,.25);">
+        <div>
+          <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">SORGU HATTI</p>
+          <strong style="font-family: 'Playfair Display', serif; font-size: 18px;">Ajanla konuş</strong>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <sc-for list="{{ modelChips }}" as="mc" hint-placeholder-count="2">
+            <button onClick="{{ mc.pick }}" style="{{ mc.style }}">{{ mc.label }}</button>
+          </sc-for>
+          <button onClick="{{ toggleChat }}" style="border: 1px solid rgba(193,154,82,.35); background: transparent; color: #c19a52; width: 34px; height: 34px; font-size: 17px; cursor: pointer; line-height: 1;" style-hover="color: #e6c478;">×</button>
+        </div>
+      </div>
+      <sc-if value="{{ hasEditTarget }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 20px; background: rgba(193,154,82,.1); border-bottom: 1px solid rgba(193,154,82,.3);">
+          <span style="color: #e6c478; font-size: 12px; line-height: 1.4;">Düzenleme hedefi: <strong>{{ editLabel }}</strong></span>
+          <span style="display: flex; gap: 6px;">
+            <button onClick="{{ applyEdit }}" style="border: 0; background: #c19a52; color: #171207; font-weight: 800; font-size: 10.5px; letter-spacing: .1em; padding: 8px 12px; cursor: pointer;">SON YANITI UYGULA</button>
+            <button onClick="{{ cancelEdit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10.5px; padding: 8px 10px; cursor: pointer;">İPTAL</button>
+          </span>
+        </div>
+      </sc-if>
+      <div style="flex: 1; display: grid; gap: 10px; align-content: start; padding: 16px 20px; overflow-y: auto;">
+        <sc-if value="{{ chatEmpty }}" hint-placeholder-val="{{ true }}">
+          <p style="margin: 0; color: #676d7c; font-size: 13px; line-height: 1.7; text-align: center; padding: 30px 10px;">Fikir sor, senaryo taslağı iste ya da dosyandaki bir bölümün DÜZENLE tuşuna basıp buradan değiştir. Sohbet kredi harcamaz.</p>
+        </sc-if>
+        <sc-for list="{{ chatMsgs }}" as="cm" hint-placeholder-count="0">
+          <div style="{{ cm.rowStyle }}">
+            <div style="{{ cm.bubbleStyle }}">{{ cm.content }}</div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ chatBusy }}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; animation: ta-pulse 1.4s infinite;">AJAN YAZIYOR…</p>
+        </sc-if>
+      </div>
+      <div style="display: flex; gap: 8px; padding: 14px 20px; border-top: 1px solid rgba(193,154,82,.25);">
+        <input value="{{ chatInput }}" onChange="{{ onChatInput }}" onKeyDown="{{ onChatKey }}" placeholder="Mesajını yaz…" style="flex: 1; border: 1px solid rgba(193,154,82,.3); background: #02040a; color: #f2ecd9; padding: 12px; font-size: 13.5px;">
+        <button onClick="{{ sendChat }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .12em; padding: 0 18px;">GÖNDER</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- KREDİ PAKETLERİ MODAL -->
+  <sc-if value="{{ showCreditModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeCredits }}" style="position: fixed; inset: 0; z-index: 50; background: rgba(2,3,8,.8); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 24px;">
+      <div onClick="{{ stopProp }}" style="width: min(680px, 100%); border: 1px solid rgba(193,154,82,.4); background: #05070d; padding: 34px; animation: ta-rise .4s ease both;">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div>
+            <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">KREDİ PAKETLERİ</p>
+            <h3 style="margin: 8px 0 0; font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700;">Arşivini genişlet</h3>
+          </div>
+          <button onClick="{{ closeCredits }}" style="border: 0; background: transparent; color: #818797; font-size: 22px; cursor: pointer; line-height: 1;" style-hover="color: #e6c478;">×</button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 22px;">
+          <sc-for list="{{ packs }}" as="pk" hint-placeholder-count="3">
+            <div style="{{ pk.style }}">
+              <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">{{ pk.tier }}</p>
+              <p style="margin: 8px 0 2px; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700;">{{ pk.credits }}</p>
+              <p style="margin: 0 0 12px; color: #818797; font-size: 12.5px; line-height: 1.5;">{{ pk.desc }}</p>
+              <a href="{{ pk.mail }}" style="display: block; text-align: center; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; padding: 11px; font-size: 11px; letter-spacing: .14em; text-decoration: none;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.3);">SATIN AL</a>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startCredits&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 500, &quot;tsType&quot;: &quot;number&quot;, &quot;min&quot;: 100, &quot;max&quot;: 10000, &quot;section&quot;: &quot;Sistem&quot;}, &quot;demoMode&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Sistem&quot;}, &quot;beamSize&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 340, &quot;min&quot;: 200, &quot;max&quot;: 560, &quot;step&quot;: 20, &quot;unit&quot;: &quot;px&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Giriş Ekranı&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}'); } catch (e) {}
+    this.state = {
+      screen: saved.agent ? 'studio' : 'login',
+      agentDraft: '',
+      userMenuOpen: false,
+      agentName: saved.agent || '',
+      regEmail: saved.email || '',
+      regPending: false, regError: '',
+      mode: 'wizard',
+      chatMsgs: [], chatInput: '', chatBusy: false, chatOpen: false,
+      editTarget: null, editLabel: '',
+      doc: null, docPage: 0, arsivEk: [],
+      shortBusy: false, suggestBusy: false,
+      imgNotice: false, imgPrompt: '', imgProvider: 'gpt', imgQueue: [],
+      step: 1,
+      idea: '',
+      tone: 'merak', voice: 'erkek', style: 'sinematik', duration: 'standart', model: 'claude', aspect: 'yatay', regenKey: null,
+      generating: false, genMsg: '', genError: '', genPct: 0,
+      result: null, fileNo: '',
+      tab: 'senaryo',
+      credits: typeof saved.credits === 'number' ? (saved.credits < 50 ? saved.credits * 100 : saved.credits) : (this.props.startCredits ?? 500),
+      history: saved.history || [],
+      creditModal: false,
+      elKey: saved.elKey || '', ttsBusy: false, ttsError: '', audioUrl: '',
+      copied: {}
+    };
+  }
+
+  componentDidMount() {
+    fetch('arsiv-ek.json')
+      .then(r => r.ok ? r.json() : [])
+      .then(list => { if (Array.isArray(list) && list.length) this.setState({ arsivEk: list }); })
+      .catch(() => {});
+  }
+
+  persist(extra) {
+    const s = { ...this.state, ...extra };
+    try {
+      localStorage.setItem('ta_studio_v5', JSON.stringify({
+        agent: s.agentName, email: s.regEmail, credits: s.credits, history: s.history, elKey: s.elKey
+      }));
+    } catch (e) {}
+  }
+
+  set(patch) { this.setState(patch, () => this.persist()); }
+
+  flash(key) {
+    this.setState(s => ({ copied: { ...s.copied, [key]: true } }));
+    clearTimeout(this['_t' + key]);
+    this['_t' + key] = setTimeout(() => this.setState(s => ({ copied: { ...s.copied, [key]: false } })), 1600);
+  }
+
+  copy(key, text) {
+    try { navigator.clipboard.writeText(text); } catch (e) {}
+    this.flash(key);
+  }
+
+  optionData() {
+    return {
+      model: [
+        { id: 'claude', name: 'Claude', desc: 'Anthropic — derin anlatı, akıcı Türkçe' },
+        { id: 'gpt', name: 'ChatGPT', desc: 'OpenAI — hızlı ve pratik üretim' }
+      ],
+      tone: [
+        { id: 'merak', name: 'Merak Uyandırıcı', desc: 'Soru soran, ipucu bırakan dedektif anlatımı' },
+        { id: 'dramatik', name: 'Dramatik', desc: 'Yüksek gerilim, sinematik duygu yükü' },
+        { id: 'belgesel', name: 'Belgesel · Ciddi', desc: 'Kaynak odaklı, ölçülü ve otoriter ton' }
+      ],
+      voice: [
+        { id: 'erkek', name: 'Erkek · Anlatıcı', desc: 'Derin, güven veren klasik anlatıcı', el: { name: 'Adam', id: 'pNInz6obpgDQGcFmaJgB', stability: 0.5, style: 0.35 } },
+        { id: 'erkek-gizemli', name: 'Erkek · Gizemli', desc: 'Alçak tonlu, sır verir gibi', el: { name: 'Antoni', id: 'ErXwobaYiN019PkySvjV', stability: 0.42, style: 0.5 } },
+        { id: 'kadin-belgesel', name: 'Kadın · Belgesel', desc: 'Net, akıcı, profesyonel sunum', el: { name: 'Bella', id: 'EXAVITQu4vr4xnSDxMaL', stability: 0.6, style: 0.2 } }
+      ],
+      style: [
+        { id: 'hollywood', name: 'Hollywood Gerçekçi', desc: 'Fotogerçekçi kadrajlar, film ışığı' },
+        { id: 'sinematik', name: 'Karanlık Sinematik', desc: 'Mum ışığı, gölge, noir atmosfer' },
+        { id: 'gravur', name: 'Tarihî Gravür', desc: 'Bakır baskı dokusu, dönem illüstrasyonu' }
+      ],
+      aspect: [
+        { id: 'yatay', name: 'Yatay · 16:9', desc: 'YouTube ana video kadrajı' },
+        { id: 'dikey', name: 'Dikey · 9:16', desc: 'Shorts · Reels · TikTok' },
+        { id: 'kare', name: 'Kare · 1:1', desc: 'Instagram gönderi kadrajı' }
+      ],
+      duration: [
+        { id: 'kisa', name: 'Kısa Vaka · 60 sn', desc: 'Shorts / Reels için tek nefeste' },
+        { id: 'standart', name: 'Standart Dosya · 8–12 dk', desc: 'Ana kanal videosu' },
+        { id: 'derin', name: 'Derin Dosya · 20+ dk', desc: 'Uzun soluklu vaka incelemesi' }
+      ]
+    };
+  }
+
+  find(group, id) { return this.optionData()[group].find(o => o.id === id); }
+
+  arsivData() {
+    return [
+      {
+        no: 'ARŞİV 01', era: 'M.Ö. 900 · DEMİR ÇAĞI İTALYASI', fileNo: 'TA-ARSIV-001',
+        teaser: 'Roma’ya okumayı, tapınağı ve kehaneti öğreten halkın silinen hikâyesi.',
+        result: {
+          baslik: 'Etrüskler: Roma’nın Gizli Öğretmeni',
+          logline: 'Roma kendi efsanesini yazarken, ona her şeyi öğreten halkı kayıtlardan sildi.',
+          senaryo: [
+            { bolum: 'Açılış — Silinen Borç', sure: '0:00–1:30', metin: 'Roma kendi efsanesini yazarken bir borcunu sildi. Kurt tarafından emzirilen ikizler, yedi tepe, kader tarafından seçilmiş şehir… Bu hikâyenin hiçbir yerinde, Romalılara okumayı öğreten halktan söz edilmez. Oysa kazı raporları başka bir şey söylüyor: Roma’nın ilk kralları Etrüsk’tü, ilk tapınakları Etrüsk elinden çıktı, geleceği kuşların uçuşundan okuma sanatı bile onlardan alındı.' },
+            { bolum: 'Kanıtlar — Toprağın Tanıklığı', sure: '1:30–6:00', metin: 'Tarquinia’nın boyalı mezar odaları, Cerveteri’nin tümülüs şehirleri ve hâlâ tam çözülemeyen bir dil… Antik yazarların çelişen tanıklıklarını kazı raporlarıyla yüzleştiriyoruz: Herodot onları Anadolu’dan göçmüş sayar, Dionysios yerli ilan eder. DNA çalışmaları ise iki tarafı da şaşırtan bir cevap veriyor.' },
+            { bolum: 'Hüküm — Ajanın Değerlendirmesi', sure: '6:00–9:00', metin: 'Elimizdeki belgeler iki şeyi kesinleştiriyor: Roma, kuruluş yüzyılında Etrüsk hocaların öğrencisiydi; ve bu borç, imparatorluk propagandasıyla bilinçli biçimde küçültüldü. Kesin olmayan tek şey kökenleri — ve o dosya hâlâ açık. Hükmü sen ver: Roma’nın öğretmeni neden unutturuldu?' }
+          ],
+          seslendirme_notu: 'Alçak tempoda, sır verir gibi başla; kanıt bölümünde tempoyu yükselt. Özel adlarda hafif duraklama bırak.',
+          youtube: {
+            baslik: 'Roma’ya Her Şeyi Öğreten Halk Neden Silindi? | Etrüskler',
+            aciklama: 'Roma’nın kuruluş efsanesinin gölgesinde kalan halk: Etrüskler. Bu vaka dosyasında kazı raporlarını, antik yazarların çelişen tanıklıklarını ve DNA bulgularını yüzleştiriyoruz.\n\n00:00 Silinen Borç\n01:30 Toprağın Tanıklığı\n06:00 Ajanın Hükmü\n\nKaynakça yorumlarda. Yeni vaka dosyaları için abone ol.',
+            etiketler: ['etrüskler', 'roma tarihi', 'antik tarih', 'tarih belgeseli', 'gizli tarih', 'arkeoloji', 'tarih ajanı', 'kayıp uygarlıklar', 'roma imparatorluğu', 'antik italya', 'tarquinia', 'vaka dosyası']
+          },
+          instagram: {
+            aciklama: 'Roma’ya okumayı öğreten halkın adını tarih kitaplarında kaç kez gördün? 🕵️ Yeni vaka dosyası açıldı: Etrüskler — Roma’nın Gizli Öğretmeni.\n\nTam dosya YouTube’da. Bağlantı profilde.',
+            hashtagler: ['#tarih', '#etrüskler', '#roma', '#arkeoloji', '#tarihajanı', '#gizlitarih', '#antikçağ', '#vakadosyası', '#tarihibilgi', '#keşfet']
+          },
+          kapak: [
+            { ad: 'Kapak A', prompt: 'Etruscan tomb fresco lit by a detective\'s flashlight in the dark, ancient painted dancers on the wall, cinematic noir, dust in the light beam, 16:9', yazi: 'ROMA’NIN GİZLİ ÖĞRETMENİ', not: 'Işık huzmesi soldan; yazı sağ üst köşede altın serifle.' },
+            { ad: 'Kapak B', prompt: 'Ancient Etruscan bronze mirror reflecting the Roman she-wolf statue, candlelit archive desk, magnifying glass, dark academia, 16:9', yazi: 'SİLİNEN HALK', not: 'Ayna yansımasında Roma kurdu; kontrast yüksek.' }
+          ],
+          gorsel_promptlar: [
+            { sahne: 'Silinen Borç', prompt: 'Ancient Roman forum at dusk, ghostly Etruscan figures fading from a stone relief, cinematic dark atmosphere, candle glow' },
+            { sahne: 'Toprağın Tanıklığı', prompt: 'Archaeologist\'s lantern illuminating a painted Etruscan tomb chamber, vivid frescoes of banquets and dancers, dramatic chiaroscuro' },
+            { sahne: 'Ajanın Hükmü', prompt: 'Detective desk with excavation reports, ancient inscriptions and a wax-sealed dossier stamped CLASSIFIED, moody candlelight, top view' }
+          ],
+          video_promptlar: [
+            { sahne: 'Açılış', prompt: 'Slow dolly through a dark Etruscan tomb corridor, flashlight beam revealing painted walls, dust particles, 6 seconds, cinematic noir' },
+            { sahne: 'Kanıt Masası', prompt: 'Overhead slow pan across an investigator\'s desk: maps of ancient Italy, photographs, red string connections, candle flicker, 6 seconds' },
+            { sahne: 'Kapanış', prompt: 'Camera pulls back from a wax seal being pressed onto a dossier, smoke curls in lamplight, 5 seconds, dramatic' }
+          ],
+          uretim_notu: 'Düşük perdeli yaylı müzik; bölüm geçişlerinde daktilo ve mühür ses efektleri. Kanıt bölümünde arşiv fotoğraflarına Ken Burns hareketi uygula.'
+        }
+      },
+      {
+        no: 'ARŞİV 02', era: 'M.Ö. 3500 · MEZOPOTAMYA', fileNo: 'TA-ARSIV-002',
+        teaser: 'Yazıyı icat eden halk, kendi kökenini yazmayı unuttu.',
+        result: {
+          baslik: 'Sümerlerin Sırrı: 5.000 Yıldır Çözülemedi',
+          logline: 'Yazıyı, tekerleği ve okulu icat eden halkın dili hiçbir dil ailesine benzemiyor.',
+          senaryo: [
+            { bolum: 'Açılış — Karabaşlılar', sure: '0:00–1:30', metin: 'Yazıyı, tekerleği, okulu ve mahkemeyi icat eden halk, kendisinin nereden geldiğini yazmayı unuttu. Dilleri hiçbir dil ailesine benzemiyor; komşuları onlara "karabaşlılar" diyordu. Peki Sümerler kimdi — ve neden hiçbir akrabaları yok?' },
+            { bolum: 'Kanıtlar — Kil Tabletlerin İfadesi', sure: '1:30–6:30', metin: 'Uruk’un tapınak arşivlerinden çıkan on binlerce tablet, dünyanın ilk bürokrasisini belgeliyor. Kral listeleri tufandan önceki hükümdarlara binlerce yıl biçiyor. Dilbilimciler Sümerceyi Türkçeden Macarcaya kadar her dille eşleştirmeyi denedi — her teori bir duvara çarptı. Tabletlerin söylediği ile söylemediklerini ayırıyoruz.' },
+            { bolum: 'Hüküm — Ajanın Değerlendirmesi', sure: '6:30–10:00', metin: 'Kesin olan: Sümer uygarlığı M.Ö. 3500’de tarih sahnesine olağanüstü hazır bir teknolojik paketle çıktı. Kesin olmayan: bu paketin nerede hazırlandığı. "Ön-Sümer" katmanları işaret ediyor ama kanıt zinciri kopuk. Dosya açık kalıyor — hüküm senin.' }
+          ],
+          seslendirme_notu: 'Belgesel tonu; sayıları ve tarihleri vurgulayarak oku. Soru cümlelerinde yarım saniye bekle.',
+          youtube: {
+            baslik: 'Yazıyı İcat Eden Halkın Çözülemeyen Sırrı | Sümerler',
+            aciklama: 'Dilleri hiçbir dil ailesine benzemiyor, kökenleri 5.000 yıldır tartışılıyor. Sümer vaka dosyasında kil tabletlerin ifadesini alıyoruz.\n\n00:00 Karabaşlılar\n01:30 Kil Tabletlerin İfadesi\n06:30 Ajanın Hükmü\n\nKaynakça yorumlarda. Yeni vaka dosyaları için abone ol.',
+            etiketler: ['sümerler', 'mezopotamya', 'antik tarih', 'yazının icadı', 'uruk', 'kil tablet', 'tarih ajanı', 'tarih belgeseli', 'gizli tarih', 'arkeoloji', 'sümerce', 'vaka dosyası']
+          },
+          instagram: {
+            aciklama: 'Yazıyı icat ettiler ama kendi kökenlerini yazmayı unuttular. 🕵️ Sümer dosyası açıldı: 5.000 yıldır çözülemeyen sır.\n\nTam dosya YouTube’da. Bağlantı profilde.',
+            hashtagler: ['#sümerler', '#mezopotamya', '#tarih', '#arkeoloji', '#tarihajanı', '#antikçağ', '#gizlitarih', '#vakadosyası', '#tarihibilgi', '#keşfet']
+          },
+          kapak: [
+            { ad: 'Kapak A', prompt: 'Cuneiform clay tablet under a magnifying glass on a detective desk, candlelight, one glowing undeciphered symbol, dark academia, 16:9', yazi: '5.000 YILLIK SIR', not: 'Büyüteç odakta; sembol hafif altın parlamalı.' },
+            { ad: 'Kapak B', prompt: 'Ziggurat of Ur silhouetted at dusk with storm clouds, tiny archaeologist with a lantern at its base, epic cinematic scale, 16:9', yazi: 'SÜMERLER KİMDİ?', not: 'Ziggurat siluet; yazı gökyüzünde geniş boşlukta.' }
+          ],
+          gorsel_promptlar: [
+            { sahne: 'Karabaşlılar', prompt: 'Sumerian city of Uruk at dawn, mudbrick walls and canals, workers with dark hair, cinematic historical reconstruction, warm haze' },
+            { sahne: 'Kil Tabletlerin İfadesi', prompt: 'Temple archive room stacked with cuneiform tablets, scribe pressing stylus into clay by oil lamp, dramatic chiaroscuro' },
+            { sahne: 'Ajanın Hükmü', prompt: 'Detective corkboard with tablet photographs, language family charts crossed out in red, magnifying glass, moody lamplight' }
+          ],
+          video_promptlar: [
+            { sahne: 'Açılış', prompt: 'Aerial slow push toward the ziggurat of Ur through morning mist, birds crossing frame, 6 seconds, epic cinematic' },
+            { sahne: 'Tablet Yakını', prompt: 'Macro shot of cuneiform signs raking light across clay, shadows shifting as lamp moves, 5 seconds, mysterious' },
+            { sahne: 'Kapanış', prompt: 'Red string being pinned between two photographs on an evidence board, camera racks focus, 5 seconds, noir' }
+          ],
+          uretim_notu: 'Perküsyon ağırlıklı minimal müzik; tablet yakın çekimlerinde kâğıt/kil dokusu ses efektleri. Hüküm bölümünde müziği tamamen kes.'
+        }
+      },
+      {
+        no: 'ARŞİV 03', era: 'M.S. 921 · İDİL BOYU', fileNo: 'TA-ARSIV-003',
+        teaser: 'Bağdat’tan Viking cenazesine uzanan bir kâtibin raporu.',
+        result: {
+          baslik: 'İbn Fadlan: Türkler ve Vikingler Arasında',
+          logline: 'Bir elçilik kâtibinin süslemeden yazdığı rapor, iki dünyanın en güvenilir tanığı oldu.',
+          senaryo: [
+            { bolum: 'Açılış — Görev Emri', sure: '0:00–1:30', metin: 'M.S. 921. Bağdat’tan bir elçilik heyeti yola çıkıyor. Görev: İdil Bulgar hanına din ve para götürmek. Heyetin kâtibi İbn Fadlan, gördüğü her şeyi süslemeden yazacak — Oğuz bozkırının konukseverliğinden, bir Viking reisinin gemide yakılışına kadar.' },
+            { bolum: 'Kanıtlar — Raporun Satırları', sure: '1:30–6:30', metin: 'İbn Fadlan’ın risalesi, Oğuz Türklerinin gündelik hayatına dair elimizdeki en erken birinci el tanıklık. Rus (Viking) tüccarların cenaze töreni tarifi, arkeolojik bulgularla satır satır örtüşüyor: gemi yakma, kurbanlar, küller üzerine höyük. Raporu dönemin diğer kaynaklarıyla yüzleştiriyoruz.' },
+            { bolum: 'Hüküm — Ajanın Değerlendirmesi', sure: '6:30–9:30', metin: 'Rapor gerçek; abartısız üslubu onu çağdaşlarından ayırıyor. Kesin olmayan, metnin eksik kısımlarında ne olduğu — risalenin tek tam nüshası yok. Ama eldeki satırlar bile iki dünyanın kesişme noktasını aydınlatmaya yetiyor. Dosya senin masanda.' }
+          ],
+          seslendirme_notu: 'Anlatıcı seyahat günlüğü okur gibi; alıntılarda ton düşür. Yer adlarında yavaşla.',
+          youtube: {
+            baslik: 'Bir Kâtip, Oğuz Bozkırı ve Viking Cenazesi | İbn Fadlan',
+            aciklama: 'M.S. 921’de Bağdat’tan yola çıkan İbn Fadlan’ın raporu, Türkler ve Vikingler hakkındaki en güvenilir erken tanıklık. Satır satır inceliyoruz.\n\n00:00 Görev Emri\n01:30 Raporun Satırları\n06:30 Ajanın Hükmü\n\nKaynakça yorumlarda. Yeni vaka dosyaları için abone ol.',
+            etiketler: ['ibn fadlan', 'vikingler', 'oğuzlar', 'türk tarihi', 'orta çağ', 'tarih ajanı', 'tarih belgeseli', 'idil bulgar', 'viking cenazesi', 'gizli tarih', 'seyahatname', 'vaka dosyası']
+          },
+          instagram: {
+            aciklama: 'Bir kâtip Bağdat’tan yola çıktı; raporu bin yıl sonra iki dünyanın en güvenilir tanığı oldu. 🕵️ İbn Fadlan dosyası açıldı.\n\nTam dosya YouTube’da. Bağlantı profilde.',
+            hashtagler: ['#ibnfadlan', '#vikingler', '#türktarihi', '#tarih', '#tarihajanı', '#ortaçağ', '#gizlitarih', '#vakadosyası', '#tarihibilgi', '#keşfet']
+          },
+          kapak: [
+            { ad: 'Kapak A', prompt: 'Medieval Arabic scribe writing by campfire on the steppe, Viking longship burning on river in background, cinematic night scene, 16:9', yazi: 'İKİ DÜNYANIN TANIĞI', not: 'Kâtip önde keskin, yanan gemi arkada flu.' },
+            { ad: 'Kapak B', prompt: 'Ancient manuscript page with Arabic script, Viking rune stone shadow falling across it, candlelit desk, dark academia, 16:9', yazi: 'RAPOR: 921', not: 'Rün gölgesi diyagonal; tarih damga fontuyla.' }
+          ],
+          gorsel_promptlar: [
+            { sahne: 'Görev Emri', prompt: 'Caravan leaving Abbasid Baghdad at dawn through grand gate, camels and banners, golden haze, cinematic historical epic' },
+            { sahne: 'Raporun Satırları', prompt: 'Viking ship funeral on the Volga river at dusk, flames reflecting on water, steppe onlookers, painterly cinematic' },
+            { sahne: 'Ajanın Hükmü', prompt: 'Manuscript fragments arranged on a detective desk with route map from Baghdad to Volga marked in red ink, lamplight' }
+          ],
+          video_promptlar: [
+            { sahne: 'Açılış', prompt: 'Tracking shot alongside a camel caravan crossing steppe grass at golden hour, banners rippling, 6 seconds, epic' },
+            { sahne: 'Cenaze', prompt: 'Viking longship set alight drifting on dark river, embers rising into night sky, slow zoom out, 6 seconds, somber cinematic' },
+            { sahne: 'Kapanış', prompt: 'Quill writing Arabic script by candlelight, ink glistening, camera pushes into the page, 5 seconds' }
+          ],
+          uretim_notu: 'Ud ve bozkır nefeslileri karışımı özgün müzik; cenaze sahnesinde koro pedi. Alıntı satırlarını ekranda el yazısı animasyonuyla göster.'
+        }
+      },
+      {
+        no: 'ARŞİV 04', era: '1930’LAR · ORTA ASYA', fileNo: 'TA-ARSIV-004',
+        teaser: 'Tokyo’dan Orta Asya’ya uzanan sessiz bir plan.',
+        result: {
+          baslik: 'Türkistan’da Japonya Planı',
+          logline: 'İki savaş arasında ajanlar, haritalar ve hiç kurulmayan bir devlet.',
+          senaryo: [
+            { bolum: 'Açılış — Sessiz Hesap', sure: '0:00–1:30', metin: 'İki dünya savaşı arasında, Tokyo’daki bazı masalarda Orta Asya haritaları açılıyordu. Amaç kâğıt üzerinde basitti: Sovyet hattının yumuşak karnında, Japonya’ya dost bir Türkistan. Plan hiç ilan edilmedi — ama arşivler açıldıkça izleri netleşiyor.' },
+            { bolum: 'Kanıtlar — Arşiv İzleri', sure: '1:30–6:30', metin: 'Japon askerî ataşelerinin raporları, Türkistanlı muhacirlerle kurulan temaslar ve İstanbul-Tokyo hattında gidip gelen isimler… Sovyet karşı istihbaratının dosyalarıyla Japon kayıtlarını yan yana koyuyoruz. Kimi belgeler planı doğruluyor; kimi, planın hiç ciddiye alınmadığını söylüyor.' },
+            { bolum: 'Hüküm — Ajanın Değerlendirmesi', sure: '6:30–9:30', metin: 'Kesin olan: temaslar gerçekti ve iki taraf da bunları kayda geçirdi. Kesin olmayan: planın Tokyo’da hangi kademeye kadar sahiplenildiği. Eldeki kanıt zinciri "ciddi niyet" ile "masa egzersizi" arasında bir yerde duruyor. Hükmü belgelerle birlikte sen ver.' }
+          ],
+          seslendirme_notu: 'Soğuk savaş belgeseli tonu; kısa cümlelerde tempo, belge okumalarında yavaşlama.',
+          youtube: {
+            baslik: 'Japonya’nın Gizli Türkistan Planı | Arşivler Açılıyor',
+            aciklama: 'İki savaş arasında Tokyo’dan Orta Asya’ya uzanan sessiz bir hesap: ajanlar, haritalar ve hiç kurulmayan bir devlet. Japon ve Sovyet arşivlerini yüzleştiriyoruz.\n\n00:00 Sessiz Hesap\n01:30 Arşiv İzleri\n06:30 Ajanın Hükmü\n\nKaynakça yorumlarda. Yeni vaka dosyaları için abone ol.',
+            etiketler: ['türkistan', 'japonya', 'istihbarat tarihi', 'orta asya', 'sovyetler', 'tarih ajanı', 'gizli tarih', 'tarih belgeseli', 'casusluk', 'arşiv belgeleri', '20 yüzyıl', 'vaka dosyası']
+          },
+          instagram: {
+            aciklama: 'Tokyo’daki bazı masalarda Orta Asya haritaları açılıyordu… 🕵️ Türkistan’da Japonya Planı dosyası açıldı.\n\nTam dosya YouTube’da. Bağlantı profilde.',
+            hashtagler: ['#türkistan', '#japonya', '#istihbarat', '#tarih', '#tarihajanı', '#gizlitarih', '#casusluk', '#vakadosyası', '#tarihibilgi', '#keşfet']
+          },
+          kapak: [
+            { ad: 'Kapak A', prompt: '1930s intelligence office desk: map of Central Asia with red pins, Japanese documents, cigarette smoke in lamplight, film noir, 16:9', yazi: 'GİZLİ PLAN', not: 'Duman ışık huzmesinde; kırmızı iğneler dikkat çekici.' },
+            { ad: 'Kapak B', prompt: 'Vintage train crossing snowy steppe at night, silhouetted figure with briefcase at window, 1930s spy thriller aesthetic, 16:9', yazi: 'TÜRKİSTAN DOSYASI', not: 'Tren penceresi ışığı; yazı alt bantta damga gibi.' }
+          ],
+          gorsel_promptlar: [
+            { sahne: 'Sessiz Hesap', prompt: '1930s Tokyo military office at night, officers around a map of Turkestan, cigarette smoke, single desk lamp, film noir' },
+            { sahne: 'Arşiv İzleri', prompt: 'Stacks of declassified intelligence files with Japanese and Cyrillic stamps, magnifying glass over a redacted page, moody light' },
+            { sahne: 'Ajanın Hükmü', prompt: 'Evidence board connecting Tokyo, Istanbul and Tashkent with string on vintage map, detective silhouette, lamplight' }
+          ],
+          video_promptlar: [
+            { sahne: 'Açılış', prompt: 'Slow push into a smoky 1930s office where hands unroll a map of Central Asia, lamp flickers, 6 seconds, noir' },
+            { sahne: 'Belge', prompt: 'Macro pan across a typewritten intelligence report with censor bars, dust motes, 5 seconds, tense' },
+            { sahne: 'Kapanış', prompt: 'Steam train receding into snowy night, red tail light fading, 5 seconds, melancholic cinematic' }
+          ],
+          uretim_notu: 'Caz-noir altyapı; daktilo ve telsiz parazitleri geçiş efekti olarak. Belge görsellerinde sansür bandı animasyonu kullan.'
+        }
+      },
+      {
+        no: 'ARŞİV 05', era: 'M.Ö. 1200 · EGE KIYILARI', fileNo: 'TA-ARSIV-005',
+        teaser: 'Homeros şair miydi, muhabir mi? Hisarlık cevap veriyor.',
+        result: {
+          baslik: 'Truva Savaşı Gerçek miydi?',
+          logline: 'Dokuz katmanlı şehir, Hitit arşivleri ve yanık VIIa katmanı aynı soruya bakıyor.',
+          senaryo: [
+            { bolum: 'Açılış — Şair mi, Muhabir mi?', sure: '0:00–1:30', metin: 'Homeros bir şair miydi, yoksa bir muhabir mi? Üç bin yıldır anlatılan savaşın tek kaynağı bir destan. Ama Hisarlık tepesinde dokuz katman halinde üst üste yatan şehirler ve Hitit arşivlerinden çıkan "Wilusa" yazışmaları, destanın altında bir gerçek arıyor.' },
+            { bolum: 'Kanıtlar — Katmanların İfadesi', sure: '1:30–6:30', metin: 'Truva VIIa katmanı: yangın izleri, aceleyle gömülmüş erzak küpleri, sokaklarda kalan sapan taneleri. Hitit tabletlerinde "Wilusa kralı Alaksandu" — İlyada’nın Aleksandros’una rahatsız edici kadar benzeyen bir isim. Arkeolojiyle filolojiyi yüzleştiriyoruz; efsaneyle kaydı ayırıyoruz.' },
+            { bolum: 'Hüküm — Ajanın Değerlendirmesi', sure: '6:30–10:00', metin: 'Kesin olan: M.Ö. 1200 civarında Truva şiddetle yıkıldı ve bölge Hitit-Ahhiyava geriliminin sahnesiydi. Kesin olmayan: yıkımın faili ve tahta atın gerçekliği. Destan, en az bir gerçek savaşın küllerinden yazılmış görünüyor. Son hüküm senin.' }
+          ],
+          seslendirme_notu: 'Destansı ama ölçülü; İlyada alıntılarında ton yükselt, kanıtlarda belgesel soğukluğuna dön.',
+          youtube: {
+            baslik: 'Truva Savaşı Gerçekten Yaşandı mı? | Kanıtlar Masada',
+            aciklama: 'Hisarlık’taki dokuz katmanlı şehir, Hitit arşivlerindeki Wilusa yazışmaları ve yanık VIIa katmanı… Efsaneyle kaydı ayırıyoruz.\n\n00:00 Şair mi, Muhabir mi?\n01:30 Katmanların İfadesi\n06:30 Ajanın Hükmü\n\nKaynakça yorumlarda. Yeni vaka dosyaları için abone ol.',
+            etiketler: ['truva', 'truva savaşı', 'homeros', 'ilyada', 'hititler', 'arkeoloji', 'tarih ajanı', 'antik tarih', 'tarih belgeseli', 'hisarlık', 'wilusa', 'vaka dosyası']
+          },
+          instagram: {
+            aciklama: 'Üç bin yıldır anlatılan savaşın tek kaynağı bir destan… ama toprak başka konuşuyor. 🕵️ Truva dosyası açıldı.\n\nTam dosya YouTube’da. Bağlantı profilde.',
+            hashtagler: ['#truva', '#homeros', '#ilyada', '#arkeoloji', '#tarih', '#tarihajanı', '#hititler', '#vakadosyası', '#antikçağ', '#keşfet']
+          },
+          kapak: [
+            { ad: 'Kapak A', prompt: 'Burnt ancient city layer in archaeological trench, bronze arrowhead in scorched earth under magnifying glass, dramatic lighting, 16:9', yazi: 'GERÇEK MİYDİ?', not: 'Ok ucu odakta; yanık doku kontrastı yüksek.' },
+            { ad: 'Kapak B', prompt: 'Silhouette of the Trojan horse against burning city glow at night, embers in the air, epic cinematic, 16:9', yazi: 'TRUVA DOSYASI', not: 'At siluet; yazı alev renklerine karşı krem.' }
+          ],
+          gorsel_promptlar: [
+            { sahne: 'Şair mi, Muhabir mi?', prompt: 'Ancient bard reciting by firelight to gathered listeners, bronze age megaron hall, warm dramatic light, painterly' },
+            { sahne: 'Katmanların İfadesi', prompt: 'Archaeological cross-section of nine city layers at Hisarlik, tiny lantern lights marking each stratum, cinematic educational' },
+            { sahne: 'Ajanın Hükmü', prompt: 'Hittite clay tablet beside Iliad manuscript on detective desk, red string connecting names, candlelight, dark academia' }
+          ],
+          video_promptlar: [
+            { sahne: 'Açılış', prompt: 'Drone rise over Hisarlik mound at sunset revealing excavation trenches, Aegean in distance, 6 seconds, epic' },
+            { sahne: 'Yanık Katman', prompt: 'Macro tracking across scorched pottery and arrowheads in trench wall, brush sweeping dust away, 5 seconds' },
+            { sahne: 'Kapanış', prompt: 'Ember particles forming the silhouette of a horse against night sky then dispersing, 6 seconds, mythic' }
+          ],
+          uretim_notu: 'Lir ve perküsyon; yıkım anlatımında alçak dron sesi. Katman anlatımını ekranda kesit animasyonuyla destekle.'
+        }
+      }
+    ];
+  }
+
+  promptMaps() {
+    return {
+      ton: {
+        merak: 'soru soran, ipucu bırakan, dedektif üslubu; her sahne merakı büyütsün',
+        dramatik: 'yüksek gerilim, sinematik duygu yükü, kısa vurucu cümleler',
+        belgesel: 'kaynak odaklı, ölçülü ve otoriter; sakin ama etkileyici'
+      },
+      ses: {
+        erkek: 'derin, güven veren klasik belgesel anlatımı; dengeli tempo',
+        'erkek-gizemli': 'alçak tonlu, sır verir gibi; kısa cümleler, fısıltı ritmi',
+        'kadin-belgesel': 'net, akıcı, profesyonel sunum; temiz ve bilgilendirici'
+      },
+      stil: {
+        hollywood: 'cinematic ultra-photorealistic film still, ARRI Alexa, anamorphic, extreme detail, natural film lighting',
+        sinematik: 'dark cinematic film still, candlelit chiaroscuro, deep shadows, noir moody atmosphere, ultra-photorealistic, anamorphic',
+        gravur: 'antique engraving illustration, etched copperplate texture, period historical artwork, fine cross-hatching, muted aged tones'
+      },
+      // format matrisi: senaryo bölümü / toplam seslendirme kelimesi / sahne (görsel+video) promptu adedi
+      format: {
+        kisa: { bolum: '3-4 kısa bölüm', kelime: '110-150', sahne: '6-8', etiket: '60 sn' },
+        standart: { bolum: '5-7 bölüm', kelime: '1200-1700', sahne: '10-14', etiket: '8-12 dk' },
+        derin: { bolum: '8-10 bölüm', kelime: '2800-4000', sahne: '16-20', etiket: '20+ dk' }
+      }
+    };
+  }
+
+  buildPrompt(outlineOnly) {
+    const s = this.state;
+    const m = this.promptMaps();
+    const tonStr = m.ton[s.tone] || m.ton.merak;
+    const sesStr = m.ses[s.voice] || m.ses.erkek;
+    const stilStr = m.stil[s.style] || m.stil.sinematik;
+    const fmt = m.format[s.duration] || m.format.standart;
+    const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
+    // Tarihî Gravür fotogerçekçi değildir; anti-artifact satırı stile göre değişir
+    const antiArtifact = s.style === 'gravur'
+      ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
+      : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
+
+    const p = `Sen "Tarih Ajanı" adlı Türkçe tarih YouTube kanalının kıdemli senaristi ve yapım yönetmenisin. Kanal, tarihi bir dedektif titizliğiyle araştırır: her iddia belgeye dayanır, anlatım bir vaka dosyası gibi kurgulanır, izleyici ilk saniyeden ipuçlarıyla sürüklenir.
+
+BU ÜRETİMİN PARAMETRELERİ:
+- KONU: ${s.idea}
+- Anlatım tonu: ${tonStr}
+- Seslendirme tarzı: ${sesStr}
+- Görsel stil çekirdeği (her görsel/video promptunun BAŞINA birebir konur): ${stilStr}
+- Kadraj / en-boy oranı (her görsel/video promptunda birebir geçer): ${oran}
+- Format: ${fmt.etiket} — hedef: ${fmt.bolum}, toplam ${fmt.kelime} kelime seslendirme, ${fmt.sahne} sahne promptu
+
+ÇIKTI KURALI (EN ÖNEMLİ):
+Yanıtın SADECE geçerli bir JSON nesnesi olsun. Kod bloğu işareti, önsöz, açıklama, selamlama EKLEME. İlk karakter { olmalı, son karakter } olmalı.
+
+GÖRSEL & VİDEO PROMPT KURALLARI (tümü İngilizce):
+- Her sahne için AYRI bir görsel promptu (gorsel_promptlar) ve AYRI bir video promptu (video_promptlar) üret; ikisi de İngilizce.
+- Her görsel/video promptu görsel stil çekirdeğiyle BAŞLAR ("${stilStr}"), ardından "${oran}" ve sahne tarifi gelir.
+- Her görsel promptu ŞU satırla BİTER: "${antiArtifact}"
+- Her video promptu tek bir kamera hareketi/aksiyon tarif eder (5-8 sn) ve ŞU satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker."
+- Görsellerde ASLA yazı, logo veya altyazı olmasın (metin sonradan montajda eklenir).
+- Bir karakter birden çok sahnede geçerse, sabit kimlik tarifini (yaş, ten, saç, kıyafet, ayırt edici detay) her ilgili promptun başında birebir tekrar et.
+
+ANLATIM KURALLARI:
+- İlk bölüm güçlü bir kancadır (ilk 3 saniye = maksimum merak).
+- Seslendirmeyi belirtilen seslendirme tarzına uygun yaz; toplam kelime bütçesine uy.
+- Sonda açık bir merak sorusuyla bitir.
+
+TARİHSEL DÜRÜSTLÜK:
+- Efsane/abartı varsa "rivayete göre / anlatıldığına göre" çerçevesi kullan.
+- Emin olmadığın tarih, isim veya ayrıntıyı UYDURMA; anlatımı genel tut, bilinmeyeni spekülasyon olarak işaretle.
+- Hassas konularda (din, ölüm, izole topluluklar) saygılı ol.
+
+ŞU JSON ŞEMASINA BİREBİR UY:
+{
+ "baslik": "dosyanın çarpıcı Türkçe başlığı",
+ "logline": "tek cümlelik merak uyandıran özet",
+ "senaryo": [{"bolum": "bölüm adı (ör. Açılış — ...)", "sure": "zaman aralığı", "metin": "o bölümün tam seslendirme senaryosu, akıcı Türkçe"}],
+ "seslendirme_notu": "ElevenLabs için okuma temposu ve vurgu yönergeleri + olayın gerçek/efsane ayrımı, 2-3 cümle",
+ "youtube": {"baslik": "70 karakteri geçmeyen tıklanabilir başlık", "aciklama": "3 paragraf + zaman damgaları içeren açıklama", "etiketler": ["12-16 adet etiket"]},
+ "instagram": {"aciklama": "hook ile başlayan 2 kısa paragraf", "hashtagler": ["10-14 hashtag"]},
+ "kapak": [{"ad": "Kapak A", "prompt": "İngilizce kapak promptu; görsel stil çekirdeğiyle başlar, ${oran}, üst/alt boşluk metne uygun, anti-artifact satırıyla biter", "yazi": "kapağa bindirilecek 2-4 kelimelik çarpıcı Türkçe yazı", "not": "Türkçe kompozisyon notu"}, {"ad": "Kapak B", "prompt": "alternatif İngilizce prompt (aynı kurallar)", "yazi": "alternatif kapak yazısı", "not": "Türkçe not"}],
+ "gorsel_promptlar": [{"sahne": "senaryodaki sahne adı", "prompt": "İngilizce görsel promptu (yukarıdaki kurallar)"}],
+ "video_promptlar": [{"sahne": "sahne adı", "prompt": "İngilizce video promptu (yukarıdaki kurallar)"}],
+ "uretim_notu": "kurgu, müzik ve ritim önerisi, 2-3 cümle"
+}
+
+Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} adet olsun ve her biri yukarıdaki kurallara birebir uysun.`;
+    return outlineOnly
+      ? p + '\n\nEK KURAL (İKİ AŞAMALI ÜRETİM): Bu üretimde senaryo bölümlerinin "metin" alanına yalnızca 2-3 cümlelik yoğun bölüm özeti yaz; tam seslendirme metinleri ikinci aşamada bölüm bölüm yazılacak. Diğer TÜM alanları (youtube, instagram, kapak, gorsel_promptlar, video_promptlar) eksiksiz üret.'
+      : p;
+  }
+
+  qualityFix(result) {
+    const s = this.state;
+    const m = this.promptMaps();
+    const stilStr = m.stil[s.style] || m.stil.sinematik;
+    const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
+    const anti = s.style === 'gravur'
+      ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
+      : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
+    const vidTail = 'Stable face and anatomy, no warping, no morphing, no flicker.';
+    const fix = (p0, tail) => {
+      let t = (p0 || '').trim();
+      if (!t) return t;
+      if (t.toLowerCase().indexOf(stilStr.slice(0, 24).toLowerCase()) === -1) t = stilStr + ', ' + t;
+      if (t.indexOf(oran.split(' ')[0]) === -1) t += ', ' + oran;
+      if (tail && t.indexOf(tail.slice(0, 22)) === -1) t += ' ' + tail;
+      return t;
+    };
+    (result.gorsel_promptlar || []).forEach(x => { x.prompt = fix(x.prompt, anti); });
+    (result.kapak || []).forEach(x => { x.prompt = fix(x.prompt, anti); });
+    (result.video_promptlar || []).forEach(x => { x.prompt = fix(x.prompt, vidTail); });
+    return result;
+  }
+
+  async expandActs(result) {
+    const secs = result.senaryo || [];
+    const m = this.promptMaps();
+    const tonStr = m.ton[this.state.tone] || m.ton.merak;
+    for (let i = 0; i < secs.length; i++) {
+      this.setState({ genMsg: 'BÖLÜM ' + (i + 1) + ' / ' + secs.length + ' KALEME ALINIYOR…', genPct: 55 + Math.round((i / Math.max(1, secs.length)) * 42) });
+      try {
+        const reply = await this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki uzun tarih videosunun "' + (secs[i].bolum || '') + '" bölümünün TAM seslendirme metnini yaz: 300-420 kelime, akıcı Türkçe, şu tonla: ' + tonStr + '. Önceki bölümden doğal biçimde devral, bir sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver. YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + secs.map(x => x.bolum).join(' | ') + '\nBu bölümün özeti: ' + (secs[i].metin || ''), 2500);
+        if (reply && reply.trim()) secs[i].metin = reply.trim();
+      } catch (e) { /* özetle devam et */ }
+    }
+    return result;
+  }
+
+  async startGenerate() {
+    const s = this.state;
+    if (s.generating) return;
+    if (s.credits < 100) { this.setState({ creditModal: true }); return; }
+    this.setState({ step: 3, generating: true, genError: '', genPct: 4 });
+    const msgs = ['ARŞİV BAĞLANTISI KURULUYOR…', 'KAYNAKLAR ÇAPRAZ SORGULANIYOR…', 'KANIT ZİNCİRİ KURULUYOR…', 'SENARYO KALEME ALINIYOR…', 'YAYIN PAKETİ MÜHÜRLENİYOR…'];
+    let mi = 0;
+    this.setState({ genMsg: msgs[0] });
+    this._mt = setInterval(() => {
+      mi = Math.min(mi + 1, msgs.length - 1);
+      this.setState(st => ({ genMsg: msgs[mi], genPct: Math.min(st.genPct + 16, 92) }));
+    }, 3500);
+    try {
+      if (this.props.demoMode) { await new Promise(r => setTimeout(r, 4000)); throw new Error('DEMO'); }
+      const derin = s.duration === 'derin';
+      const text = await this.askAI(this.buildPrompt(derin), 16000);
+      const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
+      let result = JSON.parse(clean);
+      result = this.qualityFix(result);
+      if (derin) result = await this.expandActs(result);
+      clearInterval(this._mt);
+      const no = 'TA-' + new Date().getFullYear() + '-' + String(Math.floor(100 + Math.random() * 900));
+      const entry = {
+        title: result.baslik || this.state.idea.slice(0, 60),
+        date: new Date().toLocaleDateString('tr-TR'),
+        fileNo: no, result, idea: this.state.idea,
+        picks: { tone: this.state.tone, voice: this.state.voice, style: this.state.style, duration: this.state.duration, model: this.state.model }
+      };
+      this.setState(st => ({
+        generating: false, genPct: 100, result, fileNo: no, step: 4, tab: 'senaryo',
+        credits: st.credits - 100, history: [entry, ...st.history].slice(0, 12), audioUrl: '', ttsError: ''
+      }), () => this.persist());
+    } catch (e) {
+      clearInterval(this._mt);
+      const msg = e.message === 'DEMO'
+        ? 'Demo modu açık: gerçek üretim için demoMode tweak\'ini kapatın.'
+        : 'Üretim tamamlanamadı: ' + e.message + ' — Lütfen tekrar deneyin.';
+      this.setState({ generating: false, genError: msg, genPct: 0 });
+    }
+  }
+
+  async genAudio() {
+    const s = this.state;
+    if (!s.elKey) { this.setState({ ttsError: 'Önce API anahtarını gir.' }); return; }
+    const el = this.find('voice', s.voice).el;
+    const text = this.voiceText();
+    this.setState({ ttsBusy: true, ttsError: '' });
+    try {
+      const r = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + el.id, {
+        method: 'POST',
+        headers: { 'xi-api-key': s.elKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: text.slice(0, 4900),
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: { stability: el.stability, similarity_boost: 0.8, style: el.style }
+        })
+      });
+      if (!r.ok) throw new Error('ElevenLabs yanıtı: ' + r.status);
+      const blob = await r.blob();
+      this.setState({ ttsBusy: false, audioUrl: URL.createObjectURL(blob) }, () => this.persist());
+    } catch (e) {
+      this.setState({ ttsBusy: false, ttsError: 'Ses üretilemedi: ' + e.message });
+    }
+  }
+
+  voiceText() {
+    const r = this.state.result;
+    if (!r || !r.senaryo) return '';
+    return r.senaryo.map(x => x.metin).join('\n\n');
+  }
+
+  componentWillUnmount() { clearInterval(this._mt); clearTimeout(this._rt); }
+
+  renderVals() {
+    const s = this.state;
+    const beam = this.props.beamSize ?? 340;
+    const r = s.result || {};
+    const optionDefs = this.optionData();
+    const gold = '#c19a52';
+
+    const groups = [
+      { key: 'model', title: 'Yapay Zekâ Modeli', hint: 'Senaryoyu kim yazsın?' },
+      { key: 'tone', title: 'Anlatım Tonu', hint: 'Dosyanın duygusal rengi' },
+      { key: 'voice', title: 'Seslendirme', hint: 'ElevenLabs ses karakteri' },
+      { key: 'style', title: 'Görsel Stil', hint: 'Kapak ve sahne üretim estetiği' },
+      { key: 'aspect', title: 'En-Boy Oranı', hint: 'Görsel ve video kadrajı' },
+      { key: 'duration', title: 'Format', hint: 'Hedef platform ve süre' }
+    ].map(g => ({
+      title: g.title, hint: g.hint,
+      options: optionDefs[g.key].map(o => {
+        const on = s[g.key] === o.id;
+        return {
+          name: o.name, desc: o.desc,
+          pick: () => this.setState({ [g.key]: o.id }),
+          cardStyle: {
+            display: 'grid', gap: '6px', textAlign: 'left', cursor: 'pointer', padding: '16px 18px',
+            border: on ? '1px solid ' + gold : '1px solid rgba(129,135,151,.25)',
+            background: on ? 'rgba(193,154,82,.1)' : 'rgba(8,11,19,.8)',
+            boxShadow: on ? '0 0 24px rgba(193,154,82,.12)' : 'none',
+            color: '#e9dfc8', transition: 'border-color .2s, background .2s'
+          },
+          nameStyle: { fontWeight: 700, fontSize: '14.5px', color: on ? '#e6c478' : '#e9dfc8' }
+        };
+      })
+    }));
+
+    const stepDefs = [
+      { n: '1', label: 'FİKİR' }, { n: '2', label: 'SEÇENEKLER' },
+      { n: '3', label: 'ÜRETİM' }, { n: '4', label: 'DOSYA' }
+    ].map((d, i) => {
+      const num = i + 1, active = s.step === num, done = s.step > num;
+      const canGo = done && !s.generating && (num !== 3) && (num < 4 || s.result);
+      return {
+        n: done ? '✓' : d.n, label: d.label, hasLine: i < 3,
+        go: () => { if (canGo) this.setState({ step: num }); },
+        wrapStyle: { display: 'flex', alignItems: 'center', gap: '10px', padding: '0 14px', cursor: canGo ? 'pointer' : 'default' },
+        dotStyle: {
+          width: '30px', height: '30px', borderRadius: '50%', display: 'grid', placeItems: 'center',
+          fontFamily: "'Special Elite', monospace", fontSize: '12px',
+          border: '1px solid ' + (active || done ? gold : 'rgba(129,135,151,.35)'),
+          background: active ? gold : 'transparent',
+          color: active ? '#171207' : (done ? gold : '#818797')
+        },
+        labelStyle: {
+          fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.14em',
+          color: active ? '#e6c478' : (done ? '#c19a52' : '#676d7c')
+        },
+        lineStyle: { width: '46px', height: '1px', background: done ? 'rgba(193,154,82,.5)' : 'rgba(129,135,151,.25)' }
+      };
+    });
+
+    const tabDefs = [
+      { id: 'senaryo', label: 'Senaryo' }, { id: 'ses', label: 'Seslendirme' },
+      { id: 'gorsel', label: 'Görsel Promptları' }, { id: 'video', label: 'Video Promptları' },
+      { id: 'imgstudio', label: 'Görsel Stüdyo' }, { id: 'yayin', label: 'Yayın Paketi' }
+    ].map(t => ({
+      label: t.label,
+      go: () => this.setState({ tab: t.id }),
+      style: {
+        border: s.tab === t.id ? '1px solid ' + gold : '1px solid rgba(129,135,151,.25)',
+        background: s.tab === t.id ? 'rgba(193,154,82,.12)' : 'transparent',
+        color: s.tab === t.id ? '#e6c478' : '#a4a9b5',
+        padding: '10px 18px', fontSize: '13px', letterSpacing: '.05em', cursor: 'pointer'
+      }
+    }));
+
+    const mkCopy = (arr, keyPrefix) => (arr || []).map((x, i) => ({
+      ...x,
+      copy: () => this.copy(keyPrefix + i, x.prompt),
+      copyLabel: s.copied[keyPrefix + i] ? 'KOPYALANDI ✓' : 'KOPYALA'
+    }));
+
+    const elv = this.find('voice', s.voice).el;
+    const chips = [
+      'Titanic\'te hayatta kalan Osmanlı yolcusu var mıydı?',
+      'Mimar Sinan\'ın gizli imzaları',
+      'İstanbul\'un kayıp yeraltı şehri'
+    ];
+
+    const yt = r.youtube || {};
+    const ig = r.instagram || {};
+    const packs = [
+      { tier: 'AJAN', credits: '500', desc: '5 dosya · 199 TL', hl: false },
+      { tier: 'SAHA', credits: '1.500', desc: '15 dosya · öncelikli üretim · 449 TL', hl: true },
+      { tier: 'ARŞİV', credits: '4.000', desc: '40 dosya · ekip kullanımı · 999 TL', hl: false },
+      { tier: 'AYLIK', credits: '1.000/ay', desc: 'Her ay yenilenir · 299 TL/ay', hl: false }
+    ].map(p => ({
+      ...p,
+      mail: '/urunler',
+      style: {
+        border: p.hl ? '1px solid ' + gold : '1px solid rgba(129,135,151,.25)',
+        background: p.hl ? 'rgba(193,154,82,.07)' : 'rgba(8,11,19,.8)',
+        padding: '20px'
+      }
+    }));
+
+    const fullText = () => {
+      const parts = [(r.baslik || ''), '', ...(r.senaryo || []).map(x => x.bolum + ' (' + x.sure + ')\n' + x.metin),
+        '', 'YOUTUBE: ' + (yt.baslik || ''), yt.aciklama || '', (yt.etiketler || []).join(', '),
+        '', 'INSTAGRAM:', ig.aciklama || '', (ig.hashtagler || []).join(' ')];
+      return parts.join('\n');
+    };
+
+    return {
+      showLogin: s.screen === 'login',
+      showStudio: s.screen === 'studio',
+      beamPx: beam + 'px', beamPxNeg: '-' + beam + 'px',
+      agentDraft: s.agentDraft,
+      onAgentDraft: e => this.setState({ agentDraft: e.target.value }),
+      onLoginKey: e => { if (e.key === 'Enter') this.doLoginNow(); },
+      doLogin: () => this.doLoginNow(),
+      regEmail: s.regEmail,
+      onRegEmail: e => this.setState({ regEmail: e.target.value }),
+      regPending: s.regPending,
+      regForm: !s.regPending,
+      regError: s.regError,
+      agentName: s.agentName || 'Ajan',
+      agentInitial: (s.agentName || 'A').trim().charAt(0).toUpperCase(),
+      agentEmail: s.regEmail || 'ajan@tarihajani.com',
+      userMenuOpen: s.userMenuOpen,
+      userCaretStyle: { fontSize: '10px', color: '#676d7c', transition: 'transform .2s', transform: s.userMenuOpen ? 'rotate(180deg)' : 'none' },
+      toggleUserMenu: () => this.setState(st => ({ userMenuOpen: !st.userMenuOpen })),
+      logout: () => {
+        try { localStorage.removeItem('ta_studio_v5'); } catch (e) {}
+        this.setState({ userMenuOpen: false, screen: 'login', agentName: '', agentDraft: '', regEmail: '' });
+      },
+
+      steps: stepDefs,
+      isStep1: s.mode === 'wizard' && s.step === 1,
+      isStep2: s.mode === 'wizard' && s.step === 2,
+      isStep3: s.mode === 'wizard' && s.step === 3,
+      isStep4: s.mode === 'wizard' && s.step === 4 && !!s.result,
+      isHistory: s.mode === 'history',
+      stepRowStyle: {
+        display: s.mode === 'wizard' ? 'flex' : 'none',
+        justifyContent: 'center', gap: 0, padding: '30px 20px 0'
+      },
+      modeWizard: () => this.setState({ mode: 'wizard' }),
+      modeHistory: () => this.setState({ mode: 'history' }),
+      modeArsiv: () => this.setState({ mode: 'arsiv' }),
+      isArsiv: s.mode === 'arsiv',
+      isArsivGrid: s.mode === 'arsiv' && !s.doc,
+      showDoc: s.mode === 'arsiv' && !!s.doc,
+      docNo: (s.doc || {}).no || '', docEra: (s.doc || {}).era || '', docTitle: (s.doc || {}).baslik || '',
+      docHasPages: !!((s.doc || {}).sayfalar || []).length,
+      docPages: ((s.doc || {}).sayfalar || []).map((p, i) => ({
+        ad: p.ad + ' · ' + p.bloklar.length,
+        pick: () => this.setState({ docPage: i }),
+        style: {
+          border: '1px solid ' + (i === s.docPage ? 'rgba(193,154,82,.65)' : 'rgba(129,135,151,.3)'),
+          cursor: 'pointer', padding: '10px 14px', whiteSpace: 'nowrap',
+          fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.1em',
+          background: i === s.docPage ? 'rgba(193,154,82,.16)' : 'transparent',
+          color: i === s.docPage ? '#e6c478' : '#818797'
+        }
+      })),
+      docBlocks: (((s.doc || {}).sayfalar ? (((s.doc || {}).sayfalar)[s.docPage] || {}).bloklar : (s.doc || {}).bloklar) || []).map((b, i) => ({
+        head: b.k, text: b.t,
+        copy: () => this.copy('doc' + s.docPage + '_' + i, b.t),
+        copyLabel: s.copied['doc' + s.docPage + '_' + i] ? '✓ KOPYALANDI' : 'KOPYALA'
+      })),
+      docClose: () => this.setState({ doc: null, docPage: 0 }),
+      docCopyAll: () => {
+        const d = s.doc || {};
+        const all = d.sayfalar
+          ? d.sayfalar.map(p => '████ ' + p.ad + ' ████\n\n' + p.bloklar.map(b => '=== ' + b.k + ' ===\n' + b.t).join('\n\n')).join('\n\n\n')
+          : (d.bloklar || []).map(b => '=== ' + b.k + ' ===\n' + b.t).join('\n\n');
+        this.copy('docAll', all);
+      },
+      docCopyAllLabel: s.copied['docAll'] ? '✓ KOPYALANDI' : 'TÜMÜNÜ KOPYALA',
+      arsivTabStyle: {
+        border: 0, cursor: 'pointer', padding: '10px 16px',
+        fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.12em',
+        background: s.mode === 'arsiv' ? 'rgba(193,154,82,.18)' : 'transparent',
+        color: s.mode === 'arsiv' ? '#e6c478' : '#818797'
+      },
+      arsivList: [...this.arsivData(), ...(s.arsivEk || [])].map(a => ({
+        no: a.no, era: a.era, teaser: a.teaser, title: (a.result && a.result.baslik) || a.baslik || a.teaser,
+        openFile: () => (a.bloklar || a.sayfalar) ? this.setState({ mode: 'arsiv', doc: a, docPage: 0 }) : this.setState({
+          mode: 'wizard', step: 4, tab: 'senaryo',
+          result: a.result, fileNo: a.fileNo, idea: a.result.baslik,
+          audioUrl: '', ttsError: '', genError: ''
+        })
+      })),
+      historyEmpty: (s.history || []).length === 0,
+      savedList: (s.history || []).map(h => ({
+        title: h.title,
+        meta: (h.fileNo ? h.fileNo + ' · ' : '') + h.date,
+        canOpen: !!h.result,
+        openFile: () => this.setState({
+          mode: 'wizard', step: 4, tab: 'senaryo',
+          result: h.result, fileNo: h.fileNo || '', idea: h.idea || '',
+          ...(h.picks || {})
+        })
+      })),
+      toggleChat: () => this.setState(st => ({ chatOpen: !st.chatOpen })),
+      chatPanelStyle: {
+        position: 'fixed', zIndex: 56, top: 0, right: 0, bottom: 0,
+        width: 'min(400px, 92vw)', display: 'flex', flexDirection: 'column',
+        background: '#05070d', borderLeft: '1px solid rgba(193,154,82,.4)',
+        boxShadow: '-30px 0 80px rgba(0,0,0,.6)',
+        transform: s.chatOpen ? 'translateX(0)' : 'translateX(110%)',
+        transition: 'transform .35s cubic-bezier(.2,.8,.2,1)'
+      },
+      hasEditTarget: !!s.editTarget,
+      editLabel: s.editLabel,
+      applyEdit: () => this.applyEditNow(),
+      cancelEdit: () => this.setState({ editTarget: null, editLabel: '' }),
+      editYt: () => this.startEdit('yt', 0, 'YouTube açıklaması'),
+      editIg: () => this.startEdit('ig', 0, 'Instagram açıklaması'),
+      suggestIdea: () => this.suggestIdeaNow(),
+      suggestLabel: s.suggestBusy ? 'AJAN DÜŞÜNÜYOR…' : 'SEN ÖNER',
+      addShort: () => this.addShortNow(),
+      shortLabel: s.shortBusy ? 'YAZILIYOR…' : '+ 30 SN SHORTS VERSİYONU EKLE',
+      imgProviders: [
+        { id: 'gpt', label: 'DALL·E' }, { id: 'gemini', label: 'Gemini' }, { id: 'mj', label: 'Midjourney' }
+      ].map(p => ({
+        label: p.label,
+        pick: () => this.setState({ imgProvider: p.id }),
+        style: {
+          border: s.imgProvider === p.id ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+          background: s.imgProvider === p.id ? 'rgba(193,154,82,.12)' : 'transparent',
+          color: s.imgProvider === p.id ? '#e6c478' : '#a4a9b5',
+          fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.1em',
+          padding: '8px 13px', cursor: 'pointer'
+        }
+      })),
+      imgPrompt: s.imgPrompt,
+      onImgPrompt: e => this.setState({ imgPrompt: e.target.value }),
+      imgFromKapak: () => {
+        const kp = ((s.result || {}).kapak || [])[0];
+        if (kp) this.setState({ imgPrompt: kp.prompt });
+      },
+      queueImage: () => {
+        const p = s.imgPrompt.trim();
+        if (!p) return;
+        const provName = { gpt: 'DALL·E', gemini: 'Gemini', mj: 'Midjourney' }[s.imgProvider];
+        this.setState(st => ({ imgQueue: [{ prompt: p, status: provName + ' · API BAĞLANTISI BEKLENİYOR' }, ...st.imgQueue].slice(0, 8) }));
+      },
+      hasImgQueue: (s.imgQueue || []).length > 0,
+      imgQueue: s.imgQueue || [],
+      wizardTabStyle: {
+        border: 0, cursor: 'pointer', padding: '10px 16px',
+        fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.12em',
+        background: s.mode === 'wizard' ? 'rgba(193,154,82,.18)' : 'transparent',
+        color: s.mode === 'wizard' ? '#e6c478' : '#818797'
+      },
+      chatTabStyle: {
+        border: 0, cursor: 'pointer', padding: '10px 16px',
+        fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.12em',
+        background: s.mode === 'chat' ? 'rgba(193,154,82,.18)' : 'transparent',
+        color: s.mode === 'chat' ? '#e6c478' : '#818797'
+      },
+      modelChips: this.optionData().model.map(m => ({
+        label: m.name,
+        pick: () => this.setState({ model: m.id }),
+        style: {
+          border: s.model === m.id ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+          background: s.model === m.id ? 'rgba(193,154,82,.12)' : 'transparent',
+          color: s.model === m.id ? '#e6c478' : '#a4a9b5',
+          fontFamily: "'Special Elite', monospace", fontSize: '11px', letterSpacing: '.1em',
+          padding: '9px 16px', cursor: 'pointer'
+        }
+      })),
+      chatMsgs: s.chatMsgs.map(m => ({
+        content: m.content,
+        rowStyle: { display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' },
+        bubbleStyle: {
+          maxWidth: '85%', padding: '13px 16px', fontSize: '14px', lineHeight: 1.65, whiteSpace: 'pre-wrap',
+          background: m.role === 'user' ? 'rgba(193,154,82,.14)' : '#0a0e18',
+          border: m.role === 'user' ? '1px solid rgba(193,154,82,.4)' : '1px solid rgba(129,135,151,.25)',
+          color: m.role === 'user' ? '#f2ecd9' : '#cfd3e0'
+        }
+      })),
+      chatEmpty: s.chatMsgs.length === 0 && !s.chatBusy,
+      chatInput: s.chatInput,
+      onChatInput: e => this.setState({ chatInput: e.target.value }),
+      onChatKey: e => { if (e.key === 'Enter') this.sendChat(); },
+      sendChat: () => this.sendChat(),
+      chatBusy: s.chatBusy,
+      imgNotice: s.imgNotice,
+      genImage: () => this.setState({ imgNotice: true }),
+
+      idea: s.idea,
+      onIdea: e => this.setState({ idea: e.target.value }),
+      ideaEmpty: !s.idea.trim(),
+      ideaShort: s.idea.length > 70 ? s.idea.slice(0, 70) + '…' : s.idea,
+      ideaChips: chips.map(c => ({ text: c, use: () => this.setState({ idea: c }) })),
+      nextBtnStyle: {
+        border: 0, padding: '14px 26px', fontWeight: 800, fontSize: '13px', letterSpacing: '.12em',
+        cursor: s.idea.trim() ? 'pointer' : 'not-allowed',
+        background: s.idea.trim() ? 'linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52)' : 'rgba(129,135,151,.2)',
+        color: s.idea.trim() ? '#171207' : '#676d7c'
+      },
+      toStep1: () => this.setState({ step: 1 }),
+      toStep2: () => { if (s.idea.trim()) this.setState({ step: 2 }); },
+
+      optionGroups: groups,
+      startGenerate: () => this.startGenerate(),
+      pickSummary: this.find('model', s.model).name + ' · ' + this.find('tone', s.tone).name + ' · ' + this.find('voice', s.voice).name + ' · ' + this.find('style', s.style).name + ' · ' + this.find('aspect', s.aspect).name,
+      genMsg: s.genMsg, genError: s.genError,
+      genBarStyle: { height: '100%', width: s.genPct + '%', background: 'linear-gradient(90deg, #a77d35, #e6c478)', transition: 'width 1s ease' },
+
+      fileNo: s.fileNo,
+      resTitle: r.baslik || '', resLogline: r.logline || '',
+      tabs: tabDefs,
+      tabSenaryo: s.tab === 'senaryo', tabSes: s.tab === 'ses', tabGorsel: s.tab === 'gorsel',
+      tabVideo: s.tab === 'video', tabYayin: s.tab === 'yayin', tabImgStudio: s.tab === 'imgstudio',
+      resSenaryo: (r.senaryo || []).map((sec, i) => ({
+        ...sec,
+        edit: () => this.startEdit('sec', i, 'Senaryo — ' + (sec.bolum || 'Bölüm ' + (i + 1)))
+      })),
+      resVoiceText: this.voiceText(),
+      voiceName: this.find('voice', s.voice).name + ' (' + elv.name + ')',
+      styleName: this.find('style', s.style).name.toUpperCase(),
+      elStability: String(elv.stability), elStyle: String(elv.style),
+      copyVoice: () => this.copy('vc', this.voiceText()),
+      copyVoiceLabel: s.copied['vc'] ? 'KOPYALANDI ✓' : 'KOPYALA',
+      copyElJson: () => this.copy('el', JSON.stringify({ voice_id: elv.id, model_id: 'eleven_multilingual_v2', voice_settings: { stability: elv.stability, similarity_boost: 0.8, style: elv.style } }, null, 2)),
+      copyElLabel: s.copied['el'] ? 'KOPYALANDI ✓' : 'AYARLARI JSON KOPYALA',
+      elKey: s.elKey,
+      onElKey: e => this.set({ elKey: e.target.value }),
+      genAudio: () => this.genAudio(),
+      ttsBusy: s.ttsBusy,
+      ttsLabel: s.ttsBusy ? 'ÜRETİLİYOR…' : '🎙 SESİ ÜRET',
+      ttsError: s.ttsError,
+      hasAudio: !!s.audioUrl, audioUrl: s.audioUrl,
+
+      resKapak: mkCopy(r.kapak, 'kp'),
+      resGorsel: mkCopy(r.gorsel_promptlar, 'gp').map((x, i) => this.sceneExtras(x, i, 'gp')),
+      resVideo: mkCopy(r.video_promptlar, 'vp').map((x, i) => this.sceneExtras(x, i, 'vp')),
+      resYtTitle: yt.baslik || '', resYtDesc: yt.aciklama || '',
+      resYtTags: (yt.etiketler || []).map(t => ({ t })),
+      resIgDesc: ig.aciklama || '',
+      resIgTags: (ig.hashtagler || []).map(t => ({ t })),
+      resNote: (r.seslendirme_notu ? r.seslendirme_notu + ' ' : '') + (r.uretim_notu || ''),
+      copyYt: () => this.copy('yt', (yt.baslik || '') + '\n\n' + (yt.aciklama || '') + '\n\n' + (yt.etiketler || []).join(', ')),
+      copyYtLabel: s.copied['yt'] ? 'KOPYALANDI ✓' : 'KOPYALA',
+      copyIg: () => this.copy('ig', (ig.aciklama || '') + '\n\n' + (ig.hashtagler || []).join(' ')),
+      copyIgLabel: s.copied['ig'] ? 'KOPYALANDI ✓' : 'KOPYALA',
+      copyAll: () => this.copy('all', fullText()),
+      copyAllLabel: s.copied['all'] ? 'KOPYALANDI ✓' : 'TÜMÜNÜ KOPYALA',
+      newFile: () => this.setState({ step: 1, idea: '', result: null, audioUrl: '', genError: '' }),
+
+      credits: s.credits,
+      history: (s.history || []).map(h => ({ title: h.title, date: h.date, cost: '−' + (h.cost || 100) + ' KREDİ' })),
+      showHistory: s.step !== 3 && s.screen === 'studio' && (s.history || []).length > 0,
+      openCredits: () => this.setState({ creditModal: true }),
+      closeCredits: () => this.setState({ creditModal: false }),
+      stopProp: e => e.stopPropagation(),
+      showCreditModal: s.creditModal,
+      packs,
+      true: true
+    };
+  }
+
+  doLoginNow() {
+    const s = this.state;
+    const name = s.agentDraft.trim();
+    if (!name) { this.setState({ regError: 'Bir kod adı seç.' }); return; }
+    if (!/.+@.+\..+/.test(s.regEmail)) { this.setState({ regError: 'Geçerli bir e-posta gir.' }); return; }
+    this.setState({ regError: '', regPending: true });
+    // prototip: demo talebi otomatik onaylanır; gerçek sistemde e-posta onayı beklenir
+    this._rt = setTimeout(() => {
+      this.setState(st => ({
+        regPending: false, agentName: name, screen: 'studio',
+        credits: st.credits > 0 ? st.credits : 500
+      }), () => this.persist());
+    }, 2600);
+  }
+
+  async sendChat() {
+    const s = this.state;
+    const text = s.chatInput.trim();
+    if (!text || s.chatBusy) return;
+    const msgs = [...s.chatMsgs, { role: 'user', content: text }];
+    this.setState({ chatMsgs: msgs, chatInput: '', chatBusy: true });
+    const modelName = this.find('model', s.model).name;
+    try {
+      let prompt;
+      if (s.editTarget) {
+        const current = this.editCurrentText();
+        prompt = 'Sen "Tarih Ajanı" kanalının editörüsün. Aşağıdaki metni kullanıcının isteğine göre yeniden yaz. YALNIZCA yeni metni döndür; açıklama, başlık veya tırnak ekleme.\n\nDÜZENLENEN BÖLÜM: ' + s.editLabel + '\nMEVCUT METİN:\n' + current + '\n\nKULLANICI İSTEĞİ: ' + text;
+      } else {
+        const ctx = s.result ? 'Aktif dosya: "' + (s.result.baslik || '') + '" — ' + (s.result.logline || '') + '\n\n' : '';
+        const transcript = msgs.map(m => (m.role === 'user' ? 'KULLANICI: ' : 'AJAN: ') + m.content).join('\n\n');
+        prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır, senaryo taslakları, başlıklar, fikirler üretir ve soruları kaynak bilinciyle yanıtlarsın. Türkçe, net ve yoğun cevap ver; gerektiğinde madde kullan.\n\n' + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
+      }
+      const reply = await this.askAI(prompt, 4000);
+      this.setState(st => ({ chatMsgs: [...msgs, { role: 'assistant', content: reply.trim() }], chatBusy: false }));
+    } catch (e) {
+      this.setState({ chatMsgs: [...msgs, { role: 'assistant', content: 'Yanıt alınamadı: ' + e.message }], chatBusy: false });
+    }
+  }
+
+  editCurrentText() {
+    const s = this.state, r = s.result || {}, t = s.editTarget;
+    if (!t) return '';
+    if (t.type === 'gp') return (((r.gorsel_promptlar || [])[t.i]) || {}).prompt || '';
+    if (t.type === 'vp') return (((r.video_promptlar || [])[t.i]) || {}).prompt || '';
+    if (t.type === 'yt') return (r.youtube || {}).aciklama || '';
+    if (t.type === 'ig') return (r.instagram || {}).aciklama || '';
+    if (t.type === 'sec') return ((r.senaryo || [])[t.i] || {}).metin || '';
+    return '';
+  }
+
+  applyEditNow() {
+    const s = this.state;
+    const last = [...s.chatMsgs].reverse().find(m => m.role === 'assistant');
+    if (!last || !s.editTarget || !s.result) return;
+    const r = JSON.parse(JSON.stringify(s.result));
+    const t = s.editTarget;
+    if (t.type === 'yt' && r.youtube) r.youtube.aciklama = last.content;
+    else if (t.type === 'ig' && r.instagram) r.instagram.aciklama = last.content;
+    else if (t.type === 'sec' && r.senaryo && r.senaryo[t.i]) r.senaryo[t.i].metin = last.content;
+    else if (t.type === 'gp' && r.gorsel_promptlar && r.gorsel_promptlar[t.i]) r.gorsel_promptlar[t.i].prompt = last.content;
+    else if (t.type === 'vp' && r.video_promptlar && r.video_promptlar[t.i]) r.video_promptlar[t.i].prompt = last.content;
+    this.setState({ result: r, editTarget: null, editLabel: '', chatOpen: false });
+  }
+
+  startEdit(type, i, label) {
+    this.setState({ editTarget: { type, i }, editLabel: label, chatOpen: true });
+  }
+
+  sceneExtras(x, i, kind) {
+    const s = this.state;
+    const busy = s.regenKey === kind + i;
+    return {
+      ...x,
+      no: 'SAHNE ' + (i + 1),
+      edit: () => this.startEdit(kind, i, (kind === 'gp' ? 'Görsel promptu · Sahne ' : 'Video promptu · Sahne ') + (i + 1)),
+      regen: () => this.regenScene(kind, i),
+      regenLabel: busy ? '⟳ ÜRETİLİYOR…' : '↻ YENİLE · 5 KR'
+    };
+  }
+
+  async regenScene(kind, i) {
+    const s = this.state;
+    if (s.regenKey || !s.result) return;
+    if (s.credits < 5) { this.setState({ creditModal: true }); return; }
+    const arr = kind === 'gp' ? (s.result.gorsel_promptlar || []) : (s.result.video_promptlar || []);
+    const item = arr[i];
+    if (!item) return;
+    this.setState({ regenKey: kind + i });
+    try {
+      const m = this.promptMaps();
+      const stilStr = m.stil[s.style] || m.stil.sinematik;
+      const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
+      const anti = s.style === 'gravur'
+        ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
+        : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
+      const tail = kind === 'vp' ? 'Stable face and anatomy, no warping, no morphing, no flicker.' : anti;
+      const what = kind === 'gp' ? 'image-generation prompt' : 'video-generation prompt describing ONE camera move/action, 5-8 seconds';
+      const reply = await this.askAI('Rewrite the following ' + what + ' for the scene "' + (item.sahne || '') + '" of a Turkish history-mystery YouTube video. Produce a NEW, improved variation (different composition or angle), in English. It MUST start with this exact style core: "' + stilStr + '", must include "' + oran + '", and must END with this exact line: "' + tail + '". Return ONLY the prompt text, no quotes or explanation.\n\nCurrent prompt:\n' + (item.prompt || ''), 600);
+      const r = JSON.parse(JSON.stringify(this.state.result));
+      const tgt = kind === 'gp' ? r.gorsel_promptlar : r.video_promptlar;
+      if (tgt && tgt[i]) tgt[i].prompt = reply.trim().replace(/^["']|["']$/g, '');
+      const entry = { title: 'Sahne yenileme — ' + (item.sahne || 'Sahne ' + (i + 1)), date: new Date().toLocaleDateString('tr-TR'), cost: 5 };
+      this.setState(st => ({ result: r, regenKey: null, credits: st.credits - 5, history: [entry, ...st.history].slice(0, 12) }), () => this.persist());
+    } catch (e) {
+      this.setState({ regenKey: null });
+    }
+  }
+
+  async askAI(prompt, maxTokens) {
+    const norm = (r) => {
+      if (typeof r === 'string') return r;
+      if (r && r.content && r.content[0] && r.content[0].text) return r.content[0].text;
+      if (r && r.completion) return r.completion;
+      throw new Error('Beklenmeyen yanıt biçimi');
+    };
+    // 1) Bu ortamda: window.claude köprüsü
+    if (window.claude && window.claude.complete) {
+      try { return norm(await window.claude.complete(prompt)); }
+      catch (e) {
+        try { return norm(await window.claude.complete({ model: 'claude-sonnet-4-5', max_tokens: maxTokens || 4000, messages: [{ role: 'user', content: prompt }] })); }
+        catch (e2) { /* aşağıdaki canlı backend'e düş */ }
+      }
+    }
+    // 2) Canlı site: studio-generate edge function (seçili model: claude / openai)
+    const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const prov = this.state.model === 'openai' || this.state.model === 'gpt' ? 'openai' : 'claude';
+    const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000 })
+    });
+    const data = await r.json().catch(() => ({ ok: false, error: 'Sunucu yanıtı okunamadı' }));
+    if (!r.ok || !data.ok) throw new Error(data.error || ('studio-generate hatası (' + r.status + ')'));
+    return norm(data.text || data.result || '');
+  }
+
+  async suggestIdeaNow() {
+    if (this.state.suggestBusy) return;
+    this.setState({ suggestBusy: true });
+    try {
+      const reply = await this.askAI('Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan bir editörsün. Az bilinen, "bunu nasıl bilmiyordum" dedirten, ilk cümlede kilitleyen, görsel açıdan zengin, klişe olmayan tek bir video konusu öner (dedektif/vaka tonu). Somut bir olay/kişi/nesne olsun, jenerik olmasın. YALNIZCA o tek cümlelik konu başlığını döndür; tırnak, açıklama veya önek ekleme.', 300);
+      this.setState({ idea: reply.trim().replace(/^["']|["']$/g, ''), suggestBusy: false });
+    } catch (e) {
+      this.setState({ suggestBusy: false, idea: this.state.idea || '', genError: '' });
+      alert('Öneri alınamadı: ' + e.message);
+    }
+  }
+
+  async addShortNow() {
+    const s = this.state;
+    if (s.shortBusy || !s.result) return;
+    this.setState({ shortBusy: true });
+    try {
+      const full = (s.result.senaryo || []).map(x => x.metin).join('\n\n');
+      const reply = await this.askAI('Aşağıdaki tarih videosu senaryosunun 30 saniyelik dikey Shorts versiyonunu yaz. Kurallar: ilk 3 saniyede kilitleyen bir kanca; tek nefeste akan, kısa vurucu cümleler; toplam 55-75 kelime; sonda açık bir merak sorusuyla bitir (marka sloganı/kanal adı YOK). YALNIZCA seslendirme metnini döndür; açıklama veya başlık ekleme.\n\n' + full.slice(0, 6000), 900);
+      const r = JSON.parse(JSON.stringify(s.result));
+      r.senaryo = [...(r.senaryo || []), { bolum: 'Shorts — 30 sn Versiyon', sure: '0:00–0:30', metin: reply.trim() }];
+      this.setState({ result: r, shortBusy: false });
+    } catch (e) {
+      this.setState({ shortBusy: false });
+    }
+  }
+}
+</script>
+</body>
+</html>

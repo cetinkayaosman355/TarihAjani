@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Tarih Ajanı · Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; padding: 0; background: #03050b; }
+    * { box-sizing: border-box; }
+    ::selection { background: rgba(193,154,82,.35); }
+    input:focus { outline: 1px solid rgba(193,154,82,.6); }
+    a { color: #e6c478; }
+  </style>
+</helmet>
+
+<div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+
+  <!-- GİRİŞ KAPISI -->
+  <sc-if value="{{ showGate }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height: 100vh; display: grid; place-items: center; padding: 24px;">
+      <div style="width: min(400px, 100%); border: 1px solid rgba(193,154,82,.35); background: #05070d; padding: clamp(28px, 5vw, 44px); text-align: center;">
+        <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 44px; width: auto;">
+        <p style="margin: 16px 0 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .24em;">KONTROL ODASI · YETKİLİ GİRİŞİ</p>
+        <h1 style="margin: 10px 0 22px; font-family: 'Playfair Display', serif; font-size: 25px; font-weight: 800;">Admin Paneli</h1>
+        <input value="{{ pass }}" onChange="{{ onPass }}" onKeyDown="{{ onPassKey }}" type="password" placeholder="Yönetici şifresi" style="width: 100%; border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 14px; font-size: 14px; font-family: inherit; text-align: center;">
+        <button onClick="{{ login }}" disabled="{{ loading }}" style="margin-top: 12px; width: 100%; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12.5px; letter-spacing: .13em; padding: 15px;">{{ loginLabel }}</button>
+        <sc-if value="{{ err }}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 14px 0 0; color: #e08a80; font-size: 13px; line-height: 1.5;">{{ err }}</p>
+        </sc-if>
+        <a href="/" style="display: inline-block; margin-top: 18px; color: #676d7c; font-size: 12px; text-decoration: none;" style-hover="color: #e6c478;">← Siteye dön</a>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- PANEL -->
+  <sc-if value="{{ showPanel }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <header style="position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px clamp(18px, 3vw, 34px); border-bottom: 1px solid rgba(193,154,82,.2); background: rgba(3,5,11,.95); backdrop-filter: blur(8px);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 34px; width: auto;">
+          <div>
+            <div style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 16px;">Kontrol Odası</div>
+            <div style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">TARİH AJANI · ADMIN</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button onClick="{{ refresh }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; padding: 10px 14px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1);">{{ refreshLabel }}</button>
+          <button onClick="{{ logout }}" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; padding: 10px 14px; cursor: pointer;" style-hover="color: #e08a80;">ÇIKIŞ</button>
+        </div>
+      </header>
+
+      <main style="width: min(1180px, 100%); margin: 0 auto; padding: 28px clamp(18px, 3vw, 34px) 70px;">
+
+        <!-- ÖZET -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 30px;">
+          <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12; padding: 20px;">
+            <div style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">TOPLAM ÜYE</div>
+            <div style="margin-top: 8px; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800; color: #f2ecd9;">{{ statUsers }}</div>
+          </div>
+          <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12; padding: 20px;">
+            <div style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">ERİŞİMİ AÇIK</div>
+            <div style="margin-top: 8px; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800; color: #9ed3a8;">{{ statAccess }}</div>
+          </div>
+          <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12; padding: 20px;">
+            <div style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">TOPLAM SİPARİŞ</div>
+            <div style="margin-top: 8px; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800; color: #e6c478;">{{ statOrders }}</div>
+          </div>
+        </div>
+
+        <!-- ÜYELER -->
+        <section style="margin-bottom: 40px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap;">
+            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Üyeler & Erişim</h2>
+            <input value="{{ search }}" onChange="{{ onSearch }}" placeholder="E-posta / isim ara…" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 10px 14px; font-size: 13px; font-family: inherit; min-width: 220px;">
+          </div>
+          <div style="border: 1px solid rgba(129,135,151,.18); overflow: hidden;">
+            <div style="display: grid; grid-template-columns: 1.8fr 1.1fr .95fr .8fr .8fr 1.1fr; gap: 10px; padding: 12px 16px; background: #070a12; border-bottom: 1px solid rgba(129,135,151,.18); color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">
+              <span>E-POSTA</span><span>AD SOYAD</span><span>SEVİYE</span><span>AYLIK KOTA</span><span>DURUM</span><span style="text-align: right;">İŞLEM</span>
+            </div>
+            <sc-for list="{{ users }}" as="u" hint-placeholder-count="4">
+              <div style="display: grid; grid-template-columns: 1.8fr 1.1fr .95fr .8fr .8fr 1.1fr; gap: 10px; align-items: center; padding: 13px 16px; border-bottom: 1px solid rgba(129,135,151,.1);">
+                <span style="color: #e9dfc8; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ u.email }}</span>
+                <span style="color: #a4a9b5; font-size: 13px;">{{ u.name }}</span>
+                <button onClick="{{ u.cycleTier }}" title="Tıkla: seviyeyi değiştir" style="{{ u.tierStyle }}">{{ u.tierLabel }}</button>
+                <button onClick="{{ u.editQuota }}" title="Tıkla: kota belirle" style="{{ u.quotaStyle }}">{{ u.quotaLabel }}</button>
+                <span style="{{ u.badgeStyle }}">{{ u.badge }}</span>
+                <span style="text-align: right;">
+                  <button onClick="{{ u.toggle }}" disabled="{{ u.busy }}" style="{{ u.btnStyle }}">{{ u.btnLabel }}</button>
+                </span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noUsers }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 26px 16px; text-align: center; color: #676d7c; font-size: 13px;">Kayıt bulunamadı.</div>
+            </sc-if>
+          </div>
+        </section>
+
+        <!-- PAKETLER & KOTALAR -->
+        <section style="margin-bottom: 40px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap;">
+            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Paketler & Kotalar</h2>
+            <span style="color: #676d7c; font-size: 12px;">Fiyat, aylık kredi kotası ve pakete dahil içerikler</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;">
+            <sc-for list="{{ tierCards }}" as="tc" hint-placeholder-count="3">
+              <div style="border: 1px solid rgba(193,154,82,.28); background: #070a12; padding: 20px; display: grid; gap: 12px; align-content: start;">
+                <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">{{ tc.name }}</span>
+                <label style="display: grid; gap: 4px;">
+                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">AYLIK FİYAT (TL)</span>
+                  <input value="{{ tc.fiyat }}" onChange="{{ tc.onFiyat }}" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 10px 12px; font-size: 13.5px; font-family: inherit;">
+                </label>
+                <label style="display: grid; gap: 4px;">
+                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">AYLIK KREDİ KOTASI</span>
+                  <input value="{{ tc.kota }}" onChange="{{ tc.onKota }}" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 10px 12px; font-size: 13.5px; font-family: inherit;">
+                </label>
+                <label style="display: grid; gap: 4px;">
+                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">DAHİL İÇERİKLER (her satır bir madde)</span>
+                  <textarea value="{{ tc.icerik }}" onChange="{{ tc.onIcerik }}" rows="4" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #e9dfc8; padding: 10px 12px; font-size: 13px; font-family: inherit; resize: vertical; line-height: 1.5;"></textarea>
+                </label>
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{ saveTiers }}" style="margin-top: 14px; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 11.5px; letter-spacing: .13em; padding: 13px 22px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">PAKET TANIMLARINI KAYDET</button>
+        </section>
+
+        <!-- SİPARİŞLER -->
+        <section>
+          <h2 style="margin: 0 0 14px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Son Siparişler</h2>
+          <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-bottom: 14px; border: 1px solid rgba(123,191,138,.4); background: rgba(123,191,138,.08); color: #9ed3a8; padding: 12px 16px; font-size: 13px;">{{ toast }}</div>
+          </sc-if>
+          <div style="border: 1px solid rgba(129,135,151,.18); overflow-x: auto;">
+            <div style="min-width: 940px;">
+              <div style="display: grid; grid-template-columns: 1.4fr 1.6fr .8fr .9fr .9fr 1.5fr; gap: 10px; padding: 12px 16px; background: #070a12; border-bottom: 1px solid rgba(129,135,151,.18); color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">
+                <span>ÜRÜN</span><span>MÜŞTERİ</span><span>TUTAR</span><span>ÖDEME</span><span>DURUM</span><span style="text-align: right;">İŞLEM</span>
+              </div>
+              <sc-for list="{{ orderRows }}" as="o" hint-placeholder-count="3">
+                <div style="display: grid; grid-template-columns: 1.4fr 1.6fr .8fr .9fr .9fr 1.5fr; gap: 10px; align-items: center; padding: 13px 16px; border-bottom: 1px solid rgba(129,135,151,.1);">
+                  <span style="color: #e9dfc8; font-size: 13px;">{{ o.title }}</span>
+                  <span style="color: #a4a9b5; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ o.who }}</span>
+                  <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 13px;">{{ o.price }}</span>
+                  <span style="{{ o.payStyle }}">{{ o.pay }}</span>
+                  <span style="{{ o.statusStyle }}">{{ o.statusLabel }}</span>
+                  <span style="display: flex; gap: 6px; justify-content: flex-end;">
+                    <button onClick="{{ o.approve }}" disabled="{{ o.busy }}" style="cursor: pointer; border: 0; background: linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 9.5px; letter-spacing: .05em; padding: 8px 11px;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ o.approveLabel }}</button>
+                    <button onClick="{{ o.invoice }}" style="cursor: pointer; border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .06em; padding: 8px 10px;" style-hover="color: #e6c478;">FATURA</button>
+                    <sc-if value="{{ o.isHavale }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ o.ibanMail }}" style="cursor: pointer; border: 1px solid rgba(200,167,94,.4); background: transparent; color: #c8a75e; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .06em; padding: 8px 10px;" style-hover="background: rgba(193,154,82,.12);">IBAN MAİLİ</button>
+                    </sc-if>
+                  </span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noOrders }}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 26px 16px; text-align: center; color: #676d7c; font-size: 13px;">Henüz sipariş yok.</div>
+              </sc-if>
+            </div>
+          </div>
+        </section>
+
+        <!-- ÜRÜNLER & FİYATLAR -->
+        <section style="margin-top: 40px;">
+          <h2 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Ürünler & Fiyatlar</h2>
+          <p style="margin: 0 0 14px; color: #818797; font-size: 13px;">Ürün adını ve fiyatını değiştirip Kaydet'e bas. Değişiklik satış sayfasına yansır.</p>
+          <div style="border: 1px solid rgba(129,135,151,.18); overflow-x: auto;">
+            <div style="min-width: 720px;">
+              <div style="display: grid; grid-template-columns: 2.4fr .9fr .8fr; gap: 12px; padding: 12px 16px; background: #070a12; border-bottom: 1px solid rgba(129,135,151,.18); color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">
+                <span>ÜRÜN ADI</span><span>FİYAT (TL)</span><span style="text-align: right;">İŞLEM</span>
+              </div>
+              <sc-for list="{{ productRows }}" as="p" hint-placeholder-count="4">
+                <div style="display: grid; grid-template-columns: 2.4fr .9fr .8fr; gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid rgba(129,135,151,.1);">
+                  <input value="{{ p.titleVal }}" onChange="{{ p.onTitle }}" style="border: 1px solid rgba(129,135,151,.25); background: #02040a; color: #e9dfc8; padding: 11px 12px; font-size: 13.5px; font-family: inherit;">
+                  <input value="{{ p.priceVal }}" onChange="{{ p.onPrice }}" style="border: 1px solid rgba(129,135,151,.25); background: #02040a; color: #e6c478; padding: 11px 12px; font-size: 13.5px; font-family: 'Special Elite', monospace;">
+                  <span style="text-align: right;"><button onClick="{{ p.save }}" style="{{ p.saveStyle }}">{{ p.saveLabel }}</button></span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noProducts }}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 26px 16px; text-align: center; color: #676d7c; font-size: 13px;">Ürün tablosu boş. SQL'i çalıştırdın mı? (notes/urunler-muhasebe.sql)</div>
+              </sc-if>
+            </div>
+          </div>
+        </section>
+
+        <!-- MUHASEBE -->
+        <section style="margin-top: 44px;">
+          <h2 style="margin: 0 0 14px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Muhasebe</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 22px;">
+            <div style="border: 1px solid rgba(123,191,138,.3); background: #070a12; padding: 20px;">
+              <div style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">GELİR · {{ paidCount }} ÖDENEN</div>
+              <div style="margin-top: 8px; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800; color: #9ed3a8;">{{ gelir }}</div>
+            </div>
+            <div style="border: 1px solid rgba(224,138,128,.3); background: #070a12; padding: 20px;">
+              <div style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">GİDER</div>
+              <div style="margin-top: 8px; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800; color: #e08a80;">{{ gider }}</div>
+            </div>
+            <div style="border: 1px solid rgba(193,154,82,.3); background: #070a12; padding: 20px;">
+              <div style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">NET</div>
+              <div style="margin-top: 8px; {{ netStyle }}">{{ net }}</div>
+            </div>
+          </div>
+
+          <!-- gider ekle -->
+          <div style="border: 1px solid rgba(129,135,151,.18); background: #05070d; padding: 18px; margin-bottom: 18px;">
+            <div style="font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em; color: #c19a52; margin-bottom: 12px;">GİDER EKLE</div>
+            <div style="display: grid; grid-template-columns: 1.6fr .8fr 1.6fr auto; gap: 10px; align-items: center;">
+              <input value="{{ expTitle }}" onChange="{{ onExpTitle }}" placeholder="Başlık (ör. Reklam)" style="border: 1px solid rgba(129,135,151,.25); background: #02040a; color: #fff; padding: 12px; font-size: 13px; font-family: inherit;">
+              <input value="{{ expAmount }}" onChange="{{ onExpAmount }}" placeholder="Tutar" style="border: 1px solid rgba(129,135,151,.25); background: #02040a; color: #e6c478; padding: 12px; font-size: 13px; font-family: 'Special Elite', monospace;">
+              <input value="{{ expNote }}" onChange="{{ onExpNote }}" placeholder="Not (opsiyonel)" style="border: 1px solid rgba(129,135,151,.25); background: #02040a; color: #a4a9b5; padding: 12px; font-size: 13px; font-family: inherit;">
+              <button onClick="{{ addExpense }}" style="cursor: pointer; border: 0; background: linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .08em; padding: 12px 18px; white-space: nowrap;">{{ addExpLabel }}</button>
+            </div>
+          </div>
+
+          <!-- gider listesi -->
+          <div style="border: 1px solid rgba(129,135,151,.18); overflow-x: auto;">
+            <div style="min-width: 640px;">
+              <div style="display: grid; grid-template-columns: 1.8fr 1fr 1.8fr 1fr auto; gap: 10px; padding: 12px 16px; background: #070a12; border-bottom: 1px solid rgba(129,135,151,.18); color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">
+                <span>BAŞLIK</span><span>TUTAR</span><span>NOT</span><span>TARİH</span><span></span>
+              </div>
+              <sc-for list="{{ expenseRows }}" as="e" hint-placeholder-count="2">
+                <div style="display: grid; grid-template-columns: 1.8fr 1fr 1.8fr 1fr auto; gap: 10px; align-items: center; padding: 12px 16px; border-bottom: 1px solid rgba(129,135,151,.1);">
+                  <span style="color: #e9dfc8; font-size: 13px;">{{ e.title }}</span>
+                  <span style="color: #e08a80; font-family: 'Special Elite', monospace; font-size: 13px;">{{ e.amount }}</span>
+                  <span style="color: #818797; font-size: 12.5px;">{{ e.note }}</span>
+                  <span style="color: #676d7c; font-size: 12px;">{{ e.date }}</span>
+                  <button onClick="{{ e.del }}" disabled="{{ e.busy }}" style="cursor: pointer; border: 1px solid rgba(224,138,128,.4); background: transparent; color: #e08a80; font-family: 'Special Elite', monospace; font-size: 10px; padding: 8px 11px;" style-hover="background: rgba(192,57,43,.1);">SİL</button>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noExpenses }}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 22px 16px; text-align: center; color: #676d7c; font-size: 13px;">Henüz gider eklenmedi.</div>
+              </sc-if>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    pass: '', authed: false, loading: false, err: '',
+    profiles: [], orders: [], products: [], expenses: [], productDrafts: {},
+    expTitle: '', expAmount: '', expNote: '',
+    search: '', refreshing: false, busyId: null, toast: '',
+    memberMeta: {}, tierDefs: null
+  };
+
+  FN_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/admin';
+  SEND_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/send-emails';
+  ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+
+  componentDidMount() {
+    let saved = '';
+    try { saved = sessionStorage.getItem('ta_admin_pass') || ''; } catch (e) {}
+    if (saved) { this.setState({ pass: saved }, () => this.doLogin(true)); }
+    try {
+      const mm = JSON.parse(localStorage.getItem('ta_admin_members_v1') || '{}');
+      const td = JSON.parse(localStorage.getItem('ta_admin_tiers_v1') || 'null');
+      this.setState({ memberMeta: mm, tierDefs: td || this.defaultTiers() });
+    } catch (e) { this.setState({ tierDefs: this.defaultTiers() }); }
+  }
+
+  async call(payload) {
+    const r = await fetch(this.FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.ANON },
+      body: JSON.stringify(payload)
+    });
+    const data = await r.json().catch(() => ({ ok: false, error: 'Sunucu yanıtı okunamadı' }));
+    return { status: r.status, data };
+  }
+
+  async doLogin(silent) {
+    const pass = this.state.pass.trim();
+    if (!pass) { this.setState({ err: 'Şifre gir.' }); return; }
+    this.setState({ loading: true, err: '' });
+    const { data } = await this.call({ password: pass, action: 'list' });
+    if (data.ok) {
+      try { sessionStorage.setItem('ta_admin_pass', pass); } catch (e) {}
+      this.setState({ authed: true, loading: false, profiles: data.profiles || [], orders: data.orders || [], products: data.products || [], expenses: data.expenses || [] });
+    } else {
+      this.setState({ loading: false, authed: false, err: silent ? '' : (data.error || 'Giriş başarısız.') });
+    }
+  }
+
+  async refresh() {
+    this.setState({ refreshing: true });
+    const { data } = await this.call({ password: this.state.pass, action: 'list' });
+    if (data.ok) this.setState({ profiles: data.profiles || [], orders: data.orders || [], products: data.products || [], expenses: data.expenses || [], refreshing: false });
+    else this.setState({ refreshing: false });
+  }
+
+  async toggleAccess(id, current) {
+    this.setState({ busyId: id });
+    const { data } = await this.call({ password: this.state.pass, action: 'setAccess', id, value: !current });
+    if (data.ok) {
+      this.setState(st => ({ busyId: null, profiles: st.profiles.map(p => p.id === id ? { ...p, has_access: !current } : p) }));
+    } else {
+      this.setState({ busyId: null, err: data.error || 'Güncellenemedi.' });
+    }
+  }
+
+  defaultTiers() {
+    return {
+      gozlemci: { name: 'GÖZLEMCİ', fiyat: '599', kota: '1000', icerik: 'Hazır hikâye arşivine erişim\nAylık 1.000 Studio kredisi\nAylık yeni vaka dosyası' },
+      ajan: { name: 'AJAN', fiyat: '1299', kota: '5000', icerik: 'Tüm dijital kitap arşivi\nHazır hikâye arşivinin tamamı\nAylık 5.000 Studio kredisi\nEğitim programı modülleri' },
+      basmufettis: { name: 'BAŞMÜFETTİŞ', fiyat: '1999', kota: '15000', icerik: 'Ajan içeriğinin tamamı\nAylık 15.000 Studio kredisi\nÖncelikli üretim\nBirebir mentorluk' }
+    };
+  }
+
+  memberKey(p) { return p.email || p.id; }
+
+  tierOf(p) { return (this.state.memberMeta[this.memberKey(p)] || {}).tier || 'gozlemci'; }
+
+  quotaOf(p) {
+    const meta = this.state.memberMeta[this.memberKey(p)] || {};
+    if (meta.kota != null && meta.kota !== '') return String(meta.kota);
+    const td = this.state.tierDefs || this.defaultTiers();
+    return String((td[this.tierOf(p)] || {}).kota || '1000');
+  }
+
+  setMemberMeta(p, patch) {
+    const key = this.memberKey(p);
+    const mm = { ...this.state.memberMeta, [key]: { ...(this.state.memberMeta[key] || {}), ...patch } };
+    this.setState({ memberMeta: mm });
+    try { localStorage.setItem('ta_admin_members_v1', JSON.stringify(mm)); } catch (e) {}
+  }
+
+  cycleTier(p) {
+    const order = ['gozlemci', 'ajan', 'basmufettis'];
+    const next = order[(order.indexOf(this.tierOf(p)) + 1) % 3];
+    this.setMemberMeta(p, { tier: next, kota: '' });
+    this.flash((p.email || 'Üye') + ' → yeni seviye: ' + next.toUpperCase());
+  }
+
+  editQuota(p) {
+    const val = window.prompt('Aylık kredi kotası (' + (p.email || '') + '):', this.quotaOf(p));
+    if (val == null) return;
+    this.setMemberMeta(p, { kota: val.trim() });
+    this.flash('Kota güncellendi: ' + (p.email || '') + ' → ' + val.trim());
+  }
+
+  fmtDate(s) {
+    if (!s) return '—';
+    try { return new Date(s).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+    catch (e) { return s; }
+  }
+
+  flash(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: '' }), 4000);
+  }
+
+  async sendConfirm(o) {
+    const email = o.email || o.customer_email || '';
+    if (!email) { this.flash('Bu siparişte e-posta yok, mail gönderilemedi.'); return false; }
+    const category = this.orderCategory(o);
+    this.flash('Onay maili gönderiliyor…');
+    try {
+      const r = await fetch(this.SEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.ANON },
+        body: JSON.stringify({ type: 'confirm', order: {
+          id: o.id || ('TA-' + Date.now()), name: o.customer_name || o.name || 'Ajan', email,
+          title: o.product_title || o.title || 'Sipariş', price: o.price || '', category
+        } })
+      });
+      if (!r.ok) throw new Error(await r.text());
+      this.flash('✓ Onay maili gönderildi: ' + email);
+      return true;
+    } catch (e) {
+      this.flash('Mail gönderilemedi. send-emails fonksiyonunu kontrol et.');
+      return false;
+    }
+  }
+
+  orderCategory(o) {
+    const k = (o.kind || '').toLowerCase();
+    if (k.indexOf('fizik') !== -1) return 'fiziki';
+    if (k.indexOf('üyel') !== -1 || k.indexOf('uyel') !== -1) return 'uyelik';
+    if (k.indexOf('eğitim') !== -1 || k.indexOf('egitim') !== -1) return 'dijital';
+    if (k.indexOf('dosya') !== -1 || k.indexOf('kitap') !== -1) return 'ekitap';
+    return 'dijital';
+  }
+
+  async approveOrder(o) {
+    if (!o.id) { this.flash('Sipariş kimliği yok, onaylanamadı.'); return; }
+    this.setState({ busyId: 'ord-' + o.id });
+    // 1) ödeme durumunu "paid" yap
+    const { data } = await this.call({ password: this.state.pass, action: 'setOrderStatus', id: o.id, status: 'paid' });
+    if (data.ok) {
+      this.setState(st => ({ orders: st.orders.map(x => x.id === o.id ? { ...x, status: 'paid' } : x) }));
+    }
+    // 2) müşteriye onay/erişim maili gönder
+    await this.sendConfirm(o);
+    this.setState({ busyId: null });
+  }
+
+  draft(slug, field, val) {
+    this.setState(st => ({ productDrafts: { ...st.productDrafts, [slug]: { ...(st.productDrafts[slug] || {}), [field]: val } } }));
+  }
+
+  async saveProduct(p) {
+    const d = this.state.productDrafts[p.slug] || {};
+    const title = (d.title != null ? d.title : p.title);
+    const price = parseFloat(d.price != null ? d.price : p.price) || 0;
+    this.setState({ busyId: 'prod-' + p.slug });
+    const { data } = await this.call({ password: this.state.pass, action: 'updateProduct', slug: p.slug, title, price });
+    if (data.ok) {
+      this.setState(st => ({
+        busyId: null,
+        products: st.products.map(x => x.slug === p.slug ? { ...x, title, price } : x),
+        productDrafts: { ...st.productDrafts, [p.slug]: undefined }
+      }));
+      this.flash('✓ Ürün güncellendi: ' + title);
+    } else { this.setState({ busyId: null }); this.flash('Ürün güncellenemedi.'); }
+  }
+
+  async addExpense() {
+    const s = this.state;
+    const amount = parseFloat(String(s.expAmount).replace(',', '.')) || 0;
+    if (!s.expTitle.trim() || amount <= 0) { this.flash('Gider başlığı ve geçerli tutar gir.'); return; }
+    this.setState({ busyId: 'exp-add' });
+    const { data } = await this.call({ password: s.pass, action: 'addExpense', title: s.expTitle.trim(), amount, note: s.expNote.trim() });
+    if (data.ok) { this.setState({ busyId: null, expTitle: '', expAmount: '', expNote: '' }); this.refresh(); this.flash('✓ Gider eklendi.'); }
+    else { this.setState({ busyId: null }); this.flash('Gider eklenemedi.'); }
+  }
+
+  async delExpense(id) {
+    this.setState({ busyId: 'exp-' + id });
+    const { data } = await this.call({ password: this.state.pass, action: 'delExpense', id });
+    if (data.ok) this.setState(st => ({ busyId: null, expenses: st.expenses.filter(e => e.id !== id) }));
+    else this.setState({ busyId: null });
+  }
+
+  money(n) { return (Number(n) || 0).toLocaleString('tr-TR') + ' TL'; }
+
+  openInvoice(o) {
+    const num = 'TA-' + (o.id ? String(o.id).slice(-6) : Date.now().toString().slice(-6));
+    const name = o.customer_name || o.name || '—';
+    const email = o.email || o.customer_email || '—';
+    const phone = o.phone || '—';
+    const title = o.product_title || o.title || 'Sipariş';
+    const priceNum = parseFloat(String(o.price || '0').replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+    const kdv = priceNum - (priceNum / 1.20);
+    const net = priceNum - kdv;
+    const pm = (o.pay_method || o.payment || '').toLowerCase();
+    const pay = pm === 'card' ? 'Kredi Kartı (Shopier)' : (pm ? 'Havale/EFT' : '—');
+    const date = this.fmtDate(o.created_at);
+    const tl = (n) => n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TL';
+    const html = `<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>Fatura ${num}</title>
+<style>
+  *{box-sizing:border-box} body{font-family:Arial,Helvetica,sans-serif;color:#1c1811;margin:0;padding:40px;background:#fff}
+  .wrap{max-width:720px;margin:0 auto}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #c19a52;padding-bottom:18px}
+  .brand{font-size:24px;font-weight:800;letter-spacing:.02em}
+  .muted{color:#777;font-size:12px;line-height:1.6}
+  h1{font-size:15px;letter-spacing:.2em;color:#8a6a24;margin:26px 0 4px}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th,td{text-align:left;padding:11px 8px;font-size:13px;border-bottom:1px solid #eee}
+  th{color:#888;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  .r{text-align:right} .tot{font-size:20px;font-weight:800;color:#8a6a24}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:10px}
+  .box{border:1px solid #e6ddc9;padding:14px 16px;font-size:13px;line-height:1.7}
+  .btn{margin-top:26px;text-align:center}
+  .btn button{background:#c19a52;border:0;color:#171207;font-weight:700;letter-spacing:.1em;padding:13px 26px;cursor:pointer;font-size:13px}
+  @media print{.btn{display:none}}
+</style></head><body><div class="wrap">
+  <div class="top">
+    <div><div class="brand">TARİH AJANI</div><div class="muted">tarihajani.com · iletisim@tarihajani.com</div></div>
+    <div class="muted" style="text-align:right"><strong style="color:#1c1811;font-size:15px">FATURA / MAKBUZ</strong><br>No: ${num}<br>Tarih: ${date}</div>
+  </div>
+  <div class="grid">
+    <div class="box"><strong>Müşteri</strong><br>${name}<br>${email}<br>${phone}</div>
+    <div class="box"><strong>Ödeme</strong><br>${pay}<br>Durum: ${o.status || 'pending'}</div>
+  </div>
+  <h1>KALEMLER</h1>
+  <table>
+    <tr><th>Açıklama</th><th class="r">Tutar</th></tr>
+    <tr><td>${title}</td><td class="r">${tl(priceNum)}</td></tr>
+    <tr><td class="muted">Ara toplam (KDV hariç)</td><td class="r muted">${tl(net)}</td></tr>
+    <tr><td class="muted">KDV %20</td><td class="r muted">${tl(kdv)}</td></tr>
+    <tr><td class="tot">GENEL TOPLAM</td><td class="r tot">${tl(priceNum)}</td></tr>
+  </table>
+  <p class="muted" style="margin-top:22px">Bu belge bilgilendirme amaçlı bir sipariş makbuzudur. Resmi e-fatura/e-arşiv, mükellef bilgilerinizle muhasebe sisteminizden düzenlenmelidir.</p>
+  <div class="btn"><button onclick="window.print()">YAZDIR / PDF</button></div>
+</div></body></html>`;
+    const w = window.open('', '_blank');
+    if (w) { w.document.open(); w.document.write(html); w.document.close(); }
+    else this.flash('Açılır pencere engellendi — tarayıcı pop-up iznini aç.');
+    // Fatura'yı müşteriye mail at + iletisim@ arşivine kaydet (sorar)
+    if (email && email !== '—') {
+      const ok = window.confirm('Faturayı ' + email + ' adresine e-posta ile göndereyim mi?\n(Bir arşiv kopyası iletisim@tarihajani.com adresine de kaydedilir.)');
+      if (ok) this.mailInvoice(email, num, html);
+    }
+  }
+
+  async mailInvoice(email, num, html) {
+    this.flash('Fatura gönderiliyor…');
+    try {
+      const r = await fetch(this.SEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.ANON },
+        body: JSON.stringify({ type: 'invoice', email, number: num, html })
+      });
+      if (!r.ok) throw new Error(await r.text());
+      this.flash('✓ Fatura gönderildi + arşive kaydedildi: ' + email);
+    } catch (e) { this.flash('Fatura gönderilemedi.'); }
+  }
+
+  async sendIbanMail(o) {
+    const email = o.email || o.customer_email || '';
+    if (!email) { this.flash('Bu siparişte e-posta yok.'); return; }
+    this.flash('IBAN maili gönderiliyor…');
+    try {
+      const r = await fetch(this.SEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.ANON },
+        body: JSON.stringify({ type: 'iban', order: o })
+      });
+      if (!r.ok) throw new Error(await r.text());
+      this.flash('✓ IBAN maili gönderildi: ' + email);
+    } catch (e) { this.flash('IBAN maili gönderilemedi.'); }
+  }
+
+  renderVals() {
+    const s = this.state;
+    const q = s.search.trim().toLowerCase();
+    const filtered = s.profiles.filter(p =>
+      !q || (p.email || '').toLowerCase().includes(q) || (p.full_name || '').toLowerCase().includes(q)
+    );
+
+    const users = filtered.map(p => {
+      const on = p.has_access === true;
+      return {
+        email: p.email || '—',
+        name: p.full_name || '—',
+        badge: on ? '● AÇIK' : '○ KAPALI',
+        badgeStyle: {
+          fontFamily: "'Special Elite', monospace", fontSize: '11px', letterSpacing: '.05em',
+          color: on ? '#9ed3a8' : '#818797'
+        },
+        tierLabel: { gozlemci: 'GÖZLEMCİ', ajan: 'AJAN', basmufettis: 'BAŞMÜFETTİŞ' }[this.tierOf(p)],
+        cycleTier: () => this.cycleTier(p),
+        tierStyle: {
+          cursor: 'pointer', border: '1px solid rgba(193,154,82,.45)', background: 'rgba(193,154,82,.08)',
+          color: '#e6c478', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em', padding: '7px 8px', textAlign: 'center'
+        },
+        quotaLabel: (Number(this.quotaOf(p)) || 0).toLocaleString('tr-TR') + ' KR',
+        editQuota: () => this.editQuota(p),
+        quotaStyle: {
+          cursor: 'pointer', border: '1px solid rgba(129,135,151,.3)', background: 'transparent',
+          color: '#a4a9b5', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.06em', padding: '7px 8px', textAlign: 'center'
+        },
+        busy: s.busyId === p.id,
+        toggle: () => this.toggleAccess(p.id, on),
+        btnLabel: s.busyId === p.id ? '…' : (on ? 'KAPAT' : 'ERİŞİM AÇ'),
+        btnStyle: {
+          cursor: 'pointer', border: on ? '1px solid rgba(192,57,43,.5)' : '0',
+          background: on ? 'transparent' : 'linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52)',
+          color: on ? '#e08a80' : '#171207',
+          fontFamily: "'Special Elite', monospace", fontWeight: 700, fontSize: '10.5px',
+          letterSpacing: '.08em', padding: '9px 14px'
+        }
+      };
+    });
+
+    const orderRows = s.orders.map(o => {
+      const pm = (o.pay_method || o.payment || '').toLowerCase();
+      const payTxt = pm === 'card' ? 'Kredi Kartı' : (pm === 'iban' || pm.indexOf('havale') !== -1 ? 'Havale/EFT' : '—');
+      const paid = (o.status || '').toLowerCase() === 'paid';
+      return {
+        title: o.product_title || o.title || o.order_title || '—',
+        who: o.email || o.customer_email || o.name || o.customer_name || '—',
+        price: (o.price != null && String(o.price) !== '') ? (String(o.price).indexOf('TL') !== -1 ? o.price : o.price + ' TL') : '—',
+        pay: payTxt,
+        payStyle: { fontFamily: "'Special Elite', monospace", fontSize: '11px', color: pm === 'card' ? '#9ed3a8' : '#c8a75e' },
+        paid,
+        statusLabel: paid ? '● ÖDENDİ' : '○ BEKLİYOR',
+        statusStyle: { fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.05em', color: paid ? '#9ed3a8' : '#d8b26a' },
+        busy: s.busyId === ('ord-' + o.id),
+        approveLabel: (s.busyId === ('ord-' + o.id)) ? '…' : (paid ? 'MAİL TEKRAR' : 'ÖDEME ONAYLA ✓'),
+        approve: () => this.approveOrder(o),
+        invoice: () => this.openInvoice(o),
+        isHavale: pm === 'iban' || pm.indexOf('havale') !== -1 || pm === '',
+        ibanMail: () => this.sendIbanMail(o)
+      };
+    });
+
+    const paidOrders = (s.orders || []).filter(o => (o.status || '').toLowerCase() === 'paid');
+    const num = (v) => parseFloat(String(v == null ? 0 : v).replace(/[^0-9.,-]/g, '').replace(',', '.')) || 0;
+    const incomeTotal = paidOrders.reduce((a, o) => a + num(o.price), 0);
+    const expenseTotal = (s.expenses || []).reduce((a, e) => a + num(e.amount), 0);
+
+    const td = s.tierDefs || this.defaultTiers();
+    const tierCards = ['gozlemci', 'ajan', 'basmufettis'].map(id => {
+      const t = td[id];
+      const upd = patch => this.setState({ tierDefs: { ...td, [id]: { ...t, ...patch } } });
+      return {
+        name: t.name, fiyat: t.fiyat, kota: t.kota, icerik: t.icerik,
+        onFiyat: e => upd({ fiyat: e.target.value }),
+        onKota: e => upd({ kota: e.target.value }),
+        onIcerik: e => upd({ icerik: e.target.value })
+      };
+    });
+
+    return {
+      showGate: !s.authed,
+      showPanel: s.authed,
+      tierCards,
+      saveTiers: () => {
+        try { localStorage.setItem('ta_admin_tiers_v1', JSON.stringify(this.state.tierDefs || this.defaultTiers())); } catch (e) {}
+        this.flash('Paket tanımları kaydedildi.');
+      },
+      pass: s.pass,
+      onPass: e => this.setState({ pass: e.target.value }),
+      onPassKey: e => { if (e.key === 'Enter') this.doLogin(false); },
+      login: () => this.doLogin(false),
+      loading: s.loading,
+      loginLabel: s.loading ? 'GİRİŞ YAPILIYOR…' : 'GİRİŞ YAP',
+      err: s.err,
+
+      refresh: () => this.refresh(),
+      refreshLabel: s.refreshing ? 'YENİLENİYOR…' : '↻ YENİLE',
+      logout: () => { try { sessionStorage.removeItem('ta_admin_pass'); } catch (e) {} this.setState({ authed: false, pass: '', profiles: [], orders: [] }); },
+
+      statUsers: s.profiles.length,
+      statAccess: s.profiles.filter(p => p.has_access === true).length,
+      statOrders: s.orders.length,
+
+      search: s.search,
+      onSearch: e => this.setState({ search: e.target.value }),
+      users,
+      noUsers: users.length === 0,
+      orderRows,
+      noOrders: orderRows.length === 0,
+      toast: s.toast,
+
+      // ürün & fiyat düzenleme
+      productRows: (s.products || []).map(p => {
+        const d = s.productDrafts[p.slug] || {};
+        const dirty = (d.title != null && d.title !== p.title) || (d.price != null && String(d.price) !== String(p.price));
+        return {
+          slug: p.slug,
+          titleVal: d.title != null ? d.title : p.title,
+          priceVal: d.price != null ? d.price : String(p.price),
+          onTitle: e => this.draft(p.slug, 'title', e.target.value),
+          onPrice: e => this.draft(p.slug, 'price', e.target.value),
+          save: () => this.saveProduct(p),
+          saveLabel: s.busyId === ('prod-' + p.slug) ? '…' : 'KAYDET',
+          saveStyle: {
+            cursor: 'pointer', border: 0, background: dirty ? 'linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52)' : 'rgba(129,135,151,.15)',
+            color: dirty ? '#171207' : '#676d7c', fontFamily: "'Special Elite', monospace", fontWeight: 700,
+            fontSize: '10.5px', letterSpacing: '.08em', padding: '11px 14px'
+          }
+        };
+      }),
+      noProducts: (s.products || []).length === 0,
+
+      // muhasebe
+      gelir: this.money(incomeTotal),
+      gider: this.money(expenseTotal),
+      net: this.money(incomeTotal - expenseTotal),
+      netStyle: { fontFamily: "'Playfair Display', serif", fontSize: '30px', fontWeight: 800, color: (incomeTotal - expenseTotal) >= 0 ? '#9ed3a8' : '#e08a80' },
+      paidCount: paidOrders.length,
+      expTitle: s.expTitle, onExpTitle: e => this.setState({ expTitle: e.target.value }),
+      expAmount: s.expAmount, onExpAmount: e => this.setState({ expAmount: e.target.value }),
+      expNote: s.expNote, onExpNote: e => this.setState({ expNote: e.target.value }),
+      addExpense: () => this.addExpense(),
+      addExpLabel: s.busyId === 'exp-add' ? 'EKLENİYOR…' : 'GİDER EKLE +',
+      expenseRows: (s.expenses || []).map(e => ({
+        title: e.title || '—',
+        amount: this.money(e.amount),
+        note: e.note || '',
+        date: this.fmtDate(e.created_at),
+        del: () => this.delExpense(e.id),
+        busy: s.busyId === ('exp-' + e.id)
+      })),
+      noExpenses: (s.expenses || []).length === 0
+    };
+  }
+}
+</script>
+</body>
+</html>
