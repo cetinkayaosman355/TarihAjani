@@ -433,6 +433,66 @@ class Component extends DCLogic {
     return 'dijital';
   }
 
+  orderText(o) {
+    return ((o.product_title || o.title || '') + ' ' + (o.kind || '')).toLowerCase();
+  }
+
+  detectTier(o) {
+    const t = this.orderText(o);
+    if (t.indexOf('başmüfettiş') !== -1 || t.indexOf('basmufettis') !== -1) return 'basmufettis';
+    if (t.indexOf('ajan') !== -1) return 'ajan';
+    if (t.indexOf('gözlemci') !== -1 || t.indexOf('gozlemci') !== -1) return 'gozlemci';
+    return null;
+  }
+
+  detectBilling(o) {
+    const t = this.orderText(o);
+    return (t.indexOf('yıl') !== -1 || t.indexOf('yil') !== -1 || t.indexOf('annual') !== -1) ? 'yil' : 'ay';
+  }
+
+  detectCreditPack(o) {
+    const t = this.orderText(o);
+    if (t.indexOf('kredi') === -1) return 0;
+    const m = t.match(/(\d[\d.\s]{1,})\s*kredi/);
+    return m ? parseInt(m[1].replace(/[.\s]/g, ''), 10) || 0 : 0;
+  }
+
+  findProfileByEmail(email) {
+    const e = (email || '').toLowerCase();
+    return this.state.profiles.find(p => (p.email || '').toLowerCase() === e);
+  }
+
+  // Ödeme onayında üyeye otomatik erişim/kredi tanımla (Adım 5)
+  async grantAccessForOrder(o) {
+    const email = o.email || o.customer_email || '';
+    const cat = this.orderCategory(o);
+    const tier = this.detectTier(o);
+    const pack = this.detectCreditPack(o);
+    if (cat !== 'uyelik' && !tier && !pack) return;   // üyelik/kredi değil → dokunma
+
+    const prof = this.findProfileByEmail(email);
+    if (!prof) { this.flash('⚠ ' + (email || 'bu sipariş') + ' ile kayıtlı üye yok — müşteri önce /uyelik\'ten üye olmalı.'); return; }
+
+    if (tier || cat === 'uyelik') {
+      const useTier = tier || 'gozlemci';
+      const d = await this.creditsAdmin({ action: 'setTier', id: prof.id, tier: useTier, billing: this.detectBilling(o) });
+      if (d && d.ok) {
+        this.patchProfile(prof.id, { tier: useTier, monthly_quota: d.monthly_quota, expires_at: d.expires_at });
+        this.flash('✓ Erişim verildi: ' + (o.email || '') + ' → ' + useTier.toUpperCase());
+      } else {
+        this.flash('Seviye tanımlanamadı: ' + ((d && d.error) || 'hata'));
+      }
+    } else if (pack) {
+      const d = await this.creditsAdmin({ action: 'grant', id: prof.id, amount: pack, reason: 'kredi_paketi' });
+      if (d && d.ok) {
+        this.patchProfile(prof.id, { credits: d.credits });
+        this.flash('✓ ' + pack + ' kredi tanımlandı: ' + (o.email || ''));
+      } else {
+        this.flash('Kredi tanımlanamadı: ' + ((d && d.error) || 'hata'));
+      }
+    }
+  }
+
   async approveOrder(o) {
     if (!o.id) { this.flash('Sipariş kimliği yok, onaylanamadı.'); return; }
     this.setState({ busyId: 'ord-' + o.id });
@@ -441,7 +501,9 @@ class Component extends DCLogic {
     if (data.ok) {
       this.setState(st => ({ orders: st.orders.map(x => x.id === o.id ? { ...x, status: 'paid' } : x) }));
     }
-    // 2) müşteriye onay/erişim maili gönder
+    // 2) üyelik/kredi siparişiyse otomatik erişim tanımla
+    await this.grantAccessForOrder(o);
+    // 3) müşteriye onay/erişim maili gönder
     await this.sendConfirm(o);
     this.setState({ busyId: null });
   }
