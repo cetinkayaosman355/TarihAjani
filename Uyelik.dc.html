@@ -25,6 +25,7 @@
 <helmet>
 <meta charset="utf-8">
 <title>Üyelik · Tarih Ajanı</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;800&family=Hanken+Grotesk:wght@400;600;700;800&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
   html, body { margin: 0; padding: 0; background: #06070d; }
@@ -180,7 +181,7 @@
   </main>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;varsayilanSeviye&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;gozlemci&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;gozlemci&quot;, &quot;ajan&quot;, &quot;basmufettis&quot;], &quot;section&quot;: &quot;Önizleme&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;supabaseUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://ddyuopqcvpzaysnfavqc.supabase.co&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;supabaseAnonKey&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;varsayilanSeviye&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;gozlemci&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;gozlemci&quot;, &quot;ajan&quot;, &quot;basmufettis&quot;], &quot;section&quot;: &quot;Önizleme&quot;}}">
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -195,8 +196,65 @@ class Component extends DCLogic {
       tier: acc.tier || (this.props.varsayilanSeviye ?? 'gozlemci'),
       since: acc.since || '',
       billing: 'ay',
-      mode: 'giris', fName: '', fEmail: '', fPass: '', formError: ''
+      mode: 'giris', fName: '', fEmail: '', fPass: '', formError: '', busy: false
     };
+    this.sb = null;
+  }
+
+  componentDidMount() { this.initSupabase(); }
+
+  initSupabase(tries = 0) {
+    const url = (this.props.supabaseUrl || '').trim();
+    const key = (this.props.supabaseAnonKey || '').trim();
+    if (!url || !key) return;                       // yapılandırılmamış → yerel yedek
+    if (!window.supabase || !window.supabase.createClient) {
+      if (tries < 40) setTimeout(() => this.initSupabase(tries + 1), 150);
+      return;
+    }
+    this.sb = window.supabase.createClient(url, key);
+    this.sb.auth.getSession().then(({ data }) => {
+      this._session = data && data.session;
+      const u = this._session && this._session.user;
+      if (u) this.onSession(u);
+    });
+    this._authSub = this.sb.auth.onAuthStateChange((_evt, session) => {
+      this._session = session;
+      const u = session && session.user;
+      if (u) this.onSession(u);
+    });
+  }
+
+  // Oturum açıldığında profili sunucudan (credits/balance) çek — gerçek kaynak burası
+  async onSession(u) {
+    const name = (u.user_metadata && u.user_metadata.full_name) || (u.email || '').split('@')[0];
+    this.setState({ loggedIn: true, name, email: u.email }, () => this.saveAccount());
+    try {
+      const r = await fetch((this.props.supabaseUrl || '').trim() + '/functions/v1/credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this._token() },
+        body: JSON.stringify({ action: 'balance' })
+      });
+      const d = await r.json();
+      if (d && d.ok) {
+        this.setState({ tier: d.tier || 'gozlemci', credits: typeof d.credits === 'number' ? d.credits : 0 }, () => {
+          this.saveAccount();
+          try { const st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}'); st.credits = this.state.credits; localStorage.setItem('ta_studio_v5', JSON.stringify(st)); } catch (e) {}
+        });
+      }
+    } catch (e) {}
+  }
+
+  _token() {
+    try { return this._session && this._session.access_token; } catch (e) { return ''; }
+  }
+
+  authErrTr(err) {
+    const m = ((err && err.message) || '').toLowerCase();
+    if (m.includes('invalid login')) return 'E-posta veya şifre hatalı.';
+    if (m.includes('already registered') || m.includes('already been')) return 'Bu e-posta zaten kayıtlı. Giriş yap.';
+    if (m.includes('password') && m.includes('6')) return 'Şifre en az 6 karakter olmalı.';
+    if (m.includes('email')) return 'Geçerli bir e-posta gir.';
+    return (err && err.message) || 'Bir hata oluştu, tekrar dene.';
   }
 
   tiers() {
@@ -318,24 +376,57 @@ class Component extends DCLogic {
       onFEmail: e => this.setState({ fEmail: e.target.value }),
       onFPass: e => this.setState({ fPass: e.target.value }),
       formError: s.formError, hasFormError: !!s.formError,
-      submitLabel: s.mode === 'giris' ? 'GİRİŞ YAP →' : 'KAYIT OL →',
-      submitForm: () => {
+      submitLabel: s.busy ? 'LÜTFEN BEKLE…' : (s.mode === 'giris' ? 'GİRİŞ YAP →' : 'KAYIT OL →'),
+      submitForm: async () => {
         const email = s.fEmail.trim();
         if (!email || !email.includes('@')) { this.setState({ formError: 'Geçerli bir e-posta yaz.' }); return; }
         if (s.mode === 'kayit' && !s.fName.trim()) { this.setState({ formError: 'Ajan adını yaz.' }); return; }
         if (!s.fPass.trim()) { this.setState({ formError: 'Şifreni yaz.' }); return; }
-        const name = s.mode === 'kayit' ? s.fName.trim() : (this.state.name || email.split('@')[0]);
-        const since = this.state.since || new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-        this.setState({ loggedIn: true, name, email, since, formError: '' }, () => this.saveAccount());
+        if (this.state.busy) return;
+
+        // Supabase yoksa yerel yedek (yapılandırma gelene kadar)
+        if (!this.sb) {
+          const name = s.mode === 'kayit' ? s.fName.trim() : (this.state.name || email.split('@')[0]);
+          const since = this.state.since || new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+          this.setState({ loggedIn: true, name, email, since, formError: '' }, () => this.saveAccount());
+          return;
+        }
+
+        this.setState({ busy: true, formError: '' });
+        try {
+          if (s.mode === 'kayit') {
+            const { error } = await this.sb.auth.signUp({
+              email, password: s.fPass,
+              options: { data: { full_name: s.fName.trim() } }
+            });
+            if (error) { this.setState({ busy: false, formError: this.authErrTr(error) }); return; }
+            // E-posta doğrulaması kapalıysa oturum hemen açılır; açık değilse giriş dene
+            const { data: sess } = await this.sb.auth.getSession();
+            if (!sess || !sess.session) {
+              const { error: e2 } = await this.sb.auth.signInWithPassword({ email, password: s.fPass });
+              if (e2) { this.setState({ busy: false, formError: 'Kayıt alındı. E-postanı doğrulayıp giriş yapabilirsin.' , mode: 'giris' }); return; }
+            }
+          } else {
+            const { error } = await this.sb.auth.signInWithPassword({ email, password: s.fPass });
+            if (error) { this.setState({ busy: false, formError: this.authErrTr(error) }); return; }
+          }
+          const since = new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+          this.setState({ busy: false, fPass: '', since, formError: '' }, () => this.saveAccount());
+          // onAuthStateChange → onSession profili ve krediyi çekecek
+        } catch (err) {
+          this.setState({ busy: false, formError: this.authErrTr(err) });
+        }
       },
-      logout: () => {
+      logout: async () => {
+        try { if (this.sb) await this.sb.auth.signOut(); } catch (e) {}
         try {
           localStorage.removeItem('ta_account_v1');
           const st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}');
           delete st.agent; delete st.email;
           localStorage.setItem('ta_studio_v5', JSON.stringify(st));
         } catch (e) {}
-        this.setState({ loggedIn: false, name: '', email: '', fPass: '' });
+        this._session = null;
+        this.setState({ loggedIn: false, name: '', email: '', fPass: '', credits: 0, tier: 'gozlemci' });
       },
 
       name: s.name, email: s.email,
