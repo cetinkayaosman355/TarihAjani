@@ -122,6 +122,7 @@
           <span>DEMO TALEBİ GÖNDER</span><span style="font-family: 'Special Elite', monospace;">→</span>
           </button>
           <small style="display: block; margin-top: 14px; color: #676d7c; line-height: 1.5;">Onaylanan demo hesabına 5 kredi tanımlanır. Üyeliğin varsa aynı e-posta ile giriş yapılır.</small>
+          <a href="/uyelik" style="display: inline-block; margin-top: 12px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .14em; text-decoration: none; border: 1px solid rgba(193,154,82,.5); padding: 10px 16px;" style-hover="background: rgba(193,154,82,.12);">ÜYELİK PANELİNDEN GİRİŞ YAP →</a>
           <a href="/urunler" style="display: inline-block; margin-top: 10px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; text-decoration: none;" style-hover="text-decoration: underline;">KREDİ PAKETLERİNİ GÖR →</a>
         </sc-if>
       </div>
@@ -233,7 +234,40 @@
         </sc-if>
 
         <!-- HAZIR ARŞİV -->
-        <sc-if value="{{ isArsiv }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ showDoc }}" hint-placeholder-val="{{ false }}">
+          <div style="animation: ta-rise .5s ease both; max-width: 880px;">
+            <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; border-bottom: 1px solid rgba(193,154,82,.25); padding-bottom: 18px;">
+              <div>
+                <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">{{ docNo }} · {{ docEra }}</p>
+                <h2 style="margin: 8px 0 0; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; line-height: 1.15;">{{ docTitle }}</h2>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button onClick="{{ docCopyAll }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ docCopyAllLabel }}</button>
+                <button onClick="{{ docClose }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="color: #e6c478;">← ARŞİVE DÖN</button>
+              </div>
+            </div>
+            <sc-if value="{{ docHasPages }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px;">
+                <sc-for list="{{ docPages }}" as="dp" hint-placeholder-count="4">
+                  <button onClick="{{ dp.pick }}" style="{{ dp.style }}">{{ dp.ad }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <div style="display: grid; gap: 12px; margin-top: 22px;">
+              <sc-for list="{{ docBlocks }}" as="db" hint-placeholder-count="6">
+                <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 16px 20px; display: grid; gap: 8px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">{{ db.head }}</span>
+                    <button onClick="{{ db.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer; white-space: nowrap;" style-hover="color: #e6c478;">{{ db.copyLabel }}</button>
+                  </div>
+                  <p style="margin: 0; color: #cfc8b4; line-height: 1.7; white-space: pre-wrap; font-size: 14px; overflow-wrap: break-word;">{{ db.text }}</p>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isArsivGrid }}" hint-placeholder-val="{{ false }}">
           <div style="animation: ta-rise .5s ease both;">
             <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">HAZIR ÜRETİM DOSYALARI</p>
             <h2 style="margin: 10px 0 8px; font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700;">Hikâye arşivinden aç</h2>
@@ -653,6 +687,7 @@ class Component extends DCLogic {
       mode: 'wizard',
       chatMsgs: [], chatInput: '', chatBusy: false, chatOpen: false,
       editTarget: null, editLabel: '',
+      doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
       imgNotice: false, imgPrompt: '', imgProvider: 'gpt', imgQueue: [],
       step: 1,
@@ -667,6 +702,13 @@ class Component extends DCLogic {
       elKey: saved.elKey || '', ttsBusy: false, ttsError: '', audioUrl: '',
       copied: {}
     };
+  }
+
+  componentDidMount() {
+    fetch('arsiv-ek.json')
+      .then(r => r.ok ? r.json() : [])
+      .then(list => { if (Array.isArray(list) && list.length) this.setState({ arsivEk: list }); })
+      .catch(() => {});
   }
 
   persist(extra) {
@@ -948,7 +990,7 @@ class Component extends DCLogic {
     };
   }
 
-  buildPrompt() {
+  buildPrompt(outlineOnly) {
     const s = this.state;
     const m = this.promptMaps();
     const tonStr = m.ton[s.tone] || m.ton.merak;
@@ -961,7 +1003,7 @@ class Component extends DCLogic {
       ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
       : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
 
-    return `Sen "Tarih Ajanı" adlı Türkçe tarih YouTube kanalının kıdemli senaristi ve yapım yönetmenisin. Kanal, tarihi bir dedektif titizliğiyle araştırır: her iddia belgeye dayanır, anlatım bir vaka dosyası gibi kurgulanır, izleyici ilk saniyeden ipuçlarıyla sürüklenir.
+    const p = `Sen "Tarih Ajanı" adlı Türkçe tarih YouTube kanalının kıdemli senaristi ve yapım yönetmenisin. Kanal, tarihi bir dedektif titizliğiyle araştırır: her iddia belgeye dayanır, anlatım bir vaka dosyası gibi kurgulanır, izleyici ilk saniyeden ipuçlarıyla sürüklenir.
 
 BU ÜRETİMİN PARAMETRELERİ:
 - KONU: ${s.idea}
@@ -1007,6 +1049,46 @@ TARİHSEL DÜRÜSTLÜK:
 }
 
 Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} adet olsun ve her biri yukarıdaki kurallara birebir uysun.`;
+    return outlineOnly
+      ? p + '\n\nEK KURAL (İKİ AŞAMALI ÜRETİM): Bu üretimde senaryo bölümlerinin "metin" alanına yalnızca 2-3 cümlelik yoğun bölüm özeti yaz; tam seslendirme metinleri ikinci aşamada bölüm bölüm yazılacak. Diğer TÜM alanları (youtube, instagram, kapak, gorsel_promptlar, video_promptlar) eksiksiz üret.'
+      : p;
+  }
+
+  qualityFix(result) {
+    const s = this.state;
+    const m = this.promptMaps();
+    const stilStr = m.stil[s.style] || m.stil.sinematik;
+    const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
+    const anti = s.style === 'gravur'
+      ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
+      : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
+    const vidTail = 'Stable face and anatomy, no warping, no morphing, no flicker.';
+    const fix = (p0, tail) => {
+      let t = (p0 || '').trim();
+      if (!t) return t;
+      if (t.toLowerCase().indexOf(stilStr.slice(0, 24).toLowerCase()) === -1) t = stilStr + ', ' + t;
+      if (t.indexOf(oran.split(' ')[0]) === -1) t += ', ' + oran;
+      if (tail && t.indexOf(tail.slice(0, 22)) === -1) t += ' ' + tail;
+      return t;
+    };
+    (result.gorsel_promptlar || []).forEach(x => { x.prompt = fix(x.prompt, anti); });
+    (result.kapak || []).forEach(x => { x.prompt = fix(x.prompt, anti); });
+    (result.video_promptlar || []).forEach(x => { x.prompt = fix(x.prompt, vidTail); });
+    return result;
+  }
+
+  async expandActs(result) {
+    const secs = result.senaryo || [];
+    const m = this.promptMaps();
+    const tonStr = m.ton[this.state.tone] || m.ton.merak;
+    for (let i = 0; i < secs.length; i++) {
+      this.setState({ genMsg: 'BÖLÜM ' + (i + 1) + ' / ' + secs.length + ' KALEME ALINIYOR…', genPct: 55 + Math.round((i / Math.max(1, secs.length)) * 42) });
+      try {
+        const reply = await this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki uzun tarih videosunun "' + (secs[i].bolum || '') + '" bölümünün TAM seslendirme metnini yaz: 300-420 kelime, akıcı Türkçe, şu tonla: ' + tonStr + '. Önceki bölümden doğal biçimde devral, bir sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver. YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + secs.map(x => x.bolum).join(' | ') + '\nBu bölümün özeti: ' + (secs[i].metin || ''), 2500);
+        if (reply && reply.trim()) secs[i].metin = reply.trim();
+      } catch (e) { /* özetle devam et */ }
+    }
+    return result;
   }
 
   async startGenerate() {
@@ -1023,9 +1105,12 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
     }, 3500);
     try {
       if (this.props.demoMode) { await new Promise(r => setTimeout(r, 4000)); throw new Error('DEMO'); }
-      const text = await this.askAI(this.buildPrompt(), 16000);
+      const derin = s.duration === 'derin';
+      const text = await this.askAI(this.buildPrompt(derin), 16000);
       const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
-      const result = JSON.parse(clean);
+      let result = JSON.parse(clean);
+      result = this.qualityFix(result);
+      if (derin) result = await this.expandActs(result);
       clearInterval(this._mt);
       const no = 'TA-' + new Date().getFullYear() + '-' + String(Math.floor(100 + Math.random() * 900));
       const entry = {
@@ -1227,15 +1312,44 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
       modeHistory: () => this.setState({ mode: 'history' }),
       modeArsiv: () => this.setState({ mode: 'arsiv' }),
       isArsiv: s.mode === 'arsiv',
+      isArsivGrid: s.mode === 'arsiv' && !s.doc,
+      showDoc: s.mode === 'arsiv' && !!s.doc,
+      docNo: (s.doc || {}).no || '', docEra: (s.doc || {}).era || '', docTitle: (s.doc || {}).baslik || '',
+      docHasPages: !!((s.doc || {}).sayfalar || []).length,
+      docPages: ((s.doc || {}).sayfalar || []).map((p, i) => ({
+        ad: p.ad + ' · ' + p.bloklar.length,
+        pick: () => this.setState({ docPage: i }),
+        style: {
+          border: '1px solid ' + (i === s.docPage ? 'rgba(193,154,82,.65)' : 'rgba(129,135,151,.3)'),
+          cursor: 'pointer', padding: '10px 14px', whiteSpace: 'nowrap',
+          fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.1em',
+          background: i === s.docPage ? 'rgba(193,154,82,.16)' : 'transparent',
+          color: i === s.docPage ? '#e6c478' : '#818797'
+        }
+      })),
+      docBlocks: (((s.doc || {}).sayfalar ? (((s.doc || {}).sayfalar)[s.docPage] || {}).bloklar : (s.doc || {}).bloklar) || []).map((b, i) => ({
+        head: b.k, text: b.t,
+        copy: () => this.copy('doc' + s.docPage + '_' + i, b.t),
+        copyLabel: s.copied['doc' + s.docPage + '_' + i] ? '✓ KOPYALANDI' : 'KOPYALA'
+      })),
+      docClose: () => this.setState({ doc: null, docPage: 0 }),
+      docCopyAll: () => {
+        const d = s.doc || {};
+        const all = d.sayfalar
+          ? d.sayfalar.map(p => '████ ' + p.ad + ' ████\n\n' + p.bloklar.map(b => '=== ' + b.k + ' ===\n' + b.t).join('\n\n')).join('\n\n\n')
+          : (d.bloklar || []).map(b => '=== ' + b.k + ' ===\n' + b.t).join('\n\n');
+        this.copy('docAll', all);
+      },
+      docCopyAllLabel: s.copied['docAll'] ? '✓ KOPYALANDI' : 'TÜMÜNÜ KOPYALA',
       arsivTabStyle: {
         border: 0, cursor: 'pointer', padding: '10px 16px',
         fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.12em',
         background: s.mode === 'arsiv' ? 'rgba(193,154,82,.18)' : 'transparent',
         color: s.mode === 'arsiv' ? '#e6c478' : '#818797'
       },
-      arsivList: this.arsivData().map(a => ({
-        no: a.no, era: a.era, teaser: a.teaser, title: a.result.baslik,
-        openFile: () => this.setState({
+      arsivList: [...this.arsivData(), ...(s.arsivEk || [])].map(a => ({
+        no: a.no, era: a.era, teaser: a.teaser, title: (a.result && a.result.baslik) || a.baslik || a.teaser,
+        openFile: () => (a.bloklar || a.sayfalar) ? this.setState({ mode: 'arsiv', doc: a, docPage: 0 }) : this.setState({
           mode: 'wizard', step: 4, tab: 'senaryo',
           result: a.result, fileNo: a.fileNo, idea: a.result.baslik,
           audioUrl: '', ttsError: '', genError: ''
