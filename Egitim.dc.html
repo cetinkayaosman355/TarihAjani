@@ -142,7 +142,8 @@
           </div>
           <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; animation: ta-rise .9s .7s ease both;">
             <button onClick="{{ openLogin }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .16em; padding: 17px 30px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.4); transform: translateY(-2px);">EĞİTİME GİR →</button>
-            <button onClick="{{ openBuy }}" style="cursor: pointer; border: 1px solid rgba(193,154,82,.6); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .16em; padding: 17px 30px; background: rgba(3,5,11,.5);" style-hover="background: rgba(193,154,82,.12);">EĞİTİMİ SATIN AL →</button>
+            <a href="/uyelik#seviyeler" style="text-decoration: none; border: 1px solid rgba(193,154,82,.6); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .16em; padding: 17px 30px; background: rgba(3,5,11,.5);" style-hover="background: rgba(193,154,82,.12);">ÜYELİKLE AÇ · AJAN →</a>
+            <button onClick="{{ openBuy }}" style="cursor: pointer; border: 1px solid rgba(129,135,151,.35); color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .14em; padding: 17px 22px; background: transparent;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">TEK SEFERLİK SATIN AL</button>
           </div>
         </div>
       </section>
@@ -238,7 +239,8 @@
         <h1 style="margin: 12px 0 12px; font-family: 'Playfair Display', serif; font-size: 27px; font-weight: 800; line-height: 1.2;">Eğitim erişimin henüz açık değil</h1>
         <p style="margin: 0 0 22px; color: #a9adba; font-size: 14px; line-height: 1.7;">Bu program ödeme onayından sonra açılır. Satın aldıysan ve ödeme/dekont onayın işlendiyse erişimin kısa sürede tanımlanır — sonra "Erişimi kontrol et"e bas.</p>
         <div style="display: grid; gap: 10px;">
-          <button onClick="{{ openBuy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12.5px; letter-spacing: .13em; padding: 15px;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35);">EĞİTİMİ SATIN AL →</button>
+          <a href="/uyelik#seviyeler" style="display: block; text-align: center; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12.5px; letter-spacing: .13em; padding: 15px;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35);">ÜYELİKLE AÇ · AJAN SEVİYESİ →</a>
+          <button onClick="{{ openBuy }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .13em; padding: 13px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">TEK SEFERLİK SATIN AL · 999 TL</button>
           <button onClick="{{ recheckAccess }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .13em; padding: 13px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">ERİŞİMİ KONTROL ET</button>
           <button onClick="{{ logout }}" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .13em; padding: 12px; cursor: pointer;" style-hover="color: #e6c478;">ÇIKIŞ YAP</button>
         </div>

@@ -11,6 +11,7 @@
 /zaman-tuneli      /zaman-tuneli/index.html   200
 /admin             /Admin.dc.html             200
 /satis             /Satis.dc.html             200
+/uyelik            /Uyelik.dc.html            200
 /bulten            /bulten.html               200
 /bulten-tesekkurler  /bulten-tesekkurler.html 200
 
@@ -21,3 +22,4 @@
 /Urunler.dc.html           /urunler           301!
 /Studio.dc.html            /studio            301!
 /Vaka%20Dosyalari.dc.html  /vaka-dosyalari    301!
+/Uyelik.dc.html            /uyelik            301!

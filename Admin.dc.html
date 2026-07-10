@@ -85,13 +85,15 @@
             <input value="{{ search }}" onChange="{{ onSearch }}" placeholder="E-posta / isim ara…" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 10px 14px; font-size: 13px; font-family: inherit; min-width: 220px;">
           </div>
           <div style="border: 1px solid rgba(129,135,151,.18); overflow: hidden;">
-            <div style="display: grid; grid-template-columns: 2fr 1.4fr 1fr 1.1fr; gap: 10px; padding: 12px 16px; background: #070a12; border-bottom: 1px solid rgba(129,135,151,.18); color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">
-              <span>E-POSTA</span><span>AD SOYAD</span><span>DURUM</span><span style="text-align: right;">İŞLEM</span>
+            <div style="display: grid; grid-template-columns: 1.8fr 1.1fr .95fr .8fr .8fr 1.1fr; gap: 10px; padding: 12px 16px; background: #070a12; border-bottom: 1px solid rgba(129,135,151,.18); color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">
+              <span>E-POSTA</span><span>AD SOYAD</span><span>SEVİYE</span><span>AYLIK KOTA</span><span>DURUM</span><span style="text-align: right;">İŞLEM</span>
             </div>
             <sc-for list="{{ users }}" as="u" hint-placeholder-count="4">
-              <div style="display: grid; grid-template-columns: 2fr 1.4fr 1fr 1.1fr; gap: 10px; align-items: center; padding: 13px 16px; border-bottom: 1px solid rgba(129,135,151,.1);">
+              <div style="display: grid; grid-template-columns: 1.8fr 1.1fr .95fr .8fr .8fr 1.1fr; gap: 10px; align-items: center; padding: 13px 16px; border-bottom: 1px solid rgba(129,135,151,.1);">
                 <span style="color: #e9dfc8; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ u.email }}</span>
                 <span style="color: #a4a9b5; font-size: 13px;">{{ u.name }}</span>
+                <button onClick="{{ u.cycleTier }}" title="Tıkla: seviyeyi değiştir" style="{{ u.tierStyle }}">{{ u.tierLabel }}</button>
+                <button onClick="{{ u.editQuota }}" title="Tıkla: kota belirle" style="{{ u.quotaStyle }}">{{ u.quotaLabel }}</button>
                 <span style="{{ u.badgeStyle }}">{{ u.badge }}</span>
                 <span style="text-align: right;">
                   <button onClick="{{ u.toggle }}" disabled="{{ u.busy }}" style="{{ u.btnStyle }}">{{ u.btnLabel }}</button>
@@ -102,6 +104,34 @@
               <div style="padding: 26px 16px; text-align: center; color: #676d7c; font-size: 13px;">Kayıt bulunamadı.</div>
             </sc-if>
           </div>
+        </section>
+
+        <!-- PAKETLER & KOTALAR -->
+        <section style="margin-bottom: 40px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap;">
+            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Paketler & Kotalar</h2>
+            <span style="color: #676d7c; font-size: 12px;">Fiyat, aylık kredi kotası ve pakete dahil içerikler</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;">
+            <sc-for list="{{ tierCards }}" as="tc" hint-placeholder-count="3">
+              <div style="border: 1px solid rgba(193,154,82,.28); background: #070a12; padding: 20px; display: grid; gap: 12px; align-content: start;">
+                <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">{{ tc.name }}</span>
+                <label style="display: grid; gap: 4px;">
+                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">AYLIK FİYAT (TL)</span>
+                  <input value="{{ tc.fiyat }}" onChange="{{ tc.onFiyat }}" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 10px 12px; font-size: 13.5px; font-family: inherit;">
+                </label>
+                <label style="display: grid; gap: 4px;">
+                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">AYLIK KREDİ KOTASI</span>
+                  <input value="{{ tc.kota }}" onChange="{{ tc.onKota }}" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 10px 12px; font-size: 13.5px; font-family: inherit;">
+                </label>
+                <label style="display: grid; gap: 4px;">
+                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">DAHİL İÇERİKLER (her satır bir madde)</span>
+                  <textarea value="{{ tc.icerik }}" onChange="{{ tc.onIcerik }}" rows="4" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #e9dfc8; padding: 10px 12px; font-size: 13px; font-family: inherit; resize: vertical; line-height: 1.5;"></textarea>
+                </label>
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{ saveTiers }}" style="margin-top: 14px; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 11.5px; letter-spacing: .13em; padding: 13px 22px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">PAKET TANIMLARINI KAYDET</button>
         </section>
 
         <!-- SİPARİŞLER -->
@@ -223,7 +253,8 @@ class Component extends DCLogic {
     pass: '', authed: false, loading: false, err: '',
     profiles: [], orders: [], products: [], expenses: [], productDrafts: {},
     expTitle: '', expAmount: '', expNote: '',
-    search: '', refreshing: false, busyId: null, toast: ''
+    search: '', refreshing: false, busyId: null, toast: '',
+    memberMeta: {}, tierDefs: null
   };
 
   FN_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/admin';
@@ -234,6 +265,11 @@ class Component extends DCLogic {
     let saved = '';
     try { saved = sessionStorage.getItem('ta_admin_pass') || ''; } catch (e) {}
     if (saved) { this.setState({ pass: saved }, () => this.doLogin(true)); }
+    try {
+      const mm = JSON.parse(localStorage.getItem('ta_admin_members_v1') || '{}');
+      const td = JSON.parse(localStorage.getItem('ta_admin_tiers_v1') || 'null');
+      this.setState({ memberMeta: mm, tierDefs: td || this.defaultTiers() });
+    } catch (e) { this.setState({ tierDefs: this.defaultTiers() }); }
   }
 
   async call(payload) {
@@ -274,6 +310,46 @@ class Component extends DCLogic {
     } else {
       this.setState({ busyId: null, err: data.error || 'Güncellenemedi.' });
     }
+  }
+
+  defaultTiers() {
+    return {
+      gozlemci: { name: 'GÖZLEMCİ', fiyat: '599', kota: '1000', icerik: 'Hazır hikâye arşivine erişim\nAylık 1.000 Studio kredisi\nAylık yeni vaka dosyası' },
+      ajan: { name: 'AJAN', fiyat: '1299', kota: '5000', icerik: 'Tüm dijital kitap arşivi\nHazır hikâye arşivinin tamamı\nAylık 5.000 Studio kredisi\nEğitim programı modülleri' },
+      basmufettis: { name: 'BAŞMÜFETTİŞ', fiyat: '1999', kota: '15000', icerik: 'Ajan içeriğinin tamamı\nAylık 15.000 Studio kredisi\nÖncelikli üretim\nBirebir mentorluk' }
+    };
+  }
+
+  memberKey(p) { return p.email || p.id; }
+
+  tierOf(p) { return (this.state.memberMeta[this.memberKey(p)] || {}).tier || 'gozlemci'; }
+
+  quotaOf(p) {
+    const meta = this.state.memberMeta[this.memberKey(p)] || {};
+    if (meta.kota != null && meta.kota !== '') return String(meta.kota);
+    const td = this.state.tierDefs || this.defaultTiers();
+    return String((td[this.tierOf(p)] || {}).kota || '1000');
+  }
+
+  setMemberMeta(p, patch) {
+    const key = this.memberKey(p);
+    const mm = { ...this.state.memberMeta, [key]: { ...(this.state.memberMeta[key] || {}), ...patch } };
+    this.setState({ memberMeta: mm });
+    try { localStorage.setItem('ta_admin_members_v1', JSON.stringify(mm)); } catch (e) {}
+  }
+
+  cycleTier(p) {
+    const order = ['gozlemci', 'ajan', 'basmufettis'];
+    const next = order[(order.indexOf(this.tierOf(p)) + 1) % 3];
+    this.setMemberMeta(p, { tier: next, kota: '' });
+    this.flash((p.email || 'Üye') + ' → yeni seviye: ' + next.toUpperCase());
+  }
+
+  editQuota(p) {
+    const val = window.prompt('Aylık kredi kotası (' + (p.email || '') + '):', this.quotaOf(p));
+    if (val == null) return;
+    this.setMemberMeta(p, { kota: val.trim() });
+    this.flash('Kota güncellendi: ' + (p.email || '') + ' → ' + val.trim());
   }
 
   fmtDate(s) {
@@ -476,6 +552,18 @@ class Component extends DCLogic {
           fontFamily: "'Special Elite', monospace", fontSize: '11px', letterSpacing: '.05em',
           color: on ? '#9ed3a8' : '#818797'
         },
+        tierLabel: { gozlemci: 'GÖZLEMCİ', ajan: 'AJAN', basmufettis: 'BAŞMÜFETTİŞ' }[this.tierOf(p)],
+        cycleTier: () => this.cycleTier(p),
+        tierStyle: {
+          cursor: 'pointer', border: '1px solid rgba(193,154,82,.45)', background: 'rgba(193,154,82,.08)',
+          color: '#e6c478', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em', padding: '7px 8px', textAlign: 'center'
+        },
+        quotaLabel: (Number(this.quotaOf(p)) || 0).toLocaleString('tr-TR') + ' KR',
+        editQuota: () => this.editQuota(p),
+        quotaStyle: {
+          cursor: 'pointer', border: '1px solid rgba(129,135,151,.3)', background: 'transparent',
+          color: '#a4a9b5', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.06em', padding: '7px 8px', textAlign: 'center'
+        },
         busy: s.busyId === p.id,
         toggle: () => this.toggleAccess(p.id, on),
         btnLabel: s.busyId === p.id ? '…' : (on ? 'KAPAT' : 'ERİŞİM AÇ'),
@@ -516,9 +604,26 @@ class Component extends DCLogic {
     const incomeTotal = paidOrders.reduce((a, o) => a + num(o.price), 0);
     const expenseTotal = (s.expenses || []).reduce((a, e) => a + num(e.amount), 0);
 
+    const td = s.tierDefs || this.defaultTiers();
+    const tierCards = ['gozlemci', 'ajan', 'basmufettis'].map(id => {
+      const t = td[id];
+      const upd = patch => this.setState({ tierDefs: { ...td, [id]: { ...t, ...patch } } });
+      return {
+        name: t.name, fiyat: t.fiyat, kota: t.kota, icerik: t.icerik,
+        onFiyat: e => upd({ fiyat: e.target.value }),
+        onKota: e => upd({ kota: e.target.value }),
+        onIcerik: e => upd({ icerik: e.target.value })
+      };
+    });
+
     return {
       showGate: !s.authed,
       showPanel: s.authed,
+      tierCards,
+      saveTiers: () => {
+        try { localStorage.setItem('ta_admin_tiers_v1', JSON.stringify(this.state.tierDefs || this.defaultTiers())); } catch (e) {}
+        this.flash('Paket tanımları kaydedildi.');
+      },
       pass: s.pass,
       onPass: e => this.setState({ pass: e.target.value }),
       onPassKey: e => { if (e.key === 'Enter') this.doLogin(false); },
