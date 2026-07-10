@@ -23,6 +23,7 @@
 <x-dc>
 <helmet>
   <title>Tarih Ajanı · Studio</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Hanken+Grotesk:wght@300..800&amp;family=Special+Elite&amp;display=swap" rel="stylesheet">
@@ -671,7 +672,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;startCredits&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 500, &quot;tsType&quot;: &quot;number&quot;, &quot;min&quot;: 100, &quot;max&quot;: 10000, &quot;section&quot;: &quot;Sistem&quot;}, &quot;demoMode&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Sistem&quot;}, &quot;beamSize&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 340, &quot;min&quot;: 200, &quot;max&quot;: 560, &quot;step&quot;: 20, &quot;unit&quot;: &quot;px&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Giriş Ekranı&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;supabaseUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://ddyuopqcvpzaysnfavqc.supabase.co&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;supabaseAnonKey&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;startCredits&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 500, &quot;tsType&quot;: &quot;number&quot;, &quot;min&quot;: 100, &quot;max&quot;: 10000, &quot;section&quot;: &quot;Sistem&quot;}, &quot;demoMode&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Sistem&quot;}, &quot;beamSize&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 340, &quot;min&quot;: 200, &quot;max&quot;: 560, &quot;step&quot;: 20, &quot;unit&quot;: &quot;px&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Giriş Ekranı&quot;}}">
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -709,6 +710,66 @@ class Component extends DCLogic {
       .then(r => r.ok ? r.json() : [])
       .then(list => { if (Array.isArray(list) && list.length) this.setState({ arsivEk: list }); })
       .catch(() => {});
+    this.initSupabase();
+  }
+
+  // Üyelik sayfasında açılan oturum aynı origin'de olduğu için burada da görünür
+  initSupabase(tries = 0) {
+    const url = (this.props.supabaseUrl || '').trim();
+    const key = (this.props.supabaseAnonKey || '').trim();
+    if (!url || !key) return;
+    if (!window.supabase || !window.supabase.createClient) {
+      if (tries < 40) setTimeout(() => this.initSupabase(tries + 1), 150);
+      return;
+    }
+    this.sb = window.supabase.createClient(url, key);
+    this.sb.auth.getSession().then(({ data }) => {
+      this._session = data && data.session;
+      if (this._session) this.loadBalance();
+    });
+    this._authSub = this.sb.auth.onAuthStateChange((_evt, session) => {
+      this._session = session;
+      if (session) this.loadBalance();
+    });
+  }
+
+  _token() { return (this._session && this._session.access_token) || ''; }
+  hasSession() { return !!(this._session && this._session.access_token); }
+
+  async _creditsCall(body) {
+    const url = (this.props.supabaseUrl || '').trim() + '/functions/v1/credits';
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this._token() },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
+    return { status: r.status, d };
+  }
+
+  // Sunucudaki gerçek bakiyeyi çek ve göster (localStorage yalnız önbellek)
+  async loadBalance() {
+    if (!this.hasSession()) return;
+    try {
+      const { d } = await this._creditsCall({ action: 'balance' });
+      if (d && d.ok && typeof d.credits === 'number') {
+        this.setState({ credits: d.credits }, () => this.persist());
+      }
+    } catch (e) {}
+  }
+
+  // Sunucuda atomik kredi düşme. Dönen: true (başarılı) / false (yetersiz veya hata)
+  async spendServer(amount, reason) {
+    const { status, d } = await this._creditsCall({ action: 'spend', amount, reason });
+    if (d && d.ok && typeof d.credits === 'number') {
+      this.setState({ credits: d.credits }, () => this.persist());
+      return true;
+    }
+    if (status === 402) {                        // yetersiz kredi
+      if (typeof d.credits === 'number') this.setState({ credits: d.credits }, () => this.persist());
+      return false;
+    }
+    throw new Error((d && d.error) || 'Kredi düşülemedi');
   }
 
   persist(extra) {
@@ -1121,8 +1182,11 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
       };
       this.setState(st => ({
         generating: false, genPct: 100, result, fileNo: no, step: 4, tab: 'senaryo',
-        credits: st.credits - 100, history: [entry, ...st.history].slice(0, 12), audioUrl: '', ttsError: ''
+        history: [entry, ...st.history].slice(0, 12), audioUrl: '', ttsError: ''
       }), () => this.persist());
+      // Kredi düşme: oturum varsa sunucuda (gerçek kaynak), yoksa yerel
+      if (this.hasSession()) { try { await this.spendServer(100, 'uretim'); } catch (e) {} }
+      else this.setState(st => ({ credits: st.credits - 100 }), () => this.persist());
     } catch (e) {
       clearInterval(this._mt);
       const msg = e.message === 'DEMO'
@@ -1629,7 +1693,9 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
       const tgt = kind === 'gp' ? r.gorsel_promptlar : r.video_promptlar;
       if (tgt && tgt[i]) tgt[i].prompt = reply.trim().replace(/^["']|["']$/g, '');
       const entry = { title: 'Sahne yenileme — ' + (item.sahne || 'Sahne ' + (i + 1)), date: new Date().toLocaleDateString('tr-TR'), cost: 5 };
-      this.setState(st => ({ result: r, regenKey: null, credits: st.credits - 5, history: [entry, ...st.history].slice(0, 12) }), () => this.persist());
+      this.setState(st => ({ result: r, regenKey: null, history: [entry, ...st.history].slice(0, 12) }), () => this.persist());
+      if (this.hasSession()) { try { await this.spendServer(5, 'sahne_yenileme'); } catch (e) {} }
+      else this.setState(st => ({ credits: st.credits - 5 }), () => this.persist());
     } catch (e) {
       this.setState({ regenKey: null });
     }
