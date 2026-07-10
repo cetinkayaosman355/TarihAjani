@@ -258,6 +258,7 @@ class Component extends DCLogic {
   };
 
   FN_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/admin';
+  CREDITS_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/credits';
   SEND_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/send-emails';
   ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
 
@@ -322,9 +323,14 @@ class Component extends DCLogic {
 
   memberKey(p) { return p.email || p.id; }
 
-  tierOf(p) { return (this.state.memberMeta[this.memberKey(p)] || {}).tier || 'gozlemci'; }
+  // Seviye/kota önce sunucu profilinden (profiles.tier / monthly_quota); yoksa yerel yedek
+  tierOf(p) {
+    if (p && p.tier) return p.tier;
+    return (this.state.memberMeta[this.memberKey(p)] || {}).tier || 'gozlemci';
+  }
 
   quotaOf(p) {
+    if (p && (p.monthly_quota != null)) return String(p.monthly_quota);
     const meta = this.state.memberMeta[this.memberKey(p)] || {};
     if (meta.kota != null && meta.kota !== '') return String(meta.kota);
     const td = this.state.tierDefs || this.defaultTiers();
@@ -338,18 +344,50 @@ class Component extends DCLogic {
     try { localStorage.setItem('ta_admin_members_v1', JSON.stringify(mm)); } catch (e) {}
   }
 
-  cycleTier(p) {
-    const order = ['gozlemci', 'ajan', 'basmufettis'];
-    const next = order[(order.indexOf(this.tierOf(p)) + 1) % 3];
-    this.setMemberMeta(p, { tier: next, kota: '' });
-    this.flash((p.email || 'Üye') + ' → yeni seviye: ' + next.toUpperCase());
+  // profiles state'inde ilgili üyenin alanlarını güncelle (anlık yansıma)
+  patchProfile(id, patch) {
+    this.setState(st => ({ profiles: st.profiles.map(p => p.id === id ? { ...p, ...patch } : p) }));
   }
 
-  editQuota(p) {
+  async creditsAdmin(payload) {
+    const r = await fetch(this.CREDITS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.ANON },
+      body: JSON.stringify({ password: this.state.pass, ...payload })
+    });
+    return await r.json().catch(() => ({ ok: false, error: 'Sunucu yanıtı okunamadı' }));
+  }
+
+  async cycleTier(p) {
+    const order = ['gozlemci', 'ajan', 'basmufettis'];
+    const next = order[(order.indexOf(this.tierOf(p)) + 1) % 3];
+    this.setState({ busyId: p.id });
+    const d = await this.creditsAdmin({ action: 'setTier', id: p.id, tier: next });
+    this.setState({ busyId: null });
+    if (d && d.ok) {
+      this.patchProfile(p.id, { tier: next, monthly_quota: d.monthly_quota, expires_at: d.expires_at });
+      this.setMemberMeta(p, { tier: next, kota: '' });   // yerel önbellek de güncel kalsın
+      this.flash((p.email || 'Üye') + ' → yeni seviye: ' + next.toUpperCase());
+    } else {
+      this.flash('Seviye güncellenemedi: ' + ((d && d.error) || 'hata'));
+    }
+  }
+
+  async editQuota(p) {
     const val = window.prompt('Aylık kredi kotası (' + (p.email || '') + '):', this.quotaOf(p));
     if (val == null) return;
-    this.setMemberMeta(p, { kota: val.trim() });
-    this.flash('Kota güncellendi: ' + (p.email || '') + ' → ' + val.trim());
+    const quota = parseInt(String(val).trim(), 10);
+    if (!quota || quota < 0) { this.flash('Geçerli bir sayı gir.'); return; }
+    this.setState({ busyId: p.id });
+    const d = await this.creditsAdmin({ action: 'setQuota', id: p.id, quota });
+    this.setState({ busyId: null });
+    if (d && d.ok) {
+      this.patchProfile(p.id, { monthly_quota: quota });
+      this.setMemberMeta(p, { kota: String(quota) });
+      this.flash('Kota güncellendi: ' + (p.email || '') + ' → ' + quota);
+    } else {
+      this.flash('Kota güncellenemedi: ' + ((d && d.error) || 'hata'));
+    }
   }
 
   fmtDate(s) {
