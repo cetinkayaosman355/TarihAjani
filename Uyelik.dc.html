@@ -48,10 +48,15 @@
       <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 42px; width: auto;">
       <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ÜYELİK</span>
     </a>
-    <nav style="display: flex; align-items: center; gap: clamp(10px, 2vw, 22px);">
-      <a href="/" style="color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; text-decoration: none;" style-hover="color: #e6c478;">ANA SAYFA</a>
-      <a href="/studio" style="color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; text-decoration: none;" style-hover="color: #e6c478;">STUDIO</a>
-      <a href="/egitim" style="color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; text-decoration: none;" style-hover="color: #e6c478;">EĞİTİM</a>
+    <nav style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+      <a href="/" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ANA SAYFA</a>
+      <a href="/urunler" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ÜRÜNLER</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; border-bottom: 1px solid rgba(193,154,82,.6);">ÜYELİK</a>
+      <a href="/egitim" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">AKADEMİ</a>
+      <a href="/arsiv" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ARŞİV</a>
+      <a href="/studio" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">STUDIO</a>
+      <a href="/zaman-tuneli" style="color: #171207; font-weight: 700; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 10px 16px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 22px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">OYUN TÜNELİ</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12px; letter-spacing: .12em; text-decoration: none; padding: 10px 18px; border: 1px solid rgba(193,154,82,.55); margin-left: 8px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">AJAN GİRİŞİ</a>
     </nav>
   </header>
 
@@ -88,7 +93,7 @@
             <p style="margin: 0; color: #e08a80; font-size: 13px;">{{ formError }}</p>
           </sc-if>
           <button onClick="{{ submitForm }}" style="border: 0; cursor: pointer; margin-top: 4px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12.5px; letter-spacing: .16em; padding: 15px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ submitLabel }}</button>
-          <p style="margin: 4px 0 0; color: #676d7c; font-size: 12px; line-height: 1.6; text-align: center;">Üyeliğin yoksa kayıt ol; onaylanan hesaba Gözlemci demo erişimi tanımlanır.</p>
+          <p style="margin: 4px 0 0; color: #676d7c; font-size: 12px; line-height: 1.6; text-align: center;">Üyeliğin yoksa ücretsiz kayıt ol; hesabına 30 deneme kredisi tanımlanır. Arşiv ve tam Studio için paralı seviye seçebilirsin.</p>
         </div>
       </div>
     </sc-if>
@@ -116,11 +121,11 @@
               <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">STUDIO KREDİSİ</p>
               <a href="/studio" style="font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .12em; text-decoration: none;">STUDIO'YA GİT →</a>
             </div>
-            <p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 800; line-height: 1;">{{ credits }} <span style="font-size: 15px; color: #676d7c; font-family: 'Special Elite', monospace;">/ {{ quota }} AYLIK</span></p>
+            <p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 800; line-height: 1;">{{ credits }} <span style="font-size: 15px; color: #676d7c; font-family: 'Special Elite', monospace;">{{ quotaSuffix }}</span></p>
             <div style="height: 6px; background: rgba(129,135,151,.18); overflow: hidden;">
               <div style="{{ quotaBarStyle }}"></div>
             </div>
-            <p style="margin: 0; color: #676d7c; font-size: 12.5px; line-height: 1.6;">Kredin her ayın 1'inde {{ quota }} olarak yenilenir. Ek kredi paketleri Studio içinden alınır.</p>
+            <p style="margin: 0; color: #676d7c; font-size: 12.5px; line-height: 1.6;">{{ renewNote }}</p>
           </div>
         </section>
 
@@ -293,7 +298,7 @@ class Component extends DCLogic {
       delete st.agent; delete st.email;
       localStorage.setItem('ta_studio_v5', JSON.stringify(st));
     } catch (e) {}
-    if (this.state.loggedIn) this.setState({ loggedIn: false, name: '', email: '', credits: 0, tier: 'gozlemci' });
+    if (this.state.loggedIn) this.setState({ loggedIn: false, name: '', email: '', credits: 0, tier: 'uye' });
   }
 
   // Oturum açıldığında profili sunucudan (credits/balance) çek — gerçek kaynak burası
@@ -310,7 +315,7 @@ class Component extends DCLogic {
       });
       const d = await r.json();
       if (d && d.ok) {
-        this.setState({ tier: d.tier || 'gozlemci', credits: typeof d.credits === 'number' ? d.credits : 0 }, () => {
+        this.setState({ tier: d.tier || 'uye', credits: typeof d.credits === 'number' ? d.credits : 0 }, () => {
           this.saveAccount();
           try { const st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}'); st.credits = this.state.credits; localStorage.setItem('ta_studio_v5', JSON.stringify(st)); } catch (e) {}
         });
@@ -332,6 +337,12 @@ class Component extends DCLogic {
     // Ham Supabase mesajını göster ki gerçek sebep görünsün
     return 'Hata: ' + raw;
   }
+
+  // Seviye görünen adı — ücretsiz 'uye' dahil (tiers() yalnız paralı seviyeleri döndürür)
+  tierDisplayName(id) {
+    return ({ uye: 'ÜYE (ÜCRETSİZ)', gozlemci: 'GÖZLEMCİ', ajan: 'AJAN', basmufettis: 'BAŞMÜFETTİŞ' })[id] || 'ÜYE';
+  }
+  isPaidTier(id) { return this.tiers().some(t => t.id === id); }
 
   tiers() {
     return [
@@ -359,11 +370,13 @@ class Component extends DCLogic {
     const s = this.state;
     const gold = '#c19a52';
     const fmtTL = n => n.toLocaleString('tr-TR');
+    const paid = this.isPaidTier(s.tier);           // gozlemci/ajan/basmufettis
     const cur = this.tiers().find(t => t.id === s.tier) || this.tiers()[0];
-    const order = { gozlemci: 0, ajan: 1, basmufettis: 2 };
-    const hasAjan = order[s.tier] >= 1;
-    const hasBas = order[s.tier] >= 2;
-    const pct = Math.max(0, Math.min(100, (s.credits / cur.kredi) * 100));
+    const curQuota = paid ? cur.kredi : 0;           // ücretsiz üye: aylık kota yok
+    const order = { uye: -1, gozlemci: 0, ajan: 1, basmufettis: 2 };
+    const hasAjan = (order[s.tier] ?? -1) >= 1;
+    const hasBas = (order[s.tier] ?? -1) >= 2;
+    const pct = curQuota > 0 ? Math.max(0, Math.min(100, (s.credits / curQuota) * 100)) : (s.credits > 0 ? 100 : 0);
 
     const mkBadge = on => ({
       border: '1px solid ' + (on ? 'rgba(122,168,116,.55)' : 'rgba(129,135,151,.35)'),
@@ -375,8 +388,8 @@ class Component extends DCLogic {
       textDecoration: 'none', color: on ? '#e6c478' : '#818797'
     });
     const access = [
-      { name: 'Ajan Studio', on: true, desc: 'AI üretim stüdyosu — aylık kredi kotanla.', href: '/studio', go: 'STUDIO\'YA GİT →' },
-      { name: 'Hikâye Arşivi', on: true, desc: 'Yayınlanmış vakaların hazır üretim dosyaları.', href: '/studio', go: 'ARŞİVİ AÇ →' },
+      { name: 'Ajan Studio', on: true, desc: paid ? 'AI üretim stüdyosu — aylık kredi kotanla.' : 'AI üretim stüdyosu — 30 deneme kredinle dene.', href: '/studio', go: 'STUDIO\'YA GİT →' },
+      { name: 'Hikâye Arşivi', on: paid, desc: 'Yayınlanmış vakaların hazır üretim dosyaları.', href: paid ? '/arsiv' : '/uyelik#seviyeler', go: paid ? 'ARŞİVİ AÇ →' : 'ÜYELİĞE GEÇ →' },
       { name: 'E-Kitap Arşivi', on: hasAjan, desc: 'Tüm dijital kitaplar ve vaka koleksiyonları.', href: hasAjan ? '/ekitap' : '/satis#uyelik-ajan', go: hasAjan ? 'OKUMA ODASI →' : 'AJAN\'A YÜKSELT →' },
       { name: 'Eğitim Akademisi', on: hasAjan, desc: '9 derslik içerik üretim eğitimi.', href: hasAjan ? '/egitim' : '/satis#uyelik-ajan', go: hasAjan ? 'DERSLERE GİT →' : 'AJAN\'A YÜKSELT →' },
       { name: 'Birebir Mentorluk', on: hasBas, desc: 'Aylık birebir üretim görüşmesi.', href: hasBas ? 'mailto:destek@tarihajani.com?subject=Mentorluk Randevusu' : '/satis#uyelik-basmufettis', go: hasBas ? 'RANDEVU AL →' : 'BAŞMÜFETTİŞ\'E YÜKSELT →' }
@@ -502,14 +515,17 @@ class Component extends DCLogic {
           localStorage.setItem('ta_studio_v5', JSON.stringify(st));
         } catch (e) {}
         this._session = null;
-        this.setState({ loggedIn: false, name: '', email: '', fPass: '', credits: 0, tier: 'gozlemci' });
+        this.setState({ loggedIn: false, name: '', email: '', fPass: '', credits: 0, tier: 'uye' });
       },
 
       name: s.name, email: s.email,
-      tierName: 'SEVİYE · ' + cur.name,
+      tierName: 'SEVİYE · ' + this.tierDisplayName(s.tier),
       sinceLabel: s.since ? 'ÜYELİK BAŞLANGICI · ' + s.since.toUpperCase() : '',
       credits: s.credits.toLocaleString('tr-TR'),
-      quota: cur.kredi.toLocaleString('tr-TR'),
+      quotaSuffix: paid ? '/ ' + curQuota.toLocaleString('tr-TR') + ' AYLIK' : 'DENEME KREDİSİ',
+      renewNote: paid
+        ? ('Kredin her ayın 1\'inde ' + curQuota.toLocaleString('tr-TR') + ' olarak yenilenir. Ek kredi paketleri Studio içinden alınır.')
+        : 'Bu tek seferlik deneme kredisidir; yenilenmez. Üretime devam ve arşiv için aşağıdan bir üyelik seviyesi seç.',
       quotaBarStyle: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #a77d35, #e6c478)', transition: 'width .6s ease' },
 
       accessList: access,
