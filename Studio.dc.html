@@ -281,6 +281,22 @@
           </div>
         </sc-if>
 
+        <!-- HAZIR ARŞİV — ücretsiz üye kilidi (yalnız paralı seviye açar) -->
+        <sc-if value="{{ arsivLocked }}" hint-placeholder-val="{{ false }}">
+          <div style="animation: ta-rise .5s ease both; max-width: 640px; margin: 40px auto 0; text-align: center;">
+            <div style="width: 64px; height: 64px; margin: 0 auto 22px; border: 1px solid rgba(193,154,82,.4); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c19a52" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="1.5"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+            </div>
+            <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em;">HAZIR ÜRETİM ARŞİVİ</p>
+            <h2 style="margin: 10px 0 10px; font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700;">Bu arşiv paralı üyeliğe özel</h2>
+            <p style="margin: 0 0 26px; color: #a4a9b5; line-height: 1.7;">Yayınladığımız vakaların eksiksiz üretim dosyaları (senaryo, seslendirme, sahne &amp; video promptları, yayın paketi) <strong style="color: #e6c478;">Gözlemci seviyesinden itibaren</strong> açılır. Ücretsiz üye olarak Sihirbaz'dan deneme kredinle kendi dosyanı üretebilirsin.</p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+              <a href="/uyelik#seviyeler" style="text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 14px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">ÜYELİĞE GEÇ →</a>
+              <button onClick="{{ modeWizard }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 14px 24px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">SİHİRBAZ'A DÖN</button>
+            </div>
+          </div>
+        </sc-if>
+
         <!-- ADIM 1 · FİKİR -->
         <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ false }}">
           <div style="animation: ta-rise .5s ease both; max-width: 720px; margin: 0 auto;">
@@ -688,6 +704,7 @@ class Component extends DCLogic {
       generating: false, genMsg: '', genError: '', genPct: 0,
       result: null, fileNo: '',
       tab: 'senaryo',
+      tier: saved.tier || 'uye',
       credits: typeof saved.credits === 'number' ? (saved.credits < 50 ? saved.credits * 100 : saved.credits) : (this.props.startCredits ?? 500),
       history: saved.history || [],
       creditModal: false,
@@ -757,7 +774,7 @@ class Component extends DCLogic {
     try {
       const { d } = await this._creditsCall({ action: 'balance' });
       if (d && d.ok && typeof d.credits === 'number') {
-        this.setState({ credits: d.credits }, () => this.persist());
+        this.setState({ credits: d.credits, tier: d.tier || this.state.tier }, () => this.persist());
       }
     } catch (e) {}
   }
@@ -780,7 +797,7 @@ class Component extends DCLogic {
     const s = { ...this.state, ...extra };
     try {
       localStorage.setItem('ta_studio_v5', JSON.stringify({
-        agent: s.agentName, email: s.regEmail, credits: s.credits, history: s.history, elKey: s.elKey
+        agent: s.agentName, email: s.regEmail, credits: s.credits, tier: s.tier, history: s.history, elKey: s.elKey
       }));
     } catch (e) {}
   }
@@ -1061,6 +1078,11 @@ class Component extends DCLogic {
   costOf() {
     const f = this.promptMaps().format[this.state.duration];
     return (f && f.kredi) || 100;
+  }
+
+  // Paralı seviye mi? (Hazır arşiv yalnız paralıya açık; ücretsiz 'uye' değil)
+  isPaidUser() {
+    return ['gozlemci', 'ajan', 'basmufettis'].indexOf(this.state.tier) >= 0;
   }
 
   buildPrompt(outlineOnly) {
@@ -1403,8 +1425,9 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
       modeHistory: () => this.setState({ mode: 'history' }),
       modeArsiv: () => this.setState({ mode: 'arsiv' }),
       isArsiv: s.mode === 'arsiv',
-      isArsivGrid: s.mode === 'arsiv' && !s.doc,
-      showDoc: s.mode === 'arsiv' && !!s.doc,
+      isArsivGrid: s.mode === 'arsiv' && !s.doc && this.isPaidUser(),
+      arsivLocked: s.mode === 'arsiv' && !s.doc && !this.isPaidUser(),
+      showDoc: s.mode === 'arsiv' && !!s.doc && this.isPaidUser(),
       docNo: (s.doc || {}).no || '', docEra: (s.doc || {}).era || '', docTitle: (s.doc || {}).baslik || '',
       docHasPages: !!((s.doc || {}).sayfalar || []).length,
       docPages: ((s.doc || {}).sayfalar || []).map((p, i) => ({
