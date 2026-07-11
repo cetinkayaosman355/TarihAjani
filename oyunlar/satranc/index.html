@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Satranç · Tarih Ajanı</title>
+<meta name="description" content="Tarih Ajanı'nın antika masasında satranç. Bilgisayara karşı üç zorluk seviyesi ya da iki oyunculu düello. Rok, en passant, terfi ve şah-mat dahil tam kurallı satranç." />
+<link rel="canonical" href="https://tarihajani.com/satranc" />
+<link rel="icon" type="image/png" href="/assets/logo-mark.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Tarih Ajanı" />
+<meta property="og:locale" content="tr_TR" />
+<meta property="og:url" content="https://tarihajani.com/satranc" />
+<meta property="og:title" content="Satranç · Tarih Ajanı" />
+<meta property="og:description" content="Antika masada satranç. Bilgisayara karşı ya da iki oyunculu, tam kurallı." />
+<meta property="og:image" content="https://tarihajani.com/assets/og-cover.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Satranç · Tarih Ajanı" />
+<meta name="twitter:description" content="Antika masada satranç. Bilgisayara karşı ya da iki oyunculu, tam kurallı." />
+<meta name="twitter:image" content="https://tarihajani.com/assets/og-cover.png" />
+<meta name="theme-color" content="#05070F" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --void:#05070F; --panel:#0b0e18; --panel2:#0e131f;
+    --brass:#C9A25A; --gold:#E6C478; --ink:#F0ECE2; --muted:#8b8f9c;
+    --line:rgba(193,154,82,.30); --line-soft:rgba(129,135,151,.14);
+    --light:#d9c39a; --dark:#5b452a;
+    --sel:rgba(230,196,120,.55); --move:rgba(79,209,224,.28); --check:rgba(196,64,52,.55);
+  }
+  *{box-sizing:border-box}
+  html{background:var(--void);scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--void);color:var(--ink);overflow-x:hidden;
+    font-family:'Hanken Grotesk',system-ui,sans-serif;
+    background-image:
+      radial-gradient(circle 800px at 12% 6%, rgba(28,24,42,.4), transparent 55%),
+      radial-gradient(circle 900px at 90% 20%, rgba(20,26,44,.4), transparent 60%);
+    background-attachment:fixed;
+  }
+  a{color:var(--gold)}
+  ::selection{background:rgba(193,154,82,.35)}
+
+  /* büyüteç imleci — site geneliyle uyumlu */
+  *, a, button, [role="button"]{
+    cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='11' cy='11' r='7' fill='rgba(20,14,5,0.12)' stroke='%23b0894d' stroke-width='2'/%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='%23ecce8a' stroke-width='0.8'/%3E%3Cline x1='16' y1='16' x2='25' y2='25' stroke='%235c3f18' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='16' y1='16' x2='25' y2='25' stroke='%23b0894d' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") 11 11, auto;
+  }
+
+  header{
+    position:fixed;z-index:30;top:0;left:0;right:0;height:72px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 clamp(16px,4vw,40px);background:rgba(3,5,11,.86);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft);
+  }
+  header a.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+  header img{height:44px;width:auto}
+  header nav{display:flex;align-items:center;gap:2px}
+  header nav a{
+    color:#a4a9b5;font-size:12px;letter-spacing:.1em;text-decoration:none;
+    padding:8px 12px;font-weight:600;text-transform:uppercase;
+  }
+  header nav a:hover{color:var(--gold)}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:104px clamp(14px,4vw,40px) 72px}
+
+  .eyebrow{
+    font-family:'Special Elite',monospace;letter-spacing:.42em;text-transform:uppercase;
+    font-size:11px;color:var(--brass);margin:0 0 10px;
+  }
+  h1{
+    font-family:'Playfair Display',serif;font-weight:800;
+    font-size:clamp(30px,6vw,52px);line-height:1.02;margin:0 0 12px;color:var(--ink);
+  }
+  h1 .fade{background:linear-gradient(90deg,var(--gold),var(--brass));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{max-width:640px;color:var(--muted);font-size:15px;line-height:1.6;margin:0 0 28px}
+
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}
+
+  /* ── TAHTA ── */
+  .board-frame{
+    position:relative;padding:26px;border-radius:6px;
+    background:
+      linear-gradient(150deg,#1a140b,#0d0a06 60%);
+    border:1px solid var(--line);
+    box-shadow:0 24px 60px rgba(0,0,0,.55), inset 0 0 60px rgba(0,0,0,.5);
+  }
+  .board-inner{position:relative}
+  .board{
+    display:grid;grid-template-columns:repeat(8,1fr);
+    width:100%;aspect-ratio:1/1;border:2px solid #2a2013;
+    box-shadow:0 0 0 1px rgba(230,196,120,.25);
+    touch-action:manipulation;
+  }
+  .sq{
+    position:relative;display:flex;align-items:center;justify-content:center;
+    font-size:clamp(26px,7vw,54px);line-height:1;user-select:none;
+  }
+  .sq.light{background:linear-gradient(150deg,#cdb488,#bfa374)}
+  .sq.dark{background:linear-gradient(150deg,#5a4429,#4a371f)}
+  .piece{
+    position:relative;z-index:3;transition:transform .08s ease;
+    will-change:transform;
+  }
+  .piece.w{color:#f7f1e2;text-shadow:0 1px 0 #b9a678,0 -1px 0 #7d6a3c,1px 0 0 #7d6a3c,-1px 0 0 #7d6a3c,0 2px 4px rgba(0,0,0,.45)}
+  .piece.b{color:#181410;text-shadow:0 1px 0 #4a4038,0 2px 5px rgba(0,0,0,.5),0 0 1px #000}
+  .sq.sel::after{content:"";position:absolute;inset:0;background:var(--sel);z-index:1;box-shadow:inset 0 0 0 3px var(--gold)}
+  .sq.lastmove::before{content:"";position:absolute;inset:0;background:rgba(230,196,120,.20);z-index:0}
+  .sq.check::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,var(--check),transparent 72%);z-index:1}
+  .dot{position:absolute;z-index:2;width:30%;height:30%;border-radius:50%;background:rgba(30,22,10,.35);box-shadow:0 0 0 2px rgba(230,196,120,.45)}
+  .sq.cap .dot{width:82%;height:82%;background:transparent;border-radius:6px;box-shadow:inset 0 0 0 4px rgba(196,64,52,.6)}
+  .coord{position:absolute;z-index:4;font-family:'Hanken Grotesk',sans-serif;font-size:9px;font-weight:700;opacity:.6;pointer-events:none}
+  .coord.file{right:3px;bottom:1px}
+  .coord.rank{left:3px;top:1px}
+  .sq.light .coord{color:#4a371f}
+  .sq.dark .coord{color:#cdb488}
+
+  /* ── YAN PANEL ── */
+  .panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line-soft);border-radius:6px;padding:18px}
+  .panel + .panel{margin-top:16px}
+  .panel h3{
+    font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--brass);margin:0 0 12px;
+  }
+
+  .turn{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .turn .dot-ind{width:12px;height:12px;border-radius:50%;border:1px solid rgba(230,196,120,.5)}
+  .turn .dot-ind.w{background:#f7f1e2}
+  .turn .dot-ind.b{background:#181410}
+  #statusText{font-family:'Playfair Display',serif;font-size:18px;color:var(--ink)}
+  #subStatus{color:var(--muted);font-size:12.5px;margin-top:2px;min-height:16px}
+
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+  .seg button, .lvl button{
+    background:rgba(230,196,120,.06);border:1px solid var(--line);color:#cbb98f;
+    font-family:'Hanken Grotesk',sans-serif;font-size:12px;font-weight:600;letter-spacing:.04em;
+    padding:9px 8px;border-radius:4px;text-transform:uppercase;transition:all .12s;
+  }
+  .seg button:hover,.lvl button:hover{background:rgba(230,196,120,.14);color:var(--gold)}
+  .seg button.on,.lvl button.on{background:linear-gradient(110deg,var(--gold),var(--brass));color:#1a1206;border-color:var(--gold)}
+  .lvl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .lvl-wrap{margin-top:2px}
+  .lvl-wrap.hide{display:none}
+
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btns button{
+    background:rgba(230,196,120,.06);border:1px solid var(--line);color:#cbb98f;
+    font-family:'Hanken Grotesk',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.04em;
+    padding:10px 8px;border-radius:4px;transition:all .12s;
+  }
+  .btns button:hover{background:rgba(230,196,120,.14);color:var(--gold)}
+  .btns button.primary{grid-column:1/-1;background:linear-gradient(110deg,var(--gold),var(--brass));color:#1a1206;border-color:var(--gold)}
+  .btns button:disabled{opacity:.4}
+
+  .captured{display:flex;flex-wrap:wrap;gap:2px;min-height:26px;font-size:20px;line-height:1}
+  .captured .cap-row{display:flex;flex-wrap:wrap;align-items:center;gap:1px}
+  .captured .lbl{font-size:11px;color:var(--muted);margin-right:6px;font-weight:600}
+  .cap-w{color:#f7f1e2;text-shadow:0 1px 0 #7d6a3c}
+  .cap-b{color:#7a6f60}
+  .adv{color:var(--gold);font-weight:700;font-size:12px;margin-left:4px}
+
+  .moves{max-height:236px;overflow-y:auto;font-family:'Special Elite',monospace;font-size:12.5px;line-height:1.9}
+  .moves table{width:100%;border-collapse:collapse}
+  .moves td{padding:1px 6px}
+  .moves .num{color:var(--muted);width:30px}
+  .moves .mv{color:#d7cbb0;cursor:default}
+  .moves::-webkit-scrollbar{width:6px}
+  .moves::-webkit-scrollbar-thumb{background:rgba(193,154,82,.3);border-radius:3px}
+
+  /* ── TERFİ MODALI ── */
+  .modal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(2,3,8,.72);backdrop-filter:blur(4px)}
+  .modal.show{display:flex}
+  .modal-card{background:linear-gradient(180deg,#12100a,#0a0906);border:1px solid var(--line);border-radius:8px;padding:22px 24px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+  .modal-card h4{font-family:'Playfair Display',serif;font-size:19px;margin:0 0 4px;color:var(--gold)}
+  .modal-card p{color:var(--muted);font-size:12.5px;margin:0 0 16px}
+  .promo-row{display:flex;gap:10px}
+  .promo-row button{
+    width:64px;height:64px;font-size:42px;line-height:1;border:1px solid var(--line);
+    background:linear-gradient(150deg,#cdb488,#bfa374);border-radius:6px;transition:transform .1s;
+  }
+  .promo-row button:hover{transform:translateY(-3px);border-color:var(--gold)}
+
+  /* sonuç bandı */
+  .result{
+    display:none;margin-top:16px;padding:14px 16px;border-radius:6px;text-align:center;
+    border:1px solid var(--line);background:rgba(230,196,120,.07);
+    font-family:'Playfair Display',serif;font-size:17px;color:var(--gold);
+  }
+  .result.show{display:block;animation:pop .35s ease}
+  @keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+
+  .foot{max-width:1120px;margin:0 auto;padding:0 clamp(14px,4vw,40px) 60px;color:var(--muted);font-size:12px;text-align:center}
+  .foot .rule{max-width:640px;margin:0 auto 18px;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+
+  @media (max-width:860px){
+    .layout{grid-template-columns:1fr;gap:20px}
+    header nav a:not(.home){display:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/"><img src="/assets/logo.webp" alt="Tarih Ajanı" /></a>
+  <nav>
+    <a class="home" href="/">Ana Sayfa</a>
+    <a href="/zaman-tuneli">Zaman Tüneli</a>
+    <a href="/vaka-dosyalari">Vaka Dosyaları</a>
+    <a href="/urunler">Ürünler</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <p class="eyebrow">Ajan Masası · Oyun Odası</p>
+  <h1>Satranç <span class="fade">Salonu</span></h1>
+  <p class="lead">Antika masada strateji vakti. Bilgisayara karşı üç farklı zorlukta oyna ya da bir dostunla aynı ekranda düelloya tutuş. Rok, geçerken alma (en passant), piyade terfisi ve şah-mat dahil tüm kurallar tam.</p>
+
+  <div class="layout">
+    <!-- Tahta -->
+    <div>
+      <div class="board-frame">
+        <div class="board-inner">
+          <div class="board" id="board" aria-label="Satranç tahtası"></div>
+        </div>
+      </div>
+      <div class="result" id="result"></div>
+    </div>
+
+    <!-- Yan panel -->
+    <aside>
+      <div class="panel">
+        <h3>Durum</h3>
+        <div class="turn">
+          <span class="dot-ind w" id="turnDot"></span>
+          <div>
+            <div id="statusText">Beyaz oynar</div>
+            <div id="subStatus">Yeni oyun · sıra sende</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Mod</h3>
+        <div class="seg">
+          <button id="modeCpu" class="on" onclick="TA.setMode('cpu')">Bilgisayara Karşı</button>
+          <button id="mode2p" onclick="TA.setMode('2p')">İki Oyuncu</button>
+        </div>
+        <div class="lvl-wrap" id="lvlWrap">
+          <div class="lvl">
+            <button class="on" onclick="TA.setLevel(1,this)">Kolay</button>
+            <button onclick="TA.setLevel(2,this)">Orta</button>
+            <button onclick="TA.setLevel(3,this)">Zor</button>
+          </div>
+        </div>
+        <div class="btns">
+          <button class="primary" onclick="TA.newGame()">Yeni Oyun</button>
+          <button id="undoBtn" onclick="TA.undo()">Geri Al</button>
+          <button onclick="TA.flip()">Tahtayı Çevir</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Alınan Taşlar</h3>
+        <div class="captured"><span class="lbl">Beyaz</span><span class="cap-row" id="capByWhite"></span><span class="adv" id="advWhite"></span></div>
+        <div class="captured" style="margin-top:8px"><span class="lbl">Siyah</span><span class="cap-row" id="capByBlack"></span><span class="adv" id="advBlack"></span></div>
+      </div>
+
+      <div class="panel">
+        <h3>Hamleler</h3>
+        <div class="moves" id="moves"><table><tbody id="movesBody"></tbody></table></div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<div class="foot">
+  <div class="rule"></div>
+  <p>Tarih Ajanı Oyun Odası · Satranç, bilinen en eski strateji oyunlarından biridir; kökleri 6. yüzyıl Hindistan'ındaki <em>çaturanga</em>ya, oradan Sasani İran'ının <em>şatranç</em>ına uzanır.</p>
+</div>
+
+<!-- Terfi modalı -->
+<div class="modal" id="promoModal">
+  <div class="modal-card">
+    <h4>Piyade Terfisi</h4>
+    <p>Piyaden son sıraya ulaştı. Hangi taşa dönüşsün?</p>
+    <div class="promo-row" id="promoRow"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const TA = (function(){
+  // ── Sabitler ───────────────────────────────────────────────
+  const GLYPH = {
+    wK:'♔', wQ:'♕', wR:'♖', wB:'♗', wN:'♘', wP:'♙',
+    bK:'♚', bQ:'♛', bR:'♜', bB:'♝', bN:'♞', bP:'♟'
+  };
+  const VAL = {P:100,N:320,B:330,R:500,Q:900,K:20000};
+  const FILES = ['a','b','c','d','e','f','g','h'];
+
+  // Piyade-kare tabloları (beyaz bakış açısı, row0 = 8. sıra üst)
+  const PST = {
+    P:[ 0,0,0,0,0,0,0,0, 50,50,50,50,50,50,50,50, 10,10,20,30,30,20,10,10,
+        5,5,10,25,25,10,5,5, 0,0,0,20,20,0,0,0, 5,-5,-10,0,0,-10,-5,5,
+        5,10,10,-20,-20,10,10,5, 0,0,0,0,0,0,0,0 ],
+    N:[ -50,-40,-30,-30,-30,-30,-40,-50, -40,-20,0,0,0,0,-20,-40,
+        -30,0,10,15,15,10,0,-30, -30,5,15,20,20,15,5,-30,
+        -30,0,15,20,20,15,0,-30, -30,5,10,15,15,10,5,-30,
+        -40,-20,0,5,5,0,-20,-40, -50,-40,-30,-30,-30,-30,-40,-50 ],
+    B:[ -20,-10,-10,-10,-10,-10,-10,-20, -10,0,0,0,0,0,0,-10,
+        -10,0,5,10,10,5,0,-10, -10,5,5,10,10,5,5,-10,
+        -10,0,10,10,10,10,0,-10, -10,10,10,10,10,10,10,-10,
+        -10,5,0,0,0,0,5,-10, -20,-10,-10,-10,-10,-10,-10,-20 ],
+    R:[ 0,0,0,0,0,0,0,0, 5,10,10,10,10,10,10,5, -5,0,0,0,0,0,0,-5,
+        -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5,
+        -5,0,0,0,0,0,0,-5, 0,0,0,5,5,0,0,0 ],
+    Q:[ -20,-10,-10,-5,-5,-10,-10,-20, -10,0,0,0,0,0,0,-10, -10,0,5,5,5,5,0,-10,
+        -5,0,5,5,5,5,0,-5, 0,0,5,5,5,5,0,-5, -10,5,5,5,5,5,0,-10,
+        -10,0,5,0,0,0,0,-10, -20,-10,-10,-5,-5,-10,-10,-20 ],
+    K:[ -30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30,
+        -30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30,
+        -20,-30,-30,-40,-40,-30,-30,-20, -10,-20,-20,-20,-20,-20,-20,-10,
+        20,20,0,0,0,0,20,20, 20,30,10,0,0,10,30,20 ]
+  };
+
+  // ── Durum ──────────────────────────────────────────────────
+  let state;          // {board, turn, castle, ep, half, full}
+  let history = [];    // {state snapshot, san}
+  let mode = 'cpu';
+  let level = 1;
+  let humanColor = 'w';
+  let flipped = false;
+  let selected = null;      // {r,c}
+  let legalForSel = [];      // legal move objs from selected
+  let lastMove = null;       // {from:[r,c], to:[r,c]}
+  let gameOver = false;
+  let thinking = false;
+  let pendingPromo = null;
+
+  // ── Yardımcılar ────────────────────────────────────────────
+  const idx=(r,c)=>r*8+c;
+  const inB=(r,c)=>r>=0&&r<8&&c>=0&&c<8;
+  const colorOf=p=>p===''?null:(p[0]);
+  const typeOf=p=>p===''?null:p[1];
+  const cloneState=s=>({
+    board:s.board.slice(),
+    turn:s.turn,
+    castle:{...s.castle},
+    ep:s.ep?[...s.ep]:null,
+    half:s.half, full:s.full
+  });
+
+  function startPosition(){
+    const b=new Array(64).fill('');
+    const back=['R','N','B','Q','K','B','N','R'];
+    for(let c=0;c<8;c++){
+      b[idx(0,c)]='b'+back[c];
+      b[idx(1,c)]='bP';
+      b[idx(6,c)]='wP';
+      b[idx(7,c)]='w'+back[c];
+    }
+    return {board:b, turn:'w', castle:{wK:true,wQ:true,bK:true,bQ:true}, ep:null, half:0, full:1};
+  }
+
+  // ── Hamle üretimi ──────────────────────────────────────────
+  const N_OFF=[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+  const K_OFF=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+  const DIAG=[[-1,-1],[-1,1],[1,-1],[1,1]];
+  const ORTHO=[[-1,0],[1,0],[0,-1],[0,1]];
+
+  function isAttacked(board, r, c, by){
+    // piyade
+    if(by==='w'){ if(inB(r+1,c-1)&&board[idx(r+1,c-1)]==='wP')return true; if(inB(r+1,c+1)&&board[idx(r+1,c+1)]==='wP')return true; }
+    else { if(inB(r-1,c-1)&&board[idx(r-1,c-1)]==='bP')return true; if(inB(r-1,c+1)&&board[idx(r-1,c+1)]==='bP')return true; }
+    // at
+    for(const[dr,dc]of N_OFF){const rr=r+dr,cc=c+dc;if(inB(rr,cc)&&board[idx(rr,cc)]===by+'N')return true;}
+    // şah
+    for(const[dr,dc]of K_OFF){const rr=r+dr,cc=c+dc;if(inB(rr,cc)&&board[idx(rr,cc)]===by+'K')return true;}
+    // kale/vezir (ortho)
+    for(const[dr,dc]of ORTHO){let rr=r+dr,cc=c+dc;while(inB(rr,cc)){const p=board[idx(rr,cc)];if(p){if(p[0]===by&&(p[1]==='R'||p[1]==='Q'))return true;break;}rr+=dr;cc+=dc;}}
+    // fil/vezir (diag)
+    for(const[dr,dc]of DIAG){let rr=r+dr,cc=c+dc;while(inB(rr,cc)){const p=board[idx(rr,cc)];if(p){if(p[0]===by&&(p[1]==='B'||p[1]==='Q'))return true;break;}rr+=dr;cc+=dc;}}
+    return false;
+  }
+
+  function findKing(board, color){
+    for(let i=0;i<64;i++)if(board[i]===color+'K')return[Math.floor(i/8),i%8];
+    return null;
+  }
+  function inCheck(s, color){
+    const k=findKing(s.board,color); if(!k)return false;
+    return isAttacked(s.board,k[0],k[1], color==='w'?'b':'w');
+  }
+
+  // ham (pseudo-legal) hamleler
+  function pseudoMoves(s, color){
+    const b=s.board, mv=[];
+    const add=(fr,fc,tr,tc,extra)=>{mv.push(Object.assign({from:[fr,fc],to:[tr,tc]},extra||{}));};
+    const enemy=color==='w'?'b':'w';
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+      const p=b[idx(r,c)]; if(!p||p[0]!==color)continue;
+      const t=p[1];
+      if(t==='P'){
+        const dir=color==='w'?-1:1, startRow=color==='w'?6:1, lastRow=color==='w'?0:7;
+        // ileri
+        if(inB(r+dir,c)&&b[idx(r+dir,c)]===''){
+          if(r+dir===lastRow)add(r,c,r+dir,c,{promo:true}); else add(r,c,r+dir,c,{});
+          if(r===startRow&&b[idx(r+2*dir,c)]==='')add(r,c,r+2*dir,c,{double:true});
+        }
+        // yeme
+        for(const dc of[-1,1]){
+          const tr=r+dir,tc=c+dc; if(!inB(tr,tc))continue;
+          const tp=b[idx(tr,tc)];
+          if(tp&&tp[0]===enemy){ if(tr===lastRow)add(r,c,tr,tc,{promo:true,cap:true}); else add(r,c,tr,tc,{cap:true}); }
+          else if(s.ep&&s.ep[0]===tr&&s.ep[1]===tc){ add(r,c,tr,tc,{ep:true,cap:true}); }
+        }
+      } else if(t==='N'){
+        for(const[dr,dc]of N_OFF){const rr=r+dr,cc=c+dc;if(!inB(rr,cc))continue;const tp=b[idx(rr,cc)];if(!tp)add(r,c,rr,cc,{});else if(tp[0]===enemy)add(r,c,rr,cc,{cap:true});}
+      } else if(t==='K'){
+        for(const[dr,dc]of K_OFF){const rr=r+dr,cc=c+dc;if(!inB(rr,cc))continue;const tp=b[idx(rr,cc)];if(!tp)add(r,c,rr,cc,{});else if(tp[0]===enemy)add(r,c,rr,cc,{cap:true});}
+        // rok
+        const row=color==='w'?7:0;
+        if(r===row&&c===4&&!isAttacked(b,row,4,enemy)){
+          if(s.castle[color+'K']&&b[idx(row,5)]===''&&b[idx(row,6)]===''&&b[idx(row,7)]===color+'R'&&!isAttacked(b,row,5,enemy)&&!isAttacked(b,row,6,enemy))
+            add(row,4,row,6,{castle:'K'});
+          if(s.castle[color+'Q']&&b[idx(row,3)]===''&&b[idx(row,2)]===''&&b[idx(row,1)]===''&&b[idx(row,0)]===color+'R'&&!isAttacked(b,row,3,enemy)&&!isAttacked(b,row,2,enemy))
+            add(row,4,row,2,{castle:'Q'});
+        }
+      } else {
+        const dirs = t==='R'?ORTHO : t==='B'?DIAG : ORTHO.concat(DIAG);
+        for(const[dr,dc]of dirs){let rr=r+dr,cc=c+dc;while(inB(rr,cc)){const tp=b[idx(rr,cc)];if(!tp){add(r,c,rr,cc,{});}else{if(tp[0]===enemy)add(r,c,rr,cc,{cap:true});break;}rr+=dr;cc+=dc;}}
+      }
+    }
+    return mv;
+  }
+
+  // hamleyi uygula → yeni durum (terfi taşı promoPiece ile, varsayılan Q)
+  function applyMove(s, m, promoPiece){
+    const ns=cloneState(s);
+    const b=ns.board;
+    const p=b[idx(m.from[0],m.from[1])];
+    const color=p[0], t=p[1];
+    ns.ep=null;
+    // yeme (en passant hariç)
+    if(m.ep){ const capRow=m.from[0]; b[idx(capRow,m.to[1])]=''; }
+    // taşı taşı
+    b[idx(m.from[0],m.from[1])]='';
+    if(m.promo){ b[idx(m.to[0],m.to[1])]=color+(promoPiece||'Q'); }
+    else { b[idx(m.to[0],m.to[1])]=p; }
+    // rok — kaleyi de oynat
+    if(m.castle==='K'){ const row=m.from[0]; b[idx(row,5)]=color+'R'; b[idx(row,7)]=''; }
+    if(m.castle==='Q'){ const row=m.from[0]; b[idx(row,3)]=color+'R'; b[idx(row,0)]=''; }
+    // çift piyade → ep hedefi
+    if(m.double){ ns.ep=[(m.from[0]+m.to[0])/2, m.from[1]]; }
+    // rok haklarını güncelle
+    if(t==='K'){ ns.castle[color+'K']=false; ns.castle[color+'Q']=false; }
+    if(t==='R'){
+      if(m.from[1]===0)ns.castle[color+'Q']=false;
+      if(m.from[1]===7)ns.castle[color+'K']=false;
+    }
+    // kale yendiyse rakip rok hakkı düşer
+    const er=m.to[0], ec=m.to[1];
+    if(er===0&&ec===0)ns.castle.bQ=false;
+    if(er===0&&ec===7)ns.castle.bK=false;
+    if(er===7&&ec===0)ns.castle.wQ=false;
+    if(er===7&&ec===7)ns.castle.wK=false;
+    // sayaçlar
+    ns.half = (m.cap||t==='P') ? 0 : s.half+1;
+    if(color==='b')ns.full=s.full+1;
+    ns.turn = color==='w'?'b':'w';
+    return ns;
+  }
+
+  // yasal hamleler
+  function legalMoves(s, color){
+    const res=[];
+    for(const m of pseudoMoves(s,color)){
+      const ns=applyMove(s,m,'Q');
+      if(!inCheck(ns,color))res.push(m);
+    }
+    return res;
+  }
+
+  // ── SAN (cebirsel gösterim) ────────────────────────────────
+  function toSAN(s, m, allLegal){
+    if(m.castle==='K')return 'O-O';
+    if(m.castle==='Q')return 'O-O-O';
+    const b=s.board, p=b[idx(m.from[0],m.from[1])], t=p[1];
+    const dest=FILES[m.to[1]]+(8-m.to[0]);
+    let str='';
+    if(t==='P'){
+      if(m.cap)str=FILES[m.from[1]]+'x'+dest; else str=dest;
+      if(m.promo)str+='='+(m.promoPiece||'Q');
+    } else {
+      str=t;
+      // belirsizlik gider
+      const amb=allLegal.filter(x=>!(x.from[0]===m.from[0]&&x.from[1]===m.from[1]) && b[idx(x.from[0],x.from[1])]===p && x.to[0]===m.to[0]&&x.to[1]===m.to[1]);
+      if(amb.length){
+        const sameFile=amb.some(x=>x.from[1]===m.from[1]);
+        const sameRank=amb.some(x=>x.from[0]===m.from[0]);
+        if(!sameFile)str+=FILES[m.from[1]];
+        else if(!sameRank)str+=(8-m.from[0]);
+        else str+=FILES[m.from[1]]+(8-m.from[0]);
+      }
+      if(m.cap)str+='x';
+      str+=dest;
+    }
+    // şah / mat eki
+    const ns=applyMove(s,m,m.promoPiece||'Q');
+    const opp=s.turn==='w'?'b':'w';
+    if(inCheck(ns,opp)){
+      const oppMoves=legalMoves(ns,opp);
+      str += oppMoves.length? '+' : '#';
+    }
+    return str;
+  }
+
+  // ── Değerlendirme + Yapay Zekâ ─────────────────────────────
+  function evaluate(s){
+    let score=0;
+    for(let i=0;i<64;i++){
+      const p=s.board[i]; if(!p)continue;
+      const t=p[1], v=VAL[t];
+      const pstIdx = p[0]==='w'? i : (63-i); // siyah için ayna
+      const pst = PST[t][pstIdx];
+      if(p[0]==='w')score += v+pst; else score -= v+pst;
+    }
+    return score; // beyaz lehine pozitif
+  }
+
+  function orderMoves(s, moves){
+    // yemeleri öne al (MVV-LVA benzeri)
+    return moves.map(m=>{
+      let sc=0;
+      if(m.cap){ const victim=s.board[idx(m.to[0],m.to[1])]; sc += victim?VAL[victim[1]]:100; sc -= VAL[s.board[idx(m.from[0],m.from[1])][1]]/10; }
+      if(m.promo)sc+=800;
+      return {m,sc};
+    }).sort((a,b)=>b.sc-a.sc).map(x=>x.m);
+  }
+
+  function negamax(s, depth, alpha, beta, colorSign){
+    const color = colorSign===1?'w':'b';
+    const moves = legalMoves(s,color);
+    if(moves.length===0){
+      if(inCheck(s,color))return -100000 - depth; // mat (erken mat daha iyi)
+      return 0; // pat
+    }
+    if(depth===0){ return colorSign*evaluate(s); }
+    let best=-Infinity;
+    for(const m of orderMoves(s,moves)){
+      const ns=applyMove(s,m,'Q');
+      const val=-negamax(ns, depth-1, -beta, -alpha, -colorSign);
+      if(val>best)best=val;
+      if(best>alpha)alpha=best;
+      if(alpha>=beta)break;
+    }
+    return best;
+  }
+
+  function pickAIMove(s, color){
+    const moves=legalMoves(s,color);
+    if(!moves.length)return null;
+    const sign = color==='w'?1:-1;
+    const depth = level===1?1 : level===2?2 : 3;
+
+    // Kolay: %35 rastgele oyna, kalanı 1-ply açgözlü
+    if(level===1 && Math.random()<0.35){
+      return moves[Math.floor(Math.random()*moves.length)];
+    }
+
+    let best=-Infinity, bestMoves=[];
+    for(const m of orderMoves(s,moves)){
+      const ns=applyMove(s,m,'Q');
+      const val=-negamax(ns, depth-1, -Infinity, Infinity, -sign);
+      if(val>best+1){ best=val; bestMoves=[m]; }
+      else if(Math.abs(val-best)<=1){ bestMoves.push(m); }
+    }
+    return bestMoves[Math.floor(Math.random()*bestMoves.length)];
+  }
+
+  // ── Oyun akışı ─────────────────────────────────────────────
+  function newGame(){
+    state=startPosition();
+    history=[]; lastMove=null; selected=null; legalForSel=[]; gameOver=false; thinking=false;
+    if(mode==='cpu'){ humanColor = flipped?'b':'w'; }
+    document.getElementById('result').classList.remove('show');
+    render(); updateStatus(); renderMoves(); renderCaptured();
+    // Bilgisayar beyazsa ilk hamleyi o yapar
+    if(mode==='cpu' && state.turn!==humanColor){ setTimeout(aiTurn, 320); }
+  }
+
+  function humanCanMove(){
+    if(gameOver||thinking)return false;
+    if(mode==='2p')return true;
+    return state.turn===humanColor;
+  }
+
+  function onSquare(r,c){
+    if(!humanCanMove())return;
+    const p=state.board[idx(r,c)];
+    // seçili taş varsa ve tıklanan kare hedefse → oyna
+    if(selected){
+      const m=legalForSel.find(x=>x.to[0]===r&&x.to[1]===c);
+      if(m){ doHumanMove(m); return; }
+    }
+    // kendi taşını seç
+    if(p&&p[0]===state.turn){
+      selected={r,c};
+      legalForSel=legalMoves(state,state.turn).filter(x=>x.from[0]===r&&x.from[1]===c);
+      render();
+      return;
+    }
+    // boşa tıkla → seçimi bırak
+    selected=null; legalForSel=[]; render();
+  }
+
+  function doHumanMove(m){
+    if(m.promo){
+      pendingPromo=m; openPromo(state.turn);
+      return;
+    }
+    commitMove(m);
+  }
+
+  function commitMove(m, promoPiece){
+    if(promoPiece)m.promoPiece=promoPiece;
+    const all=legalMoves(state,state.turn);
+    const san=toSAN(state, m, all);
+    history.push({state:cloneState(state), san, full:state.full, turn:state.turn});
+    state=applyMove(state,m,promoPiece||'Q');
+    lastMove={from:m.from,to:m.to};
+    selected=null; legalForSel=[];
+    render(); renderMoves(); renderCaptured();
+    const ended=checkEnd();
+    updateStatus();
+    if(!ended && mode==='cpu' && state.turn!==humanColor){
+      thinking=true; updateStatus();
+      setTimeout(aiTurn, 260);
+    }
+  }
+
+  function aiTurn(){
+    if(gameOver)return;
+    const color=state.turn;
+    const m=pickAIMove(state,color);
+    thinking=false;
+    if(!m){ checkEnd(); updateStatus(); return; }
+    const all=legalMoves(state,color);
+    const san=toSAN(state,m,all);
+    history.push({state:cloneState(state), san, full:state.full, turn:color});
+    state=applyMove(state,m, m.promo?'Q':undefined);
+    lastMove={from:m.from,to:m.to};
+    render(); renderMoves(); renderCaptured();
+    checkEnd(); updateStatus();
+  }
+
+  function checkEnd(){
+    const color=state.turn;
+    const moves=legalMoves(state,color);
+    if(moves.length===0){
+      gameOver=true;
+      if(inCheck(state,color)){
+        const winner = color==='w'?'Siyah':'Beyaz';
+        showResult('Şah mat! · '+winner+' kazandı', (color!=='w'? 'Kraliçe düştü.':'Kral kıstırıldı.'));
+      } else {
+        showResult('Pat · Berabere', 'Oynayacak yasal hamle kalmadı.');
+      }
+      return true;
+    }
+    // 50 hamle kuralı
+    if(state.half>=100){ gameOver=true; showResult('Berabere · 50 hamle kuralı',''); return true; }
+    // yetersiz materyal
+    if(insufficientMaterial()){ gameOver=true; showResult('Berabere · Yetersiz materyal',''); return true; }
+    return false;
+  }
+
+  function insufficientMaterial(){
+    const pieces=state.board.filter(p=>p&&p[1]!=='K');
+    if(pieces.length===0)return true;
+    if(pieces.length===1&&(pieces[0][1]==='N'||pieces[0][1]==='B'))return true;
+    if(pieces.length===2&&pieces.every(p=>p[1]==='B')){
+      return true; // basitleştirilmiş
+    }
+    return false;
+  }
+
+  function showResult(title, sub){
+    const el=document.getElementById('result');
+    el.textContent=title;
+    el.classList.add('show');
+    document.getElementById('statusText').textContent=title;
+    document.getElementById('subStatus').textContent=sub||'';
+    render();
+  }
+
+  function undo(){
+    if(!history.length||thinking)return;
+    // insana karşı: bir çift (AI + insan) geri al
+    let steps = (mode==='cpu' && history.length>=2 && state.turn===humanColor) ? 2 : 1;
+    // Eğer sıra AI'daysa (insan oynadı, AI daha oynamadı) tek geri al yeter
+    while(steps-->0 && history.length){
+      const h=history.pop();
+      state=h.state;
+    }
+    gameOver=false; selected=null; legalForSel=[];
+    lastMove=null;
+    document.getElementById('result').classList.remove('show');
+    render(); renderMoves(); renderCaptured(); updateStatus();
+  }
+
+  function flip(){ flipped=!flipped; if(mode==='cpu')humanColor=flipped?'b':'w'; render();
+    if(mode==='cpu' && !gameOver && state.turn!==humanColor && !thinking){ thinking=true; updateStatus(); setTimeout(aiTurn,300);} }
+
+  function setMode(m){
+    mode=m;
+    document.getElementById('modeCpu').classList.toggle('on',m==='cpu');
+    document.getElementById('mode2p').classList.toggle('on',m==='2p');
+    document.getElementById('lvlWrap').classList.toggle('hide',m!=='cpu');
+    newGame();
+  }
+  function setLevel(l,btn){
+    level=l;
+    document.querySelectorAll('.lvl button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  // ── Terfi modalı ───────────────────────────────────────────
+  function openPromo(color){
+    const row=document.getElementById('promoRow');
+    row.innerHTML='';
+    ['Q','R','B','N'].forEach(pt=>{
+      const b=document.createElement('button');
+      b.className='piece '+color;
+      b.textContent=GLYPH[color+pt];
+      b.onclick=()=>choosePromo(pt);
+      row.appendChild(b);
+    });
+    document.getElementById('promoModal').classList.add('show');
+  }
+  function choosePromo(pt){
+    document.getElementById('promoModal').classList.remove('show');
+    const m=pendingPromo; pendingPromo=null;
+    if(m)commitMove(m, pt);
+  }
+
+  // ── Render ─────────────────────────────────────────────────
+  function render(){
+    const board=document.getElementById('board');
+    board.innerHTML='';
+    const kingInCheckColor = inCheck(state,'w')?'w':(inCheck(state,'b')?'b':null);
+    let kingSq=null;
+    if(kingInCheckColor)kingSq=findKing(state.board,kingInCheckColor);
+
+    for(let vr=0;vr<8;vr++)for(let vc=0;vc<8;vc++){
+      const r = flipped? 7-vr : vr;
+      const c = flipped? 7-vc : vc;
+      const sq=document.createElement('div');
+      const dark=(r+c)%2===1;
+      sq.className='sq '+(dark?'dark':'light');
+      sq.dataset.r=r; sq.dataset.c=c;
+
+      // son hamle vurgusu
+      if(lastMove&&((lastMove.from[0]===r&&lastMove.from[1]===c)||(lastMove.to[0]===r&&lastMove.to[1]===c)))
+        sq.classList.add('lastmove');
+      // seçim
+      if(selected&&selected.r===r&&selected.c===c)sq.classList.add('sel');
+      // şah
+      if(kingSq&&kingSq[0]===r&&kingSq[1]===c)sq.classList.add('check');
+
+      // taş
+      const p=state.board[idx(r,c)];
+      if(p){
+        const span=document.createElement('span');
+        span.className='piece '+p[0];
+        span.textContent=GLYPH[p];
+        sq.appendChild(span);
+      }
+      // yasal hamle işareti
+      const lm=selected? legalForSel.find(x=>x.to[0]===r&&x.to[1]===c):null;
+      if(lm){
+        if(lm.cap||lm.ep)sq.classList.add('cap');
+        const d=document.createElement('span'); d.className='dot'; sq.appendChild(d);
+      }
+      // koordinatlar (kenar kareleri)
+      if(vc===0){ const cr=document.createElement('span'); cr.className='coord rank'; cr.textContent=(8-r); sq.appendChild(cr); }
+      if(vr===7){ const cf=document.createElement('span'); cf.className='coord file'; cf.textContent=FILES[c]; sq.appendChild(cf); }
+
+      sq.addEventListener('click',()=>onSquare(r,c));
+      board.appendChild(sq);
+    }
+  }
+
+  function updateStatus(){
+    const st=document.getElementById('statusText');
+    const sub=document.getElementById('subStatus');
+    const dot=document.getElementById('turnDot');
+    dot.className='dot-ind '+state.turn;
+    if(gameOver)return;
+    const sideTr = state.turn==='w'?'Beyaz':'Siyah';
+    st.textContent = sideTr+' oynar';
+    const chk = inCheck(state,state.turn)?' · ŞAH!':'';
+    if(mode==='cpu'){
+      if(thinking){ sub.textContent='Ajan düşünüyor…'+chk; }
+      else if(state.turn===humanColor){ sub.textContent='Sıra sende'+chk; }
+      else { sub.textContent='Bilgisayarın sırası'+chk; }
+    } else {
+      sub.textContent=(state.turn==='w'?'Beyazın sırası':'Siyahın sırası')+chk;
+    }
+    document.getElementById('undoBtn').disabled = history.length===0;
+  }
+
+  function renderMoves(){
+    const body=document.getElementById('movesBody');
+    body.innerHTML='';
+    // history: her eleman bir yarı-hamle. beyaz/siyah çiftle
+    let rowNum=0, tr=null;
+    for(let i=0;i<history.length;i++){
+      const h=history[i];
+      const isWhite = h.turn==='w';
+      if(isWhite){
+        rowNum++;
+        tr=document.createElement('tr');
+        const num=document.createElement('td'); num.className='num'; num.textContent=rowNum+'.'; tr.appendChild(num);
+        const w=document.createElement('td'); w.className='mv'; w.textContent=h.san; tr.appendChild(w);
+        const bcell=document.createElement('td'); bcell.className='mv'; bcell.textContent=''; tr.appendChild(bcell);
+        body.appendChild(tr);
+      } else {
+        if(!tr){ // oyun siyahla başlamışsa (çevrilmiş) güvenlik
+          rowNum++; tr=document.createElement('tr');
+          const num=document.createElement('td'); num.className='num'; num.textContent=rowNum+'.'; tr.appendChild(num);
+          const w=document.createElement('td'); w.className='mv'; w.textContent='…'; tr.appendChild(w);
+          const bcell=document.createElement('td'); bcell.className='mv'; bcell.textContent=h.san; tr.appendChild(bcell);
+          body.appendChild(tr);
+        } else {
+          tr.children[2].textContent=h.san;
+        }
+      }
+    }
+    const wrap=document.getElementById('moves'); wrap.scrollTop=wrap.scrollHeight;
+  }
+
+  function renderCaptured(){
+    // başlangıç envanteri
+    const startCount={P:8,N:2,B:2,R:2,Q:1};
+    const now={w:{P:0,N:0,B:0,R:0,Q:0},b:{P:0,N:0,B:0,R:0,Q:0}};
+    for(const p of state.board){ if(p&&p[1]!=='K')now[p[0]][p[1]]++; }
+    // beyazın aldıkları = eksik siyah taşlar
+    const capByWhite=[], capByBlack=[];
+    for(const t of['Q','R','B','N','P']){
+      for(let k=0;k<startCount[t]-now.b[t];k++)capByWhite.push('b'+t);
+      for(let k=0;k<startCount[t]-now.w[t];k++)capByBlack.push('w'+t);
+    }
+    const elW=document.getElementById('capByWhite'), elB=document.getElementById('capByBlack');
+    elW.innerHTML=capByWhite.map(p=>`<span class="cap-b">${GLYPH[p]}</span>`).join('');
+    elB.innerHTML=capByBlack.map(p=>`<span class="cap-w">${GLYPH[p]}</span>`).join('');
+    // materyal avantajı
+    let wMat=0,bMat=0;
+    for(const t of['Q','R','B','N','P']){ wMat+=(startCount[t]-now.b[t])*VAL[t]; bMat+=(startCount[t]-now.w[t])*VAL[t]; }
+    const diff=Math.round((wMat-bMat)/100);
+    document.getElementById('advWhite').textContent = diff>0? '+'+diff : '';
+    document.getElementById('advBlack').textContent = diff<0? '+'+(-diff) : '';
+  }
+
+  // ── Başlat ─────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded',()=>{ newGame(); });
+
+  return { setMode, setLevel, newGame, undo, flip };
+})();
+</script>
+</body>
+</html>

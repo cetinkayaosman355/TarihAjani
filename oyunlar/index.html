@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Oyun Odası · Tarih Ajanı</title>
+<meta name="description" content="Tarih Ajanı Oyun Odası: satranç ve tarihe uzanan strateji oyunları. Antika masada zekâ düellosu." />
+<link rel="canonical" href="https://tarihajani.com/oyunlar" />
+<link rel="icon" type="image/png" href="/assets/logo-mark.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Tarih Ajanı" />
+<meta property="og:locale" content="tr_TR" />
+<meta property="og:url" content="https://tarihajani.com/oyunlar" />
+<meta property="og:title" content="Oyun Odası · Tarih Ajanı" />
+<meta property="og:description" content="Antika masada zekâ düellosu: satranç ve tarihe uzanan strateji oyunları." />
+<meta property="og:image" content="https://tarihajani.com/assets/og-cover.png" />
+<meta name="theme-color" content="#05070F" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet" />
+<style>
+  :root{--void:#05070F;--brass:#C9A25A;--gold:#E6C478;--ink:#F0ECE2;--muted:#8b8f9c;--line:rgba(193,154,82,.30);--line-soft:rgba(129,135,151,.14)}
+  *{box-sizing:border-box}
+  html{background:var(--void);scroll-behavior:smooth}
+  body{margin:0;background:var(--void);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;overflow-x:hidden;
+    background-image:radial-gradient(circle 800px at 12% 6%,rgba(28,24,42,.4),transparent 55%),radial-gradient(circle 900px at 90% 20%,rgba(20,26,44,.4),transparent 60%);background-attachment:fixed}
+  a{color:var(--gold)}
+  *,a,button{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='11' cy='11' r='7' fill='rgba(20,14,5,0.12)' stroke='%23b0894d' stroke-width='2'/%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='%23ecce8a' stroke-width='0.8'/%3E%3Cline x1='16' y1='16' x2='25' y2='25' stroke='%235c3f18' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='16' y1='16' x2='25' y2='25' stroke='%23b0894d' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") 11 11, auto}
+  header{position:fixed;z-index:30;top:0;left:0;right:0;height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,4vw,40px);background:rgba(3,5,11,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft)}
+  header img{height:44px}
+  header nav{display:flex;gap:2px}
+  header nav a{color:#a4a9b5;font-size:12px;letter-spacing:.1em;text-decoration:none;padding:8px 12px;font-weight:600;text-transform:uppercase}
+  header nav a:hover{color:var(--gold)}
+  .wrap{max-width:1000px;margin:0 auto;padding:112px clamp(14px,4vw,40px) 80px}
+  .eyebrow{font-family:'Special Elite',monospace;letter-spacing:.42em;text-transform:uppercase;font-size:11px;color:var(--brass);margin:0 0 10px}
+  h1{font-family:'Playfair Display',serif;font-weight:800;font-size:clamp(32px,6vw,54px);margin:0 0 12px}
+  h1 .fade{background:linear-gradient(90deg,var(--gold),var(--brass));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{max-width:620px;color:var(--muted);font-size:15px;line-height:1.6;margin:0 0 40px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+  .card{position:relative;display:block;text-decoration:none;color:inherit;border:1px solid var(--line-soft);border-radius:8px;overflow:hidden;background:linear-gradient(180deg,#0b0e18,#0e131f);transition:transform .16s,border-color .16s}
+  .card.live:hover{transform:translateY(-4px);border-color:var(--line)}
+  .card .art{height:150px;display:flex;align-items:center;justify-content:center;font-size:70px;background:linear-gradient(150deg,#1a140b,#0d0a06);border-bottom:1px solid var(--line-soft)}
+  .card .art .b{color:#181410;text-shadow:0 1px 0 #4a4038}
+  .card .art .w{color:#f7f1e2;text-shadow:0 1px 0 #b9a678,1px 0 0 #7d6a3c,-1px 0 0 #7d6a3c}
+  .card .body{padding:16px 18px 18px}
+  .card h3{font-family:'Playfair Display',serif;font-size:20px;margin:0 0 4px}
+  .card p{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 10px}
+  .tag{display:inline-block;font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:4px 9px;border-radius:20px;border:1px solid var(--line)}
+  .tag.play{color:#1a1206;background:linear-gradient(110deg,var(--gold),var(--brass));border-color:var(--gold)}
+  .tag.soon{color:var(--muted)}
+  .card.soon{opacity:.72}
+  .foot{max-width:1000px;margin:0 auto;padding:0 clamp(14px,4vw,40px) 60px;color:var(--muted);font-size:12px;text-align:center}
+  .foot .rule{max-width:620px;margin:0 auto 18px;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+  @media(max-width:640px){header nav a:not(.home){display:none}}
+</style>
+</head>
+<body>
+<header>
+  <a href="/"><img src="/assets/logo.webp" alt="Tarih Ajanı"></a>
+  <nav>
+    <a class="home" href="/">Ana Sayfa</a>
+    <a href="/zaman-tuneli">Zaman Tüneli</a>
+    <a href="/vaka-dosyalari">Vaka Dosyaları</a>
+    <a href="/urunler">Ürünler</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <p class="eyebrow">Ajan Masası</p>
+  <h1>Oyun <span class="fade">Odası</span></h1>
+  <p class="lead">Tarihin en eski zekâ düelloları burada. Antika masaya otur; bilgisayara karşı ya da bir dostunla strateji kur. Oda büyümeye devam edecek.</p>
+
+  <div class="grid">
+    <a class="card live" href="/satranc">
+      <div class="art"><span class="w">♞</span><span class="b" style="margin-left:-6px">♛</span></div>
+      <div class="body">
+        <h3>Satranç</h3>
+        <p>Tam kurallı satranç. Bilgisayara karşı üç zorluk ya da iki oyunculu düello.</p>
+        <span class="tag play">Oyna →</span>
+      </div>
+    </a>
+
+    <div class="card soon">
+      <div class="art">🔴⚫</div>
+      <div class="body">
+        <h3>Dama</h3>
+        <p>Türk daması — 8×8 tahtada çapraz değil, düz yürüyen taşlarıyla kendine özgü bir klasik.</p>
+        <span class="tag soon">Yakında</span>
+      </div>
+    </div>
+
+    <div class="card soon">
+      <div class="art">🕳️</div>
+      <div class="body">
+        <h3>Mangala</h3>
+        <p>Binlerce yıllık Türk zekâ oyunu. Kuyulara taş dağıt, hazineni doldur.</p>
+        <span class="tag soon">Yakında</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="foot">
+  <div class="rule"></div>
+  <p>Tarih Ajanı Oyun Odası · Strateji oyunları çağların aynasıdır.</p>
+</div>
+</body>
+</html>

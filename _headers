@@ -11,3 +11,6 @@
 
 /zaman-tuneli/assets/*
   Cache-Control: public, max-age=604800
+
+/oyunlar/*
+  Cache-Control: public, max-age=3600
