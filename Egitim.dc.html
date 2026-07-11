@@ -456,12 +456,14 @@ class Component extends DCLogic {
     } catch (e) {}
   }
 
-  // profiles.has_access kontrolü — erişim kilidi
+  // Erişim kilidi: Ajan/Başmüfettiş üyeliği eğitimi KAPSAR (üyelikte yazdığı gibi),
+  // ya da tek seferlik satın alım için profiles.has_access = true.
   async loadAccess(userId) {
     if (!this.sb || !userId) { this.setState({ accessChecked: true }); return; }
     try {
-      const { data, error } = await this.sb.from('profiles').select('has_access').eq('id', userId).maybeSingle();
-      const ok = !error && data && data.has_access === true;
+      const { data, error } = await this.sb.from('profiles').select('has_access,tier').eq('id', userId).maybeSingle();
+      const tierOk = data && (data.tier === 'ajan' || data.tier === 'basmufettis');
+      const ok = !error && data && (data.has_access === true || tierOk);
       this.setState({ hasAccess: !!ok, accessChecked: true });
     } catch (e) {
       this.setState({ hasAccess: false, accessChecked: true });
