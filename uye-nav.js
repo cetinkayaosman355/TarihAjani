@@ -1,5 +1,6 @@
 // Tarih Ajanı — evrensel üyelik göstergesi
-// Girişli kullanıcıda menüdeki ÜYELİK linkini "👤 AD" yapar; link yoksa nav'a ekler.
+// Girişli kullanıcıda "GİRİŞ YAP / ÜYE OL" butonunu "👤 Ad" yapar (tek yerde, küçük).
+// Menüdeki düz "ÜYELİK" linkine dokunmaz. Çıkışta eski haline döner.
 // Tasarım aracı export'larından bağımsız çalışır (DOM'a sonradan dokunur).
 (function () {
   var SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
@@ -7,38 +8,64 @@
   var currentName = null;
 
   function firstName(u) {
-    var n = (u.user_metadata && u.user_metadata.full_name) || (u.email || '').split('@')[0] || 'AJAN';
-    return n.split(' ')[0].toUpperCase();
+    var n = (u.user_metadata && u.user_metadata.full_name) || (u.email || '').split('@')[0] || 'Ajan';
+    return n.trim().split(' ')[0];   // yalnız ilk ad (kısa)
+  }
+
+  function links() {
+    return Array.prototype.slice.call(document.querySelectorAll('a[href="/uyelik"], a[href^="/uyelik?"]'));
+  }
+  function isLoginCta(a) {
+    return /giri[sş]|[üu]ye ol|hesab/i.test(a.textContent || '');
+  }
+
+  // Girişli kullanıcıda ismi göstereceğimiz TEK hedefi seç:
+  // önce "giriş yap/üye ol" butonu; yoksa tek üyelik linki
+  function pickTarget() {
+    var ls = links();
+    if (!ls.length) return null;
+    var cta = ls.filter(isLoginCta);
+    return cta.length ? cta[0] : ls[0];
   }
 
   function apply() {
-    var links = document.querySelectorAll('a[href="/uyelik"], a[href^="/uyelik?"]');
     if (currentName) {
-      if (links.length) {
-        links.forEach(function (a) {
-          if (a.getAttribute('data-uye-nav') === currentName) return;
-          a.textContent = '👤 ' + currentName;
-          a.setAttribute('data-uye-nav', currentName);
-          a.title = 'Üyelik panelin';
-        });
-      } else {
-        // ÜYELİK linki olmayan sayfada nav'a ekle (varsa header>nav)
+      var t = pickTarget();
+      if (t && t.getAttribute('data-uye-nav') !== currentName) {
+        if (t.getAttribute('data-uye-orig') == null) {
+          t.setAttribute('data-uye-orig', t.innerHTML);
+          t.setAttribute('data-uye-fs', t.style.fontSize || '');
+        }
+        t.textContent = '👤 ' + currentName;
+        t.style.fontSize = '11px';           // daha küçük
+        t.setAttribute('data-uye-nav', currentName);
+        t.title = 'Üyelik panelin';
+      }
+      // menüde hiç üyelik linki olmayan sayfaya küçük bir tane ekle
+      if (!links().length) {
         var nav = document.querySelector('header nav');
         if (nav && !nav.querySelector('[data-uye-nav]')) {
           var a = document.createElement('a');
           a.href = '/uyelik';
           a.textContent = '👤 ' + currentName;
           a.setAttribute('data-uye-nav', currentName);
-          a.style.cssText = 'color:#e6c478;font-size:12.5px;letter-spacing:.08em;text-decoration:none;padding:9px 13px;';
+          a.style.cssText = 'color:#e6c478;font-size:11px;letter-spacing:.08em;text-decoration:none;padding:9px 13px;';
           nav.insertBefore(a, nav.lastElementChild);
         }
       }
     } else {
-      // çıkışta geri al
-      document.querySelectorAll('a[data-uye-nav]').forEach(function (a) {
-        if (a.parentElement && !a.getAttribute('href')) return;
-        a.textContent = 'ÜYELİK';
-        a.removeAttribute('data-uye-nav');
+      // çıkış: dönüştürdüğümüz her hedefi eski haline getir
+      Array.prototype.slice.call(document.querySelectorAll('a[data-uye-nav]')).forEach(function (a) {
+        var orig = a.getAttribute('data-uye-orig');
+        if (orig != null) {
+          a.innerHTML = orig;
+          a.style.fontSize = a.getAttribute('data-uye-fs') || '';
+          a.removeAttribute('data-uye-orig');
+          a.removeAttribute('data-uye-fs');
+          a.removeAttribute('data-uye-nav');
+        } else if (a.parentElement) {
+          a.parentElement.removeChild(a);   // sonradan eklediğimiz link
+        }
       });
     }
   }
