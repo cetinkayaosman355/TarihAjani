@@ -1128,6 +1128,12 @@ GÖRSEL & VİDEO PROMPT KURALLARI (tümü İngilizce):
 
 TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan; emin olmadığın ayrıntıyı UYDURMA, spekülasyonu işaretle; hassas konularda saygılı ol.
 
+ÖRNEK KALİTE ÇITASI (yalnız DERİNLİK ve ÜSLUP için — bu içeriği KOPYALAMA, kendi konuna uyarla):
+- İYİ seslendirme cümlesi: "1610 kışında Prag'da, imparator II. Rudolf'un masasında mürekkebi henüz kurumamış bir mektup duruyordu; içindeki tek cümle bir hanedanı sarsacaktı." → somut yıl, yer, kişi + gerilim + görsel.
+- YASAK (zayıf) cümle: "Tarih boyunca birçok imparator önemli kararlar almıştır." → genel, boş, atlanır.
+- İYİ YouTube açıklaması: 1. paragraf bir merak sorusuyla açar; 2. paragraf "Bu dosyada:" diye içeriği sayar; 3. paragraf kaynak + abonelik çağrısı; ardından zaman damgaları.
+- İYİ görsel prompt (İngilizce, somut): ışık, mekân, dönem, kompozisyon ve duygu net; "candle-lit 17th century study, aged parchment in foreground, dust motes in warm light, shallow depth of field" gibi.
+
 ŞU JSON ŞEMASINA BİREBİR UY:
 {
  "baslik": "çarpıcı Türkçe başlık",
@@ -1171,14 +1177,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
     return result;
   }
 
-  async expandActs(result) {
+  async expandActs(result, wordsHint) {
     const secs = result.senaryo || [];
     const m = this.promptMaps();
     const tonStr = m.ton[this.state.tone] || m.ton.merak;
+    const words = wordsHint || '300-420';
     for (let i = 0; i < secs.length; i++) {
       this.setState({ genMsg: 'BÖLÜM ' + (i + 1) + ' / ' + secs.length + ' KALEME ALINIYOR…', genPct: 55 + Math.round((i / Math.max(1, secs.length)) * 42) });
       try {
-        const reply = await this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki uzun tarih videosunun "' + (secs[i].bolum || '') + '" bölümünün TAM seslendirme metnini yaz: 300-420 kelime, akıcı Türkçe, şu tonla: ' + tonStr + '. Önceki bölümden doğal biçimde devral, bir sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver. YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + secs.map(x => x.bolum).join(' | ') + '\nBu bölümün özeti: ' + (secs[i].metin || ''), 2500);
+        const reply = await this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secs[i].bolum || '') + '" bölümünün TAM seslendirme metnini yaz: ' + words + ' kelime, akıcı Türkçe, şu tonla: ' + tonStr + '. Somut isim/tarih/yer/sayı geçir; klişe ve dolgu YOK. Önceki bölümden doğal biçimde devral, bir sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver. YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + secs.map(x => x.bolum).join(' | ') + '\nBu bölümün özeti: ' + (secs[i].metin || ''), 2500);
         if (reply && reply.trim()) secs[i].metin = reply.trim();
       } catch (e) { /* özetle devam et */ }
     }
@@ -1200,12 +1207,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
     }, 3500);
     try {
       if (this.props.demoMode) { await new Promise(r => setTimeout(r, 4000)); throw new Error('DEMO'); }
-      const derin = s.duration === 'dk8';
-      const text = await this.askAI(this.buildPrompt(derin), 16000, 'generate');
+      // İki aşamalı üretim: orta ve uzun formatta (4-5 dk, 8-12 dk) senaryo
+      // önce taslak, sonra bölüm bölüm dolu metin — bölüm başına kelime formata göre.
+      const twoStage = s.duration === 'dk4' || s.duration === 'dk8';
+      const wordsHint = { dk4: '120-170', dk8: '160-220' }[s.duration] || '300-420';
+      const text = await this.askAI(this.buildPrompt(twoStage), 16000, 'generate');
       const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
       let result = JSON.parse(clean);
       result = this.qualityFix(result);
-      if (derin) result = await this.expandActs(result);
+      if (twoStage) result = await this.expandActs(result, wordsHint);
       clearInterval(this._mt);
       const no = 'TA-' + new Date().getFullYear() + '-' + String(Math.floor(100 + Math.random() * 900));
       const entry = {
