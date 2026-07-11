@@ -48,22 +48,31 @@ Aşağıdaki bölümleri Türkçe, eksiksiz ve doğrudan kullanılabilir şekild
 ${sections}`;
 }
 
-async function callOpenAI(prompt: string, maxTokens?: number): Promise<string> {
+async function callOpenAI(prompt: string, maxTokens?: number, jsonMode?: boolean): Promise<string> {
   const key = Deno.env.get("OPENAI_API_KEY");
   if (!key) throw new Error("OPENAI_API_KEY secret eksik.");
+  const payload: Record<string, unknown> = {
+    model: "gpt-4o",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.8,
+    max_tokens: maxTokens || 4000,
+  };
+  // Üretimde OpenAI'yi katı JSON moduna zorla (prompt "JSON" içerdiği için geçerli)
+  if (jsonMode) payload.response_format = { type: "json_object" };
   const r = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.8,
-      max_tokens: maxTokens || 4000,
-    }),
+    body: JSON.stringify(payload),
   });
   if (!r.ok) throw new Error("OpenAI: " + (await r.text()));
   const d = await r.json();
   return d.choices?.[0]?.message?.content ?? "";
+}
+
+// Üretim çıktısını JSON'a çevirmeyi dene (client ile aynı temizleme); olmazsa null.
+function tryParseJson(text: string): unknown | null {
+  const clean = String(text).replace(/^[\s\S]*?\{/, "{").replace(/\}[^}]*$/, "}");
+  try { return JSON.parse(clean); } catch { return null; }
 }
 
 // Sırayla denenir; "model bulunamadı" hatasında bir sonrakine geçer.
@@ -143,7 +152,17 @@ Deno.serve(async (req) => {
     // Üretim
     const provider = (b.provider || b.model || "openai").toLowerCase();
     const useClaude = provider === "claude" || provider === "anthropic";
-    const result = useClaude ? await callClaude(prompt, b.max_tokens) : await callOpenAI(prompt, b.max_tokens);
+    const isGen = String(b.action || "") === "generate";
+    const gen = () => useClaude ? callClaude(prompt, b.max_tokens) : callOpenAI(prompt, b.max_tokens, isGen);
+
+    let result = await gen();
+    // Üretimde geçerli JSON şart; değilse bir kez daha dene, yine olmazsa KREDİ DÜŞMEDEN hata dön
+    if (isGen && !tryParseJson(result)) {
+      result = await gen();
+      if (!tryParseJson(result)) {
+        return json({ ok: false, error: "Yapay zekâ geçerli JSON döndürmedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
+      }
+    }
 
     // Üretim başarılı → krediyi ATOMİK düş (başarısız üretim kredi yakmaz)
     if (cost > 0 && admin && userId) {
