@@ -1785,7 +1785,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000, action: action || '', duration: this.state.duration })
+      body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000, action: action || '', duration: this.state.duration, topic: this.state.idea })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'Sunucu yanıtı okunamadı' }));
     if (r.status === 402) { this._lastGen = { charged: false, insufficient: true, credits: data.credits }; throw new Error('YETERSIZ_KREDI'); }

@@ -1,6 +1,8 @@
-// Tarih Ajanı — Studio içerik üretimi + SUNUCU TARAFI KREDİ DÜŞME (anti-hile)
+// Tarih Ajanı — Studio içerik üretimi + ARAŞTIRMA (grounding) + SUNUCU KREDİ (anti-hile)
+// Akış: 1) konuyu web'de ARAŞTIR (Claude web_search) → 2) araştırmayı omurga alıp ÜRET →
+//       3) sahne/JSON doğrula, azsa yeniden dene → 4) başarılıysa krediyi düş.
 // Deploy: Edge Functions > studio-generate > bu kodu yapıştır > Deploy
-// Secrets: OPENAI_API_KEY ve/veya ANTHROPIC_API_KEY (mevcut)
+// Secrets: OPENAI_API_KEY ve/veya ANTHROPIC_API_KEY (araştırma için ANTHROPIC önerilir)
 //   SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY otomatik gelir (kredi düşme için gerekli)
 //
 // Kredi mantığı: ücret client'tan DEĞİL, sunucudaki action+duration->cost eşlemesinden gelir.
@@ -131,6 +133,41 @@ function costFor(action: string, duration: string): number {
   return 0;
 }
 
+// ── ARAŞTIRMA BİRİMİ (grounding) ───────────────────────────────────────
+// Üretimden ÖNCE konuyu web'de araştırıp doğrulanmış bir "araştırma dosyası" çıkarır.
+// Claude'un sunucu-tarafı web_search aracını kullanır; yoksa modelin bilgisine düşer.
+// Tek-atış üretime göre çok daha derin, somut ve doğru çıktı sağlar (farkımız burası).
+async function researchBrief(topic: string): Promise<string> {
+  const q = `Sen "Tarih Ajanı" için çalışan titiz bir tarih araştırmacısısın. KONU: "${topic}".
+Güvenilir kaynaklara dayanarak KISA ama YOĞUN bir araştırma dosyası çıkar:
+- Doğrulanmış temel gerçekler (kişi, yer, tarih, sayı — mümkünse kaynak adıyla)
+- Az bilinen çarpıcı ayrıntılar ve şaşırtıcı açılar (güçlü kanca potansiyeli)
+- Yaygın efsane ↔ gerçek ayrımı
+- Anlatıyı zenginleştirecek 4-6 somut sahne/görsel fikri
+Türkçe, madde madde yaz. UYDURMA yok; emin olmadığını "rivayete göre" diye işaretle.`;
+  const aKey = Deno.env.get("ANTHROPIC_API_KEY");
+  if (aKey) {
+    try {
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": aKey, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-5",
+          max_tokens: 1800,
+          messages: [{ role: "user", content: q }],
+          tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 4 }],
+        }),
+      });
+      if (r.ok) {
+        const d = await r.json();
+        const txt = (d.content || []).map((c: any) => (c && c.type === "text") ? c.text : "").join("\n").trim();
+        if (txt) return txt;
+      }
+    } catch (_e) { /* aşağıdaki yedeğe düş */ }
+  }
+  try { return (await callOpenAI(q, 1400)).trim(); } catch (_e) { return ""; }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   try {
@@ -162,7 +199,22 @@ Deno.serve(async (req) => {
     const provider = (b.provider || b.model || "openai").toLowerCase();
     const useClaude = provider === "claude" || provider === "anthropic";
     const isGen = String(b.action || "") === "generate";
-    const gen = () => useClaude ? callClaude(prompt, b.max_tokens) : callOpenAI(prompt, b.max_tokens, isGen);
+    const topic = String(b.topic || "").trim();
+    // Üretimden önce ARAŞTIR (grounding) → sonra üret. Tek kredi, çok daha derin/doğru çıktı.
+    let genPrompt = prompt;
+    if (isGen && topic) {
+      const brief = await researchBrief(topic);
+      if (brief) {
+        genPrompt = `ARAŞTIRMA DOSYASI — Tarih Ajanı araştırma birimi.
+Aşağıdaki doğrulanmış bilgileri ve açıları anlatının OMURGASI yap; bunların dışında bilgi UYDURMA. Kaynaklara sadık kal, somut ayrıntıları (isim, tarih, yer, sayı) metne işle.
+
+${brief}
+
+=== ÜRETİM GÖREVİ ===
+${prompt}`;
+      }
+    }
+    const gen = () => useClaude ? callClaude(genPrompt, b.max_tokens) : callOpenAI(genPrompt, b.max_tokens, isGen);
     const wantScenes = SCENE_COUNT[String(b.duration || "")] || 0;
 
     let result = await gen();
