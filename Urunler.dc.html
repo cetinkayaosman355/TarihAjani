@@ -258,22 +258,49 @@ class Component extends DCLogic {
     cat: 'TÜMÜ',
     checkout: null, stage: 'detail', payMethod: 'iban',
     fName: '', fEmail: '', fPhone: '', fConsent: false,
-    formError: '', ibanCopied: false
+    formError: '', ibanCopied: false, priceOv: {}
   };
+
+  // slug ↔ başlık eşlemesi (deep-link + admin fiyat senkronu ortak kullanır)
+  slugMap() {
+    return {
+      'gizli-uygarliklar': 'gizli uygarl', 'studio-rehberi': 'stüdyo rehber', 'egitim': 'belgeden hikâye',
+      '5li-hikaye': '5’li hikâye', 'hazir-arsiv': 'hazır hikâye', 'vaka-defteri': 'ajan vaka defteri',
+      'koleksiyon': 'dosya kutusu', 'studio-5': 'ajan paketi', 'studio-15': 'saha paketi', 'studio-40': 'arşiv paketi'
+    };
+  }
+  productSlug(title) {
+    const t = (title || '').toLowerCase();
+    const m = this.slugMap();
+    for (const slug in m) { if (t.indexOf(m[slug]) !== -1) return slug; }
+    return null;
+  }
+  // Admin'in düzenlediği fiyatları products tablosundan çek (ana sayfayla aynı kaynak)
+  async loadProducts() {
+    try {
+      const url = (this.props.supabaseUrl || '').trim();
+      const key = (this.props.supabaseAnonKey || '').trim();
+      if (!url || !key) return;
+      const r = await fetch(url + '/rest/v1/products?select=slug,title,price', {
+        headers: { apikey: key, Authorization: 'Bearer ' + key }
+      });
+      if (!r.ok) return;
+      const rows = await r.json();
+      const ov = {};
+      (rows || []).forEach(p => { ov[p.slug] = { title: p.title, price: String(p.price) }; });
+      this.setState({ priceOv: ov });
+    } catch (e) {}
+  }
 
   componentDidMount() {
     this.initSupabase(0);
+    this.loadProducts();
     const h = (location.hash || '').toLowerCase();
     const map = { '#egitim': 'EĞİTİM', '#ekitap': 'E-KİTAP', '#studio': 'STUDIO KREDİ' };
     // Ürün derin bağlantısı: /urunler#u-<slug>  → ilgili ürünü aç
     if (h.indexOf('#u-') === 0) {
       const slug = h.slice(3);
-      const slugMap = {
-        'gizli-uygarliklar': 'gizli uygarl', 'studio-rehberi': 'st\u00fcdyo rehber', 'egitim': 'belgeden hik\u00e2ye',
-        '5li-hikaye': '5\u2019li hik\u00e2ye', 'hazir-arsiv': 'haz\u0131r hik\u00e2ye', 'vaka-defteri': 'ajan vaka defteri',
-        'koleksiyon': 'dosya kutusu', 'studio-5': 'ajan paketi', 'studio-15': 'saha paketi', 'studio-40': 'ar\u015fiv paketi'
-      };
-      const needle = slugMap[slug];
+      const needle = this.slugMap()[slug];
       if (needle) {
         const it = this.shopDefs().find(d => d.title.toLowerCase().indexOf(needle) !== -1);
         if (it) { this.setState({ cat: 'TÜMÜ', checkout: { ...it, features: it.features.map(t => ({ t })) }, stage: 'detail', payMethod: 'iban', formError: '' }); return; }
@@ -369,7 +396,12 @@ class Component extends DCLogic {
     const iban = this.props.iban ?? 'TR06 0004 6002 6388 8000 0717 57';
     const accountHolder = this.props.accountHolder ?? 'Tarih Ajanı';
     const shopierUrl = this.props.shopierUrl ?? 'https://www.shopier.com/tarihajani';
-    const defs = this.shopDefs();
+    const ov = s.priceOv || {};
+    const defs = this.shopDefs().map(d => {
+      const slug = this.productSlug(d.title);
+      const o = slug && ov[slug];
+      return (o && o.price != null && o.price !== '') ? { ...d, price: String(o.price) } : d;
+    });
     const catNames = ['TÜMÜ', 'E-KİTAP', 'HAZIR İÇERİK', 'EĞİTİM', 'STUDIO KREDİ', 'FİZİKİ ÜRÜN'];
     const filtered = defs.filter(d => s.cat === 'TÜMÜ' || d.cat === s.cat);
     const co = s.checkout || {};

@@ -1106,7 +1106,8 @@ BU ÜRETİMİN PARAMETRELERİ:
 - Seslendirme tarzı: ${sesStr}
 - Görsel stil çekirdeği (her görsel/video promptunun BAŞINA birebir konur): ${stilStr}
 - Kadraj / en-boy oranı (her görsel/video promptunda birebir geçer): ${oran}
-- Format: ${fmt.etiket} — hedef: ${fmt.bolum}, toplam ${fmt.kelime} kelime seslendirme, ${fmt.sahne} sahne promptu
+- Format: ${fmt.etiket} — hedef: ${fmt.bolum}, toplam ${fmt.kelime} kelime seslendirme
+- SAHNE SAYISI (ZORUNLU): KAPAK HARİÇ tam ${fmt.sahne} sahne. gorsel_promptlar ve video_promptlar dizilerinin HER BİRİ tam ${fmt.sahne} öğe içermeli — ne eksik ne fazla. Kapak (kapak dizisi) bu sayıya DAHİL DEĞİLDİR.
 
 ÇIKTI KURALI (EN ÖNEMLİ):
 Yanıtın SADECE geçerli bir JSON nesnesi olsun. Kod bloğu işareti, önsöz, açıklama, selamlama EKLEME. İlk karakter { olmalı, son karakter } olmalı.
@@ -1143,7 +1144,7 @@ TARİHSEL DÜRÜSTLÜK:
  "uretim_notu": "kurgu, müzik ve ritim önerisi, 2-3 cümle"
 }
 
-Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} adet olsun ve her biri yukarıdaki kurallara birebir uysun.`;
+Senaryo ${fmt.bolum} olsun. ÇOK ÖNEMLİ — SAHNE SAYISI: gorsel_promptlar dizisi TAM ${fmt.sahne} öğe, video_promptlar dizisi TAM ${fmt.sahne} öğe içermeli (kapak bu sayıya DAHİL DEĞİL). ${fmt.sahne} sahneden az ASLA olmaz; her sahne ayrı bir görsel ve ayrı bir video promptudur. Her biri yukarıdaki kurallara birebir uysun.`;
     return outlineOnly
       ? p + '\n\nEK KURAL (İKİ AŞAMALI ÜRETİM): Bu üretimde senaryo bölümlerinin "metin" alanına yalnızca 2-3 cümlelik yoğun bölüm özeti yaz; tam seslendirme metinleri ikinci aşamada bölüm bölüm yazılacak. Diğer TÜM alanları (youtube, instagram, kapak, gorsel_promptlar, video_promptlar) eksiksiz üret.'
       : p;
