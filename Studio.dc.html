@@ -725,12 +725,25 @@ class Component extends DCLogic {
     this.sb = window.supabase.createClient(url, key);
     this.sb.auth.getSession().then(({ data }) => {
       this._session = data && data.session;
-      if (this._session) this.loadBalance();
+      this.applyStudioSession();
     });
     this._authSub = this.sb.auth.onAuthStateChange((_evt, session) => {
       this._session = session;
-      if (session) this.loadBalance();
+      this.applyStudioSession();
     });
+  }
+
+  // Oturum yetkili kaynak: varsa Studio'ya al (hesap adıyla), yoksa giriş kapısı
+  applyStudioSession() {
+    if (this._session && this._session.user) {
+      const u = this._session.user;
+      const name = (u.user_metadata && u.user_metadata.full_name) || (u.email || '').split('@')[0];
+      this.setState({ screen: 'studio', agentName: name, regEmail: u.email || this.state.regEmail }, () => this.persist());
+      this.loadBalance();
+    } else {
+      // Gerçek oturum yok → eski localStorage kimliğiyle girilmiş olabilir, giriş kapısına düş
+      this.setState({ screen: 'login' });
+    }
   }
 
   _token() { return (this._session && this._session.access_token) || ''; }
@@ -1593,17 +1606,16 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
 
   doLoginNow() {
     const s = this.state;
-    const name = s.agentDraft.trim();
-    if (!name) { this.setState({ regError: 'Bir kod adı seç.' }); return; }
-    if (!/.+@.+\..+/.test(s.regEmail)) { this.setState({ regError: 'Geçerli bir e-posta gir.' }); return; }
-    this.setState({ regError: '', regPending: true });
-    // prototip: demo talebi otomatik onaylanır; gerçek sistemde e-posta onayı beklenir
-    this._rt = setTimeout(() => {
-      this.setState(st => ({
-        regPending: false, agentName: name, screen: 'studio',
-        credits: st.credits > 0 ? st.credits : 500
-      }), () => this.persist());
-    }, 2600);
+    // Studio artık üyelik ister: oturum yoksa üyelik sayfasına yönlendir
+    if (!this.hasSession()) {
+      this.setState({ regError: 'Studio üyelere açıktır. Üye ol / giriş yap sayfasına yönlendiriliyorsun…' });
+      setTimeout(() => { location.href = '/uyelik?next=' + encodeURIComponent('/studio'); }, 1000);
+      return;
+    }
+    // Oturum varsa hesap adıyla doğrudan gir
+    const u = this._session.user;
+    const name = (u.user_metadata && u.user_metadata.full_name) || (u.email || '').split('@')[0];
+    this.setState({ regError: '', regPending: false, agentName: name, regEmail: u.email, screen: 'studio' }, () => this.persist());
   }
 
   async sendChat() {
