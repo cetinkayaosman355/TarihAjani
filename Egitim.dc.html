@@ -521,7 +521,7 @@ class Component extends DCLogic {
       openLogin: () => this.setState({ loginOpen: true, loginError: '' }),
       closeLogin: () => this.setState({ loginOpen: false }),
       buyOpen: s.buyOpen,
-      openBuy: () => this.setState({ buyOpen: true, ibanCopied: false }),
+      openBuy: () => { if (!s.user) { this.setState({ loginOpen: true, loginError: 'Eğitimi satın almak için önce üye ol / giriş yap — erişim hesabına tanımlanır.' }); return; } this.setState({ buyOpen: true, ibanCopied: false }); },
       closeBuy: () => this.setState({ buyOpen: false }),
       iban: this.props.iban ?? 'TR06 0004 6002 6388 8000 0717 57',
       accountHolder: this.props.accountHolder ?? 'Tarih Ajanı',

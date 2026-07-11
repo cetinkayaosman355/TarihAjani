@@ -201,7 +201,15 @@ class Component extends DCLogic {
     this.sb = null;
   }
 
-  componentDidMount() { this.initSupabase(); }
+  componentDidMount() {
+    try {
+      const qp = new URLSearchParams(location.search);
+      this._next = qp.get('next') || '';
+      const em = qp.get('email');
+      if (em) this.setState({ fEmail: em, mode: 'kayit' });   // satın almadan geldiyse kayıt sekmesi
+    } catch (e) {}
+    this.initSupabase();
+  }
 
   initSupabase(tries = 0) {
     const url = (this.props.supabaseUrl || '').trim();
@@ -242,6 +250,8 @@ class Component extends DCLogic {
   async onSession(u) {
     const name = (u.user_metadata && u.user_metadata.full_name) || (u.email || '').split('@')[0];
     this.setState({ loggedIn: true, name, email: u.email }, () => this.saveAccount());
+    // Satın almadan yönlendirildiyse, giriş sonrası kaldığı yere dön
+    if (this._next) { const n = this._next; this._next = ''; setTimeout(() => { location.href = n; }, 700); }
     try {
       const r = await fetch((this.props.supabaseUrl || '').trim() + '/functions/v1/credits', {
         method: 'POST',
