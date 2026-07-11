@@ -40,7 +40,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 26px 16px;
+    padding: 16px 16px;
     overflow-x: hidden;
   }
 
@@ -60,7 +60,7 @@
       linear-gradient(180deg, rgba(14,24,58,0.78), rgba(6,11,30,0.90));
     border: 1px solid var(--hair-soft);
     border-radius: 14px;
-    padding: 38px 40px 34px;
+    padding: 30px 40px 28px;
     box-shadow: 0 40px 90px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
     backdrop-filter: blur(6px);
   }
@@ -79,11 +79,11 @@
 
   /* ---- CREST ---- */
   .crest { display: flex; flex-direction: column; align-items: center; text-align: center; }
-  .emblem { width: 74px; height: 74px; margin-bottom: 16px; }
+  .emblem { width: 60px; height: 60px; margin-bottom: 12px; }
   .emblem .spin { transform-origin: 50% 50%; animation: turn 60s linear infinite; }
   @keyframes turn { to { transform: rotate(360deg); } }
 
-  .kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+  .kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
   .kicker .sep { opacity: 0.5; margin: 0 7px; }
 
   h1 {
@@ -93,27 +93,27 @@
   }
   h1 .amp { font-style: italic; color: var(--gold); font-weight: 400; }
 
-  .rule { display:flex; align-items:center; justify-content:center; gap:12px; margin: 14px 0 18px; color: var(--gold); }
+  .rule { display:flex; align-items:center; justify-content:center; gap:12px; margin: 12px 0 14px; color: var(--gold); }
   .rule::before, .rule::after { content:""; height:1px; width:64px; background: linear-gradient(90deg, transparent, var(--gold)); opacity:0.6; }
   .rule::after { background: linear-gradient(90deg, var(--gold), transparent); }
   .rule .diamond { width:6px; height:6px; background: var(--gold); transform: rotate(45deg); }
 
-  .subtitle { color: var(--dim); font-family: var(--serif); font-size: 16px; font-style: italic; line-height: 1.7; margin: 0 auto 22px; max-width: 46ch; text-align: center; }
+  .subtitle { color: var(--dim); font-family: var(--serif); font-size: 16px; font-style: italic; line-height: 1.6; margin: 0 auto 18px; max-width: 46ch; text-align: center; }
 
   .record-line { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-2); text-align:center; margin-bottom: 22px; }
   .record-line span { color: var(--txt); font-weight: 700; }
   .record-line.hidden { display: none; }
 
-  .brief { font-family: var(--mono); font-size: 12.5px; line-height: 1.8; color: #c6cee0; border-top: 1px solid var(--hair-soft); border-bottom: 1px solid var(--hair-soft); padding: 16px 4px; margin-bottom: 26px; text-align: left; }
+  .brief { font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: #c6cee0; border-top: 1px solid var(--hair-soft); border-bottom: 1px solid var(--hair-soft); padding: 13px 4px; margin-bottom: 20px; text-align: left; }
   .brief .bl { color: var(--gold); letter-spacing: 2px; display:block; margin-bottom: 8px; font-size: 10px; text-transform: uppercase; }
   .brief strong { color: var(--gold-2); font-weight: 600; }
 
-  .field-label { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--faint); margin-bottom: 12px; text-align:center; }
+  .field-label { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; text-align:center; }
 
   /* clearance */
-  .clearance { display: flex; gap: 10px; margin-bottom: 28px; }
+  .clearance { display: flex; gap: 10px; margin-bottom: 20px; }
   .cl-opt {
-    flex: 1; text-align: center; padding: 15px 6px 13px;
+    flex: 1; text-align: center; padding: 12px 6px 11px;
     border: 1px solid var(--hair-soft); border-radius: 9px; cursor: pointer;
     font-family: var(--mono); font-size: 13px; color: var(--dim);
     transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
