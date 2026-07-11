@@ -14,6 +14,7 @@
 /uyelik            /Uyelik.dc.html            200
 /bulten            /bulten.html               200
 /bulten-tesekkurler  /bulten-tesekkurler.html 200
+/oyun/sayi-tahmin  /oyun/sayi-tahmin/index.html  200
 
 # Eski .dc.html adresleri → temiz URL (301: tek kanonik adres, çift içerik önlenir)
 /Tarih%20Ajani.dc.html     /                  301!
