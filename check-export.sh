@@ -66,6 +66,12 @@ for f in bulten.html bulten-tesekkurler.html 404.html _headers; do
   [ -f "$f" ] || hata "$f silinmiş — geri eklenmeli"
 done
 
+# 10) uye-nav.js (her sayfada üyelik göstergesi) duruyor mu ve sayfalara ekli mi
+[ -f "uye-nav.js" ] || hata "uye-nav.js silinmiş — geri eklenmeli"
+for f in "Tarih Ajani.dc.html" Urunler.dc.html Ekitap.dc.html Satis.dc.html "Vaka Dosyalari.dc.html" Egitim.dc.html; do
+  grep -q 'uye-nav.js' "$f" || hata "$f: uye-nav.js script eklentisi eksik"
+done
+
 echo "─────────────────────────────"
 if [ $FAIL -eq 0 ]; then
   echo "🎉 Tüm kontroller geçti."
