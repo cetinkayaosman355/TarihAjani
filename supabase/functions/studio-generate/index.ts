@@ -3,8 +3,9 @@
 // Secrets: OPENAI_API_KEY ve/veya ANTHROPIC_API_KEY (mevcut)
 //   SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY otomatik gelir (kredi düşme için gerekli)
 //
-// Kredi mantığı: ücret client'tan DEĞİL, sunucudaki action->cost eşlemesinden gelir.
-//   action:"generate" -> 100 kredi   ·   action:"regen" -> 5 kredi   ·   diğer/boş -> 0 (ücretsiz)
+// Kredi mantığı: ücret client'tan DEĞİL, sunucudaki action+duration->cost eşlemesinden gelir.
+//   action:"generate" -> süreye göre: 30sn=30 · 1-2dk=60 · 4-5dk=100 · 8-12dk=150 kredi
+//   action:"regen" -> 5 kredi   ·   diğer/boş -> 0 (ücretsiz)
 // Ücretli çağrıda kullanıcı JWT'si (Authorization: Bearer <user token>) gerekir.
 // Yetersiz bakiyede 402 döner; üretim yapılmaz. Kredi ÜRETİM BAŞARILI olduktan sonra düşülür.
 // Yanıt: { ok:true, result, text, charged:boolean, credits:number }
@@ -103,8 +104,14 @@ async function callClaude(prompt: string, maxTokens?: number): Promise<string> {
   throw new Error("Claude: kullanılabilir model bulunamadı — " + lastErr);
 }
 
-// action -> kredi ücreti (SUNUCUDA sabit; client değiştiremez)
-const COST: Record<string, number> = { generate: 100, regen: 5 };
+// Kredi ücretleri SUNUCUDA sabit; client değiştiremez.
+// Üretim maliyeti süre kademesine göre; sahne yenileme sabit.
+const DURATION_COST: Record<string, number> = { sn30: 30, dk1: 60, dk4: 100, dk8: 150 };
+function costFor(action: string, duration: string): number {
+  if (action === "generate") return DURATION_COST[duration] ?? 100;
+  if (action === "regen") return 5;
+  return 0;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -113,7 +120,7 @@ Deno.serve(async (req) => {
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
     if (!prompt) return json({ ok: false, error: "Konu veya prompt gir." }, 400);
 
-    const cost = COST[String(b.action || "")] || 0;
+    const cost = costFor(String(b.action || ""), String(b.duration || ""));
 
     // Ücretli çağrı → kullanıcıyı doğrula ve bakiyeyi ön-kontrol et (üretimden önce)
     let admin: any = null, userId = "";

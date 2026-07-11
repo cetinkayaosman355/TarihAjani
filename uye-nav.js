@@ -18,7 +18,9 @@
   // Bir linkin "giriş butonu" olma olasılığını puanla.
   // ÜYELİK menü linki ve uzun açıklama satırları 0 alır → asla seçilmez.
   function ctaScore(a) {
-    var t = (a.textContent || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    // Türkçe locale ile küçült: "AJAN GİRİŞİ".toLowerCase() noktalı i üretip
+    // deseni bozuyordu; toLocaleLowerCase('tr') doğru "ajan girişi" verir.
+    var t = (a.textContent || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('tr');
     if (!t) return 0;
     if (/ajan giri[sş]/.test(t)) return 5;             // "AJAN GİRİŞİ"
     if (/^giri[sş]( yap)?$/.test(t)) return 5;          // "GİRİŞ" / "GİRİŞ YAP"

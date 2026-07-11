@@ -120,7 +120,7 @@
         <div style="padding: clamp(24px, 3.4vw, 38px); display: grid; gap: 10px; align-content: start; border-right: 1px solid rgba(193,154,82,.15);">
           <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .24em;">AJAN STUDIO NEDİR?</p>
           <p style="margin: 0; color: #cfd3e0; font-size: 14.5px; line-height: 1.7;">Bir tarih fikrini yaz. Sistem sana kısa video senaryosu, seslendirme metni, kapak promptu, sahne promptları, YouTube başlığı, Instagram açıklaması ve yayın paketini tek dosyada hazırlar.</p>
-          <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.65;">Her üretim 1 kredi harcar; çıktılar kopyalamaya ve düzenlemeye hazırdır.</p>
+          <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.65;">Kredi maliyeti seçtiğin dosya süresine göre değişir (30 sn · 30 kredi → 8–12 dk · 150 kredi); çıktılar kopyalamaya ve düzenlemeye hazırdır.</p>
         </div>
         <div style="padding: clamp(24px, 3.4vw, 38px); display: grid; gap: 12px; align-content: start;">
           <p style="margin: 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">ÖRNEK FİKİR</p>
@@ -325,7 +325,7 @@
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 30px;">
               <button onClick="{{ toStep1 }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 14px 22px; font-size: 13px; letter-spacing: .1em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">← FİKRE DÖN</button>
-              <button onClick="{{ startGenerate }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 14px 26px; font-weight: 800; font-size: 13px; letter-spacing: .12em; cursor: pointer;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">DOSYAYI OLUŞTUR · 100 KREDİ →</button>
+              <button onClick="{{ startGenerate }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 14px 26px; font-weight: 800; font-size: 13px; letter-spacing: .12em; cursor: pointer;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">{{ genCostLabel }}</button>
             </div>
           </div>
         </sc-if>
@@ -684,7 +684,7 @@ class Component extends DCLogic {
       imgNotice: false, imgPrompt: '', imgProvider: 'gpt', imgQueue: [],
       step: 1,
       idea: '',
-      tone: 'merak', voice: 'erkek', style: 'sinematik', duration: 'standart', model: 'claude', aspect: 'yatay', regenKey: null,
+      tone: 'merak', voice: 'erkek', style: 'sinematik', duration: 'dk4', model: 'claude', aspect: 'yatay', regenKey: null,
       generating: false, genMsg: '', genError: '', genPct: 0,
       result: null, fileNo: '',
       tab: 'senaryo',
@@ -825,9 +825,10 @@ class Component extends DCLogic {
         { id: 'kare', name: 'Kare · 1:1', desc: 'Instagram gönderi kadrajı' }
       ],
       duration: [
-        { id: 'kisa', name: 'Kısa Vaka · 60 sn', desc: 'Shorts / Reels için tek nefeste' },
-        { id: 'standart', name: 'Standart Dosya · 8–12 dk', desc: 'Ana kanal videosu' },
-        { id: 'derin', name: 'Derin Dosya · 20+ dk', desc: 'Uzun soluklu vaka incelemesi' }
+        { id: 'sn30', name: 'Kısa Vaka · 30 sn', desc: 'Shorts / Reels · 6 sahne · 30 kredi' },
+        { id: 'dk1', name: 'Mini Dosya · 1–2 dk', desc: 'Kısa anlatı · 12 sahne · 60 kredi' },
+        { id: 'dk4', name: 'Standart Dosya · 4–5 dk', desc: 'Ana kanal videosu · 20 sahne · 100 kredi' },
+        { id: 'dk8', name: 'Derin Dosya · 8–12 dk', desc: 'Uzun vaka incelemesi · 30 sahne · 150 kredi' }
       ]
     };
   }
@@ -1048,11 +1049,18 @@ class Component extends DCLogic {
       },
       // format matrisi: senaryo bölümü / toplam seslendirme kelimesi / sahne (görsel+video) promptu adedi
       format: {
-        kisa: { bolum: '3-4 kısa bölüm', kelime: '110-150', sahne: '6-8', etiket: '60 sn' },
-        standart: { bolum: '5-7 bölüm', kelime: '1200-1700', sahne: '10-14', etiket: '8-12 dk' },
-        derin: { bolum: '8-10 bölüm', kelime: '2800-4000', sahne: '16-20', etiket: '20+ dk' }
+        sn30: { bolum: '1-2 kısa an', kelime: '55-90', sahne: '6', etiket: '30 sn', kredi: 30 },
+        dk1:  { bolum: '3-4 bölüm', kelime: '180-320', sahne: '12', etiket: '1-2 dk', kredi: 60 },
+        dk4:  { bolum: '5-7 bölüm', kelime: '650-950', sahne: '20', etiket: '4-5 dk', kredi: 100 },
+        dk8:  { bolum: '8-10 bölüm', kelime: '1200-1800', sahne: '30', etiket: '8-12 dk', kredi: 150 }
       }
     };
+  }
+
+  // Seçili sürenin kredi maliyeti (sunucu da aynı haritayı kullanır)
+  costOf() {
+    const f = this.promptMaps().format[this.state.duration];
+    return (f && f.kredi) || 100;
   }
 
   buildPrompt(outlineOnly) {
@@ -1061,7 +1069,7 @@ class Component extends DCLogic {
     const tonStr = m.ton[s.tone] || m.ton.merak;
     const sesStr = m.ses[s.voice] || m.ses.erkek;
     const stilStr = m.stil[s.style] || m.stil.sinematik;
-    const fmt = m.format[s.duration] || m.format.standart;
+    const fmt = m.format[s.duration] || m.format.dk4;
     const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
     // Tarihî Gravür fotogerçekçi değildir; anti-artifact satırı stile göre değişir
     const antiArtifact = s.style === 'gravur'
@@ -1159,7 +1167,8 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
   async startGenerate() {
     const s = this.state;
     if (s.generating) return;
-    if (s.credits < 100) { this.setState({ creditModal: true }); return; }
+    const cost = this.costOf();
+    if (s.credits < cost) { this.setState({ creditModal: true }); return; }
     this.setState({ step: 3, generating: true, genError: '', genPct: 4 });
     const msgs = ['ARŞİV BAĞLANTISI KURULUYOR…', 'KAYNAKLAR ÇAPRAZ SORGULANIYOR…', 'KANIT ZİNCİRİ KURULUYOR…', 'SENARYO KALEME ALINIYOR…', 'YAYIN PAKETİ MÜHÜRLENİYOR…'];
     let mi = 0;
@@ -1170,7 +1179,7 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
     }, 3500);
     try {
       if (this.props.demoMode) { await new Promise(r => setTimeout(r, 4000)); throw new Error('DEMO'); }
-      const derin = s.duration === 'derin';
+      const derin = s.duration === 'dk8';
       const text = await this.askAI(this.buildPrompt(derin), 16000, 'generate');
       const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
       let result = JSON.parse(clean);
@@ -1193,9 +1202,9 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
       if (this._lastGen && this._lastGen.charged && typeof this._lastGen.credits === 'number') {
         this.setState({ credits: this._lastGen.credits }, () => this.persist());
       } else if (this.hasSession()) {
-        try { await this.spendServer(100, 'uretim'); } catch (e) {}
+        try { await this.spendServer(cost, 'uretim'); } catch (e) {}
       } else {
-        this.setState(st => ({ credits: st.credits - 100 }), () => this.persist());
+        this.setState(st => ({ credits: st.credits - cost }), () => this.persist());
       }
     } catch (e) {
       clearInterval(this._mt);
@@ -1552,6 +1561,7 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
 
       optionGroups: groups,
       startGenerate: () => this.startGenerate(),
+      genCostLabel: 'DOSYAYI OLUŞTUR · ' + this.costOf() + ' KREDİ →',
       pickSummary: this.find('model', s.model).name + ' · ' + this.find('tone', s.tone).name + ' · ' + this.find('voice', s.voice).name + ' · ' + this.find('style', s.style).name + ' · ' + this.find('aspect', s.aspect).name,
       genMsg: s.genMsg, genError: s.genError,
       genBarStyle: { height: '100%', width: s.genPct + '%', background: 'linear-gradient(90deg, #a77d35, #e6c478)', transition: 'width 1s ease' },
@@ -1753,7 +1763,7 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000, action: action || '' })
+      body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000, action: action || '', duration: this.state.duration })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'Sunucu yanıtı okunamadı' }));
     if (r.status === 402) { this._lastGen = { charged: false, insufficient: true, credits: data.credits }; throw new Error('YETERSIZ_KREDI'); }
