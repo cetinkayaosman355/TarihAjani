@@ -187,8 +187,8 @@
 
           <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
             <div style="font-size: 24px; margin-bottom: 10px;">📖</div>
-            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">e-Kitap Arşivi</h3>
-            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">Derinlemesine hazırlanmış e-kitap arşivine sınırsız erişim. <span style="color: #c19a52;">Ajan seviyesinden itibaren</span> tamamı açık; tek tek ücret ödemezsin.</p>
+            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">E-Kitap Hediyeleri</h3>
+            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">E-kitaplar tek seferlik satın alınır. <span style="color: #c19a52;">Ajan ve üstü üyelere</span> zaman zaman e-kitap hediye edilir; dilediğini ayrıca alıp arşivine ekleyebilirsin.</p>
           </div>
 
           <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
@@ -353,7 +353,7 @@ class Component extends DCLogic {
       { id: 'gozlemci', name: 'GÖZLEMCİ', ay: 599, kredi: 1000,
         features: ['Hazır hikâye arşivine erişim', 'Aylık 1.000 Studio kredisi', 'Aylık yeni vaka dosyası'] },
       { id: 'ajan', name: 'AJAN', ay: 1299, kredi: 5000, populer: true,
-        features: ['Tüm dijital kitap arşivi', 'Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri'] },
+        features: ['Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri', 'Üyelere özel e-kitap hediyeleri'] },
       { id: 'basmufettis', name: 'BAŞMÜFETTİŞ', ay: 1999, kredi: 15000,
         features: ['Ajan içeriğinin tamamı', 'Aylık 15.000 Studio kredisi', 'Öncelikli üretim', 'Birebir mentorluk görüşmesi'] }
     ];
@@ -396,7 +396,7 @@ class Component extends DCLogic {
     const access = [
       { name: 'Ajan Studio', on: true, desc: paid ? 'AI üretim stüdyosu — aylık kredi kotanla.' : 'AI üretim stüdyosu — 30 deneme kredinle dene.', href: '/studio', go: 'STUDIO\'YA GİT →' },
       { name: 'Hikâye Arşivi', on: paid, desc: 'Yayınlanmış vakaların hazır üretim dosyaları.', href: paid ? '/arsiv' : '/uyelik#seviyeler', go: paid ? 'ARŞİVİ AÇ →' : 'ÜYELİĞE GEÇ →' },
-      { name: 'E-Kitap Arşivi', on: hasAjan, desc: 'Tüm dijital kitaplar ve vaka koleksiyonları.', href: hasAjan ? '/ekitap' : '/satis#uyelik-ajan', go: hasAjan ? 'OKUMA ODASI →' : 'AJAN\'A YÜKSELT →' },
+      { name: 'E-Kitap Hediyeleri', on: hasAjan, desc: 'E-kitaplar ayrıca satılır; Ajan+ üyelere dönemsel hediye edilir.', href: '/ekitap', go: hasAjan ? 'E-KİTAPLARA GÖZ AT →' : 'AJAN\'A YÜKSELT →' },
       { name: 'Eğitim Akademisi', on: hasAjan, desc: '9 derslik içerik üretim eğitimi.', href: hasAjan ? '/egitim' : '/satis#uyelik-ajan', go: hasAjan ? 'DERSLERE GİT →' : 'AJAN\'A YÜKSELT →' },
       { name: 'Birebir Mentorluk', on: hasBas, desc: 'Aylık birebir üretim görüşmesi.', href: hasBas ? 'mailto:destek@tarihajani.com?subject=Mentorluk Randevusu' : '/satis#uyelik-basmufettis', go: hasBas ? 'RANDEVU AL →' : 'BAŞMÜFETTİŞ\'E YÜKSELT →' }
     ].map(a => ({
@@ -542,7 +542,7 @@ class Component extends DCLogic {
       tierList,
       tierKicker: s.loggedIn ? 'SEVİYENİ YÖNET' : 'ÜYELİKLE NELER AÇILIR?',
       tierTitle: s.loggedIn ? 'Erişim seviyeleri' : 'Tek üyelik, tüm arşiv',
-      tierDesc: s.loggedIn ? '' : 'Studio kredileri, hazır hikâye arşivi, e-kitaplar, eğitim ve mentorluk — hepsi tek üyelikte. Seviye yükseldikçe kapılar açılır; ayrı ayrı satın almana gerek yok.',
+      tierDesc: s.loggedIn ? '' : 'Studio kredileri, hazır hikâye arşivi, eğitim ve mentorluk — hepsi tek üyelikte. Seviye yükseldikçe kapılar açılır. (E-kitaplar ayrıca satılır; üyelere zaman zaman hediye edilir.)',
       setBillAy: () => this.setState({ billing: 'ay' }),
       setBillYil: () => this.setState({ billing: 'yil' }),
       billAyStyle: billStyle(!yil),
