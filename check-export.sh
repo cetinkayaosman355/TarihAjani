@@ -68,14 +68,17 @@ done
 
 # 10) uye-nav.js (her sayfada üyelik göstergesi) duruyor mu ve sayfalara ekli mi
 [ -f "uye-nav.js" ] || hata "uye-nav.js silinmiş — geri eklenmeli"
-for f in "Tarih Ajani.dc.html" Urunler.dc.html Ekitap.dc.html Satis.dc.html "Vaka Dosyalari.dc.html" Egitim.dc.html; do
-  grep -q 'uye-nav.js' "$f" || hata "$f: uye-nav.js script eklentisi eksik"
+for f in "Tarih Ajani.dc.html" Urunler.dc.html Ekitap.dc.html Satis.dc.html "Vaka Dosyalari.dc.html" Egitim.dc.html Arsiv.dc.html; do
+  [ -f "$f" ] && { grep -q 'uye-nav.js' "$f" || hata "$f: uye-nav.js script eklentisi eksik"; }
 done
 
-# 11) Oyun(lar) yerinde mi ve Zaman Tüneli'nden bağlı mı
+# 11) Oyun yerinde mi ve Zaman/Oyun Tüneli'nden bağlı mı (tasarım bölümü kullanıcıya ait)
 [ -f "oyun/sayi-tahmin/index.html" ] || hata "oyun/sayi-tahmin/index.html silinmiş — geri eklenmeli"
-grep -q '#oyunlar' zaman-tuneli/index.html || hata "zaman-tuneli: Oyunlar bölümü (#oyunlar) eksik"
+grep -q '/oyun/sayi-tahmin' zaman-tuneli/index.html || hata "zaman-tuneli: oyuna bağlantı (/oyun/sayi-tahmin) eksik"
 grep -q '/oyun/sayi-tahmin' _redirects || hata "_redirects: /oyun/sayi-tahmin rotası eksik"
+
+# 12) Arsiv (kullanıcının eklediği yeni sayfa) rota + temiz URL
+[ -f "Arsiv.dc.html" ] && { grep -q '/arsiv ' _redirects || hata "_redirects: /arsiv rotası eksik (Arsiv sayfası gözükmez)"; }
 
 echo "─────────────────────────────"
 if [ $FAIL -eq 0 ]; then

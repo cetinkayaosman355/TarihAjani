@@ -15,6 +15,7 @@
 /bulten            /bulten.html               200
 /bulten-tesekkurler  /bulten-tesekkurler.html 200
 /oyun/sayi-tahmin  /oyun/sayi-tahmin/index.html  200
+/arsiv             /Arsiv.dc.html             200
 
 # Eski .dc.html adresleri → temiz URL (301: tek kanonik adres, çift içerik önlenir)
 /Tarih%20Ajani.dc.html     /                  301!
@@ -24,3 +25,4 @@
 /Studio.dc.html            /studio            301!
 /Vaka%20Dosyalari.dc.html  /vaka-dosyalari    301!
 /Uyelik.dc.html            /uyelik            301!
+/Arsiv.dc.html             /arsiv             301!
