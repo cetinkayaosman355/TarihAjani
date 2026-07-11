@@ -72,6 +72,11 @@ for f in "Tarih Ajani.dc.html" Urunler.dc.html Ekitap.dc.html Satis.dc.html "Vak
   grep -q 'uye-nav.js' "$f" || hata "$f: uye-nav.js script eklentisi eksik"
 done
 
+# 11) Oyun(lar) yerinde mi ve Zaman Tüneli'nden bağlı mı
+[ -f "oyun/sayi-tahmin/index.html" ] || hata "oyun/sayi-tahmin/index.html silinmiş — geri eklenmeli"
+grep -q '#oyunlar' zaman-tuneli/index.html || hata "zaman-tuneli: Oyunlar bölümü (#oyunlar) eksik"
+grep -q '/oyun/sayi-tahmin' _redirects || hata "_redirects: /oyun/sayi-tahmin rotası eksik"
+
 echo "─────────────────────────────"
 if [ $FAIL -eq 0 ]; then
   echo "🎉 Tüm kontroller geçti."
