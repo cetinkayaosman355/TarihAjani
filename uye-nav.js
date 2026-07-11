@@ -43,42 +43,30 @@
 
   function apply() {
     if (currentName) {
+      // Eski sürümlerin eklemiş olabileceği ayrı "isim" linklerini temizle (çift yazmasın)
+      Array.prototype.slice.call(document.querySelectorAll('a[data-uye-nav]')).forEach(function (a) {
+        if (a.getAttribute('data-uye-orig') == null && a.parentElement) a.parentElement.removeChild(a);
+      });
+      // Header'daki "AJAN GİRİŞİ" butonunu doğrudan ada dönüştür (yalnız ad, ikon/etiket yok)
       var t = pickTarget();
-      if (t) {
-        if (t.getAttribute('data-uye-nav') !== currentName) {
-          if (t.getAttribute('data-uye-orig') == null) {
-            t.setAttribute('data-uye-orig', t.innerHTML);
-            t.setAttribute('data-uye-fs', t.style.fontSize || '');
-          }
-          t.textContent = '👤 ' + currentName;
-          t.style.fontSize = '11px';           // daha küçük
-          t.setAttribute('data-uye-nav', currentName);
-          t.title = 'Üyelik panelin';
-        }
-      } else {
-        // Giriş butonu yok (yalnız ÜYELİK var) → ÜYELİK'e dokunma, nav'a küçük isim ekle
-        var nav = document.querySelector('header nav') || document.querySelector('header');
-        if (nav && !nav.querySelector('[data-uye-nav]')) {
-          var a = document.createElement('a');
-          a.href = '/uyelik';
-          a.textContent = '👤 ' + currentName;
-          a.setAttribute('data-uye-nav', currentName);
-          a.style.cssText = 'color:#e6c478;font-size:11px;letter-spacing:.08em;text-decoration:none;padding:9px 13px;';
-          nav.insertBefore(a, nav.lastElementChild || null);
-        }
+      if (t && t.getAttribute('data-uye-nav') !== currentName) {
+        if (t.getAttribute('data-uye-orig') == null) t.setAttribute('data-uye-orig', t.innerHTML);
+        t.textContent = currentName;         // "AJAN GİRİŞİ" → "Osman"
+        t.setAttribute('data-uye-nav', currentName);
+        t.title = 'Üyelik panelin';
       }
+      // Header'da giriş butonu yoksa HİÇBİR ŞEY ekleme (ÜYELİK'e dokunma, ayrı ad yazma)
     } else {
-      // çıkış: dönüştürdüğümüz her hedefi eski haline getir
+      // çıkış: dönüştürdüğümüz butonu eski haline getir ("AJAN GİRİŞİ")
       Array.prototype.slice.call(document.querySelectorAll('a[data-uye-nav]')).forEach(function (a) {
         var orig = a.getAttribute('data-uye-orig');
         if (orig != null) {
           a.innerHTML = orig;
-          a.style.fontSize = a.getAttribute('data-uye-fs') || '';
           a.removeAttribute('data-uye-orig');
           a.removeAttribute('data-uye-fs');
           a.removeAttribute('data-uye-nav');
         } else if (a.parentElement) {
-          a.parentElement.removeChild(a);   // sonradan eklediğimiz link
+          a.parentElement.removeChild(a);   // eski sürümlerin eklediği ayrı link
         }
       });
     }
