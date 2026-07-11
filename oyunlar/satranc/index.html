@@ -100,11 +100,15 @@
   .sq.light{background:linear-gradient(150deg,#cdb488,#bfa374)}
   .sq.dark{background:linear-gradient(150deg,#5a4429,#4a371f)}
   .piece{
-    position:relative;z-index:3;transition:transform .08s ease;
-    will-change:transform;
+    position:relative;z-index:3;width:88%;height:88%;
+    display:flex;align-items:center;justify-content:center;
   }
-  .piece.w{color:#f7f1e2;text-shadow:0 1px 0 #b9a678,0 -1px 0 #7d6a3c,1px 0 0 #7d6a3c,-1px 0 0 #7d6a3c,0 2px 4px rgba(0,0,0,.45)}
-  .piece.b{color:#181410;text-shadow:0 1px 0 #4a4038,0 2px 5px rgba(0,0,0,.5),0 0 1px #000}
+  .piece svg{width:100%;height:100%;fill:currentColor;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45));overflow:visible}
+  .piece svg path,.piece svg circle{stroke:var(--pc-line);stroke-width:1.7;paint-order:stroke;stroke-linejoin:round}
+  .piece.w{color:#F0DEAE;--pc-line:#5a4318}
+  .piece.b{color:#252b36;--pc-line:#97a1b4}
+  .captured .piece{width:19px;height:19px;display:inline-flex}
+  .promo-row button .piece{width:46px;height:46px}
   .sq.sel::after{content:"";position:absolute;inset:0;background:var(--sel);z-index:1;box-shadow:inset 0 0 0 3px var(--gold)}
   .sq.lastmove::before{content:"";position:absolute;inset:0;background:rgba(230,196,120,.20);z-index:0}
   .sq.check::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,var(--check),transparent 72%);z-index:1}
@@ -176,7 +180,8 @@
   .modal-card p{color:var(--muted);font-size:12.5px;margin:0 0 16px}
   .promo-row{display:flex;gap:10px}
   .promo-row button{
-    width:64px;height:64px;font-size:42px;line-height:1;border:1px solid var(--line);
+    width:64px;height:64px;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);
     background:linear-gradient(150deg,#cdb488,#bfa374);border-radius:6px;transition:transform .1s;
   }
   .promo-row button:hover{transform:translateY(-3px);border-color:var(--gold)}
@@ -197,6 +202,24 @@
     .layout{grid-template-columns:1fr;gap:20px}
     header nav a:not(.home){display:none}
   }
+
+  /* mobil araç çubuğu */
+  .mbar{display:none}
+  @media (max-width:860px){
+    .mbar{
+      display:flex;align-items:center;gap:8px;margin:0 0 10px;
+      position:sticky;top:76px;z-index:20;
+      background:rgba(5,7,15,.94);backdrop-filter:blur(6px);
+      border:1px solid var(--line-soft);border-radius:6px;padding:8px 10px;
+    }
+    .mbar .st{flex:1;min-width:0;font-family:'Playfair Display',serif;font-size:14.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .mbar button{
+      flex-shrink:0;border-radius:4px;padding:8px 11px;
+      font-family:'Hanken Grotesk',sans-serif;font-size:12px;font-weight:700;letter-spacing:.03em;
+      background:rgba(230,196,120,.08);border:1px solid var(--line);color:#cbb98f;
+    }
+    .mbar button.primary{background:linear-gradient(110deg,var(--gold),var(--brass));border-color:var(--gold);color:#1a1206}
+  }
 </style>
 </head>
 <body>
@@ -216,9 +239,56 @@
   <h1>Satranç <span class="fade">Salonu</span></h1>
   <p class="lead">Antika masada strateji vakti. Bilgisayara karşı üç farklı zorlukta oyna ya da bir dostunla aynı ekranda düelloya tutuş. Rok, geçerken alma (en passant), piyade terfisi ve şah-mat dahil tüm kurallar tam.</p>
 
+<!-- "İki Cihangir" taslak taş seti — Set A: Ankara 1402 (minyatür-gravür silüet, v1) -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="pc-K" viewBox="0 0 64 64">
+    <path d="M18 56h28l-3-6H21z"/>
+    <path d="M24 50l2.5-16h11L40 50z"/>
+    <circle cx="32" cy="26" r="8"/>
+    <path d="M24 21l3-10 5 5 5-5 3 10z"/>
+    <circle cx="32" cy="8" r="2.2"/>
+  </symbol>
+  <symbol id="pc-Q" viewBox="0 0 64 64">
+    <path d="M18 56h28l-3-6H21z"/>
+    <path d="M25 50l2-14h10l2 14z"/>
+    <circle cx="32" cy="28" r="7.5"/>
+    <path d="M23.5 23c0-9 17-9 17 0l-1.5 3.5h-14z"/>
+    <circle cx="32" cy="12" r="2.2"/>
+  </symbol>
+  <symbol id="pc-R" viewBox="0 0 64 64">
+    <path d="M18 56h28l-3-6H21z"/>
+    <path d="M26.5 50l1-21h9l1 21z"/>
+    <path d="M24.5 29l2-5.5h11l2 5.5z"/>
+    <path d="M28.2 23.5l.6-4.5h6.4l.6 4.5z"/>
+    <path d="M27.5 19l4.5-9 4.5 9z"/>
+  </symbol>
+  <symbol id="pc-N" viewBox="0 0 64 64">
+    <path d="M18 56h28l-3-6H21z"/>
+    <path d="M23.5 50c-1.5-9 .5-15 5-19-3.5-3.5-3-9 .5-13l5.5-6 2.5 6.5 7 3.5c4.5 3 6 9 4.5 14L45 50z"/>
+  </symbol>
+  <symbol id="pc-B" viewBox="0 0 64 64">
+    <path d="M18 56h28l-3-6H21z"/>
+    <path d="M23 50c-2.5-14 2-24 10-26 8-2 13.5 3.5 13 11-.3 5-2 8.5-3.5 15z"/>
+    <path d="M41.5 28c5.5 2 7.5 8 3.5 13l-3.5-2.5c2.5-3.5 2-6.5-1.5-8z"/>
+  </symbol>
+  <symbol id="pc-P" viewBox="0 0 64 64">
+    <path d="M20 56h24l-3-6H23z"/>
+    <path d="M26.5 50l1.5-9h8l1.5 9z"/>
+    <circle cx="32" cy="33" r="6.5"/>
+    <path d="M25 32c0-8.5 14-8.5 14 0z"/>
+    <path d="M31 20h2v5.5h-2z"/>
+    <path d="M29.6 20l2.4-4.5 2.4 4.5z"/>
+  </symbol>
+</svg>
+
   <div class="layout">
     <!-- Tahta -->
     <div>
+      <div class="mbar">
+        <span class="st" id="mbarStatus">Beyaz oynar</span>
+        <button onclick="TA.undo()">Geri Al</button>
+        <button class="primary" onclick="TA.newGame()">Yeni Oyun</button>
+      </div>
       <div class="board-frame">
         <div class="board-inner">
           <div class="board" id="board" aria-label="Satranç tahtası"></div>
@@ -297,6 +367,7 @@ const TA = (function(){
     bK:'♚', bQ:'♛', bR:'♜', bB:'♝', bN:'♞', bP:'♟'
   };
   const VAL = {P:100,N:320,B:330,R:500,Q:900,K:20000};
+  const pieceSVG = p => `<svg viewBox="0 0 64 64" aria-hidden="true"><use href="#pc-${p[1]}"></use></svg>`;
   const FILES = ['a','b','c','d','e','f','g','h'];
 
   // Piyade-kare tabloları (beyaz bakış açısı, row0 = 8. sıra üst)
@@ -691,6 +762,7 @@ const TA = (function(){
     el.classList.add('show');
     document.getElementById('statusText').textContent=title;
     document.getElementById('subStatus').textContent=sub||'';
+    const mb=document.getElementById('mbarStatus'); if(mb)mb.textContent=title;
     render();
   }
 
@@ -731,8 +803,7 @@ const TA = (function(){
     row.innerHTML='';
     ['Q','R','B','N'].forEach(pt=>{
       const b=document.createElement('button');
-      b.className='piece '+color;
-      b.textContent=GLYPH[color+pt];
+      b.innerHTML=`<span class="piece ${color}">${pieceSVG(color+pt)}</span>`;
       b.onclick=()=>choosePromo(pt);
       row.appendChild(b);
     });
@@ -773,7 +844,7 @@ const TA = (function(){
       if(p){
         const span=document.createElement('span');
         span.className='piece '+p[0];
-        span.textContent=GLYPH[p];
+        span.innerHTML=pieceSVG(p);
         sq.appendChild(span);
       }
       // yasal hamle işareti
@@ -799,6 +870,7 @@ const TA = (function(){
     if(gameOver)return;
     const sideTr = state.turn==='w'?'Beyaz':'Siyah';
     st.textContent = sideTr+' oynar';
+    const mb=document.getElementById('mbarStatus'); if(mb)mb.textContent=st.textContent;
     const chk = inCheck(state,state.turn)?' · ŞAH!':'';
     if(mode==='cpu'){
       if(thinking){ sub.textContent='Ajan düşünüyor…'+chk; }
@@ -852,8 +924,8 @@ const TA = (function(){
       for(let k=0;k<startCount[t]-now.w[t];k++)capByBlack.push('w'+t);
     }
     const elW=document.getElementById('capByWhite'), elB=document.getElementById('capByBlack');
-    elW.innerHTML=capByWhite.map(p=>`<span class="cap-b">${GLYPH[p]}</span>`).join('');
-    elB.innerHTML=capByBlack.map(p=>`<span class="cap-w">${GLYPH[p]}</span>`).join('');
+    elW.innerHTML=capByWhite.map(p=>`<span class="piece ${p[0]}">${pieceSVG(p)}</span>`).join('');
+    elB.innerHTML=capByBlack.map(p=>`<span class="piece ${p[0]}">${pieceSVG(p)}</span>`).join('');
     // materyal avantajı
     let wMat=0,bMat=0;
     for(const t of['Q','R','B','N','P']){ wMat+=(startCount[t]-now.b[t])*VAL[t]; bMat+=(startCount[t]-now.w[t])*VAL[t]; }
