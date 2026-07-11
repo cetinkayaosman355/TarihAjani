@@ -113,6 +113,9 @@
               <span style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.12); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em; padding: 7px 14px;">{{ tierName }}</span>
               <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .12em;">{{ sinceLabel }}</span>
             </div>
+            <sc-if value="{{ hasExpiry }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 12px 0 0; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em;">{{ expiryLabel }}</p>
+            </sc-if>
             <button onClick="{{ logout }}" style="margin-top: 18px; border: 1px solid rgba(129,135,151,.35); background: transparent; color: #818797; font-size: 11.5px; letter-spacing: .1em; padding: 8px 14px; cursor: pointer;" style-hover="color: #e08a80; border-color: rgba(224,138,128,.5);">ÇIKIŞ YAP</button>
           </div>
 
@@ -250,6 +253,7 @@ class Component extends DCLogic {
       credits: typeof st.credits === 'number' ? st.credits : 0,
       tier: acc.tier || (this.props.varsayilanSeviye ?? 'gozlemci'),
       since: acc.since || '',
+      expiresAt: null,
       billing: 'ay',
       mode: 'giris', fName: '', fEmail: '', fPass: '', formError: '', busy: false
     };
@@ -315,7 +319,7 @@ class Component extends DCLogic {
       });
       const d = await r.json();
       if (d && d.ok) {
-        this.setState({ tier: d.tier || 'uye', credits: typeof d.credits === 'number' ? d.credits : 0 }, () => {
+        this.setState({ tier: d.tier || 'uye', credits: typeof d.credits === 'number' ? d.credits : 0, expiresAt: d.expires_at || null }, () => {
           this.saveAccount();
           try { const st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}'); st.credits = this.state.credits; localStorage.setItem('ta_studio_v5', JSON.stringify(st)); } catch (e) {}
         });
@@ -371,6 +375,8 @@ class Component extends DCLogic {
     const gold = '#c19a52';
     const fmtTL = n => n.toLocaleString('tr-TR');
     const paid = this.isPaidTier(s.tier);           // gozlemci/ajan/basmufettis
+    const expDate = s.expiresAt ? new Date(s.expiresAt) : null;
+    const expDays = expDate ? Math.max(0, Math.ceil((expDate.getTime() - Date.now()) / 86400000)) : -1;
     const cur = this.tiers().find(t => t.id === s.tier) || this.tiers()[0];
     const curQuota = paid ? cur.kredi : 0;           // ücretsiz üye: aylık kota yok
     const order = { uye: -1, gozlemci: 0, ajan: 1, basmufettis: 2 };
@@ -521,6 +527,10 @@ class Component extends DCLogic {
       name: s.name, email: s.email,
       tierName: 'SEVİYE · ' + this.tierDisplayName(s.tier),
       sinceLabel: s.since ? 'ÜYELİK BAŞLANGICI · ' + s.since.toUpperCase() : '',
+      hasExpiry: paid && !!expDate,
+      expiryLabel: (paid && expDate)
+        ? ('ÜYELİK BİTİŞİ · ' + expDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase() + (expDays >= 0 ? ' · ' + expDays + ' GÜN KALDI' : ''))
+        : '',
       credits: s.credits.toLocaleString('tr-TR'),
       quotaSuffix: paid ? '/ ' + curQuota.toLocaleString('tr-TR') + ' AYLIK' : 'DENEME KREDİSİ',
       renewNote: paid
