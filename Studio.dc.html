@@ -1180,7 +1180,7 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
     try {
       if (this.props.demoMode) { await new Promise(r => setTimeout(r, 4000)); throw new Error('DEMO'); }
       const derin = s.duration === 'derin';
-      const text = await this.askAI(this.buildPrompt(derin), 16000);
+      const text = await this.askAI(this.buildPrompt(derin), 16000, 'generate');
       const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
       let result = JSON.parse(clean);
       result = this.qualityFix(result);
@@ -1197,11 +1197,22 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
         generating: false, genPct: 100, result, fileNo: no, step: 4, tab: 'senaryo',
         history: [entry, ...st.history].slice(0, 12), audioUrl: '', ttsError: ''
       }), () => this.persist());
-      // Kredi düşme: oturum varsa sunucuda (gerçek kaynak), yoksa yerel
-      if (this.hasSession()) { try { await this.spendServer(100, 'uretim'); } catch (e) {} }
-      else this.setState(st => ({ credits: st.credits - 100 }), () => this.persist());
+      // Kredi düşme: yeni studio-generate sunucuda düştüyse dönen bakiyeyi kullan;
+      // düşmediyse (eski fonksiyon) eski yönteme düş
+      if (this._lastGen && this._lastGen.charged && typeof this._lastGen.credits === 'number') {
+        this.setState({ credits: this._lastGen.credits }, () => this.persist());
+      } else if (this.hasSession()) {
+        try { await this.spendServer(100, 'uretim'); } catch (e) {}
+      } else {
+        this.setState(st => ({ credits: st.credits - 100 }), () => this.persist());
+      }
     } catch (e) {
       clearInterval(this._mt);
+      if (e.message === 'YETERSIZ_KREDI') {
+        if (this._lastGen && typeof this._lastGen.credits === 'number') this.setState({ credits: this._lastGen.credits });
+        this.setState({ generating: false, genError: '', genPct: 0, creditModal: true });
+        return;
+      }
       const msg = e.message === 'DEMO'
         ? 'Demo modu açık: gerçek üretim için demoMode tweak\'ini kapatın.'
         : 'Üretim tamamlanamadı: ' + e.message + ' — Lütfen tekrar deneyin.';
@@ -1700,27 +1711,38 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
         : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
       const tail = kind === 'vp' ? 'Stable face and anatomy, no warping, no morphing, no flicker.' : anti;
       const what = kind === 'gp' ? 'image-generation prompt' : 'video-generation prompt describing ONE camera move/action, 5-8 seconds';
-      const reply = await this.askAI('Rewrite the following ' + what + ' for the scene "' + (item.sahne || '') + '" of a Turkish history-mystery YouTube video. Produce a NEW, improved variation (different composition or angle), in English. It MUST start with this exact style core: "' + stilStr + '", must include "' + oran + '", and must END with this exact line: "' + tail + '". Return ONLY the prompt text, no quotes or explanation.\n\nCurrent prompt:\n' + (item.prompt || ''), 600);
+      const reply = await this.askAI('Rewrite the following ' + what + ' for the scene "' + (item.sahne || '') + '" of a Turkish history-mystery YouTube video. Produce a NEW, improved variation (different composition or angle), in English. It MUST start with this exact style core: "' + stilStr + '", must include "' + oran + '", and must END with this exact line: "' + tail + '". Return ONLY the prompt text, no quotes or explanation.\n\nCurrent prompt:\n' + (item.prompt || ''), 600, 'regen');
       const r = JSON.parse(JSON.stringify(this.state.result));
       const tgt = kind === 'gp' ? r.gorsel_promptlar : r.video_promptlar;
       if (tgt && tgt[i]) tgt[i].prompt = reply.trim().replace(/^["']|["']$/g, '');
       const entry = { title: 'Sahne yenileme — ' + (item.sahne || 'Sahne ' + (i + 1)), date: new Date().toLocaleDateString('tr-TR'), cost: 5 };
       this.setState(st => ({ result: r, regenKey: null, history: [entry, ...st.history].slice(0, 12) }), () => this.persist());
-      if (this.hasSession()) { try { await this.spendServer(5, 'sahne_yenileme'); } catch (e) {} }
-      else this.setState(st => ({ credits: st.credits - 5 }), () => this.persist());
+      // Kredi: sunucu düştüyse dönen bakiye; değilse eski yöntem
+      if (this._lastGen && this._lastGen.charged && typeof this._lastGen.credits === 'number') {
+        this.setState({ credits: this._lastGen.credits }, () => this.persist());
+      } else if (this.hasSession()) {
+        try { await this.spendServer(5, 'sahne_yenileme'); } catch (e) {}
+      } else {
+        this.setState(st => ({ credits: st.credits - 5 }), () => this.persist());
+      }
     } catch (e) {
       this.setState({ regenKey: null });
+      if (e.message === 'YETERSIZ_KREDI') {
+        if (this._lastGen && typeof this._lastGen.credits === 'number') this.setState({ credits: this._lastGen.credits });
+        this.setState({ creditModal: true });
+      }
     }
   }
 
-  async askAI(prompt, maxTokens) {
+  async askAI(prompt, maxTokens, action) {
     const norm = (r) => {
       if (typeof r === 'string') return r;
       if (r && r.content && r.content[0] && r.content[0].text) return r.content[0].text;
       if (r && r.completion) return r.completion;
       throw new Error('Beklenmeyen yanıt biçimi');
     };
-    // 1) Bu ortamda: window.claude köprüsü
+    this._lastGen = { charged: false, credits: undefined };
+    // 1) Bu ortamda: window.claude köprüsü (yalnız tasarım önizlemesi; canlıda yok)
     if (window.claude && window.claude.complete) {
       try { return norm(await window.claude.complete(prompt)); }
       catch (e) {
@@ -1728,17 +1750,21 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
         catch (e2) { /* aşağıdaki canlı backend'e düş */ }
       }
     }
-    // 2) Canlı site: studio-generate edge function (seçili model: claude / openai)
+    // 2) Canlı site: studio-generate edge function (kredi düşme sunucuda)
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const prov = this.state.model === 'openai' || this.state.model === 'gpt' ? 'openai' : 'claude';
+    // Ücretli aksiyonlarda kullanıcı JWT'si gönderilir ki sunucu doğru hesaptan düşsün
+    const token = this._token() || SB_KEY;
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
-      body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000 })
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000, action: action || '' })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'Sunucu yanıtı okunamadı' }));
+    if (r.status === 402) { this._lastGen = { charged: false, insufficient: true, credits: data.credits }; throw new Error('YETERSIZ_KREDI'); }
     if (!r.ok || !data.ok) throw new Error(data.error || ('studio-generate hatası (' + r.status + ')'));
+    this._lastGen = { charged: !!data.charged, credits: data.credits };
     return norm(data.text || data.result || '');
   }
 
