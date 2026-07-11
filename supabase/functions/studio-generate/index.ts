@@ -3,8 +3,9 @@
 // Secrets: OPENAI_API_KEY ve/veya ANTHROPIC_API_KEY (mevcut)
 //   SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY otomatik gelir (kredi düşme için gerekli)
 //
-// Kredi mantığı: ücret client'tan DEĞİL, sunucudaki action->cost eşlemesinden gelir.
-//   action:"generate" -> 100 kredi   ·   action:"regen" -> 5 kredi   ·   diğer/boş -> 0 (ücretsiz)
+// Kredi mantığı: ücret client'tan DEĞİL, sunucudaki action+duration->cost eşlemesinden gelir.
+//   action:"generate" -> süreye göre: 30sn=30 · 1-2dk=60 · 4-5dk=100 · 8-12dk=150 kredi
+//   action:"regen" -> 5 kredi   ·   diğer/boş -> 0 (ücretsiz)
 // Ücretli çağrıda kullanıcı JWT'si (Authorization: Bearer <user token>) gerekir.
 // Yetersiz bakiyede 402 döner; üretim yapılmaz. Kredi ÜRETİM BAŞARILI olduktan sonra düşülür.
 // Yanıt: { ok:true, result, text, charged:boolean, credits:number }
