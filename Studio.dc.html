@@ -1098,53 +1098,51 @@ class Component extends DCLogic {
       ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
       : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
 
-    const p = `Sen "Tarih Ajanı" adlı Türkçe tarih YouTube kanalının kıdemli senaristi ve yapım yönetmenisin. Kanal, tarihi bir dedektif titizliğiyle araştırır: her iddia belgeye dayanır, anlatım bir vaka dosyası gibi kurgulanır, izleyici ilk saniyeden ipuçlarıyla sürüklenir.
+    const p = `Sen "Tarih Ajanı" adlı Türkçe tarih YouTube kanalının BAŞ senaristi, araştırmacısı ve yapım yönetmenisin. Kanal tarihi bir dedektif titizliğiyle işler: her iddia belgeye dayanır, anlatım bir vaka dosyası gibi kurgulanır, izleyici ilk saniyeden ipuçlarıyla sürüklenir. Çıktın PROFESYONEL yayın kalitesinde olmalı; yüzeysel, genel-geçer, "ansiklopedi özeti" gibi metinler KABUL EDİLMEZ.
 
 BU ÜRETİMİN PARAMETRELERİ:
 - KONU: ${s.idea}
 - Anlatım tonu: ${tonStr}
 - Seslendirme tarzı: ${sesStr}
 - Görsel stil çekirdeği (her görsel/video promptunun BAŞINA birebir konur): ${stilStr}
-- Kadraj / en-boy oranı (her görsel/video promptunda birebir geçer): ${oran}
-- Format: ${fmt.etiket} — hedef: ${fmt.bolum}, toplam ${fmt.kelime} kelime seslendirme
-- SAHNE SAYISI (ZORUNLU): KAPAK HARİÇ tam ${fmt.sahne} sahne. gorsel_promptlar ve video_promptlar dizilerinin HER BİRİ tam ${fmt.sahne} öğe içermeli — ne eksik ne fazla. Kapak (kapak dizisi) bu sayıya DAHİL DEĞİLDİR.
+- Kadraj / en-boy oranı: ${oran}
+- Format: ${fmt.etiket} · ${fmt.bolum} · toplam ${fmt.kelime} kelime seslendirme
+- SAHNE SAYISI (KESİN KURAL): KAPAK HARİÇ tam ${fmt.sahne} sahne. gorsel_promptlar ve video_promptlar dizilerinin HER BİRİ tam ${fmt.sahne} öğe içermeli. Seslendirme kısa olsa bile anlatıyı ${fmt.sahne} ayrı görsel âna böl (birbirini izleyen anlar); ${fmt.sahne}'den AZ sahne ASLA verme. Kapak bu sayıya dahil değildir.
 
-ÇIKTI KURALI (EN ÖNEMLİ):
-Yanıtın SADECE geçerli bir JSON nesnesi olsun. Kod bloğu işareti, önsöz, açıklama, selamlama EKLEME. İlk karakter { olmalı, son karakter } olmalı.
+KALİTE BARI (EN KRİTİK — zayıf çıktı geçersizdir):
+- SESLENDİRME (senaryo[].metin): O bölümün TAM, kelimesi kelimesine okunacak metni. Somut isim/tarih/yer/sayı geçir; duyusal ve sinematik dil kur; her bölüm mikro-kanca ile açılıp merak bırakarak bitsin. Toplam ${fmt.kelime} kelime bütçesine UY ve ALT SINIRIN ALTINA DÜŞME. Dolgu, klişe, "tarih boyunca insanlar…" tarzı genel cümle YASAK.
+- KANCA: İlk 3 saniye maksimum merak; ilk cümle bir soru, çelişki ya da çarpıcı iddia olsun.
+- YOUTUBE AÇIKLAMASI (aciklama): EN AZ 3 dolu paragraf — 1) merak açan giriş, 2) videoda ne var/neyi kanıtlıyoruz, 3) abonelik + kaynak/uyarı çağrısı. Ardından "00:00 Giriş" biçiminde EN AZ 3 zaman damgası, sonra 5-8 arama-dostu anahtar kelime. Kısa/tek paragraf KABUL EDİLMEZ.
+- INSTAGRAM (aciklama): 1 vurucu hook satırı + 2 kısa paragraf + net CTA (izleyiciye yorumda soru sordur). Emoji ölçülü.
+- ETİKETLER: TAM 15 YouTube etiketi (geniş + niş + long-tail karışık). 15'ten az OLMAZ.
+- HASHTAGLER: TAM 5 Instagram hashtag'i, # ile, konuya en özel ve en güçlü olanlar (Instagram 5 hashtag'e izin verir; fazlası zararlı). Türkçe+İngilizce karışık, jenerik değil.
+
+ÇIKTI KURALI: Yanıt SADECE tek ve geçerli bir JSON nesnesi olsun. Kod bloğu, önsöz, selamlama YOK. İlk karakter { , son karakter }.
 
 GÖRSEL & VİDEO PROMPT KURALLARI (tümü İngilizce):
-- Her sahne için AYRI bir görsel promptu (gorsel_promptlar) ve AYRI bir video promptu (video_promptlar) üret; ikisi de İngilizce.
-- Her görsel/video promptu görsel stil çekirdeğiyle BAŞLAR ("${stilStr}"), ardından "${oran}" ve sahne tarifi gelir.
+- Her sahne için AYRI görsel ve AYRI video promptu üret.
+- Her prompt "${stilStr}" ile BAŞLAR, ardından "${oran}", sonra sahnenin SOMUT tarifi (kim, nerede, ışık, kompozisyon, duygu).
 - Her görsel promptu ŞU satırla BİTER: "${antiArtifact}"
-- Her video promptu tek bir kamera hareketi/aksiyon tarif eder (5-8 sn) ve ŞU satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker."
-- Görsellerde ASLA yazı, logo veya altyazı olmasın (metin sonradan montajda eklenir).
-- Bir karakter birden çok sahnede geçerse, sabit kimlik tarifini (yaş, ten, saç, kıyafet, ayırt edici detay) her ilgili promptun başında birebir tekrar et.
+- Her video promptu tek bir kamera hareketi/aksiyon (5-8 sn) tarif eder ve ŞU satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker."
+- Görsellerde yazı/logo/altyazı YOK. Aynı karakter tekrar geçiyorsa sabit kimlik tarifini (yaş, ten, saç, kıyafet, ayırt edici detay) her promptun başında birebir tekrarla.
 
-ANLATIM KURALLARI:
-- İlk bölüm güçlü bir kancadır (ilk 3 saniye = maksimum merak).
-- Seslendirmeyi belirtilen seslendirme tarzına uygun yaz; toplam kelime bütçesine uy.
-- Sonda açık bir merak sorusuyla bitir.
-
-TARİHSEL DÜRÜSTLÜK:
-- Efsane/abartı varsa "rivayete göre / anlatıldığına göre" çerçevesi kullan.
-- Emin olmadığın tarih, isim veya ayrıntıyı UYDURMA; anlatımı genel tut, bilinmeyeni spekülasyon olarak işaretle.
-- Hassas konularda (din, ölüm, izole topluluklar) saygılı ol.
+TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan; emin olmadığın ayrıntıyı UYDURMA, spekülasyonu işaretle; hassas konularda saygılı ol.
 
 ŞU JSON ŞEMASINA BİREBİR UY:
 {
- "baslik": "dosyanın çarpıcı Türkçe başlığı",
+ "baslik": "çarpıcı Türkçe başlık",
  "logline": "tek cümlelik merak uyandıran özet",
- "senaryo": [{"bolum": "bölüm adı (ör. Açılış — ...)", "sure": "zaman aralığı", "metin": "o bölümün tam seslendirme senaryosu, akıcı Türkçe"}],
- "seslendirme_notu": "ElevenLabs için okuma temposu ve vurgu yönergeleri + olayın gerçek/efsane ayrımı, 2-3 cümle",
- "youtube": {"baslik": "70 karakteri geçmeyen tıklanabilir başlık", "aciklama": "3 paragraf + zaman damgaları içeren açıklama", "etiketler": ["12-16 adet etiket"]},
- "instagram": {"aciklama": "hook ile başlayan 2 kısa paragraf", "hashtagler": ["10-14 hashtag"]},
- "kapak": [{"ad": "Kapak A", "prompt": "İngilizce kapak promptu; görsel stil çekirdeğiyle başlar, ${oran}, üst/alt boşluk metne uygun, anti-artifact satırıyla biter", "yazi": "kapağa bindirilecek 2-4 kelimelik çarpıcı Türkçe yazı", "not": "Türkçe kompozisyon notu"}, {"ad": "Kapak B", "prompt": "alternatif İngilizce prompt (aynı kurallar)", "yazi": "alternatif kapak yazısı", "not": "Türkçe not"}],
- "gorsel_promptlar": [{"sahne": "senaryodaki sahne adı", "prompt": "İngilizce görsel promptu (yukarıdaki kurallar)"}],
- "video_promptlar": [{"sahne": "sahne adı", "prompt": "İngilizce video promptu (yukarıdaki kurallar)"}],
- "uretim_notu": "kurgu, müzik ve ritim önerisi, 2-3 cümle"
+ "senaryo": [{"bolum": "bölüm adı", "sure": "zaman aralığı", "metin": "o bölümün TAM seslendirme metni (kalite barına uygun)"}],
+ "seslendirme_notu": "ElevenLabs okuma temposu, vurgu ve duraklama yönergeleri + gerçek/efsane ayrımı (3-4 cümle)",
+ "youtube": {"baslik": "70 karakteri geçmeyen tıklanabilir başlık", "aciklama": "yukarıdaki yapıda 3+ paragraf + zaman damgaları + anahtar kelimeler", "etiketler": ["TAM 15 etiket"]},
+ "instagram": {"aciklama": "hook satırı + 2 paragraf + CTA", "hashtagler": ["TAM 5 güçlü hashtag, # ile"]},
+ "kapak": [{"ad": "Kapak A", "prompt": "İngilizce kapak promptu; stil çekirdeğiyle başlar, ${oran}, metne yer bırakır, anti-artifact ile biter", "yazi": "2-4 kelimelik çarpıcı Türkçe kapak yazısı", "not": "Türkçe kompozisyon notu"}, {"ad": "Kapak B", "prompt": "alternatif (aynı kurallar)", "yazi": "alternatif kapak yazısı", "not": "Türkçe not"}],
+ "gorsel_promptlar": [{"sahne": "sahne adı", "prompt": "İngilizce görsel promptu"}],
+ "video_promptlar": [{"sahne": "sahne adı", "prompt": "İngilizce video promptu"}],
+ "uretim_notu": "kurgu, müzik ve ritim önerisi (3-4 cümle)"
 }
 
-Senaryo ${fmt.bolum} olsun. ÇOK ÖNEMLİ — SAHNE SAYISI: gorsel_promptlar dizisi TAM ${fmt.sahne} öğe, video_promptlar dizisi TAM ${fmt.sahne} öğe içermeli (kapak bu sayıya DAHİL DEĞİL). ${fmt.sahne} sahneden az ASLA olmaz; her sahne ayrı bir görsel ve ayrı bir video promptudur. Her biri yukarıdaki kurallara birebir uysun.`;
+SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar = TAM ${fmt.sahne} öğe · video_promptlar = TAM ${fmt.sahne} öğe · youtube.etiketler = 15 · instagram.hashtagler = 5 · her senaryo[].metin dolu, akıcı ve bütçeye uygun · youtube.aciklama 3+ paragraf ve zaman damgalı. Eksik varsa düzelt, öyle gönder.`;
     return outlineOnly
       ? p + '\n\nEK KURAL (İKİ AŞAMALI ÜRETİM): Bu üretimde senaryo bölümlerinin "metin" alanına yalnızca 2-3 cümlelik yoğun bölüm özeti yaz; tam seslendirme metinleri ikinci aşamada bölüm bölüm yazılacak. Diğer TÜM alanları (youtube, instagram, kapak, gorsel_promptlar, video_promptlar) eksiksiz üret.'
       : p;
