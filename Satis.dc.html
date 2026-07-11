@@ -191,14 +191,41 @@ class Component extends DCLogic {
   SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
   SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
 
+  // Üye olmadan satın alınamayacak kategoriler (kullanım hesaba bağlı)
+  GATED_CATS = ['ÜYELİK', 'STUDIO KREDİ', 'EĞİTİM', 'ARŞİV'];
+
   componentDidMount() {
     try {
       if (window.supabase && window.supabase.createClient) this.sb = window.supabase.createClient(this.SB_URL, this.SB_KEY);
     } catch (e) {}
     const h = (location.hash || '').replace('#', '').toLowerCase();
     if (h && this.catalog()[h]) this.setState({ slug: h });
+    // giriş yapılmış oturumu yakala (üyelik kapısı + form ön-doldurma için)
+    if (this.sb) {
+      this.sb.auth.getSession().then(({ data }) => {
+        this._session = data && data.session;
+        this.applySession();
+      });
+      this._authSub = this.sb.auth.onAuthStateChange((_e, session) => { this._session = session; this.applySession(); });
+    }
+    // URL'den e-posta ön-doldurma (üyelikten geri dönüşte)
+    try {
+      const qp = new URLSearchParams(location.search);
+      const em = qp.get('email');
+      if (em && !this.state.fEmail) this.setState({ fEmail: em });
+    } catch (e) {}
     // admin'den güncellenen fiyat/başlıkları çek
     this.loadProducts();
+  }
+
+  hasSession() { return !!(this._session && this._session.user); }
+
+  // Girişliyse formu hesap bilgisiyle doldur (sipariş e-postası hesapla eşleşsin → oto-erişim çalışsın)
+  applySession() {
+    const u = this._session && this._session.user;
+    if (!u) return;
+    const name = (u.user_metadata && u.user_metadata.full_name) || this.state.fName;
+    this.setState({ fEmail: u.email || this.state.fEmail, fName: name || this.state.fName });
   }
 
   async loadProducts() {
@@ -354,6 +381,14 @@ class Component extends DCLogic {
       submitOrder: async () => {
         if (s.sending) return;
         if (!s.fName.trim() || !/.+@.+\..+/.test(s.fEmail)) { this.setState({ formError: 'Lütfen ad soyad ve geçerli e-posta gir.' }); return; }
+        // ÜYELİK KAPISI: gated kategoriler (üyelik/studio/eğitim/arşiv) girişsiz alınamaz
+        if (this.GATED_CATS.indexOf(p.cat) !== -1 && !this.hasSession()) {
+          const next = '/satis#' + s.slug;
+          const em = s.fEmail.trim();
+          this.setState({ formError: 'Bu ürün üyeliğe tanımlanır. Önce üye ol / giriş yap — bilgilerin taşınır, kaldığın yerden devam edersin.' });
+          setTimeout(() => { location.href = '/uyelik?next=' + encodeURIComponent(next) + (em ? '&email=' + encodeURIComponent(em) : ''); }, 1200);
+          return;
+        }
         this.setState({ sending: true, formError: '' });
         this.saveOrder();
         try {
