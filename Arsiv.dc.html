@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/png" href="/assets/logo-mark.png">
 <link rel="canonical" href="https://tarihajani.com/arsiv">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./support.js"></script>
 <script src="/uye-nav.js" defer></script>
 <script src="analytics.js"></script>
@@ -215,7 +216,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { q: '', all: [], sel: null };
+  state = { q: '', all: [], sel: null, mem: false };
   componentDidMount() {
     const load = () => {
       if (window.__ARSIV__ && window.__ARSIV__.length) this.setState({ all: window.__ARSIV__ });
@@ -224,14 +225,29 @@ class Component extends DCLogic {
     load();
     this._esc = (e) => { if (e.key === 'Escape') this.setState({ sel: null }); };
     window.addEventListener('keydown', this._esc);
+    this.initAuth();
   }
   componentWillUnmount() { window.removeEventListener('keydown', this._esc); }
-  isMember() {
-    try {
-      if (window.__TA_UYE__ === true) return true;
-      return localStorage.getItem('ta_uye') === '1';
-    } catch (e) { return false; }
+
+  // Arşiv kilidi gerçek Supabase oturumuna bağlı: giriş yapan üye = kilit açık
+  initAuth(tries) {
+    tries = tries || 0;
+    if (!window.supabase || !window.supabase.createClient) {
+      if (tries < 40) setTimeout(() => this.initAuth(tries + 1), 150);
+      return;
+    }
+    const SB = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const sb = window.supabase.createClient(SB, KEY);
+    const setMem = (u) => {
+      const on = !!u;
+      try { window.__TA_UYE__ = on; localStorage.setItem('ta_uye', on ? '1' : '0'); } catch (e) {}
+      this.setState({ mem: on });
+    };
+    sb.auth.getSession().then(({ data }) => setMem(data && data.session && data.session.user));
+    sb.auth.onAuthStateChange((_e, s) => setMem(s && s.user));
   }
+  isMember() { return this.state.mem === true; }
   renderVals() {
     const raw = this.state.all || [];
     const q = (this.state.q || '').toLocaleLowerCase('tr');
