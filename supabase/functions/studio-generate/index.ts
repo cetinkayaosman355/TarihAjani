@@ -70,9 +70,18 @@ async function callOpenAI(prompt: string, maxTokens?: number, jsonMode?: boolean
 }
 
 // Üretim çıktısını JSON'a çevirmeyi dene (client ile aynı temizleme); olmazsa null.
-function tryParseJson(text: string): unknown | null {
+function tryParseJson(text: string): any | null {
   const clean = String(text).replace(/^[\s\S]*?\{/, "{").replace(/\}[^}]*$/, "}");
   try { return JSON.parse(clean); } catch { return null; }
+}
+
+// Süre kademesine göre KAPAK HARİÇ beklenen sahne sayısı (client format haritasıyla aynı)
+const SCENE_COUNT: Record<string, number> = { sn30: 6, dk1: 12, dk4: 20, dk8: 30 };
+// -1: geçersiz JSON · 0..N: gorsel_promptlar öğe sayısı
+function sceneCount(text: string): number {
+  const o = tryParseJson(text);
+  if (!o || typeof o !== "object") return -1;
+  return Array.isArray(o.gorsel_promptlar) ? o.gorsel_promptlar.length : 0;
 }
 
 // Sırayla denenir; "model bulunamadı" hatasında bir sonrakine geçer.
@@ -154,12 +163,18 @@ Deno.serve(async (req) => {
     const useClaude = provider === "claude" || provider === "anthropic";
     const isGen = String(b.action || "") === "generate";
     const gen = () => useClaude ? callClaude(prompt, b.max_tokens) : callOpenAI(prompt, b.max_tokens, isGen);
+    const wantScenes = SCENE_COUNT[String(b.duration || "")] || 0;
 
     let result = await gen();
-    // Üretimde geçerli JSON şart; değilse bir kez daha dene, yine olmazsa KREDİ DÜŞMEDEN hata dön
-    if (isGen && !tryParseJson(result)) {
-      result = await gen();
-      if (!tryParseJson(result)) {
+    // Üretimde: geçerli JSON + yeterli sahne şart. Az/geçersizse bir kez daha dener,
+    // sahnesi daha çok olanı seçer. Hâlâ geçerli JSON değilse KREDİ DÜŞMEDEN hata döner.
+    if (isGen) {
+      let sc = sceneCount(result);
+      if (sc < wantScenes) {
+        const retry = await gen();
+        if (sceneCount(retry) > sc) { result = retry; sc = sceneCount(retry); }
+      }
+      if (sceneCount(result) < 0) {
         return json({ ok: false, error: "Yapay zekâ geçerli JSON döndürmedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       }
     }
