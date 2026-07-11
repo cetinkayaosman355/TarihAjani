@@ -102,28 +102,15 @@
         <p style="margin: 16px 0 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .17em;">GİZLİLİK DERECELİ · STUDIO ERİŞİMİ</p>
         <h1 style="margin: 12px 0 8px; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 36px; line-height: 1.1;">Ajan <span style="color: #c19a52;">Studio</span></h1>
         <p style="margin: 0; color: #a4a9b5; line-height: 1.6; font-size: 15px;">Fikrini söyle; senaryo, seslendirme ve yayın paketi dosya halinde önüne gelsin.</p>
-        <sc-if value="{{ regPending }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top: 26px; border: 1px solid rgba(193,154,82,.35); background: rgba(193,154,82,.06); padding: 22px; display: grid; gap: 10px;">
-            <span style="width: 40px; height: 40px; margin: 0 auto; border-radius: 50%; border: 2px solid rgba(193,154,82,.25); border-top-color: #c19a52; animation: ta-spin 1.1s linear infinite;"></span>
-            <p style="margin: 0; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">DEMO TALEBİN DEĞERLENDİRİLİYOR…</p>
-            <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.6;">Onaylandığında hesabına 5 kredi tanımlanır ve dosya masana açılır.</p>
-          </div>
-        </sc-if>
         <sc-if value="{{ regForm }}" hint-placeholder-val="{{ true }}">
-          <label style="display: grid; gap: 7px; margin-top: 26px; text-align: left; color: #8b91a8; font-size: 11px; text-transform: uppercase; letter-spacing: .12em;">Kod Adın
-            <input value="{{ agentDraft }}" onChange="{{ onAgentDraft }}" placeholder="ör. Ajan Osman" style="border: 1px solid rgba(193,154,82,.25); background: #02040a; color: #fff; padding: 14px; font-size: 15px;">
-          </label>
-          <label style="display: grid; gap: 7px; margin-top: 14px; text-align: left; color: #8b91a8; font-size: 11px; text-transform: uppercase; letter-spacing: .12em;">E-posta
-            <input value="{{ regEmail }}" onChange="{{ onRegEmail }}" onKeyDown="{{ onLoginKey }}" type="email" placeholder="ajan@ornek.com" style="border: 1px solid rgba(193,154,82,.25); background: #02040a; color: #fff; padding: 14px; font-size: 15px;">
-          </label>
+          <p style="margin: 24px 0 0; border: 1px solid rgba(193,154,82,.3); background: rgba(193,154,82,.06); color: #cfd3e0; font-size: 14px; line-height: 1.7; padding: 16px 18px; text-align: left;">Studio <strong style="color: #e6c478;">üyelere özeldir.</strong> Giriş yaptığında kredilerin ve dosyaların hesabına bağlı çalışır; girişten sonra otomatik olarak buraya dönersin.</p>
           <sc-if value="{{ regError }}" hint-placeholder-val="{{ false }}">
             <p style="margin: 12px 0 0; color: #e8a9a9; font-size: 13px; text-align: left;">{{ regError }}</p>
           </sc-if>
-          <button onClick="{{ doLogin }}" style="margin-top: 18px; width: 100%; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 16px; font-weight: 800; font-size: 13px; letter-spacing: .13em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35); transform: translateY(-1px);">
-          <span>DEMO TALEBİ GÖNDER</span><span style="font-family: 'Special Elite', monospace;">→</span>
-          </button>
-          <small style="display: block; margin-top: 14px; color: #676d7c; line-height: 1.5;">Onaylanan demo hesabına 5 kredi tanımlanır. Üyeliğin varsa aynı e-posta ile giriş yapılır.</small>
-          <a href="/uyelik" style="display: inline-block; margin-top: 12px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .14em; text-decoration: none; border: 1px solid rgba(193,154,82,.5); padding: 10px 16px;" style-hover="background: rgba(193,154,82,.12);">ÜYELİK PANELİNDEN GİRİŞ YAP →</a>
+          <a href="/uyelik?next=%2Fstudio" style="margin-top: 18px; width: 100%; box-sizing: border-box; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 16px; font-weight: 800; font-size: 13px; letter-spacing: .13em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35); transform: translateY(-1px);">
+          <span>GİRİŞ YAP / ÜYE OL</span><span style="font-family: 'Special Elite', monospace;">→</span>
+          </a>
+          <small style="display: block; margin-top: 14px; color: #676d7c; line-height: 1.5;">Yeni üyelikte Gözlemci seviyesi ve aylık kredi kotası hesabına tanımlanır.</small>
           <a href="/urunler" style="display: inline-block; margin-top: 10px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; text-decoration: none;" style-hover="text-decoration: underline;">KREDİ PAKETLERİNİ GÖR →</a>
         </sc-if>
       </div>
@@ -164,7 +151,9 @@
         </div>
         <nav style="display: flex; align-items: center; gap: 10px;">
           <a href="/" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ANA SAYFA</a>
-          
+          <a href="/egitim" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">EĞİTİM</a>
+          <a href="/uyelik" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ÜYELİK</a>
+
           <div style="display: flex; border: 1px solid rgba(129,135,151,.3);">
             <button onClick="{{ modeWizard }}" style="{{ wizardTabStyle }}">SİHİRBAZ</button>
             <button onClick="{{ modeArsiv }}" style="{{ arsivTabStyle }}">HAZIR ARŞİV</button>
@@ -187,7 +176,8 @@
                   <div style="color: #676d7c; font-size: 11.5px; margin-top: 2px;">{{ agentEmail }}</div>
                   <div style="margin-top: 8px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">KREDİ · {{ credits }}</div>
                 </div>
-                <a href="/egitim" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cfc8b4; font-size: 13px; text-decoration: none;" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">Eğitimlerim</a>
+                <a href="/uyelik" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cfc8b4; font-size: 13px; text-decoration: none;" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">Üyeliğim</a>
+                <a href="/egitim" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cfc8b4; font-size: 13px; text-decoration: none; border-top: 1px solid rgba(129,135,151,.1);" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">Eğitimlerim</a>
                 <a href="/urunler" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cfc8b4; font-size: 13px; text-decoration: none; border-top: 1px solid rgba(129,135,151,.1);" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">Siparişlerim</a>
                 <button onClick="{{ openCredits }}" style="width: 100%; text-align: left; display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cfc8b4; font-size: 13px; background: transparent; border: 0; border-top: 1px solid rgba(129,135,151,.1); cursor: pointer; font-family: inherit;" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">Kredi Yükle</button>
                 <button onClick="{{ logout }}" style="width: 100%; text-align: left; display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #e08a80; font-size: 13px; background: transparent; border: 0; border-top: 1px solid rgba(129,135,151,.15); cursor: pointer; font-family: inherit;" style-hover="background: rgba(192,57,43,.1);">Çıkış Yap</button>
@@ -1381,8 +1371,11 @@ Senaryo ${fmt.bolum} olsun. gorsel_promptlar ve video_promptlar ${fmt.sahne} ade
       userMenuOpen: s.userMenuOpen,
       userCaretStyle: { fontSize: '10px', color: '#676d7c', transition: 'transform .2s', transform: s.userMenuOpen ? 'rotate(180deg)' : 'none' },
       toggleUserMenu: () => this.setState(st => ({ userMenuOpen: !st.userMenuOpen })),
-      logout: () => {
-        try { localStorage.removeItem('ta_studio_v5'); } catch (e) {}
+      logout: async () => {
+        // GERÇEK çıkış: Supabase oturumunu kapat ki tüm sayfalar (Üyelik dahil) çıkışı görsün
+        try { if (this.sb) await this.sb.auth.signOut(); } catch (e) {}
+        this._session = null;
+        try { localStorage.removeItem('ta_studio_v5'); localStorage.removeItem('ta_account_v1'); } catch (e) {}
         this.setState({ userMenuOpen: false, screen: 'login', agentName: '', agentDraft: '', regEmail: '' });
       },
 
