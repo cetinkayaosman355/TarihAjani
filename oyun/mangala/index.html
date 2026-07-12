@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Mangala · Tarih Ajanı</title>
+<meta name="description" content="Binlerce yıllık Türk zekâ ve strateji oyunu Mangala. Bilgisayara karşı üç zorluk seviyesi ya da iki oyunculu düello. Taş dağıt, çift yap, hazineni doldur." />
+<link rel="canonical" href="https://tarihajani.com/oyun/mangala" />
+<link rel="icon" type="image/png" href="/assets/logo-mark.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Tarih Ajanı" />
+<meta property="og:locale" content="tr_TR" />
+<meta property="og:url" content="https://tarihajani.com/oyun/mangala" />
+<meta property="og:title" content="Mangala · Tarih Ajanı" />
+<meta property="og:description" content="Binlerce yıllık Türk zekâ oyunu. Bilgisayara karşı ya da iki oyunculu." />
+<meta property="og:image" content="https://tarihajani.com/assets/og-cover.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Mangala · Tarih Ajanı" />
+<meta name="twitter:description" content="Binlerce yıllık Türk zekâ oyunu. Bilgisayara karşı ya da iki oyunculu." />
+<meta name="twitter:image" content="https://tarihajani.com/assets/og-cover.png" />
+<meta name="theme-color" content="#05070F" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --void:#05070F; --panel:#0b0e18; --panel2:#0e131f;
+    --brass:#C9A25A; --gold:#E6C478; --ink:#F0ECE2; --muted:#8b8f9c;
+    --line:rgba(193,154,82,.30); --line-soft:rgba(129,135,151,.14);
+    --wood:#4a371f; --wood2:#3a2a17; --well:#241a0e;
+  }
+  *{box-sizing:border-box}
+  html{background:var(--void);scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--void);color:var(--ink);overflow-x:hidden;
+    font-family:'Hanken Grotesk',system-ui,sans-serif;
+    background-image:
+      radial-gradient(circle 800px at 12% 6%, rgba(28,24,42,.4), transparent 55%),
+      radial-gradient(circle 900px at 90% 20%, rgba(20,26,44,.4), transparent 60%);
+    background-attachment:fixed;
+  }
+  a{color:var(--gold)}
+  ::selection{background:rgba(193,154,82,.35)}
+  *, a, button, [role="button"]{
+    cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='11' cy='11' r='7' fill='rgba(20,14,5,0.12)' stroke='%23b0894d' stroke-width='2'/%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='%23ecce8a' stroke-width='0.8'/%3E%3Cline x1='16' y1='16' x2='25' y2='25' stroke='%235c3f18' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='16' y1='16' x2='25' y2='25' stroke='%23b0894d' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") 11 11, auto;
+  }
+
+  header{
+    position:fixed;z-index:30;top:0;left:0;right:0;height:72px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 clamp(16px,4vw,40px);background:rgba(3,5,11,.86);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft);
+  }
+  header a.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+  header img{height:44px;width:auto}
+  header nav{display:flex;align-items:center;gap:2px}
+  header nav a{color:#a4a9b5;font-size:12px;letter-spacing:.1em;text-decoration:none;padding:8px 12px;font-weight:600;text-transform:uppercase}
+  header nav a:hover{color:var(--gold)}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:104px clamp(14px,4vw,40px) 60px}
+  .eyebrow{font-family:'Special Elite',monospace;letter-spacing:.42em;text-transform:uppercase;font-size:11px;color:var(--brass);margin:0 0 10px}
+  h1{font-family:'Playfair Display',serif;font-weight:800;font-size:clamp(30px,6vw,52px);line-height:1.02;margin:0 0 12px;color:var(--ink)}
+  h1 .fade{background:linear-gradient(90deg,var(--gold),var(--brass));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{max-width:660px;color:var(--muted);font-size:15px;line-height:1.6;margin:0 0 26px}
+
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:26px;align-items:start}
+
+  /* ── TAHTA ── */
+  .board-frame{
+    position:relative;padding:clamp(14px,2.6vw,26px);border-radius:16px;
+    background:linear-gradient(150deg,#20180d,#12100a 55%,#0d0a06);
+    border:1px solid var(--line);
+    box-shadow:0 24px 60px rgba(0,0,0,.55), inset 0 0 60px rgba(0,0,0,.5);
+  }
+  .board{
+    display:grid;grid-template-columns:auto 1fr auto;align-items:stretch;
+    gap:clamp(8px,1.8vw,18px);
+  }
+  .store{
+    position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    width:clamp(58px,10vw,88px);border-radius:44px;padding:16px 6px;
+    background:radial-gradient(ellipse at 50% 30%, #2c2013, #180f06 80%);
+    border:1px solid rgba(230,196,120,.28);
+    box-shadow:inset 0 6px 22px rgba(0,0,0,.7), inset 0 -2px 0 rgba(230,196,120,.08);
+  }
+  .store .lbl{font-family:'Special Elite',monospace;font-size:9px;letter-spacing:.16em;color:#9a7d47;text-transform:uppercase;margin-bottom:6px;writing-mode:vertical-rl;transform:rotate(180deg);position:absolute;left:6px;top:50%;translate:0 -50%}
+  .store .count{font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,38px);font-weight:800;color:var(--gold);line-height:1}
+  .store .stones{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;max-width:70%;margin-top:8px;max-height:120px;overflow:hidden}
+  .store.turn{border-color:var(--gold);box-shadow:inset 0 6px 22px rgba(0,0,0,.7),0 0 0 2px rgba(230,196,120,.35),0 0 26px rgba(230,196,120,.25)}
+
+  .mid{display:grid;grid-template-rows:1fr 1fr;gap:clamp(8px,1.6vw,16px)}
+  .row{display:grid;grid-template-columns:repeat(6,1fr);gap:clamp(6px,1.4vw,14px)}
+  .pit{
+    position:relative;aspect-ratio:1/1;border-radius:50%;min-width:0;
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 50% 32%, #37280f, #1c1408 78%);
+    box-shadow:inset 0 6px 18px rgba(0,0,0,.72), inset 0 -2px 0 rgba(230,196,120,.06), 0 1px 0 rgba(230,196,120,.05);
+    border:1px solid rgba(230,196,120,.10);transition:transform .1s, box-shadow .15s;
+  }
+  .pit .stones{position:absolute;inset:14%;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:clamp(1px,.4vw,3px);pointer-events:none}
+  .pit .num{position:relative;z-index:2;font-family:'Playfair Display',serif;font-weight:800;font-size:clamp(15px,2.6vw,24px);color:#f3e6c6;text-shadow:0 2px 5px rgba(0,0,0,.7)}
+  .pit.playable{cursor:pointer;border-color:rgba(230,196,120,.5)}
+  .pit.playable:hover{transform:translateY(-3px);box-shadow:inset 0 6px 18px rgba(0,0,0,.72),0 0 0 2px rgba(230,196,120,.5),0 8px 20px rgba(0,0,0,.4)}
+  .pit.drop{box-shadow:inset 0 6px 18px rgba(0,0,0,.72),0 0 0 3px var(--gold),0 0 22px rgba(230,196,120,.5)}
+  .pit.capture{animation:capFlash .5s ease}
+  @keyframes capFlash{0%,100%{box-shadow:inset 0 6px 18px rgba(0,0,0,.72)}50%{box-shadow:0 0 0 4px #c44034,0 0 30px rgba(196,64,52,.7)}}
+  .pit.empty .num{opacity:.28;color:#8a7a55}
+  .stone{width:clamp(6px,1.2vw,11px);height:clamp(6px,1.2vw,11px);border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #f0dca6, #b8934e 70%, #6f5327);
+    box-shadow:0 1px 1px rgba(0,0,0,.5)}
+  .store .stone{width:9px;height:9px}
+
+  .side-tag{display:flex;justify-content:space-between;align-items:center;margin:2px 2px 0;font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#7c6a44}
+  .side-tag.active{color:var(--gold)}
+
+  /* ── YAN PANEL ── */
+  .panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line-soft);border-radius:6px;padding:18px}
+  .panel + .panel{margin-top:16px}
+  .panel h3{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);margin:0 0 12px}
+  .turn{display:flex;align-items:center;gap:10px}
+  .turn .ind{width:12px;height:12px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px rgba(230,196,120,.6)}
+  #statusText{font-family:'Playfair Display',serif;font-size:18px;color:var(--ink)}
+  #subStatus{color:var(--muted);font-size:12.5px;margin-top:2px;min-height:16px}
+  .score{display:flex;justify-content:space-between;margin-top:12px;font-size:13px}
+  .score b{font-family:'Playfair Display',serif;color:var(--gold);font-size:17px}
+
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+  .seg button,.lvl button{background:rgba(230,196,120,.06);border:1px solid var(--line);color:#cbb98f;font-family:'Hanken Grotesk',sans-serif;font-size:12px;font-weight:600;letter-spacing:.04em;padding:9px 8px;border-radius:4px;text-transform:uppercase;transition:all .12s}
+  .seg button:hover,.lvl button:hover{background:rgba(230,196,120,.14);color:var(--gold)}
+  .seg button.on,.lvl button.on{background:linear-gradient(110deg,var(--gold),var(--brass));color:#1a1206;border-color:var(--gold)}
+  .lvl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .lvl-wrap.hide{display:none}
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btns button{background:rgba(230,196,120,.06);border:1px solid var(--line);color:#cbb98f;font-family:'Hanken Grotesk',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.04em;padding:10px 8px;border-radius:4px;transition:all .12s}
+  .btns button:hover{background:rgba(230,196,120,.14);color:var(--gold)}
+  .btns button.primary{grid-column:1/-1;background:linear-gradient(110deg,var(--gold),var(--brass));color:#1a1206;border-color:var(--gold)}
+
+  .rules{font-size:12.5px;line-height:1.65;color:var(--muted)}
+  .rules li{margin-bottom:7px}
+  .rules b{color:#d7cbb0}
+  .rules ol{padding-left:18px;margin:0}
+
+  .result{display:none;margin-top:16px;padding:14px 16px;border-radius:6px;text-align:center;border:1px solid var(--line);background:rgba(230,196,120,.07);font-family:'Playfair Display',serif;font-size:17px;color:var(--gold)}
+  .result.show{display:block;animation:pop .35s ease}
+  @keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+
+  .foot{max-width:1120px;margin:0 auto;padding:0 clamp(14px,4vw,40px) 60px;color:var(--muted);font-size:12px;text-align:center}
+  .foot .rule{max-width:640px;margin:0 auto 18px;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+
+  @media (max-width:900px){ .layout{grid-template-columns:1fr;gap:20px} header nav a:not(.home){display:none} }
+
+  /* mobil araç çubuğu */
+  .mbar{display:none}
+  @media (max-width:900px){
+    .mbar{
+      display:flex;align-items:center;gap:10px;margin:0 0 10px;
+      position:sticky;top:76px;z-index:20;
+      background:rgba(5,7,15,.94);backdrop-filter:blur(6px);
+      border:1px solid var(--line-soft);border-radius:6px;padding:8px 10px;
+    }
+    .mbar .st{flex:1;min-width:0;font-family:'Playfair Display',serif;font-size:14.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .mbar button{
+      flex-shrink:0;background:linear-gradient(110deg,var(--gold),var(--brass));border:1px solid var(--gold);
+      color:#1a1206;font-family:'Hanken Grotesk',sans-serif;font-size:12px;font-weight:700;letter-spacing:.03em;
+      padding:8px 12px;border-radius:4px;
+    }
+  }
+
+  /* dar ekran: hazineler yatay şerit, kuyular sığar (B2) */
+  @media (max-width:520px){
+    .board{display:flex;flex-direction:column;gap:8px}
+    .store{
+      width:100%;flex-direction:row;justify-content:flex-start;gap:12px;
+      min-height:54px;padding:8px 16px;border-radius:16px;
+    }
+    .store .lbl{position:static;writing-mode:horizontal-tb;transform:none;translate:0;margin:0}
+    .store .count{font-size:24px}
+    .store .stones{max-width:55%;margin:0;justify-content:flex-start;max-height:36px}
+    .row{gap:4px}
+    .mid{gap:6px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/"><img src="/assets/logo.webp" alt="Tarih Ajanı" /></a>
+  <nav>
+    <a class="home" href="/">Ana Sayfa</a>
+    <a href="/zaman-tuneli">Oyun Tüneli</a>
+    <a href="/oyun/satranc-1402">Satranç 1402</a>
+    <a href="/vaka-dosyalari">Vaka Dosyaları</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <p class="eyebrow">Ajan Masası · Oyun Odası</p>
+  <h1>Mangala <span class="fade">Kuyuları</span></h1>
+  <p class="lead">Binlerce yıllık Türk zekâ ve strateji oyunu. Kuyularındaki taşları saatin tersine dağıt; son taşınla rakibinin kuyusunu <em>çift</em> yap ya da kendi boş kuyuna düşür — taşları hazinene ak. En çok taşı toplayan kazanır.</p>
+
+  <div class="layout">
+    <div>
+      <div class="mbar"><span class="st" id="mbarStatus">Sıra sende</span><button onclick="MG.newGame()">Yeni Oyun</button></div>
+      <div class="side-tag" id="tagTop"><span>Rakip · Üst Sıra</span><span id="tagTopMark"></span></div>
+      <div class="board-frame">
+        <div class="board">
+          <!-- Sol hazine = üst oyuncu (2) -->
+          <div class="store" id="store13"><span class="lbl">Hazine 2</span><span class="count" id="c13">0</span><span class="stones" id="s13"></span></div>
+          <div class="mid">
+            <div class="row" id="rowTop"></div>
+            <div class="row" id="rowBot"></div>
+          </div>
+          <!-- Sağ hazine = alt oyuncu (1 / sen) -->
+          <div class="store turn" id="store6"><span class="lbl">Hazine 1</span><span class="count" id="c6">0</span><span class="stones" id="s6"></span></div>
+        </div>
+      </div>
+      <div class="side-tag active" id="tagBot"><span>Sen · Alt Sıra</span><span id="tagBotMark">◄ hazinen</span></div>
+      <div class="result" id="result"></div>
+    </div>
+
+    <aside>
+      <div class="panel">
+        <h3>Durum</h3>
+        <div class="turn"><span class="ind" id="ind"></span>
+          <div><div id="statusText">Sıra sende</div><div id="subStatus">İstediğin kuyuya dokun</div></div>
+        </div>
+        <div class="score"><span>Sen (Hazine 1)</span><b id="scoreW">0</b></div>
+        <div class="score"><span id="oppLabel">Bilgisayar (Hazine 2)</span><b id="scoreB">0</b></div>
+      </div>
+
+      <div class="panel">
+        <h3>Mod</h3>
+        <div class="seg">
+          <button id="modeCpu" class="on" onclick="MG.setMode('cpu')">Bilgisayara Karşı</button>
+          <button id="mode2p" onclick="MG.setMode('2p')">İki Oyuncu</button>
+        </div>
+        <div class="lvl-wrap" id="lvlWrap">
+          <div class="lvl">
+            <button class="on" onclick="MG.setLevel(1,this)">Kolay</button>
+            <button onclick="MG.setLevel(2,this)">Orta</button>
+            <button onclick="MG.setLevel(3,this)">Zor</button>
+          </div>
+        </div>
+        <div class="btns">
+          <button class="primary" onclick="MG.newGame()">Yeni Oyun</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Nasıl Oynanır</h3>
+        <div class="rules">
+          <ol>
+            <li>Her kuyuda <b>4 taş</b> var. Sıra sana gelince kendi (alt) kuyularından birini seç.</li>
+            <li>Kuyudaki taşları al; <b>ilk taşı aynı kuyuya</b> bırakıp saatin tersine (sağa) birer birer dağıt. Kendi hazinene taş bırakırsın, rakibin hazinesine <b>bırakmazsın</b>.</li>
+            <li>Kuyuda <b>tek taş</b> varsa onu bir sonraki kuyuya koyarsın.</li>
+            <li>Son taşın rakibin bir kuyusunu <b>çift sayı</b> yaparsa o kuyudaki tüm taşlar senin hazinene gelir.</li>
+            <li>Son taşın kendi tarafındaki <b>boş bir kuyuya</b> düşerse, o taş ve karşısındaki kuyunun taşları hazinene gelir.</li>
+            <li>Son taşın <b>hazinene</b> düşerse <b>tekrar oynarsın</b>.</li>
+            <li>Bir oyuncunun tarafı boşalınca oyun biter; <b>tarafı ilk boşalan</b> oyuncu, rakibin kalan taşlarını da hazinesine alır. En çok taş kazanan kazanır.</li>
+          </ol>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<div class="foot">
+  <div class="rule"></div>
+  <p>Tarih Ajanı Oyun Odası · Mangala'nın kökleri Orta Asya ve Anadolu'nun binlerce yıllık strateji geleneğine uzanır; "48 taş, iki hazine" düzeniyle bugün Türk Mangalası olarak yaşatılır.</p>
+</div>
+
+<script>
+"use strict";
+const MG = (function(){
+  // İndeksler: 0-5 alt oyuncu (1) kuyuları, 6 = alt hazine (1),
+  //            7-12 üst oyuncu (2) kuyuları, 12→sol üst, 7→sağ üst; 13 = üst hazine (2)
+  // Ekim yönü (saat tersi): 0→1→2→3→4→5→6→7→8→9→10→11→12→13→0
+  let board, current, mode='cpu', level=1, gameOver=false, busy=false;
+  const HUMAN=1, AI=2;
+  const P1_PITS=[0,1,2,3,4,5], P2_PITS=[7,8,9,10,11,12];
+  const pitsOf = p => p===1?P1_PITS:P2_PITS;
+  const storeOf = p => p===1?6:13;
+  const oppStoreOf = p => p===1?13:6;
+
+  function fresh(){ const b=new Array(14).fill(4); b[6]=0; b[13]=0; return b; }
+
+  function nextPos(pos, player){
+    let p=(pos+1)%14;
+    const opp=oppStoreOf(player);
+    if(p===opp)p=(p+1)%14;
+    return p;
+  }
+  // taşın düşeceği kuyuların sırası (son eleman = son taşın yeri)
+  function dropPositions(b, start, player){
+    const n=b[start], drops=[];
+    if(n===1){ drops.push(nextPos(start,player)); }
+    else { let pos=start; drops.push(pos); let rem=n-1; while(rem>0){ pos=nextPos(pos,player); drops.push(pos); rem--; } }
+    return drops;
+  }
+  // yeme kuralını uygula (b'yi değiştirir), yakalama bilgisini döndürür
+  function applyCapture(b, lastPos, player){
+    const myStore=storeOf(player), oppStore=oppStoreOf(player);
+    if(lastPos===myStore) return {extraTurn:true, cap:null};
+    if(lastPos===oppStore) return {extraTurn:false, cap:null};
+    const own = pitsOf(player).includes(lastPos);
+    if(!own){
+      // rakip kuyusu: çift olduysa yakala
+      if(b[lastPos]>0 && b[lastPos]%2===0){
+        const amt=b[lastPos]; b[myStore]+=amt; b[lastPos]=0;
+        return {extraTurn:false, cap:{pits:[lastPos], amount:amt}};
+      }
+    } else {
+      // kendi kuyun: son taş boş kuyuya düştüyse (şimdi 1) karşıyı da al
+      if(b[lastPos]===1){
+        const opp=12-lastPos;
+        if(b[opp]>0){
+          const amt=b[opp]+1; b[myStore]+=amt; b[opp]=0; b[lastPos]=0;
+          return {extraTurn:false, cap:{pits:[opp,lastPos], amount:amt}};
+        }
+      }
+    }
+    return {extraTurn:false, cap:null};
+  }
+  // saf simülasyon (yapay zekâ için)
+  function simulate(bIn, start, player){
+    const b=bIn.slice();
+    const drops=dropPositions(b,start,player);
+    b[start]=0;
+    for(const d of drops)b[d]++;
+    const lastPos=drops[drops.length-1];
+    const r=applyCapture(b,lastPos,player);
+    return {board:b, extraTurn:r.extraTurn};
+  }
+  const legalPits = (b,p) => pitsOf(p).filter(i=>b[i]>0);
+  const sideEmpty = (b,p) => pitsOf(p).every(i=>b[i]===0);
+
+  // ── Yapay Zekâ ─────────────────────────────────────────────
+  function evalFor(b, ai){
+    const my=storeOf(ai), op=oppStoreOf(ai);
+    let s=(b[my]-b[op])*6;
+    // hazineye yakın taşlar ufak avantaj
+    const myPits=pitsOf(ai);
+    for(const i of myPits)s+=b[i]*0.4;
+    return s;
+  }
+  function terminalSweepEval(b, ai){
+    const bb=b.slice();
+    // tarafı boş olan, rakibin kalanını alır
+    for(const p of [1,2]){ if(sideEmpty(bb,p)){ const other=p===1?2:1; const store=storeOf(p); for(const i of pitsOf(other)){ bb[store]+=bb[i]; bb[i]=0; } break; } }
+    return evalFor(bb,ai);
+  }
+  function search(b, player, ai, depth, alpha, beta){
+    if(sideEmpty(b,1)||sideEmpty(b,2)) return terminalSweepEval(b,ai);
+    const moves=legalPits(b,player);
+    if(depth===0||moves.length===0) return evalFor(b,ai);
+    const maxing=(player===ai);
+    let best = maxing?-Infinity:Infinity;
+    for(const m of moves){
+      const r=simulate(b,m,player);
+      let np;
+      if(r.extraTurn && legalPits(r.board,player).length>0 && !sideEmpty(r.board,player)) np=player;
+      else np = player===1?2:1;
+      const val=search(r.board, np, ai, depth-1, alpha, beta);
+      if(maxing){ if(val>best)best=val; if(best>alpha)alpha=best; }
+      else { if(val<best)best=val; if(best<beta)beta=best; }
+      if(beta<=alpha)break;
+    }
+    return best;
+  }
+  function pickAI(player){
+    const moves=legalPits(board,player);
+    if(!moves.length)return null;
+    if(level===1 && Math.random()<0.4) return moves[Math.floor(Math.random()*moves.length)];
+    const depth = level===1?2 : level===2?4 : 7;
+    let best=-Infinity, chosen=[];
+    for(const m of moves){
+      const r=simulate(board,m,player);
+      let np;
+      if(r.extraTurn && legalPits(r.board,player).length>0 && !sideEmpty(r.board,player)) np=player;
+      else np=player===1?2:1;
+      const val=search(r.board, np, player, depth-1, -Infinity, Infinity);
+      if(val>best+0.01){ best=val; chosen=[m]; }
+      else if(Math.abs(val-best)<=0.01){ chosen.push(m); }
+    }
+    return chosen[Math.floor(Math.random()*chosen.length)];
+  }
+
+  // ── Hamle + animasyon ──────────────────────────────────────
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  function clearFx(){ document.querySelectorAll('.pit.drop,.store.drop,.pit.capture').forEach(e=>{e.classList.remove('drop','capture');}); }
+  function cellEl(i){ return document.getElementById(i===6?'store6':i===13?'store13':'pit'+i); }
+
+  async function animateSow(start, player){
+    const drops=dropPositions(board,start,player);
+    board[start]=0; render();
+    // eldeki taşları göster (pickup)
+    cellEl(start).classList.add('drop'); await wait(160); cellEl(start).classList.remove('drop');
+    const total=drops.length;
+    const step = total>14?70 : total>8?110 : 155;
+    for(const d of drops){
+      board[d]++;
+      render();
+      const el=cellEl(d); el.classList.add('drop');
+      await wait(step);
+      el.classList.remove('drop');
+    }
+    const lastPos=drops[drops.length-1];
+    const r=applyCapture(board, lastPos, player);
+    if(r.cap){
+      render();
+      for(const pit of r.cap.pits){ const el=cellEl(pit); if(el)el.classList.add('capture'); }
+      cellEl(storeOf(player)).classList.add('drop');
+      await wait(520);
+      clearFx();
+      render();
+    }
+    return { extraTurn:r.extraTurn };
+  }
+
+  async function makeMove(start){
+    if(busy||gameOver)return;
+    const player=current;
+    // geçerlilik
+    if(!pitsOf(player).includes(start)||board[start]===0)return;
+    busy=true;
+    setSub(player===HUMAN?'…':'Ajan taşları dağıtıyor…'); updateTurnUI();
+    const res=await animateSow(start,player);
+    busy=false;
+
+    // oyun sonu? (bir taraf boşaldı)
+    if(sideEmpty(board,player)){ finalize(player); return; }
+    const other=player===1?2:1;
+    if(sideEmpty(board,other)){ finalize(other); return; }
+
+    // tur devam / geçiş
+    if(res.extraTurn && legalPits(board,player).length>0){
+      current=player;
+      updateStatus(true);
+    } else {
+      current=other;
+      updateStatus(false);
+    }
+    if(mode==='cpu' && current===AI && !gameOver){ setTimeout(runAI, 460); }
+  }
+
+  async function runAI(){
+    if(gameOver||current!==AI)return;
+    const m=pickAI(AI);
+    if(m==null){ // oynayamıyor
+      if(sideEmpty(board,AI)) finalize(AI); return;
+    }
+    await makeMove(m);
+  }
+
+  function finalize(emptyPlayer){
+    // tarafı ilk boşalan oyuncu rakibin kalan taşlarını alır
+    const other=emptyPlayer===1?2:1;
+    const store=storeOf(emptyPlayer);
+    for(const i of pitsOf(other)){ board[store]+=board[i]; board[i]=0; }
+    gameOver=true; busy=false;
+    render();
+    const w=board[6], b=board[13];
+    let title, sub;
+    if(w===b){ title='Berabere · '+w+' – '+b; sub='İki hazine de eşit doldu.'; }
+    else {
+      const humanWon = w>b;
+      const winnerName = mode==='cpu' ? (humanWon?'Kazandın!':'Bilgisayar kazandı') : (humanWon?'Alt oyuncu (Hazine 1) kazandı':'Üst oyuncu (Hazine 2) kazandı');
+      title=winnerName+' · '+Math.max(w,b)+' – '+Math.min(w,b);
+      sub = mode==='cpu' ? (humanWon?'Hazineni daha çok doldurdun.':'Ajan bu kez öndeydi.') : '';
+    }
+    const el=document.getElementById('result'); el.textContent=title; el.classList.add('show');
+    setMain('Oyun bitti');
+    setSub(sub);
+    updateTurnUI();
+  }
+
+  // ── Render ─────────────────────────────────────────────────
+  function stoneDots(n, max){
+    let h=''; const k=Math.min(n,max); for(let i=0;i<k;i++)h+='<span class="stone"></span>'; return h;
+  }
+  function render(){
+    // üst sıra görsel: sol→sağ [12,11,10,9,8,7]
+    const topOrder=[12,11,10,9,8,7], botOrder=[0,1,2,3,4,5];
+    const rowTop=document.getElementById('rowTop'), rowBot=document.getElementById('rowBot');
+    rowTop.innerHTML=''; rowBot.innerHTML='';
+    const canPlay = (i)=> !busy && !gameOver && ( (mode==='2p') || current===HUMAN ) && pitsOf(current).includes(i) && board[i]>0;
+    function pitNode(i){
+      const d=document.createElement('div');
+      d.className='pit'+(board[i]===0?' empty':'')+(canPlay(i)?' playable':'');
+      d.id='pit'+i;
+      d.innerHTML='<span class="stones">'+stoneDots(board[i],12)+'</span><span class="num">'+board[i]+'</span>';
+      if(canPlay(i)) d.addEventListener('click',()=>makeMove(i));
+      return d;
+    }
+    topOrder.forEach(i=>rowTop.appendChild(pitNode(i)));
+    botOrder.forEach(i=>rowBot.appendChild(pitNode(i)));
+    // hazineler
+    document.getElementById('c6').textContent=board[6];
+    document.getElementById('c13').textContent=board[13];
+    document.getElementById('s6').innerHTML=stoneDots(board[6],40);
+    document.getElementById('s13').innerHTML=stoneDots(board[13],40);
+    document.getElementById('scoreW').textContent=board[6];
+    document.getElementById('scoreB').textContent=board[13];
+    updateTurnUI();
+  }
+  function updateTurnUI(){
+    document.getElementById('store6').classList.toggle('turn', !gameOver && current===1);
+    document.getElementById('store13').classList.toggle('turn', !gameOver && current===2);
+    document.getElementById('tagBot').classList.toggle('active', !gameOver && current===1);
+    document.getElementById('tagTop').classList.toggle('active', !gameOver && current===2);
+  }
+  function setSub(t){ document.getElementById('subStatus').textContent=t; }
+  function setMain(t){ document.getElementById('statusText').textContent=t; const m=document.getElementById('mbarStatus'); if(m)m.textContent=t; }
+  function updateStatus(extra){
+    render();
+    if(gameOver)return;
+    if(mode==='cpu'){
+      if(current===HUMAN){ setMain('Sıra sende'); setSub(extra?'Tekrar oyna — taşın hazineye düştü!':'İstediğin kuyuya dokun'); }
+      else { setMain('Bilgisayarın sırası'); setSub(extra?'Ajan yeniden oynuyor…':'Ajan düşünüyor…'); }
+    } else {
+      setMain(current===1?'Alt oyuncunun sırası':'Üst oyuncunun sırası');
+      setSub(extra?'Tekrar oyna — taş hazineye düştü!':'Sıradaki oyuncu kuyusunu seçsin');
+    }
+  }
+
+  // ── Kontroller ─────────────────────────────────────────────
+  function newGame(){
+    board=fresh(); current=HUMAN; gameOver=false; busy=false;
+    document.getElementById('result').classList.remove('show');
+    clearFx();
+    document.getElementById('oppLabel').textContent = mode==='cpu'?'Bilgisayar (Hazine 2)':'Üst oyuncu (Hazine 2)';
+    render(); updateStatus(false);
+  }
+  function setMode(m){
+    mode=m;
+    document.getElementById('modeCpu').classList.toggle('on',m==='cpu');
+    document.getElementById('mode2p').classList.toggle('on',m==='2p');
+    document.getElementById('lvlWrap').classList.toggle('hide',m!=='cpu');
+    newGame();
+  }
+  function setLevel(l,btn){ level=l; document.querySelectorAll('.lvl button').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
+
+  document.addEventListener('DOMContentLoaded',newGame);
+  return { setMode, setLevel, newGame };
+})();
+</script>
+</body>
+</html>
