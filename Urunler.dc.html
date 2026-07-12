@@ -435,7 +435,13 @@ class Component extends DCLogic {
       }),
       items: filtered.map(it => ({
         ...it,
-        open: () => this.setState({ checkout: { ...it, features: it.features.map(t => ({ t })) }, stage: 'detail', payMethod: 'iban', formError: '' })
+        // Ürüne tıklayınca doğrudan satış sayfasına git (popup değil);
+        // satış sayfası karşılığı olmayan ürün için eski popup yedek kalır.
+        open: () => {
+          const slug = this.productSlug(it.title);
+          if (slug) { location.href = '/satis#' + slug; return; }
+          this.setState({ checkout: { ...it, features: it.features.map(t => ({ t })) }, stage: 'detail', payMethod: 'iban', formError: '' });
+        }
       })),
       resultLine: filtered.length + ' ÜRÜN · ' + s.cat,
 

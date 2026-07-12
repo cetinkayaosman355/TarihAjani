@@ -131,14 +131,21 @@
           <p style="margin: 0 0 26px; color: #cfd3dc; font-size: 15px; line-height: 1.75;">{{ selOzet }}</p>
 
           <sc-if value="{{ member }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: -8px 0 22px;">
+              <button onClick="{{ ekitap }}" style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); color: #e6c478; padding: 11px 18px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="background: rgba(193,154,82,.16);">📖 E-KİTAP / PDF</button>
+              <button onClick="{{ copyAllSel }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 11px 18px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ copyAllSelLabel }}</button>
+            </div>
             <div style="display: grid; gap: 26px;">
               <sc-for list="{{ selSections }}" as="sec" hint-placeholder-count="0">
                 <div style="border-left: 2px solid rgba(193,154,82,.5); padding-left: 18px;">
                   <h3 style="margin: 0 0 14px; font-family: 'Special Elite', monospace; font-size: 13px; letter-spacing: .18em; color: #e6c478;">{{ sec.ad }}</h3>
                   <div style="display: grid; gap: 16px;">
                     <sc-for list="{{ sec.bloklar }}" as="b" hint-placeholder-count="0">
-                      <div>
-                        <p style="margin: 0 0 5px; color: #b7a06a; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em;">{{ b.k }}</p>
+                      <div style="border: 1px solid rgba(193,154,82,.16); background: rgba(8,11,19,.55); padding: 14px 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px;">
+                          <p style="margin: 0; color: #b7a06a; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em;">{{ b.k }}</p>
+                          <button onClick="{{ b.copy }}" style="flex-shrink: 0; border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ b.copyLabel }}</button>
+                        </div>
                         <p style="margin: 0; color: #c3c8d3; font-size: 13.5px; line-height: 1.7; white-space: pre-line;">{{ b.t }}</p>
                       </div>
                     </sc-for>
@@ -216,7 +223,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { q: '', all: [], sel: null, mem: false };
+  state = { q: '', all: [], sel: null, mem: false, copied: {} };
   componentDidMount() {
     const load = () => {
       if (window.__ARSIV__ && window.__ARSIV__.length) this.setState({ all: window.__ARSIV__ });
@@ -297,9 +304,78 @@ class Component extends DCLogic {
       selFileNo: sel ? sel.fileNo : '',
       selTitle: sel ? sel.baslik : '',
       selOzet: sel ? sel.ozet : '',
-      selSections: sel ? (sel.sections || []) : [],
+      selSections: sel ? (sel.sections || []).map((sec, si) => ({
+        ad: sec.ad,
+        bloklar: (sec.bloklar || []).map((b, bi) => {
+          const key = si + '_' + bi;
+          return {
+            k: b.k, t: b.t,
+            copy: () => this.copyBlok(key, b.t),
+            copyLabel: (this.state.copied || {})[key] ? '✓ KOPYALANDI' : 'KOPYALA'
+          };
+        })
+      })) : [],
       selSectionNames: sel ? (sel.sections || []).map(s => s.ad) : [],
+      ekitap: () => sel && this.ekitapOpen(sel),
+      copyAllSel: () => {
+        if (!sel) return;
+        const t = (sel.sections || []).map(s => '=== ' + s.ad + ' ===\n\n' + (s.bloklar || []).map(b => (b.k ? b.k + '\n' : '') + b.t).join('\n\n')).join('\n\n\n');
+        this.copyBlok('__all', t);
+      },
+      copyAllSelLabel: (this.state.copied || {})['__all'] ? '✓ KOPYALANDI' : 'TÜMÜNÜ KOPYALA',
     };
+  }
+
+  copyBlok(key, text) {
+    try { navigator.clipboard.writeText(text || ''); } catch (e) {}
+    this.setState({ copied: { ...(this.state.copied || {}), [key]: true } });
+    setTimeout(() => this.setState({ copied: { ...(this.state.copied || {}), [key]: false } }), 1600);
+  }
+
+  // Studio ile AYNI e-kitap formatı: kapak + bölümler, baskıya hazır (PDF olarak kaydet)
+  ekitapOpen(d) {
+    const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const chapters = (d.sections || []).map(s => ({ ad: s.ad, bloklar: s.bloklar }));
+    const chapHtml = chapters.map((c, i) => (
+      '<section class="chap' + (i === 0 ? ' first' : '') + '">' +
+      '<div class="chapno">BÖLÜM ' + String(i + 1).padStart(2, '0') + '</div>' +
+      '<h2>' + esc(c.ad) + '</h2>' +
+      (c.bloklar || []).map(b => (
+        (b.k ? '<h3>' + esc(b.k) + '</h3>' : '') +
+        '<div class="body">' + esc(b.t) + '</div>'
+      )).join('') +
+      '</section>'
+    )).join('');
+    const html = '<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>' + esc(d.baslik) + ' · Tarih Ajanı</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400&family=Hanken+Grotesk:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">' +
+      '<style>' +
+      '@page{size:A4;margin:22mm 18mm;}' +
+      '*{box-sizing:border-box;}body{margin:0;font-family:"Hanken Grotesk",sans-serif;color:#1d1a14;background:#f4efe4;}' +
+      '.page{max-width:760px;margin:0 auto;padding:40px 34px;}' +
+      '.cover{min-height:92vh;display:flex;flex-direction:column;justify-content:center;text-align:center;page-break-after:always;border:1px solid #b99b5e;margin:24px;padding:60px 40px;background:linear-gradient(160deg,#f7f2e7,#efe6d2);}' +
+      '.cover .marka{font-family:"Special Elite",monospace;letter-spacing:.35em;font-size:12px;color:#8a6d3b;}' +
+      '.cover h1{font-family:"Playfair Display",serif;font-weight:800;font-size:44px;line-height:1.12;margin:26px 0 14px;color:#211c12;}' +
+      '.cover .sub{font-family:"Playfair Display",serif;font-style:italic;font-size:17px;color:#5c5342;max-width:52ch;margin:0 auto;line-height:1.6;}' +
+      '.cover .rule{width:90px;height:2px;background:#b99b5e;margin:30px auto;}' +
+      '.cover .foot{font-family:"Special Elite",monospace;font-size:10.5px;letter-spacing:.22em;color:#8a6d3b;margin-top:40px;}' +
+      '.chap{page-break-before:always;padding-top:10px;}.chap.first{page-break-before:auto;}' +
+      '.chapno{font-family:"Special Elite",monospace;font-size:10.5px;letter-spacing:.3em;color:#8a6d3b;}' +
+      '.chap h2{font-family:"Playfair Display",serif;font-size:27px;font-weight:700;margin:8px 0 4px;color:#211c12;border-bottom:2px solid #b99b5e;padding-bottom:10px;}' +
+      '.chap h3{font-family:"Special Elite",monospace;font-size:12px;letter-spacing:.14em;color:#6d5c39;margin:22px 0 6px;}' +
+      '.body{white-space:pre-wrap;line-height:1.75;font-size:13.5px;color:#2a251b;}' +
+      '.pfoot{text-align:center;font-family:"Special Elite",monospace;font-size:10px;letter-spacing:.24em;color:#8a6d3b;padding:30px 0 20px;}' +
+      '@media print{.cover{min-height:auto;margin:0;}body{background:#fff;}.noprint{display:none;}}' +
+      '.noprint{position:fixed;top:14px;right:14px;background:#211c12;color:#e6c478;border:0;padding:12px 20px;font-family:"Special Elite",monospace;font-size:11px;letter-spacing:.14em;cursor:pointer;}' +
+      '</style></head><body>' +
+      '<button class="noprint" onclick="window.print()">🖨 PDF OLARAK KAYDET</button>' +
+      '<div class="cover"><div class="marka">TARİH AJANI · GİZLİ ARŞİV</div><h1>' + esc(d.baslik) + '</h1>' +
+      (d.ozet ? '<p class="sub">' + esc(d.ozet) + '</p>' : '') +
+      '<div class="rule"></div><div class="foot">' + esc(d.fileNo || 'VAKA DOSYASI') + ' · tarihajani.com</div></div>' +
+      '<div class="page">' + chapHtml + '<div class="pfoot">TARİH SAKLAR, AJAN BULUR · © TARİH AJANI</div></div>' +
+      '</body></html>';
+    const w = window.open('', '_blank');
+    if (!w) { alert('Tarayıcı yeni pencereyi engelledi; pop-up izni ver.'); return; }
+    w.document.write(html); w.document.close();
   }
 }
 </script>
