@@ -121,7 +121,7 @@
         <div style="padding: clamp(24px, 3.4vw, 38px); display: grid; gap: 10px; align-content: start; border-right: 1px solid rgba(193,154,82,.15);">
           <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .24em;">AJAN STUDIO NEDİR?</p>
           <p style="margin: 0; color: #cfd3e0; font-size: 14.5px; line-height: 1.7;">Bir tarih fikrini yaz. Sistem sana kısa video senaryosu, seslendirme metni, kapak promptu, sahne promptları, YouTube başlığı, Instagram açıklaması ve yayın paketini tek dosyada hazırlar.</p>
-          <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.65;">Kredi maliyeti seçtiğin dosya süresine göre değişir (30 sn · 30 kredi → 8–12 dk · 150 kredi); çıktılar kopyalamaya ve düzenlemeye hazırdır.</p>
+          <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.65;">Süreyi kaydırarak seçersin (30 sn – 10 dk); kredi ve sahne sayısı süreyle orantılıdır (30 sn · 30 kredi → 10 dk · 170 kredi). Çıktılar kopyalamaya ve düzenlemeye hazırdır.</p>
         </div>
         <div style="padding: clamp(24px, 3.4vw, 38px); display: grid; gap: 12px; align-content: start;">
           <p style="margin: 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">ÖRNEK FİKİR</p>
@@ -324,6 +324,21 @@
             <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ADIM 2 / 4 · ÜRETİM TARZI</p>
             <h2 style="margin: 10px 0 22px; font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 700;">Dosya nasıl anlatılsın?</h2>
             <div style="display: grid; gap: 26px;">
+              <!-- SÜRE KAYDIRICISI: 30 sn → 10 dk, 30'ar sn -->
+              <div style="border: 1px solid rgba(193,154,82,.3); background: rgba(193,154,82,.05); padding: 20px 22px;">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 4px;">
+                  <div style="display: flex; align-items: baseline; gap: 10px;">
+                    <span style="color: #e9dfc8; font-weight: 700; font-size: 15px; letter-spacing: .04em;">Video Süresi</span>
+                    <span style="color: #676d7c; font-size: 12px;">Sürükle: 30 sn – 10 dk</span>
+                  </div>
+                  <span style="color: #e6c478; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 800;">{{ durLabel }}</span>
+                </div>
+                <input type="range" min="30" max="600" step="30" value="{{ durVal }}" onChange="{{ onDur }}" onInput="{{ onDur }}" style="width: 100%; accent-color: #c19a52; cursor: pointer; margin: 10px 0 8px;">
+                <div style="display: flex; justify-content: space-between; color: #565b69; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .1em;">
+                  <span>30 SN</span><span>2 DK</span><span>4 DK</span><span>6 DK</span><span>8 DK</span><span>10 DK</span>
+                </div>
+                <p style="margin: 12px 0 0; color: #a4a9b5; font-size: 13px; line-height: 1.55;">{{ durInfo }}</p>
+              </div>
               <sc-for list="{{ optionGroups }}" as="grp" hint-placeholder-count="4">
                 <div>
                   <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;">
@@ -1173,11 +1188,31 @@ class Component extends DCLogic {
     };
   }
 
-  // Seçili sürenin kredi maliyeti (sunucu da aynı haritayı kullanır)
-  costOf() {
-    const f = this.promptMaps().format[this.state.duration];
-    return (f && f.kredi) || 100;
+  // Süre artık kaydırmalı: 30 sn → 10 dk, 30'ar sn adım. state.duration = 's<saniye>'
+  // (eski sn30/dk1/dk4/dk8 kayıtları geriye dönük çevrilir).
+  durationSec() {
+    const d = this.state.duration;
+    const m = /^s(\d+)$/.exec(d || '');
+    if (m) return Math.min(600, Math.max(30, parseInt(m[1], 10)));
+    return { sn30: 30, dk1: 90, dk4: 270, dk8: 600 }[d] || 270;
   }
+  // Süreden türetilen format: sahne yoğunluğu kısa videoda 6 sn/sahne, uzadıkça seyrekleşir
+  // (60 sahnelik dosya hem üretimde 504 hem görsel maliyetinde patlama demek — tavan 40).
+  fmtFor(sec) {
+    const sahne = sec <= 90 ? Math.max(6, Math.ceil(sec / 6))
+      : sec <= 180 ? Math.ceil(sec / 8)
+      : sec <= 360 ? Math.ceil(sec / 12)
+      : Math.min(40, Math.ceil(sec / 16));
+    const kredi = Math.max(30, Math.round((20 + sec / 4) / 5) * 5);
+    const dk = Math.floor(sec / 60), sn = sec % 60;
+    const etiket = dk ? (sn ? dk + ' dk ' + sn + ' sn' : dk + ' dk') : sec + ' sn';
+    const b = Math.max(2, Math.min(10, Math.round(sec / 70)));
+    const bolum = sec <= 60 ? '1-2 kısa an' : b + '-' + (b + 1) + ' bölüm';
+    const kelime = Math.round(sec * 2.0) + '-' + Math.round(sec * 2.6);
+    return { sahne, kredi, etiket, bolum, kelime };
+  }
+  // Seçili sürenin kredi maliyeti (sunucu aynı formülü kullanır)
+  costOf() { return this.fmtFor(this.durationSec()).kredi; }
 
   // Paralı seviye mi? (Hazır arşiv yalnız paralıya açık; ücretsiz 'uye' değil)
   isPaidUser() {
@@ -1224,7 +1259,7 @@ class Component extends DCLogic {
     const tonStr = m.ton[s.tone] || m.ton.merak;
     const sesStr = m.ses[s.voice] || m.ses.erkek;
     const stilStr = m.stil[s.style] || m.stil.sinematik;
-    const fmt = m.format[s.duration] || m.format.dk4;
+    const fmt = this.fmtFor(this.durationSec());
     const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
     // Tarihî Gravür fotogerçekçi değildir; anti-artifact satırı stile göre değişir
     const antiArtifact = s.style === 'gravur'
@@ -1344,11 +1379,13 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       if (this.props.demoMode) { await new Promise(r => setTimeout(r, 4000)); throw new Error('DEMO'); }
       // İki aşamalı üretim: orta ve uzun formatta (4-5 dk, 8-12 dk) senaryo
       // önce taslak, sonra bölüm bölüm dolu metin — bölüm başına kelime formata göre.
-      const twoStage = s.duration === 'dk4' || s.duration === 'dk8';
-      const wordsHint = { dk4: '120-170', dk8: '160-220' }[s.duration] || '300-420';
-      // Token tavanı süreye göre: uzun dosyada gereksiz büyük tavan üretimi
-      // yavaşlatıp sunucu zaman sınırına (504) yaklaştırıyordu.
-      const maxTok = { sn30: 6000, dk1: 9000, dk4: 11000, dk8: 13000 }[s.duration] || 11000;
+      const sec = this.durationSec();
+      // 3 dk ve üstü iki aşamalı: önce taslak, sonra bölüm bölüm dolu metin
+      const twoStage = sec >= 180;
+      const wpb = Math.round(sec * 2.3 / Math.max(2, Math.round(sec / 70)));
+      const wordsHint = Math.round(wpb * 0.85) + '-' + Math.round(wpb * 1.15);
+      // Token tavanı süreye göre: gereksiz büyük tavan üretimi yavaşlatıp 504'e yaklaştırıyordu
+      const maxTok = sec <= 60 ? 6000 : sec <= 150 ? 9000 : sec <= 360 ? 11000 : 13000;
       const text = await this.askAI(this.buildPrompt(twoStage), maxTok, 'generate');
       const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
       let result = JSON.parse(clean);
@@ -1433,8 +1470,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       { key: 'tone', title: 'Anlatım Tonu', hint: 'Dosyanın duygusal rengi' },
       { key: 'voice', title: 'Seslendirme', hint: 'ElevenLabs ses karakteri' },
       { key: 'style', title: 'Görsel Stil', hint: 'Kapak ve sahne üretim estetiği' },
-      { key: 'aspect', title: 'En-Boy Oranı', hint: 'Görsel ve video kadrajı' },
-      { key: 'duration', title: 'Format', hint: 'Hedef platform ve süre' }
+      { key: 'aspect', title: 'En-Boy Oranı', hint: 'Görsel ve video kadrajı' }
     ].map(g => ({
       title: g.title, hint: g.hint,
       options: optionDefs[g.key].map(o => {
@@ -1729,6 +1765,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       optionGroups: groups,
       startGenerate: () => this.startGenerate(),
       genCostLabel: 'DOSYAYI OLUŞTUR · ' + this.costOf() + ' KREDİ →',
+      durVal: String(this.durationSec()),
+      durLabel: this.fmtFor(this.durationSec()).etiket,
+      durInfo: (() => { const f = this.fmtFor(this.durationSec()); return f.sahne + ' sahne (kapak hariç) · ' + f.kredi + ' kredi · ~' + f.kelime + ' kelime seslendirme · ' + f.bolum; })(),
+      onDur: e => this.setState({ duration: 's' + e.target.value }),
       pickSummary: this.find('model', s.model).name + ' · ' + this.find('tone', s.tone).name + ' · ' + this.find('voice', s.voice).name + ' · ' + this.find('style', s.style).name + ' · ' + this.find('aspect', s.aspect).name,
       genMsg: s.genMsg, genError: s.genError,
       genBarStyle: { height: '100%', width: s.genPct + '%', background: 'linear-gradient(90deg, #a77d35, #e6c478)', transition: 'width 1s ease' },
