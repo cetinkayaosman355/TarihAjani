@@ -3,7 +3,7 @@
 // Kapanınca (kapat / kod kopyala / üye ol) localStorage'a işaretlenir, bir daha açılmaz.
 // Girişli kullanıcıya hiç gösterilmez.
 (function () {
-  var LS = 'ta_welcome_v2';
+  var LS = 'ta_welcome_v3';    // içerik güncellendi → tekrar bir kez gösterilsin
   var KOD = 'ILKAJAN10';       // %10 hoş geldin indirimi (Shopier'de tanımlanır)
   var FONT = "'Special Elite', 'Courier New', monospace";
 
@@ -40,10 +40,10 @@
     card.innerHTML =
       '<div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;' +
         'background:radial-gradient(circle at 35% 30%,#2a2f3d,#0b0e18);border:1px solid rgba(193,154,82,.55);font-size:27px;">🕵️</div>' +
-      '<div style="font-size:10.5px;letter-spacing:.26em;color:#c19a52;">GİZLİ DOSYA · YENİ AJAN</div>' +
-      '<h2 style="margin:10px 0 8px;font-family:\'Playfair Display\',serif;font-size:25px;font-weight:800;color:#f2ecd9;letter-spacing:0;line-height:1.2;">Aramıza hoş geldin, ajan.</h2>' +
+      '<div style="font-size:10.5px;letter-spacing:.26em;color:#c19a52;">YENİ AJAN · İLK GÖREV</div>' +
+      '<h2 style="margin:10px 0 8px;font-family:\'Playfair Display\',serif;font-size:25px;font-weight:800;color:#f2ecd9;letter-spacing:0;line-height:1.2;">Tarih videonu dakikalar içinde üret.</h2>' +
       '<p style="margin:0 0 18px;font-family:\'Hanken Grotesk\',system-ui,sans-serif;font-size:14px;line-height:1.6;color:#c3c8d3;letter-spacing:0;">' +
-        'İlk üyeliğine özel <strong style="color:#e6c478;">%10 indirim</strong>. Kodu kopyala, üye ol ve arşivin kapılarını arala — Studio, hazır dosyalar ve oyunlar seni bekliyor.</p>';
+        'Ücretsiz üye ol, deneme kredinle Studio\'yu <strong style="color:#e6c478;">kart bilgisi vermeden</strong> dene. İlk üyeliğine özel <strong style="color:#e6c478;">%10 indirim</strong> kodu aşağıda.</p>';
 
     // indirim kodu kutusu
     var kodBox = document.createElement('button');
@@ -69,6 +69,14 @@
       'font-weight:800;font-size:12.5px;letter-spacing:.1em;text-decoration:none;padding:15px;';
     cta.onclick = function () { mark(); };
     card.appendChild(cta);
+
+    // ikincil: önce örnek dosyaya göz at (yeni /ornek sayfası)
+    var ornek = document.createElement('a');
+    ornek.href = '/ornek';
+    ornek.textContent = 'Önce örnek bir dosyaya göz at →';
+    ornek.style.cssText = 'display:block;margin-top:12px;color:#e6c478;font-size:11.5px;letter-spacing:.06em;text-decoration:none;';
+    ornek.onclick = function () { mark(); };
+    card.appendChild(ornek);
 
     var skip = document.createElement('button');
     skip.textContent = 'Şimdilik gezineyim';
