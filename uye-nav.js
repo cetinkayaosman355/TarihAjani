@@ -1,7 +1,10 @@
 // Tarih Ajanı — evrensel üyelik göstergesi
-// Girişli kullanıcıda "GİRİŞ YAP / ÜYE OL" butonunu "👤 Ad" yapar (tek yerde, küçük).
+// Girişli kullanıcıda "AJAN GİRİŞİ" butonunu "Ad ▾" yapar; üstüne gelince
+// (veya tıklayınca) hesap menüsü açılır: Üyelik Panelim · Studio · Arşiv · Çıkış Yap.
 // Menüdeki düz "ÜYELİK" linkine dokunmaz. Çıkışta eski haline döner.
-// Tasarım aracı export'larından bağımsız çalışır (DOM'a sonradan dokunur).
+// ÖNEMLİ: dc framework header'ı yeniden kurabildiği için buton üzerine
+// dinleyici BAĞLANMAZ — tüm olaylar document üzerinde capture ile yakalanır,
+// dönüşüm de MutationObserver ile her yeniden kurulumda tazelenir.
 (function () {
   var SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
   var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
@@ -13,9 +16,6 @@
     return n.trim().split(' ')[0];   // yalnız ilk ad (kısa)
   }
 
-  function links() {
-    return Array.prototype.slice.call(document.querySelectorAll('a[href="/uyelik"], a[href^="/uyelik?"]'));
-  }
   // Bir linkin "giriş butonu" olma olasılığını puanla.
   // ÜYELİK menü linki ve uzun açıklama satırları 0 alır → asla seçilmez.
   function ctaScore(a) {
@@ -41,11 +41,21 @@
     headerLinks().forEach(function (a) { var s = ctaScore(a); if (s > bestScore) { bestScore = s; best = a; } });
     return best;   // header'da login CTA yoksa null (ÜYELİK'e dokunulmaz)
   }
+  // e.target'tan güvenli closest (metin düğümü/eski tarayıcı koruması)
+  function closestFrom(t, sel) {
+    var el = t && t.nodeType === 1 ? t : (t && t.parentElement);
+    return el && el.closest ? el.closest(sel) : null;
+  }
 
-
-  /* ── hesap menüsü: Üyelik Panelim · Çıkış Yap ── */
-  var menuEl = null;
-  function closeMenu() { if (menuEl && menuEl.parentElement) menuEl.parentElement.removeChild(menuEl); menuEl = null; }
+  /* ── hesap menüsü: Üyelik Panelim · Studio · Arşiv · Çıkış Yap ── */
+  var menuEl = null, closeTimer = null;
+  function cancelClose() { if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; } }
+  function scheduleClose() { cancelClose(); closeTimer = setTimeout(closeMenu, 280); }
+  function closeMenu() {
+    cancelClose();
+    if (menuEl && menuEl.parentElement) menuEl.parentElement.removeChild(menuEl);
+    menuEl = null;
+  }
   function doLogout() {
     closeMenu();
     try {
@@ -59,13 +69,13 @@
       sbClient.auth.signOut().then(function () { currentName = null; apply(); });
     } else { currentName = null; apply(); }
   }
-  function toggleMenu(btn) {
-    if (menuEl) { closeMenu(); return; }
+  function openMenu(btn) {
+    if (menuEl) { cancelClose(); return; }
     var r = btn.getBoundingClientRect();
     menuEl = document.createElement('div');
     menuEl.setAttribute('data-uye-menu-panel', '1');
-    menuEl.style.cssText = 'position:fixed;z-index:999;top:' + (r.bottom + 8) + 'px;left:' + Math.max(8, r.right - 190) + 'px;' +
-      'min-width:182px;background:rgba(5,7,13,.98);border:1px solid rgba(193,154,82,.5);box-shadow:0 18px 50px rgba(0,0,0,.6);' +
+    menuEl.style.cssText = 'position:fixed;z-index:999;top:' + (r.bottom + 6) + 'px;left:' + Math.max(8, r.right - 200) + 'px;' +
+      'min-width:192px;background:rgba(5,7,13,.98);border:1px solid rgba(193,154,82,.5);box-shadow:0 18px 50px rgba(0,0,0,.6);' +
       'font-family:\'Special Elite\',monospace;letter-spacing:.1em;font-size:11px;';
     function item(label, cb) {
       var a = document.createElement('a');
@@ -77,18 +87,40 @@
       menuEl.appendChild(a); return a;
     }
     item('👤 ÜYELİK PANELİM', function () { closeMenu(); window.location.href = '/uyelik'; });
+    item('🎬 STUDIO', function () { closeMenu(); window.location.href = '/studio'; });
+    item('🗂 ARŞİV', function () { closeMenu(); window.location.href = '/arsiv'; });
     var out = item('⎋ ÇIKIŞ YAP', doLogout);
     out.style.borderBottom = '0'; out.style.color = '#e08a80';
     out.onmouseenter = function () { out.style.background = 'rgba(224,138,128,.1)'; };
     out.onmouseleave = function () { out.style.background = 'transparent'; };
     document.body.appendChild(menuEl);
-    setTimeout(function () {
-      document.addEventListener('click', function once(e) {
-        if (menuEl && !menuEl.contains(e.target)) closeMenu();
-        document.removeEventListener('click', once);
-      });
-    }, 0);
   }
+
+  // ── Olay delegasyonu: dinleyiciler DOCUMENT üzerinde (capture) yaşar.
+  // Framework butonu yeniden kursa da tıklama/hover çalışmaya devam eder;
+  // capture aşaması site içi yönlendirme dinleyicilerinden de önce koşar.
+  document.addEventListener('click', function (e) {
+    var btn = closestFrom(e.target, 'a[data-uye-nav]');
+    if (btn) {
+      e.preventDefault(); e.stopPropagation();
+      if (menuEl) closeMenu(); else openMenu(btn);
+      return;
+    }
+    if (menuEl && !menuEl.contains(e.target)) closeMenu();
+  }, true);
+  document.addEventListener('mouseover', function (e) {
+    var over = closestFrom(e.target, 'a[data-uye-nav], [data-uye-menu-panel]');
+    if (!over) return;
+    cancelClose();
+    if (!menuEl && over.getAttribute('data-uye-nav') != null) openMenu(over);
+  }, true);
+  document.addEventListener('mouseout', function (e) {
+    if (!menuEl) return;
+    var from = closestFrom(e.target, 'a[data-uye-nav], [data-uye-menu-panel]');
+    if (!from) return;
+    var to = closestFrom(e.relatedTarget, 'a[data-uye-nav], [data-uye-menu-panel]');
+    if (!to) scheduleClose();   // buton↔menü arası geçişe 280ms tolerans
+  }, true);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
 
   function apply() {
@@ -97,20 +129,19 @@
       Array.prototype.slice.call(document.querySelectorAll('a[data-uye-nav]')).forEach(function (a) {
         if (a.getAttribute('data-uye-orig') == null && a.parentElement) a.parentElement.removeChild(a);
       });
-      // Header'daki "AJAN GİRİŞİ" butonunu doğrudan ada dönüştür (yalnız ad, ikon/etiket yok)
-      var t = pickTarget();
-      if (t && t.getAttribute('data-uye-nav') !== currentName) {
+      // Header'daki "AJAN GİRİŞİ" butonunu doğrudan ada dönüştür.
+      // Metin denetimi de yapılır: framework metni geri yazdıysa tazele.
+      var t = pickTarget() || document.querySelector('header a[data-uye-nav]');
+      if (t) {
+        var want = currentName + ' ▾';
         if (t.getAttribute('data-uye-orig') == null) t.setAttribute('data-uye-orig', t.innerHTML);
-        t.textContent = currentName + ' ▾';   // "AJAN GİRİŞİ" → "Osman ▾" (menü açar)
+        if (t.textContent !== want) t.textContent = want;   // "AJAN GİRİŞİ" → "Osman ▾"
         t.setAttribute('data-uye-nav', currentName);
         t.title = 'Hesap menüsü';
-        if (!t.getAttribute('data-uye-menu')) {
-          t.setAttribute('data-uye-menu', '1');
-          t.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); toggleMenu(t); });
-        }
       }
       // Header'da giriş butonu yoksa HİÇBİR ŞEY ekleme (ÜYELİK'e dokunma, ayrı ad yazma)
     } else {
+      closeMenu();
       // çıkış: dönüştürdüğümüz butonu eski haline getir ("AJAN GİRİŞİ")
       Array.prototype.slice.call(document.querySelectorAll('a[data-uye-nav]')).forEach(function (a) {
         var orig = a.getAttribute('data-uye-orig');
@@ -126,6 +157,21 @@
     }
   }
 
+  // Framework header'ı sonradan/yeniden kurarsa dönüşümü tazele (debounce'lu)
+  var moTimer = null;
+  function watchDom() {
+    if (!window.MutationObserver || !document.body) return;
+    new MutationObserver(function (muts) {
+      // menünün kendi ekle/çıkarları döngü yaratmasın
+      var relevant = muts.some(function (m) {
+        return !closestFrom(m.target, '[data-uye-menu-panel]');
+      });
+      if (!relevant) return;
+      if (moTimer) clearTimeout(moTimer);
+      moTimer = setTimeout(function () { if (currentName) apply(); }, 200);
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
   function start() {
     var sb = window.supabase.createClient(SB_URL, SB_KEY);
     sbClient = sb;
@@ -139,6 +185,7 @@
       currentName = u ? firstName(u) : null;
       apply();
     });
+    watchDom();
     // dc framework hidrasyonu DOM'u geç kurabilir → birkaç kez yeniden uygula
     [800, 2000, 4000].forEach(function (ms) { setTimeout(apply, ms); });
   }
