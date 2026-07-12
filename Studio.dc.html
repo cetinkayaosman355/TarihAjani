@@ -575,7 +575,19 @@
                           <div style="display: flex; gap: 6px; flex-wrap: wrap; padding: 0 10px 10px;">
                             <button onClick="{{ iq.zoom }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="color: #e6c478;">🔍 BÜYÜT</button>
                             <button onClick="{{ iq.dl }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
-                            <button onClick="{{ iq.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="color: #e6c478;">✎ DÜZENLE</button>
+                            <button onClick="{{ iq.edit }}" style="{{ iq.editBtnStyle }}">{{ iq.editToggleLabel }}</button>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ iq.editOpen }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: grid; gap: 8px; padding: 0 10px 12px;">
+                            <textarea value="{{ iq.editText }}" onChange="{{ iq.onEditText }}" rows="2" placeholder="Ne değiştireyim? ör. arka planı gece yap · kılıcı daha büyük · yüz ifadesini sertleştir" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 10px; font-size: 12.5px; line-height: 1.5;"></textarea>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                              <button onClick="{{ iq.runEdit }}" disabled="{{ iq.editBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .08em; padding: 9px 14px;">{{ iq.editRunLabel }}</button>
+                              <span style="color: #676d7c; font-size: 10.5px;">{{ iq.editHint }}</span>
+                            </div>
+                            <sc-if value="{{ iq.editErr }}" hint-placeholder-val="{{ false }}">
+                              <p style="margin: 0; color: #e8a9a9; font-size: 11px; line-height: 1.5;">{{ iq.editErr }}</p>
+                            </sc-if>
                           </div>
                         </sc-if>
                       </div>
@@ -1286,6 +1298,47 @@ class Component extends DCLogic {
     });
   }
 
+  // ── gerçek görsel düzenleme ── (mevcut görseli korur; ilk düzenleme ücretsiz)
+  setImgItem(id, patch) {
+    this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, ...patch } : x) }));
+  }
+  toggleEditBox(id) {
+    this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, editOpen: !x.editOpen, editErr: '' } : x) }));
+  }
+  async editServer(imageUri, prompt, arKey, free) {
+    const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey] || '16:9';
+    const token = this._token() || SB_KEY;
+    const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ action: 'edit', image: imageUri, prompt, size: aspect, free: !!free })
+    });
+    const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
+    if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
+    if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Görsel düzenlenemedi');
+    if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
+    return data.url;
+  }
+  runEdit(item) {
+    const text = (item.editText || '').trim();
+    if (!text || item.editBusy) return;
+    // yalnız data URI (sistemde üretilmiş) görseller düzenlenebilir
+    if (!/^data:image\//.test(item.url || '')) { this.setImgItem(item.id, { editErr: 'Bu görsel düzenlenemiyor (bağlantı süreli). Yeni görsel üretip düzenleyebilirsin.' }); return; }
+    const free = !item.editUsedFree;
+    const cost = free ? 0 : 8;
+    if (!free && this.state.credits < cost) { this.setState({ creditModal: true }); return; }
+    this.setImgItem(item.id, { editBusy: true, editErr: '' });
+    this.editServer(item.url, text, item.ar, free).then(url => {
+      this.setImgItem(item.id, { url, editBusy: false, editOpen: false, editText: '', editUsedFree: true });
+    }).catch(e => {
+      const msg = e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Düzenlenemedi: ' + e.message);
+      this.setImgItem(item.id, { editBusy: false, editErr: msg });
+      if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
+    });
+  }
+
   // Gerçek seslendirme — sunucuda gpt-4o-mini-tts, kredi düşer (sunucuyla aynı formül)
   ttsCost() {
     const t = this.voiceText() || '';
@@ -1782,13 +1835,18 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
           pendStyle: { aspectRatio: arCss, display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px)' },
           zoom: () => this.setState({ imgZoom: x.url }),
           dl: () => this.dlImage(x.url),
-          edit: () => {
-            this.setState({ imgPrompt: x.prompt, imgAspect: x.ar || null });
-            setTimeout(() => {
-              const t = Array.prototype.slice.call(document.querySelectorAll('textarea')).find(el => /Candlelit/.test(el.placeholder || ''));
-              if (t) { t.focus(); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-            }, 60);
-          }
+          // gerçek düzenleme kutusu (mevcut görseli korur, istediğini değiştirir)
+          edit: () => this.toggleEditBox(x.id),
+          editToggleLabel: x.editOpen ? '✕ KAPAT' : '✎ DÜZENLE',
+          editBtnStyle: { border: '1px solid ' + (x.editOpen ? 'rgba(193,154,82,.6)' : 'rgba(129,135,151,.35)'), background: x.editOpen ? 'rgba(193,154,82,.1)' : 'transparent', color: x.editOpen ? '#e6c478' : '#a4a9b5', fontSize: '10px', letterSpacing: '.06em', padding: '7px 9px', cursor: 'pointer' },
+          editOpen: !!x.editOpen,
+          editText: x.editText || '',
+          onEditText: e => this.setImgItem(x.id, { editText: e.target.value }),
+          runEdit: () => this.runEdit(x),
+          editBusy: !!x.editBusy,
+          editRunLabel: x.editBusy ? 'DÜZENLENİYOR… (~20 sn)' : (x.editUsedFree ? '✎ UYGULA · 8 KR' : '✎ UYGULA · ÜCRETSİZ'),
+          editHint: x.editUsedFree ? 'Sonraki düzenlemeler 8 kredi' : 'İlk düzenleme ücretsiz',
+          editErr: x.editErr || ''
         };
       }),
       imgAspects: ['yatay', 'dikey', 'kare'].map(k => {
