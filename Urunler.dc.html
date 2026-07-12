@@ -110,7 +110,13 @@
     </aside>
 
     <div>
-      <p style="margin: 0 0 16px; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">{{ resultLine }}</p>
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 16px;">
+        <div style="display: flex; align-items: center; gap: 9px; border: 1px solid rgba(193,154,82,.35); background: rgba(6,9,16,.8); padding: 11px 14px; flex: 1; min-width: 220px; max-width: 420px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c19a52" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+          <input id="urunAra" value="{{ q }}" onChange="{{ onQ }}" placeholder="Ürün ara — ör. kredi, e-kitap, defter…" style="flex: 1; border: 0; background: transparent; color: #f2ecd9; font-size: 14px; font-family: inherit; outline: none;">
+        </div>
+        <p style="margin: 0; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">{{ resultLine }}</p>
+      </div>
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px;">
         <sc-for list="{{ items }}" as="it" hint-placeholder-count="0">
           <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; display: flex; flex-direction: column; overflow: hidden; animation: ta-rise .4s ease both;" style-hover="border-color: rgba(193,154,82,.55);">
@@ -255,7 +261,7 @@
 <script type="text/x-dc" data-dc-script data-props="{&quot;supabaseUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://ddyuopqcvpzaysnfavqc.supabase.co&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;supabaseAnonKey&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;iban&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;TR06 0004 6002 6388 8000 0717 57&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}, &quot;accountHolder&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Tarih Ajanı&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}, &quot;shopierUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://www.shopier.com/tarihajani&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}}">
 class Component extends DCLogic {
   state = {
-    cat: 'TÜMÜ',
+    cat: 'TÜMÜ', q: '',
     checkout: null, stage: 'detail', payMethod: 'iban',
     fName: '', fEmail: '', fPhone: '', fConsent: false,
     formError: '', ibanCopied: false, priceOv: {}
@@ -295,6 +301,10 @@ class Component extends DCLogic {
   componentDidMount() {
     this.initSupabase(0);
     this.loadProducts();
+    try {
+      const qp = new URLSearchParams(location.search);
+      if (qp.get('q') || qp.get('ara')) setTimeout(() => { const el = document.getElementById('urunAra'); if (el) el.focus(); }, 400);
+    } catch (e) {}
     const h = (location.hash || '').toLowerCase();
     const map = { '#egitim': 'EĞİTİM', '#ekitap': 'E-KİTAP', '#studio': 'STUDIO KREDİ' };
     // Ürün derin bağlantısı: /urunler#u-<slug>  → ilgili ürünü aç
@@ -403,7 +413,9 @@ class Component extends DCLogic {
       return (o && o.price != null && o.price !== '') ? { ...d, price: String(o.price) } : d;
     });
     const catNames = ['TÜMÜ', 'E-KİTAP', 'HAZIR İÇERİK', 'EĞİTİM', 'STUDIO KREDİ', 'FİZİKİ ÜRÜN'];
-    const filtered = defs.filter(d => s.cat === 'TÜMÜ' || d.cat === s.cat);
+    const ql = (s.q || '').toLocaleLowerCase('tr');
+    const filtered = defs.filter(d => (s.cat === 'TÜMÜ' || d.cat === s.cat) &&
+      (!ql || (d.title + ' ' + d.blurb + ' ' + d.cat).toLocaleLowerCase('tr').includes(ql)));
     const co = s.checkout || {};
     const validEmail = /.+@.+\..+/.test(s.fEmail);
     const payBtn = (on) => ({
@@ -443,7 +455,9 @@ class Component extends DCLogic {
           this.setState({ checkout: { ...it, features: it.features.map(t => ({ t })) }, stage: 'detail', payMethod: 'iban', formError: '' });
         }
       })),
-      resultLine: filtered.length + ' ÜRÜN · ' + s.cat,
+      q: s.q,
+      onQ: e => this.setState({ q: e.target.value }),
+      resultLine: filtered.length + ' ÜRÜN · ' + (s.q ? '"' + s.q + '"' : s.cat),
 
       hasCheckout: !!s.checkout,
       coItem: co,
