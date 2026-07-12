@@ -187,7 +187,12 @@
       '#ta-chat-btn:hover .lbl{max-width:120px;opacity:1;margin-left:9px}';
     document.head.appendChild(s);
   }
+  // Studio'nun kendi "AJANLA KONUŞ" üretim asistanı sağ altta olduğundan
+  // genel Ajan Asistan butonu orada çakışıyor → Studio'da gösterme.
+  function onStudio() { return /(^|\/)studio(\/|$)|Studio\.dc/i.test(location.pathname); }
+
   function ensureButton() {
+    if (onStudio()) return;
     ensureCss();
     if (document.getElementById('ta-chat-btn')) return;
     var b = document.createElement('button');
