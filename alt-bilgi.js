@@ -59,11 +59,10 @@
     if (!corpAllowed()) return;
     if (document.getElementById('ta-corp-footer')) return;
     var footer = document.querySelector('footer');
-    if (footer) {
-      footer.appendChild(buildCorpFooter());
-    } else {
-      document.body.appendChild(buildCorpFooter());
-    }
+    // <footer> yoksa EKLEME: gövdeye eklemek tam-ekran okuyucu/uygulama
+    // sayfalarında (yarı saydam overlay) içeriğin üstüne biniyordu.
+    if (!footer) return;
+    footer.appendChild(buildCorpFooter());
   }
 
   /* ---------- Mobil sabit "Satın Al" çubuğu ---------- */
@@ -159,7 +158,7 @@
     run();
     // dc yeniden render ederse yeniden enjekte et
     var mo = new MutationObserver(function () {
-      if ((corpAllowed() && !document.getElementById('ta-corp-footer')) ||
+      if ((corpAllowed() && document.querySelector('footer') && !document.getElementById('ta-corp-footer')) ||
           (onBuyPage() && !document.getElementById('ta-buy-bar'))) {
         run();
       }
