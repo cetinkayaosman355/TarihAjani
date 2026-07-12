@@ -63,7 +63,7 @@
   <main style="max-width: 1060px; margin: 0 auto; padding: clamp(28px, 5vw, 60px) clamp(18px, 4vw, 48px) 80px;">
 
     <!-- GİRİŞ / KAYIT -->
-    <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
       <div style="max-width: 460px; margin: 40px auto 0; animation: ta-rise .5s ease both;">
         <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em; text-align: center;">AJAN KİMLİK KONTROLÜ</p>
         <h1 style="margin: 10px 0 6px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 800; text-align: center;">{{ loginTitle }}</h1>
@@ -99,7 +99,7 @@
     </sc-if>
 
     <!-- HESAP GÖRÜNÜMÜ -->
-    <sc-if value="{{ showAccount }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ showAccount }}" hint-placeholder-val="{{ false }}">
       <div style="animation: ta-rise .5s ease both; display: grid; gap: 34px;">
 
         <!-- kimlik kartı + kredi -->
@@ -247,11 +247,11 @@ class Component extends DCLogic {
     try { st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}'); } catch (e) {}
     try { acc = JSON.parse(localStorage.getItem('ta_account_v1') || '{}'); } catch (e) {}
     this.state = {
-      loggedIn: !!(st.agent || acc.name),
+      loggedIn: false,   // görünümü yalnız gerçek Supabase oturumu açar (bayat kayıt değil)
       name: st.agent || acc.name || '',
       email: st.email || acc.email || '',
       credits: typeof st.credits === 'number' ? st.credits : 0,
-      tier: acc.tier || (this.props.varsayilanSeviye ?? 'gozlemci'),
+      tier: acc.tier || (this.props.varsayilanSeviye ?? 'uye'),
       since: acc.since || '',
       expiresAt: null,
       billing: 'ay',
