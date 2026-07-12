@@ -146,12 +146,21 @@ async function generateImage(prompt: string, size: string): Promise<string> {
     const r = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "gpt-image-1.5", prompt: prompt.slice(0, 3800), n: 1, size: gSize }),
+      body: JSON.stringify({
+        model: "gpt-image-1.5",
+        prompt: prompt.slice(0, 30000),
+        n: 1,
+        size: gSize,
+        quality: "medium",            // dengeli kalite/maliyet
+        output_format: "jpeg",        // daha küçük data URI (png ~çok büyük)
+        output_compression: 82,
+        moderation: "low",            // tarihî sahne (savaş/ölüm) yanlış engelini azalt
+      }),
     });
     if (r.ok) {
       const d = await r.json();
       const b64 = d.data?.[0]?.b64_json;
-      if (b64) return "data:image/png;base64," + b64;
+      if (b64) return "data:image/jpeg;base64," + b64;
       const u = d.data?.[0]?.url;
       if (u) return u;
     }
