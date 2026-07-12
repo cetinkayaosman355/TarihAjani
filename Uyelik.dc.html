@@ -504,6 +504,14 @@ class Component extends DCLogic {
               const { error: e2 } = await this.sb.auth.signInWithPassword({ email, password: s.fPass });
               if (e2) { this.setState({ busy: false, formError: 'Kayıt alındı. E-postanı doğrulayıp giriş yapabilirsin.' , mode: 'giris' }); return; }
             }
+            // hoş geldin maili — sunucu tek seferlik olduğunu garanti eder (welcomed_at)
+            try {
+              fetch((this.props.supabaseUrl || '').trim() + '/functions/v1/posta', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (this.props.supabaseAnonKey || '').trim() },
+                body: JSON.stringify({ action: 'welcome', email })
+              });
+            } catch (e) {}
           } else {
             const { error } = await this.sb.auth.signInWithPassword({ email, password: s.fPass });
             if (error) { this.setState({ busy: false, formError: this.authErrTr(error) }); return; }
