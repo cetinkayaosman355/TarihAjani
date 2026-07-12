@@ -1,12 +1,17 @@
 // ============================================================
-// TARİH AJANI — "chat" edge function (canlı sohbet)
+// TARİH AJANI — "chat" edge function (canlı sohbet + AJAN ASİSTAN)
 // Ziyaretçi eylemleri (anon):
-//   send   {thread, name?, email?, text}  → mesaj bırakır
+//   send   {thread, name?, email?, text}  → mesaj bırakır; AJAN ASİSTAN
+//          (gpt-4o-mini) uygunsa anında yanıtlar, yanıt cevapla döner
 //   fetch  {thread, afterId?}             → kendi konuşmasını çeker
 // Yönetici eylemleri (password = ADMIN_PASSWORD):
 //   threads                → son konuşmaların listesi
 //   messagesOf {thread}    → bir konuşmanın tüm mesajları
-//   reply {thread, text}   → 'ajan' olarak yanıt yazar
+//   reply {thread, text}   → 'ajan' olarak yanıt yazar (insan)
+// Asistan kuralları: son 10 dk içinde İNSAN yanıtı varsa susar (devralma);
+// konuşma başına en fazla 40 asistan yanıtı; yanıtlar kısa (≤260 token).
+// Asistan mesajları name='ASISTAN' ile işaretlenir.
+// Secrets: ADMIN_PASSWORD, OPENAI_API_KEY
 // Tablo: public.chat_messages — RLS açık, anon politika YOK;
 // erişim yalnız bu fonksiyon (service role) üzerinden.
 // ============================================================
@@ -23,6 +28,79 @@ const json = (body: unknown, status = 200) =>
   });
 
 const THREAD_RE = /^[a-zA-Z0-9-]{8,64}$/;
+
+/* ── AJAN ASİSTAN (gpt-4o-mini) ── */
+
+// deno-lint-ignore no-explicit-any
+async function aiReply(db: any, thread: string): Promise<string | null> {
+  const key = Deno.env.get("OPENAI_API_KEY");
+  if (!key) return null;
+
+  // konuşma geçmişi (son 24 mesaj yeter)
+  const hist = await db.from("chat_messages")
+    .select("sender,name,text,created_at")
+    .eq("thread", thread).order("id", { ascending: false }).limit(24);
+  if (hist.error || !hist.data) return null;
+  const msgs = [...hist.data].reverse();
+
+  // devralma: son 10 dk içinde İNSAN (name!=='ASISTAN') yanıtı varsa sus
+  const now = Date.now();
+  for (const m of msgs) {
+    if (m.sender === "ajan" && m.name !== "ASISTAN" &&
+        now - new Date(m.created_at).getTime() < 10 * 60 * 1000) return null;
+  }
+  // maliyet freni: konuşma başına en fazla 40 asistan yanıtı
+  if (msgs.filter((m) => m.name === "ASISTAN").length >= 40) return null;
+
+  // güncel fiyatlar — asistan yalnız buradakileri söyler
+  const prods = await db.from("products").select("title,price").limit(40);
+  const priceList = (prods.data || [])
+    .map((p: { title: string; price: unknown }) => `- ${p.title}: ${p.price} TL`)
+    .join("\n") || "- (fiyat listesi şu an boş; fiyat için /urunler sayfasına yönlendir)";
+
+  const system = `Sen "Ajan Asistan"sın — tarihajani.com'un satış ve destek asistanı.
+Tarih Ajanı; tarih hikâyeleri, vaka dosyaları, e-kitaplar, içerik üretim eğitimi ve Studio (yapay zekâ destekli üretim aracı) sunan Türkçe bir platform.
+ÜSLUP: dedektif/ajan temasına uygun, samimi ve net. EN FAZLA 2-3 kısa cümle. Emoji nadiren.
+GÖREV: soruyu yanıtla, doğru sayfaya/ürüne yönlendir, satın almaya nazikçe teşvik et; ısrarcı olma.
+BİLGİ:
+- Üyelik (/uyelik): Ücretsiz üyelik 30 deneme kredisi verir. Paralı paketler: Gözlemci, Ajan, Başmüfettiş (aylık/yıllık). Her paralı seviyede Studio kredisi ve 44 dosyalık hazır hikâye arşivi (/arsiv) var; Eğitim Akademisi ve e-kitap hediyeleri Ajan seviyesiyle gelir.
+- Güncel ürün fiyatları (TL):
+${priceList}
+- Satın alma: /urunler → ürün → satış sayfası. Ödeme: kredi kartı (Shopier) veya havale/EFT. Dijital ürünlerde erişim onay sonrası açılır.
+- Studio (/studio): konudan seslendirme metni, sahne/görsel promptları ve gerçek görsel üretir; süre 30 sn – 10 dk.
+- Oyunlar (/zaman-tuneli): Satranç 1402 (Timur vs Bayezid) ve Mangala — ücretsiz.
+- İnsan desteği: ziyaretçi insanla görüşmek isterse e-postasını bırakmasını söyle; ekip iletisim@tarihajani.com üzerinden döner.
+KURALLAR: Bilmediğini uydurma; fiyat olarak YALNIZ listedekileri söyle. Konu dışı sorulara tek cümle nazik cevap verip siteye dön. Kişisel veri isteme (dönüş için e-posta hariç).`;
+
+  const chat = msgs.slice(-16).map((m) => ({
+    role: m.sender === "ziyaretci" ? "user" : "assistant",
+    content: String(m.text || "").slice(0, 800),
+  }));
+
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 20000);
+  try {
+    const r = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        max_tokens: 260,
+        temperature: 0.6,
+        messages: [{ role: "system", content: system }, ...chat],
+      }),
+      signal: ctl.signal,
+    });
+    if (!r.ok) return null;
+    const d = await r.json();
+    const text = d?.choices?.[0]?.message?.content?.trim();
+    return text || null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(t);
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -57,7 +135,20 @@ Deno.serve(async (req) => {
       text,
     }).select("id").single();
     if (ins.error) return json({ ok: false, error: ins.error.message }, 500);
-    return json({ ok: true, id: ins.data.id });
+
+    // AJAN ASİSTAN: uygunsa anında yanıtla (hata olsa da send başarılıdır)
+    let reply: { id: number; text: string } | null = null;
+    try {
+      const answer = await aiReply(db, thread);
+      if (answer) {
+        const bot = await db.from("chat_messages")
+          .insert({ thread, sender: "ajan", name: "ASISTAN", text: answer })
+          .select("id").single();
+        if (!bot.error && bot.data) reply = { id: bot.data.id, text: answer };
+      }
+    } catch { /* asistan hatası mesaj göndermeyi engellemez */ }
+
+    return json({ ok: true, id: ins.data.id, reply });
   }
 
   if (action === "fetch") {

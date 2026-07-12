@@ -81,7 +81,7 @@
     msgBox = document.createElement('div');
     msgBox.style.cssText = 'flex:1;overflow-y:auto;padding:12px 14px;';
     panel.appendChild(msgBox);
-    bubble('Hoş geldin, ajan. Sorunu yaz — en kısa sürede dönüş yaparız. E-postanı bırakırsan cevabı kaçırmazsın.', 'sistem');
+    bubble('Hoş geldin, ajan. Ben Ajan Asistan — ürünler, üyelik ve Studio hakkında sorularını anında yanıtlarım. İnsan desteği istersen e-postanı bırakman yeterli.', 'sistem');
 
     var meta = document.createElement('div');
     meta.id = 'ta-chat-meta';
@@ -111,9 +111,23 @@
       st.name = nameIn.value.trim(); st.email = mailIn.value.trim(); save();
       input.value = '';
       bubble(text, 'ziyaretci');
+      // "yazıyor…" göstergesi — asistan yanıtı send cevabıyla birlikte gelir
+      var typing = document.createElement('div');
+      typing.textContent = 'Ajan Asistan yazıyor…';
+      typing.style.cssText = 'margin:6px 0;font-size:11.5px;color:#676d7c;font-style:italic;';
+      if (msgBox) { msgBox.appendChild(typing); msgBox.scrollTop = msgBox.scrollHeight; }
       var d = await call({ action: 'send', thread: newThread(), name: st.name, email: st.email, text: text });
-      if (d && d.ok && d.id) { st.lastId = Math.max(st.lastId, d.id); save(); }
-      else if (!d || !d.ok) bubble('Mesaj iletilemedi — bağlantını kontrol edip tekrar dene.', 'sistem');
+      if (typing.parentElement) typing.parentElement.removeChild(typing);
+      if (d && d.ok) {
+        if (d.id) st.lastId = Math.max(st.lastId, d.id);
+        if (d.reply && d.reply.text) {
+          bubble(d.reply.text, 'ajan');
+          if (d.reply.id) st.lastId = Math.max(st.lastId, d.reply.id);
+        }
+        save();
+      } else {
+        bubble('Mesaj iletilemedi — bağlantını kontrol edip tekrar dene.', 'sistem');
+      }
       try { if (typeof window.taTrack === 'function') window.taTrack('chat_message'); } catch (e) {}
     }
     send.onclick = doSend;
