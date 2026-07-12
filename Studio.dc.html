@@ -78,6 +78,7 @@
   <script>window.__taFadeBg='#06070d';</script>
   <script src="page-transition.js"></script>
   <script src="analytics.js"></script>
+  <script src="arsiv-data.js"></script>
 </helmet>
 
 <div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
@@ -234,6 +235,7 @@
                 <h2 style="margin: 8px 0 0; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; line-height: 1.15;">{{ docTitle }}</h2>
               </div>
               <div style="display: flex; gap: 10px;">
+                <button onClick="{{ ekitapDoc }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">📖 E-KİTAP / PDF</button>
                 <button onClick="{{ docCopyAll }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ docCopyAllLabel }}</button>
                 <button onClick="{{ docClose }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="color: #e6c478;">← ARŞİVE DÖN</button>
               </div>
@@ -372,7 +374,8 @@
                 <h2 style="margin: 8px 0 6px; font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; line-height: 1.15;">{{ resTitle }}</h2>
                 <p style="margin: 0; color: #a4a9b5; max-width: 640px; line-height: 1.6;">{{ resLogline }}</p>
               </div>
-              <div style="display: flex; gap: 10px;">
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onClick="{{ ekitapResult }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">📖 E-KİTAP / PDF</button>
                 <button onClick="{{ copyAll }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ copyAllLabel }}</button>
                 <button onClick="{{ newFile }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px 18px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;">+ YENİ DOSYA</button>
               </div>
@@ -858,6 +861,95 @@ class Component extends DCLogic {
   }
 
   find(group, id) { return this.optionData()[group].find(o => o.id === id); }
+
+  // MASTER arşiv (arsiv-data.js → /arsiv ile AYNI kaynak): sections → sayfalar çevirisi.
+  // Master yüklüyse Studio Hazır Arşiv bu 40 dosyayı gösterir; yoksa eski gömülü listeye düşer.
+  masterArsiv() {
+    const A = (typeof window !== 'undefined' && window.__ARSIV__) || [];
+    if (!A.length) return null;
+    return A.map(a => ({
+      no: a.no, era: a.era, fileNo: a.fileNo,
+      baslik: a.baslik, teaser: a.teaser || a.ozet || '',
+      sayfalar: (a.sections || []).map(sec => ({
+        ad: sec.ad,
+        bloklar: (sec.bloklar || []).map(b => ({ k: b.k || sec.ad, t: b.t }))
+      }))
+    }));
+  }
+
+  // ── E-KİTAP FORMATI ─────────────────────────────────────────────
+  // Dosyayı şık, baskıya hazır bir e-kitap sayfası olarak yeni sekmede açar;
+  // tarayıcının "PDF olarak kaydet"iyle indirilir (Cmd/Ctrl+P → PDF).
+  ekitapOpen(title, subtitle, chapters) {
+    const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const chapHtml = chapters.map((c, i) => (
+      '<section class="chap' + (i === 0 ? ' first' : '') + '">' +
+      '<div class="chapno">BÖLÜM ' + String(i + 1).padStart(2, '0') + '</div>' +
+      '<h2>' + esc(c.ad) + '</h2>' +
+      (c.bloklar || []).map(b => (
+        (b.k ? '<h3>' + esc(b.k) + '</h3>' : '') +
+        '<div class="body">' + esc(b.t) + '</div>'
+      )).join('') +
+      '</section>'
+    )).join('');
+    const html = '<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>' + esc(title) + ' · Tarih Ajanı</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400&family=Hanken+Grotesk:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">' +
+      '<style>' +
+      '@page{size:A4;margin:22mm 18mm;}' +
+      '*{box-sizing:border-box;}body{margin:0;font-family:"Hanken Grotesk",sans-serif;color:#1d1a14;background:#f4efe4;}' +
+      '.page{max-width:760px;margin:0 auto;padding:40px 34px;}' +
+      '.cover{min-height:92vh;display:flex;flex-direction:column;justify-content:center;text-align:center;page-break-after:always;border:1px solid #b99b5e;margin:24px;padding:60px 40px;background:linear-gradient(160deg,#f7f2e7,#efe6d2);}' +
+      '.cover .marka{font-family:"Special Elite",monospace;letter-spacing:.35em;font-size:12px;color:#8a6d3b;}' +
+      '.cover h1{font-family:"Playfair Display",serif;font-weight:800;font-size:44px;line-height:1.12;margin:26px 0 14px;color:#211c12;}' +
+      '.cover .sub{font-family:"Playfair Display",serif;font-style:italic;font-size:17px;color:#5c5342;max-width:52ch;margin:0 auto;line-height:1.6;}' +
+      '.cover .rule{width:90px;height:2px;background:#b99b5e;margin:30px auto;}' +
+      '.cover .foot{font-family:"Special Elite",monospace;font-size:10.5px;letter-spacing:.22em;color:#8a6d3b;margin-top:40px;}' +
+      '.chap{page-break-before:always;padding-top:10px;}.chap.first{page-break-before:auto;}' +
+      '.chapno{font-family:"Special Elite",monospace;font-size:10.5px;letter-spacing:.3em;color:#8a6d3b;}' +
+      '.chap h2{font-family:"Playfair Display",serif;font-size:27px;font-weight:700;margin:8px 0 4px;color:#211c12;border-bottom:2px solid #b99b5e;padding-bottom:10px;}' +
+      '.chap h3{font-family:"Special Elite",monospace;font-size:12px;letter-spacing:.14em;color:#6d5c39;margin:22px 0 6px;}' +
+      '.body{white-space:pre-wrap;line-height:1.75;font-size:13.5px;color:#2a251b;}' +
+      '.pfoot{text-align:center;font-family:"Special Elite",monospace;font-size:10px;letter-spacing:.24em;color:#8a6d3b;padding:30px 0 20px;}' +
+      '@media print{.cover{min-height:auto;margin:0;}body{background:#fff;}.noprint{display:none;}}' +
+      '.noprint{position:fixed;top:14px;right:14px;background:#211c12;color:#e6c478;border:0;padding:12px 20px;font-family:"Special Elite",monospace;font-size:11px;letter-spacing:.14em;cursor:pointer;}' +
+      '</style></head><body>' +
+      '<button class="noprint" onclick="window.print()">🖨 PDF OLARAK KAYDET</button>' +
+      '<div class="cover"><div class="marka">TARİH AJANI · GİZLİ ARŞİV</div><h1>' + esc(title) + '</h1>' +
+      (subtitle ? '<p class="sub">' + esc(subtitle) + '</p>' : '') +
+      '<div class="rule"></div><div class="foot">VAKA DOSYASI · tarihajani.com</div></div>' +
+      '<div class="page">' + chapHtml + '<div class="pfoot">TARİH SAKLAR, AJAN BULUR · © TARİH AJANI</div></div>' +
+      '</body></html>';
+    const w = window.open('', '_blank');
+    if (!w) { alert('Tarayıcı yeni pencereyi engelledi; pop-up izni ver.'); return; }
+    w.document.write(html); w.document.close();
+  }
+
+  // Üretilen dosyadan (adım 4) e-kitap bölümleri kur
+  ekitapFromResult() {
+    const r = this.state.result || {};
+    const ch = [];
+    if ((r.senaryo || []).length) ch.push({ ad: 'Senaryo & Seslendirme', bloklar: r.senaryo.map(sec => ({ k: (sec.bolum || '') + (sec.sure ? ' · ' + sec.sure : ''), t: sec.metin || '' })) });
+    if (r.seslendirme_notu) ch.push({ ad: 'Seslendirme Notu', bloklar: [{ k: '', t: r.seslendirme_notu }] });
+    if (r.kapak && r.kapak.length) ch.push({ ad: 'Kapak Tasarımları', bloklar: r.kapak.map(k => ({ k: (k.ad || 'Kapak') + (k.yazi ? ' — "' + k.yazi + '"' : ''), t: (k.prompt || '') + (k.not ? '\n\nNot: ' + k.not : '') })) });
+    if ((r.gorsel_promptlar || []).length) ch.push({ ad: 'Görsel / Sahne Promptları', bloklar: r.gorsel_promptlar.map((x, i) => ({ k: 'Sahne ' + (i + 1) + (x.sahne ? ' · ' + x.sahne : ''), t: x.prompt || '' })) });
+    if ((r.video_promptlar || []).length) ch.push({ ad: 'Video Promptları', bloklar: r.video_promptlar.map((x, i) => ({ k: 'Sahne ' + (i + 1) + (x.sahne ? ' · ' + x.sahne : ''), t: x.prompt || '' })) });
+    const yt = r.youtube || {}, ig = r.instagram || {};
+    const yayin = [];
+    if (yt.baslik || yt.aciklama) yayin.push({ k: 'YouTube', t: (yt.baslik ? yt.baslik + '\n\n' : '') + (yt.aciklama || '') + ((yt.etiketler || []).length ? '\n\nEtiketler: ' + yt.etiketler.join(', ') : '') });
+    if (ig.aciklama) yayin.push({ k: 'Instagram', t: ig.aciklama + ((ig.hashtagler || []).length ? '\n\n' + ig.hashtagler.join(' ') : '') });
+    if (yayin.length) ch.push({ ad: 'Yayın Paketi', bloklar: yayin });
+    if (r.uretim_notu) ch.push({ ad: 'Üretim Notu', bloklar: [{ k: '', t: r.uretim_notu }] });
+    this.ekitapOpen(r.baslik || 'Vaka Dosyası', r.logline || '', ch);
+  }
+
+  // Arşiv dosyasından (sayfalar/bloklar) e-kitap bölümleri kur
+  ekitapFromDoc() {
+    const d = this.state.doc || {};
+    const ch = d.sayfalar
+      ? d.sayfalar.map(p => ({ ad: p.ad, bloklar: p.bloklar }))
+      : [{ ad: d.baslik || 'Dosya', bloklar: d.bloklar || [] }];
+    this.ekitapOpen(d.baslik || 'Vaka Dosyası', d.teaser || d.ozet || '', ch);
+  }
 
   arsivData() {
     return [
@@ -1498,6 +1590,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
         copyLabel: s.copied['doc' + s.docPage + '_' + i] ? '✓ KOPYALANDI' : 'KOPYALA'
       })),
       docClose: () => this.setState({ doc: null, docPage: 0 }),
+      ekitapResult: () => this.ekitapFromResult(),
+      ekitapDoc: () => this.ekitapFromDoc(),
       docCopyAll: () => {
         const d = s.doc || {};
         const all = d.sayfalar
@@ -1512,7 +1606,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
         background: s.mode === 'arsiv' ? 'rgba(193,154,82,.18)' : 'transparent',
         color: s.mode === 'arsiv' ? '#e6c478' : '#818797'
       },
-      arsivList: [...this.arsivData(), ...(s.arsivEk || [])].map(a => ({
+      arsivList: [...(this.masterArsiv() || this.arsivData()), ...(s.arsivEk || [])].map(a => ({
         no: a.no, era: a.era, teaser: a.teaser, title: (a.result && a.result.baslik) || a.baslik || a.teaser,
         openFile: () => (a.bloklar || a.sayfalar) ? this.setState({ mode: 'arsiv', doc: a, docPage: 0 }) : this.setState({
           mode: 'wizard', step: 4, tab: 'senaryo',
