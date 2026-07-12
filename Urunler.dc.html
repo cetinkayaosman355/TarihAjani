@@ -456,6 +456,9 @@ class Component extends DCLogic {
         // satış sayfası karşılığı olmayan ürün için eski popup yedek kalır.
         open: () => {
           const slug = this.productSlug(it.title);
+          // SEO ürün detay sayfası olanlar oraya (indekslenebilir); üyelik vb. satışa
+          const SEO = ['egitim', 'gizli-uygarliklar', 'studio-rehberi', '5li-hikaye', 'hazir-arsiv', 'vaka-defteri', 'koleksiyon', 'studio-5', 'studio-15', 'studio-40'];
+          if (slug && SEO.indexOf(slug) >= 0) { location.href = '/urun/' + slug + '/'; return; }
           if (slug) { location.href = '/satis#' + slug; return; }
           this.setState({ checkout: { ...it, features: it.features.map(t => ({ t })) }, stage: 'detail', payMethod: 'iban', formError: '' });
         }
