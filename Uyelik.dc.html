@@ -230,6 +230,13 @@
                   <span style="{{ tr.tagStyle }}">{{ tr.tag }}</span>
                 </div>
                 <p style="margin: 12px 0 2px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 800;">{{ tr.price }} <span style="font-size: 14px; color: #676d7c; font-family: 'Special Elite', monospace;">TL{{ tr.per }}</span></p>
+                <p style="margin: 2px 0 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 11.5px; letter-spacing: .03em;">{{ tr.subPrice }}</p>
+                <div style="margin: 11px 0 2px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap;">
+                  <span style="border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .05em; padding: 4px 9px;">🎬 {{ tr.videoLine }}</span>
+                  <sc-if value="{{ tr.showSaving }}" hint-placeholder-val="{{ false }}">
+                    <span style="border: 1px solid rgba(122,168,116,.5); color: #a8c8a2; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .07em; padding: 4px 9px;">{{ tr.savingBadge }}</span>
+                  </sc-if>
+                </div>
                 <ul style="margin: 12px 0 16px; padding: 0; list-style: none; display: grid; gap: 8px;">
                   <sc-for list="{{ tr.features }}" as="ft" hint-placeholder-count="4">
                     <li style="display: flex; gap: 9px; color: #cfd3e0; font-size: 13px; line-height: 1.5;"><span style="color: #c19a52; font-size: 10px; margin-top: 3px;">◆</span><span>{{ ft.t }}</span></li>
@@ -240,6 +247,58 @@
             </sc-for>
           </div>
           <p style="margin: 16px 0 0; color: #676d7c; font-size: 12.5px; line-height: 1.6;">Her seviyede Studio erişimi ve hazır hikâye arşivi vardır. Eğitim Akademisi ve e-kitap arşivi Ajan seviyesiyle birlikte gelir — ayrıca satın almana gerek kalmaz. Tek seferlik ürünler <a href="/urunler">Ürünler</a> sayfasında.</p>
+
+          <!-- Tek karşılaştırma tablosu -->
+          <div style="margin-top: 40px;">
+            <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">TEK BAKIŞTA</p>
+            <h3 style="margin: 0 0 16px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Seviyeler neyi kapsıyor?</h3>
+            <div style="overflow-x: auto; border: 1px solid rgba(193,154,82,.22);">
+              <table style="width: 100%; min-width: 520px; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: #0a0d16;">
+                    <th style="padding: 13px 14px; text-align: left; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #a4a9b5;">ÖZELLİK</th>
+                    <th style="padding: 13px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #c19a52;">GÖZLEMCİ</th>
+                    <th style="padding: 13px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #e6c478;">AJAN</th>
+                    <th style="padding: 13px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #c19a52;">BAŞMÜFETTİŞ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ compareRows }}" as="cr" hint-placeholder-count="8">
+                    <tr>
+                      <td style="padding: 11px 14px; text-align: left; font-size: 12.5px; color: #cfd3e0; border-top: 1px solid rgba(193,154,82,.14);">{{ cr.label }}</td>
+                      <td style="{{ cr.gStyle }}">{{ cr.g }}</td>
+                      <td style="{{ cr.aStyle }}">{{ cr.a }}</td>
+                      <td style="{{ cr.bStyle }}">{{ cr.b }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- İptal / yenileme / otomatik ödeme -->
+          <div style="margin-top: 40px;">
+            <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">SIKÇA SORULANLAR</p>
+            <h3 style="margin: 0 0 16px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Kredi, yenileme ve iptal</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Kredi ne işe yarar?</h4>
+                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Studio kredisi; senaryo, seslendirme ve görsel üretiminde harcanır. Kabaca <span style="color: #cfd3e0;">1.000 kredi ≈ 30 kısa video</span> demektir. Krediler her ayın başında planına göre yenilenir.</p>
+              </div>
+              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Krediler devreder mi?</h4>
+                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Aylık kredi o ay içinde kullanılmak içindir; kullanılmayan kredi bir sonraki aya devretmez. Daha fazlasına ihtiyaç duyarsan Studio içinden ek kredi paketi alabilirsin.</p>
+              </div>
+              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Otomatik yenileme &amp; iptal</h4>
+                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Üyelik seçtiğin dönemde (aylık/yıllık) otomatik yenilenir. Dilediğin an <a href="mailto:destek@tarihajani.com?subject=Üyelik İptali" style="color: #c19a52;">tek e-postayla</a> iptal edebilirsin; iptalde dönem sonuna kadar erişimin sürer, sonraki tahsilat yapılmaz.</p>
+              </div>
+              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Yıllık ödemenin avantajı</h4>
+                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Yıllık planda <span style="color: #a8c8a2;">2 ay bedava</span> — yani 12 ay yerine 10 ay ödersin (~%17 tasarruf). Seviyeni istediğin zaman yükseltebilir, kalan sürenin farkını mahsup ederek geçebilirsin.</p>
+              </div>
+            </div>
+          </div>
         </section>
     </div>
   </main>
@@ -356,11 +415,11 @@ class Component extends DCLogic {
 
   tiers() {
     return [
-      { id: 'gozlemci', name: 'GÖZLEMCİ', ay: 599, kredi: 1000,
+      { id: 'gozlemci', name: 'GÖZLEMCİ', ay: 599, kredi: 1000, videos: 30,
         features: ['Hazır hikâye arşivine erişim', 'Aylık 1.000 Studio kredisi', 'Aylık yeni vaka dosyası'] },
-      { id: 'ajan', name: 'AJAN', ay: 1299, kredi: 5000, populer: true,
+      { id: 'ajan', name: 'AJAN', ay: 1299, kredi: 5000, videos: 160, populer: true,
         features: ['Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri', 'Üyelere özel e-kitap hediyeleri'] },
-      { id: 'basmufettis', name: 'BAŞMÜFETTİŞ', ay: 1999, kredi: 15000,
+      { id: 'basmufettis', name: 'BAŞMÜFETTİŞ', ay: 1999, kredi: 15000, videos: 500,
         features: ['Ajan içeriğinin tamamı', 'Aylık 15.000 Studio kredisi', 'Öncelikli üretim', 'Birebir mentorluk görüşmesi'] }
     ];
   }
@@ -422,10 +481,18 @@ class Component extends DCLogic {
     const tierList = this.tiers().map(t => {
       const isCur = s.loggedIn && t.id === s.tier;
       const up = order[t.id] > order[s.tier];
+      const yearlyTotal = t.ay * 10;
+      const monthlyEq = Math.round(yearlyTotal / 12);
       return {
         name: t.name,
-        price: fmtTL(yil ? t.ay * 10 : t.ay),
+        price: fmtTL(yil ? yearlyTotal : t.ay),
         per: yil ? ' / yıl' : ' / ay',
+        subPrice: yil
+          ? ('≈ aylık ' + fmtTL(monthlyEq) + ' TL — yılda 2 ay bedava')
+          : (fmtTL(t.kredi) + ' Studio kredisi / ay'),
+        videoLine: '≈ ayda ' + t.videos + ' kısa video',
+        savingBadge: yil ? '~%17 TASARRUF' : '',
+        showSaving: yil,
         features: t.features.map(x => ({ t: x })),
         tag: isCur ? 'MEVCUT SEVİYEN' : (t.populer ? 'EN POPÜLER' : ''),
         tagStyle: {
@@ -449,6 +516,28 @@ class Component extends DCLogic {
         act: () => { if (!isCur) window.location.href = '/satis#uyelik-' + t.id + (yil ? '-yil' : ''); }
       };
     });
+
+    // Tek karşılaştırma tablosu — plan farkları net görünsün (analiz raporu 2.3 / 3.4)
+    const cmp = [
+      { label: 'Aylık Studio kredisi', g: '1.000', a: '5.000', b: '15.000' },
+      { label: 'Yaklaşık kısa video / ay', g: '~30', a: '~160', b: '~500' },
+      { label: 'Hazır hikâye arşivi', g: 'Kısmi', a: 'Tam', b: 'Tam' },
+      { label: 'Aylık yeni vaka dosyası', g: '✓', a: '✓', b: '✓' },
+      { label: 'Eğitim Akademisi (9 ders)', g: '—', a: '✓', b: '✓' },
+      { label: 'Üyeye özel e-kitap hediyeleri', g: '—', a: '✓', b: '✓' },
+      { label: 'Öncelikli üretim', g: '—', a: '—', b: '✓' },
+      { label: 'Birebir mentorluk görüşmesi', g: '—', a: '—', b: '✓' }
+    ];
+    const cellStyle = v => ({
+      padding: '11px 12px', textAlign: 'center', fontFamily: "'Special Elite', monospace", fontSize: '12px',
+      borderTop: '1px solid rgba(193,154,82,.14)',
+      color: v === '✓' ? '#a8c8a2' : (v === '—' ? '#565b68' : '#e6c478')
+    });
+    const compareRows = cmp.map(r => ({
+      label: r.label,
+      g: r.g, a: r.a, b: r.b,
+      gStyle: cellStyle(r.g), aStyle: cellStyle(r.a), bStyle: cellStyle(r.b)
+    }));
 
     const tabStyle = on => ({
       border: 0, cursor: 'pointer', padding: '14px',
@@ -554,6 +643,7 @@ class Component extends DCLogic {
 
       accessList: access,
       tierList,
+      compareRows,
       tierKicker: s.loggedIn ? 'SEVİYENİ YÖNET' : 'ÜYELİKLE NELER AÇILIR?',
       tierTitle: s.loggedIn ? 'Erişim seviyeleri' : 'Tek üyelik, tüm arşiv',
       tierDesc: s.loggedIn ? '' : 'Studio kredileri, hazır hikâye arşivi, eğitim ve mentorluk — hepsi tek üyelikte. Seviye yükseldikçe kapılar açılır. (E-kitaplar ayrıca satılır; üyelere zaman zaman hediye edilir.)',
