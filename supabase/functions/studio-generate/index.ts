@@ -127,10 +127,49 @@ async function callClaude(prompt: string, maxTokens?: number): Promise<string> {
 // Kredi ücretleri SUNUCUDA sabit; client değiştiremez.
 // Üretim maliyeti süre kademesine göre; sahne yenileme sabit.
 const DURATION_COST: Record<string, number> = { sn30: 30, dk1: 60, dk4: 100, dk8: 150 };
+const IMAGE_COST = 12;
 function costFor(action: string, duration: string): number {
   if (action === "generate") return DURATION_COST[duration] ?? 100;
+  if (action === "image") return IMAGE_COST;
   if (action === "regen") return 5;
   return 0;
+}
+
+// Gerçek görsel üretimi — OpenAI gpt-image-1.5 (base64 → data URI, süresiz).
+// Başarısız olursa dall-e-3'e (url) düşer. Boş dönerse üretim başarısız sayılır.
+async function generateImage(prompt: string, size: string): Promise<string> {
+  const key = Deno.env.get("OPENAI_API_KEY");
+  if (!key || !prompt.trim()) return "";
+  // gpt-image oranları: kare / yatay (3:2) / dikey (2:3)
+  const gSize = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
+  try {
+    const r = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "gpt-image-1.5", prompt: prompt.slice(0, 3800), n: 1, size: gSize }),
+    });
+    if (r.ok) {
+      const d = await r.json();
+      const b64 = d.data?.[0]?.b64_json;
+      if (b64) return "data:image/png;base64," + b64;
+      const u = d.data?.[0]?.url;
+      if (u) return u;
+    }
+  } catch (_e) { /* dall-e-3'e düş */ }
+  // Yedek: dall-e-3 (url döner, ~1 saat geçerli)
+  const dSize = size === "9:16" ? "1024x1792" : size === "16:9" ? "1792x1024" : "1024x1024";
+  try {
+    const r = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "dall-e-3", prompt: prompt.slice(0, 3800), n: 1, size: dSize }),
+    });
+    if (r.ok) {
+      const d = await r.json();
+      return d.data?.[0]?.url ?? "";
+    }
+  } catch (_e) { /* boş dön */ }
+  return "";
 }
 
 // ── ARAŞTIRMA BİRİMİ (grounding) ───────────────────────────────────────
@@ -195,7 +234,20 @@ Deno.serve(async (req) => {
       if (bal < cost) return json({ ok: false, error: "Yetersiz kredi", credits: bal }, 402);
     }
 
-    // Üretim
+    // GÖRSEL ÜRETİMİ — metin üretiminden ayrı akış (başarılıysa kredi düşer)
+    if (String(b.action || "") === "image") {
+      const url = await generateImage(String(b.prompt || ""), String(b.size || ""));
+      if (!url) return json({ ok: false, error: "Görsel üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
+      if (cost > 0 && admin && userId) {
+        const { data: sp } = await admin.rpc("spend_credits", { p_user: userId, p_amount: cost, p_reason: "gorsel" });
+        const spRow = Array.isArray(sp) ? sp[0] : sp;
+        const credits = spRow && typeof spRow.new_credits === "number" ? spRow.new_credits : undefined;
+        return json({ ok: true, url, charged: true, credits });
+      }
+      return json({ ok: true, url, charged: false });
+    }
+
+    // Üretim (metin)
     const provider = (b.provider || b.model || "openai").toLowerCase();
     const useClaude = provider === "claude" || provider === "anthropic";
     const isGen = String(b.action || "") === "generate";
