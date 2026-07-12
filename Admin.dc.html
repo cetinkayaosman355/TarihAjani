@@ -202,6 +202,42 @@
           </div>
         </section>
 
+        <!-- YORUM MODERASYONU -->
+        <section style="margin-top: 40px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px;">
+            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Yorumlar <span style="{{ pendingBadgeStyle }}">{{ pendingCount }}</span></h2>
+            <button onClick="{{ reviewRefresh }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; padding: 10px 14px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1);">{{ reviewRefreshLabel }}</button>
+          </div>
+          <p style="margin: 0 0 14px; color: #818797; font-size: 13px;">Ziyaretçilerin bıraktığı gerçek değerlendirmeler. Onayla dersen ana sayfada yayınlanır; öne çıkardıkların en başta gösterilir. Uygunsuz olanları sil.</p>
+          <div style="border: 1px solid rgba(129,135,151,.18);">
+            <sc-for list="{{ reviewRows }}" as="rv" hint-placeholder-count="2">
+              <div style="border-bottom: 1px solid rgba(129,135,151,.1); padding: 14px 16px; display: grid; gap: 8px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                  <span style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="color: #e6c478; font-size: 13px; letter-spacing: 2px;">{{ rv.stars }}</span>
+                    <span style="font-size: 13px; color: #e9dfc8;">{{ rv.who }}</span>
+                    <span style="{{ rv.statusStyle }}">{{ rv.statusLabel }}</span>
+                  </span>
+                  <span style="font-family: 'Special Elite', monospace; font-size: 10px; color: #676d7c;">{{ rv.when }}</span>
+                </div>
+                <p style="margin: 0; color: #cfc8b4; font-size: 13.5px; line-height: 1.6;">{{ rv.body }}</p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <sc-if value="{{ rv.showApprove }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ rv.approve }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg,#5a7d4f,#7aa874 55%,#5a7d4f); color: #0c130a; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10px; letter-spacing: .08em; padding: 8px 13px;">✓ ONAYLA & YAYINLA</button>
+                  </sc-if>
+                  <sc-if value="{{ rv.showFeature }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ rv.toggleFeature }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .08em; padding: 8px 13px; cursor: pointer;">{{ rv.featureLabel }}</button>
+                  </sc-if>
+                  <button onClick="{{ rv.del }}" style="border: 1px solid rgba(192,57,43,.5); background: transparent; color: #e08a80; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .08em; padding: 8px 13px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12);">🗑 SİL</button>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noReviews }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 26px 16px; text-align: center; color: #676d7c; font-size: 13px;">Henüz yorum yok. (SQL çalıştırıldı mı? 20260712_sosyal_kanit.sql)</div>
+            </sc-if>
+          </div>
+        </section>
+
         <!-- ÜRÜNLER & FİYATLAR -->
         <section style="margin-top: 40px;">
           <h2 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Ürünler & Fiyatlar</h2>
@@ -290,13 +326,15 @@ class Component extends DCLogic {
     expTitle: '', expAmount: '', expNote: '',
     search: '', refreshing: false, busyId: null, toast: '',
     memberMeta: {}, tierDefs: null,
-    chats: [], chatThread: null, chatMsgs: [], chatReply: '', chatBusy: false, chatRefreshing: false
+    chats: [], chatThread: null, chatMsgs: [], chatReply: '', chatBusy: false, chatRefreshing: false,
+    reviews: [], reviewsRefreshing: false
   };
 
   FN_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/admin';
   CREDITS_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/credits';
   SEND_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/send-emails';
   CHAT_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/chat';
+  REVIEWS_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/sosyal-kanit';
   ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
 
   componentDidMount() {
@@ -329,6 +367,7 @@ class Component extends DCLogic {
       try { sessionStorage.setItem('ta_admin_pass', pass); } catch (e) {}
       this.setState({ authed: true, loading: false, profiles: data.profiles || [], orders: data.orders || [], products: data.products || [], expenses: data.expenses || [] });
       this.loadChats();
+      this.loadReviews();
     } else {
       this.setState({ loading: false, authed: false, err: silent ? '' : (data.error || 'Giriş başarısız.') });
     }
@@ -340,6 +379,7 @@ class Component extends DCLogic {
     if (data.ok) this.setState({ profiles: data.profiles || [], orders: data.orders || [], products: data.products || [], expenses: data.expenses || [], refreshing: false });
     else this.setState({ refreshing: false });
     this.loadChats();
+    this.loadReviews();
   }
 
   /* ── canlı sohbet ── */
@@ -356,6 +396,31 @@ class Component extends DCLogic {
     this.setState({ chatRefreshing: true });
     const d = await this.chatCall({ action: 'threads' });
     this.setState({ chats: (d && d.ok && d.threads) || [], chatRefreshing: false });
+  }
+
+  /* ── yorum moderasyonu ── */
+  async reviewsCall(payload) {
+    const r = await fetch(this.REVIEWS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.ANON },
+      body: JSON.stringify({ password: this.state.pass, ...payload })
+    });
+    return r.json().catch(() => ({ ok: false }));
+  }
+  async loadReviews() {
+    this.setState({ reviewsRefreshing: true });
+    const d = await this.reviewsCall({ action: 'pending' });
+    this.setState({ reviews: (d && d.ok && d.reviews) || [], reviewsRefreshing: false });
+  }
+  async moderateReview(id, approve) {
+    const d = await this.reviewsCall({ action: 'moderate', id, approve });
+    if (d && d.ok) { this.flash(approve ? 'Yorum onaylandı.' : 'Yorum silindi.'); this.loadReviews(); }
+    else this.flash('İşlem başarısız: ' + ((d && d.error) || 'hata'));
+  }
+  async featureReview(id, on) {
+    const d = await this.reviewsCall({ action: 'feature', id, on });
+    if (d && d.ok) this.loadReviews();
+    else this.flash('İşlem başarısız: ' + ((d && d.error) || 'hata'));
   }
 
   async openChat(thread) {
@@ -855,6 +920,35 @@ class Component extends DCLogic {
       sendChatReply: () => this.sendChatReply(),
       chatBusy: s.chatBusy,
       chatSendLabel: s.chatBusy ? '…' : 'YANITLA',
+
+      // yorum moderasyonu
+      reviewRefresh: () => this.loadReviews(),
+      reviewRefreshLabel: s.reviewsRefreshing ? 'YENİLENİYOR…' : '↻ YORUMLARI YENİLE',
+      pendingCount: (s.reviews || []).filter(r => !r.approved).length,
+      pendingBadgeStyle: {
+        display: (s.reviews || []).filter(r => !r.approved).length ? 'inline-block' : 'none',
+        marginLeft: '8px', verticalAlign: 'middle', fontFamily: "'Special Elite', monospace", fontSize: '11px',
+        letterSpacing: '.08em', color: '#171207', background: 'linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52)', padding: '2px 9px'
+      },
+      reviewRows: (s.reviews || []).map(r => ({
+        who: (r.name || 'Ajan') + (r.tier ? ' · ' + r.tier : ''),
+        stars: '★★★★★☆☆☆☆☆'.slice(5 - (r.rating || 0), 10 - (r.rating || 0)),
+        body: r.body,
+        when: r.created_at ? new Date(r.created_at).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '',
+        statusLabel: r.approved ? (r.featured ? 'YAYINDA · ÖNE ÇIKAN' : 'YAYINDA') : 'ONAY BEKLİYOR',
+        statusStyle: {
+          fontFamily: "'Special Elite', monospace", fontSize: '9.5px', letterSpacing: '.1em', padding: '3px 8px',
+          border: '1px solid ' + (r.approved ? 'rgba(122,168,116,.5)' : 'rgba(193,154,82,.5)'),
+          color: r.approved ? '#a8c8a2' : '#e6c478', whiteSpace: 'nowrap'
+        },
+        approve: () => this.moderateReview(r.id, true),
+        del: () => this.moderateReview(r.id, false),
+        toggleFeature: () => this.featureReview(r.id, !r.featured),
+        showApprove: !r.approved,
+        featureLabel: r.featured ? '☆ ÖNE ÇIKARMA' : '★ ÖNE ÇIKAR',
+        showFeature: !!r.approved
+      })),
+      noReviews: (s.reviews || []).length === 0,
 
       // ürün & fiyat düzenleme
       productRows: (s.products || []).map(p => {
