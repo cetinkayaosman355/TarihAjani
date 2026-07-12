@@ -1160,12 +1160,13 @@ KALİTE BARI (EN KRİTİK — zayıf çıktı geçersizdir):
 
 ÇIKTI KURALI: Yanıt SADECE tek ve geçerli bir JSON nesnesi olsun. Kod bloğu, önsöz, selamlama YOK. İlk karakter { , son karakter }.
 
-GÖRSEL & VİDEO PROMPT KURALLARI (tümü İngilizce):
+GÖRSEL & VİDEO PROMPT KURALLARI (tümü İngilizce — bu promptlar DOĞRUDAN görsel üretim modeline gider, sinematik ve zengin olmalı):
 - Her sahne için AYRI görsel ve AYRI video promptu üret.
-- Her prompt "${stilStr}" ile BAŞLAR, ardından "${oran}", sonra sahnenin SOMUT tarifi (kim, nerede, ışık, kompozisyon, duygu).
+- Her görsel promptu "${stilStr}" ile BAŞLAR, ardından "${oran}", sonra ŞU katmanları içerir: (1) ana özne ve aksiyon, (2) dönem-doğru mekân ve nesneler (kıyafet, mimari, eşyalar tarihe uygun; anakronizm YASAK), (3) ışık ve atmosfer (ör. golden hour, candlelight, overcast, torch-lit), (4) kompozisyon ve kamera (ör. wide establishing shot, low-angle, close-up, rule of thirds, shallow depth of field), (5) renk paleti ve duygu, (6) doku/kalite (ör. detailed, film grain, volumetric light). Kısa değil; zengin ama dağınık olmayan tek paragraf.
 - Her görsel promptu ŞU satırla BİTER: "${antiArtifact}"
-- Her video promptu tek bir kamera hareketi/aksiyon (5-8 sn) tarif eder ve ŞU satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker."
-- Görsellerde yazı/logo/altyazı YOK. Aynı karakter tekrar geçiyorsa sabit kimlik tarifini (yaş, ten, saç, kıyafet, ayırt edici detay) her promptun başında birebir tekrarla.
+- Her video promptu tek bir kamera hareketi/aksiyon (5-8 sn) tarif eder (ör. slow push-in, gentle pan left, subtle parallax) ve ŞU satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker."
+- Görsellerde yazı/logo/altyazı YOK. Aynı karakter birden çok sahnede geçiyorsa sabit kimlik tarifini (yaş, ten, saç, yüz, kıyafet, ayırt edici detay) her ilgili promptun başında BİREBİR tekrarla (tutarlı yüz için).
+- Tarihî doğruluk görselde de esas: dönem-dışı nesne, modern kıyafet, yanlış coğrafya kullanma.
 
 TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan; emin olmadığın ayrıntıyı UYDURMA, spekülasyonu işaretle; hassas konularda saygılı ol.
 
