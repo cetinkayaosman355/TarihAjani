@@ -6,6 +6,7 @@
   var SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
   var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
   var currentName = null;
+  var sbClient = null;   // çıkış menüsü için
 
   function firstName(u) {
     var n = (u.user_metadata && u.user_metadata.full_name) || (u.email || '').split('@')[0] || 'Ajan';
@@ -41,6 +42,55 @@
     return best;   // header'da login CTA yoksa null (ÜYELİK'e dokunulmaz)
   }
 
+
+  /* ── hesap menüsü: Üyelik Panelim · Çıkış Yap ── */
+  var menuEl = null;
+  function closeMenu() { if (menuEl && menuEl.parentElement) menuEl.parentElement.removeChild(menuEl); menuEl = null; }
+  function doLogout() {
+    closeMenu();
+    try {
+      localStorage.removeItem('ta_account_v1');
+      localStorage.removeItem('ta_uye');
+      var st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}');
+      delete st.agent; delete st.email;
+      localStorage.setItem('ta_studio_v5', JSON.stringify(st));
+    } catch (e) {}
+    if (sbClient) {
+      sbClient.auth.signOut().then(function () { currentName = null; apply(); });
+    } else { currentName = null; apply(); }
+  }
+  function toggleMenu(btn) {
+    if (menuEl) { closeMenu(); return; }
+    var r = btn.getBoundingClientRect();
+    menuEl = document.createElement('div');
+    menuEl.setAttribute('data-uye-menu-panel', '1');
+    menuEl.style.cssText = 'position:fixed;z-index:999;top:' + (r.bottom + 8) + 'px;left:' + Math.max(8, r.right - 190) + 'px;' +
+      'min-width:182px;background:rgba(5,7,13,.98);border:1px solid rgba(193,154,82,.5);box-shadow:0 18px 50px rgba(0,0,0,.6);' +
+      'font-family:\'Special Elite\',monospace;letter-spacing:.1em;font-size:11px;';
+    function item(label, cb) {
+      var a = document.createElement('a');
+      a.href = '#'; a.textContent = label;
+      a.style.cssText = 'display:block;padding:12px 16px;color:#cfc8b4;text-decoration:none;border-bottom:1px solid rgba(129,135,151,.15);';
+      a.onmouseenter = function () { a.style.color = '#e6c478'; a.style.background = 'rgba(193,154,82,.08)'; };
+      a.onmouseleave = function () { a.style.color = '#cfc8b4'; a.style.background = 'transparent'; };
+      a.addEventListener('click', function (e) { e.preventDefault(); cb(); });
+      menuEl.appendChild(a); return a;
+    }
+    item('👤 ÜYELİK PANELİM', function () { closeMenu(); window.location.href = '/uyelik'; });
+    var out = item('⎋ ÇIKIŞ YAP', doLogout);
+    out.style.borderBottom = '0'; out.style.color = '#e08a80';
+    out.onmouseenter = function () { out.style.background = 'rgba(224,138,128,.1)'; };
+    out.onmouseleave = function () { out.style.background = 'transparent'; };
+    document.body.appendChild(menuEl);
+    setTimeout(function () {
+      document.addEventListener('click', function once(e) {
+        if (menuEl && !menuEl.contains(e.target)) closeMenu();
+        document.removeEventListener('click', once);
+      });
+    }, 0);
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+
   function apply() {
     if (currentName) {
       // Eski sürümlerin eklemiş olabileceği ayrı "isim" linklerini temizle (çift yazmasın)
@@ -51,9 +101,13 @@
       var t = pickTarget();
       if (t && t.getAttribute('data-uye-nav') !== currentName) {
         if (t.getAttribute('data-uye-orig') == null) t.setAttribute('data-uye-orig', t.innerHTML);
-        t.textContent = currentName;         // "AJAN GİRİŞİ" → "Osman"
+        t.textContent = currentName + ' ▾';   // "AJAN GİRİŞİ" → "Osman ▾" (menü açar)
         t.setAttribute('data-uye-nav', currentName);
-        t.title = 'Üyelik panelin';
+        t.title = 'Hesap menüsü';
+        if (!t.getAttribute('data-uye-menu')) {
+          t.setAttribute('data-uye-menu', '1');
+          t.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); toggleMenu(t); });
+        }
       }
       // Header'da giriş butonu yoksa HİÇBİR ŞEY ekleme (ÜYELİK'e dokunma, ayrı ad yazma)
     } else {
@@ -74,6 +128,7 @@
 
   function start() {
     var sb = window.supabase.createClient(SB_URL, SB_KEY);
+    sbClient = sb;
     sb.auth.getSession().then(function (r) {
       var u = r && r.data && r.data.session && r.data.session.user;
       currentName = u ? firstName(u) : null;
