@@ -305,21 +305,71 @@ Türkçe, madde madde yaz. UYDURMA yok; emin olmadığını "rivayete göre" diy
   return "";
 }
 
+// data URI → ham bayt (görsel düzenleme girişi için)
+function dataUriToBytes(uri: string): { bytes: Uint8Array; type: string } | null {
+  const m = /^data:([^;]+);base64,(.+)$/.exec(uri || "");
+  if (!m) return null;
+  try {
+    const bin = atob(m[2]);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return { bytes, type: m[1] };
+  } catch { return null; }
+}
+
+// Gerçek görsel DÜZENLEME — OpenAI /images/edits (gpt-image-1). Mevcut görseli
+// korur, yalnız istenen değişikliği uygular (sıfırdan yeni görsel ÜRETMEZ).
+const EDIT_COST = 8;
+async function editImage(imageUri: string, prompt: string, size: string): Promise<string> {
+  const key = Deno.env.get("OPENAI_API_KEY");
+  if (!key || !prompt.trim()) return "";
+  const parsed = dataUriToBytes(imageUri);
+  if (!parsed) return "";   // yalnız data URI (üretilen görseller) düzenlenebilir
+  const gSize = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
+  const ext = parsed.type.indexOf("png") >= 0 ? "png" : "jpg";
+  const fd = new FormData();
+  fd.append("model", "gpt-image-1");
+  fd.append("prompt", prompt.slice(0, 30000));
+  fd.append("size", gSize);
+  fd.append("n", "1");
+  fd.append("image", new Blob([parsed.bytes], { type: parsed.type }), "image." + ext);
+  try {
+    const r = await fetch("https://api.openai.com/v1/images/edits", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}` },
+      body: fd,
+    });
+    if (r.ok) {
+      const d = await r.json();
+      const b64 = d.data?.[0]?.b64_json;
+      if (b64) return "data:image/png;base64," + b64;
+      const u = d.data?.[0]?.url;
+      if (u) return u;
+    }
+  } catch (_e) { /* boş dön */ }
+  return "";
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   try {
     const b = await req.json();
+    const act = String(b.action || "");
+    const isEdit = act === "edit";
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
     if (!prompt) return json({ ok: false, error: "Konu veya prompt gir." }, 400);
 
     const ttsText = String(b.text || "").trim().slice(0, 11500);
-    const cost = String(b.action || "") === "tts"
+    const cost = act === "tts"
       ? ttsCostOf(ttsText.length)
-      : costFor(String(b.action || ""), String(b.duration || ""));
+      : isEdit
+        ? (b.free ? 0 : EDIT_COST)
+        : costFor(act, String(b.duration || ""));
 
-    // Ücretli çağrı → kullanıcıyı doğrula ve bakiyeyi ön-kontrol et (üretimden önce)
+    // Ücretli çağrı → kullanıcıyı doğrula ve bakiyeyi ön-kontrol et.
+    // Düzenleme ücretsiz olsa bile giriş şarttır (istismarı önler).
     let admin: any = null, userId = "";
-    if (cost > 0) {
+    if (cost > 0 || isEdit) {
       const SB_URL = Deno.env.get("SUPABASE_URL");
       const SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       if (!SB_URL || !SVC) return json({ ok: false, error: "Sunucu yapılandırması eksik (service role)." }, 500);
@@ -341,6 +391,19 @@ Deno.serve(async (req) => {
       if (!url) return json({ ok: false, error: "Görsel üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       if (cost > 0 && admin && userId) {
         const { data: sp } = await admin.rpc("spend_credits", { p_user: userId, p_amount: cost, p_reason: "gorsel" });
+        const spRow = Array.isArray(sp) ? sp[0] : sp;
+        const credits = spRow && typeof spRow.new_credits === "number" ? spRow.new_credits : undefined;
+        return json({ ok: true, url, charged: true, credits });
+      }
+      return json({ ok: true, url, charged: false });
+    }
+
+    // GÖRSEL DÜZENLEME — mevcut görseli korur, istenen değişikliği uygular
+    if (isEdit) {
+      const url = await editImage(String(b.image || ""), String(b.prompt || ""), String(b.size || ""));
+      if (!url) return json({ ok: false, error: "Görsel düzenlenemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
+      if (cost > 0 && admin && userId) {
+        const { data: sp } = await admin.rpc("spend_credits", { p_user: userId, p_amount: cost, p_reason: "gorsel_duzenle" });
         const spRow = Array.isArray(sp) ? sp[0] : sp;
         const credits = spRow && typeof spRow.new_credits === "number" ? spRow.new_credits : undefined;
         return json({ ok: true, url, charged: true, credits });
