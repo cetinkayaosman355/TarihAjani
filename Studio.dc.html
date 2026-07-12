@@ -472,7 +472,7 @@
                         <span style="font-weight: 700; font-size: 14px;">{{ gp.sahne }}</span>
                       </div>
                       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button onClick="{{ genImage }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">◈ GÖRSEL ÜRET</button>
+                        <button onClick="{{ gp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">◈ GÖRSEL ÜRET · 12 KR</button>
                         <button onClick="{{ gp.regen }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.regenLabel }}</button>
                         <button onClick="{{ gp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
                         <button onClick="{{ gp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ gp.copyLabel }}</button>
@@ -520,20 +520,27 @@
                 <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir, 16:9" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                   <button onClick="{{ imgFromKapak }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 12px; letter-spacing: .08em; padding: 12px 18px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">KAPAK PROMPTUNU AL</button>
-                  <button onClick="{{ queueImage }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">◈ GÖRSEL ÜRET</button>
+                  <button onClick="{{ queueImage }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">◈ GÖRSEL ÜRET · 12 KR</button>
                 </div>
                 <sc-if value="{{ hasImgQueue }}" hint-placeholder-val="{{ false }}">
                   <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
                     <sc-for list="{{ imgQueue }}" as="iq" hint-placeholder-count="2">
                       <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12;">
-                        <div style="aspect-ratio: 16/9; display: grid; place-items: center; background: repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px);">
-                          <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; text-align: center; padding: 10px;">{{ iq.status }}</span>
-                        </div>
+                        <sc-if value="{{ iq.hasUrl }}" hint-placeholder-val="{{ false }}">
+                          <a href="{{ iq.url }}" target="_blank" title="Büyüt / indir" style="display: block;">
+                            <img src="{{ iq.url }}" alt="Üretilen görsel" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;">
+                          </a>
+                        </sc-if>
+                        <sc-if value="{{ iq.pending }}" hint-placeholder-val="{{ true }}">
+                          <div style="aspect-ratio: 16/9; display: grid; place-items: center; background: repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px);">
+                            <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; text-align: center; padding: 10px;">{{ iq.status }}</span>
+                          </div>
+                        </sc-if>
                         <p style="margin: 0; color: #818797; font-size: 11.5px; line-height: 1.5; padding: 10px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ iq.prompt }}</p>
                       </div>
                     </sc-for>
                   </div>
-                  <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Görsel motoru API anahtarları (OpenAI · Gemini · Midjourney) bağlandığında üretimler burada gerçek görsel olarak görünecek.</p>
+                  <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Görseller OpenAI ile gerçek olarak üretilir; her görsel kredi düşer. <strong style="color: #e6c478;">Bağlantı sürelidir — beğendiğin görseli 1 saat içinde indir.</strong></p>
                 </sc-if>
               </div>
             </sc-if>
@@ -1085,6 +1092,40 @@ class Component extends DCLogic {
     return ['gozlemci', 'ajan', 'basmufettis'].indexOf(this.state.tier) >= 0;
   }
 
+  // Gerçek görsel üretimi — sunucuda OpenAI ile, her görsel kredi düşer (anti-hile).
+  IMG_COST() { return 12; }
+  async imageServer(prompt) {
+    const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[this.state.aspect] || '16:9';
+    const token = this._token() || SB_KEY;
+    const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ action: 'image', prompt, size: aspect })
+    });
+    const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
+    if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
+    if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Görsel üretilemedi');
+    if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
+    return data.url;
+  }
+  makeImage(promptRaw) {
+    const prompt = (promptRaw || '').trim();
+    if (!prompt) return;
+    const cost = this.IMG_COST();
+    if (this.state.credits < cost) { this.setState({ creditModal: true }); return; }
+    const id = 'img' + Date.now() + Math.floor(Math.random() * 1000);
+    this.setState(st => ({ imgQueue: [{ id, prompt, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue].slice(0, 8) }));
+    this.imageServer(prompt).then(url => {
+      this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url } : x) }));
+    }).catch(e => {
+      const msg = e.message === 'YETERSIZ_KREDI' ? 'YETERSİZ KREDİ' : ('HATA: ' + e.message);
+      this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: msg } : x) }));
+      if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
+    });
+  }
+
   buildPrompt(outlineOnly) {
     const s = this.state;
     const m = this.promptMaps();
@@ -1527,14 +1568,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
         const kp = ((s.result || {}).kapak || [])[0];
         if (kp) this.setState({ imgPrompt: kp.prompt });
       },
-      queueImage: () => {
-        const p = s.imgPrompt.trim();
-        if (!p) return;
-        const provName = { gpt: 'DALL·E', gemini: 'Gemini', mj: 'Midjourney' }[s.imgProvider];
-        this.setState(st => ({ imgQueue: [{ prompt: p, status: provName + ' · API BAĞLANTISI BEKLENİYOR' }, ...st.imgQueue].slice(0, 8) }));
-      },
+      queueImage: () => this.makeImage(s.imgPrompt),
       hasImgQueue: (s.imgQueue || []).length > 0,
-      imgQueue: s.imgQueue || [],
+      imgQueue: (s.imgQueue || []).map(x => ({ ...x, hasUrl: !!x.url, pending: !x.url })),
       wizardTabStyle: {
         border: 0, cursor: 'pointer', padding: '10px 16px',
         fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.12em',
@@ -1726,7 +1762,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       no: 'SAHNE ' + (i + 1),
       edit: () => this.startEdit(kind, i, (kind === 'gp' ? 'Görsel promptu · Sahne ' : 'Video promptu · Sahne ') + (i + 1)),
       regen: () => this.regenScene(kind, i),
-      regenLabel: busy ? '⟳ ÜRETİLİYOR…' : '↻ YENİLE · 5 KR'
+      regenLabel: busy ? '⟳ ÜRETİLİYOR…' : '↻ YENİLE · 5 KR',
+      makeImg: () => { this.setState({ tab: 'imgstudio', imgPrompt: x.prompt || '' }); this.makeImage(x.prompt); }
     };
   }
 
