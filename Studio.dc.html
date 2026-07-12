@@ -483,9 +483,12 @@
                   <div style="display: grid; gap: 12px; margin-top: 12px;">
                     <sc-for list="{{ resKapak }}" as="kp" hint-placeholder-count="2">
                       <div style="display: grid; gap: 6px; border-top: 1px dashed rgba(193,154,82,.25); padding-top: 12px;">
-                        <div style="display: flex; justify-content: space-between; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
                           <span style="font-weight: 700; font-size: 14px; color: #e6c478;">{{ kp.ad }}</span>
-                          <button onClick="{{ kp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ kp.copyLabel }}</button>
+                          <span style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button onClick="{{ kp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">◈ GÖRSEL ÜRET · 12 KR</button>
+                            <button onClick="{{ kp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ kp.copyLabel }}</button>
+                          </span>
                         </div>
                         <code style="display: block; color: #b9c2d8; font-size: 13px; line-height: 1.6; font-family: 'Special Elite', monospace; white-space: pre-wrap;">{{ kp.prompt }}</code>
                         <span style="color: #e6c478; font-size: 12.5px; font-weight: 600;">Kapak üzerindeki yazı: “{{ kp.yazi }}”</span>
@@ -504,7 +507,7 @@
                       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button onClick="{{ gp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">◈ GÖRSEL ÜRET · 12 KR</button>
                         <button onClick="{{ gp.regen }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.regenLabel }}</button>
-                        <button onClick="{{ gp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
+                        <button onClick="{{ gp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ PROMPTU DÜZENLE</button>
                         <button onClick="{{ gp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ gp.copyLabel }}</button>
                       </div>
                     </div>
@@ -526,7 +529,7 @@
                       </div>
                       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button onClick="{{ vp.regen }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ vp.regenLabel }}</button>
-                        <button onClick="{{ vp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
+                        <button onClick="{{ vp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ PROMPTU DÜZENLE</button>
                         <button onClick="{{ vp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ vp.copyLabel }}</button>
                       </div>
                     </div>
@@ -1281,15 +1284,39 @@ class Component extends DCLogic {
       document.body.appendChild(a); a.click(); a.remove();
     } else { window.open(url, '_blank'); }
   }
+  // Kadraj yardımcıları — seçilen orana göre prompttaki çelişen oran ifadesini
+  // temizler ve doğru oranı ekler; böylece 9:16 / 16:9 / 1:1 gerçekten uygulanır.
+  aspectPhrase(arKey) {
+    return {
+      yatay: 'wide 16:9 horizontal cinematic framing, full-bleed landscape composition',
+      dikey: 'vertical 9:16 full-frame composition, tall portrait orientation for mobile shorts',
+      kare: 'square 1:1 centered composition'
+    }[arKey] || 'wide 16:9 horizontal cinematic framing';
+  }
+  stripAspect(p) {
+    return String(p || '')
+      .replace(/,?\s*--ar\s*\d{1,2}\s*:\s*\d{1,2}/gi, '')
+      .replace(/,?\s*\b\d{1,2}\s*:\s*\d{1,2}\b(?:\s*(?:aspect ?ratio|ratio|format|oran))?/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/\s+([,.])/g, '$1')
+      .replace(/(?:,\s*)+$/, '')
+      .replace(/\.\s*\./g, '.')
+      .trim();
+  }
+  withAspect(p, arKey) {
+    const clean = this.stripAspect(p).replace(/[.,\s]+$/, '');
+    return (clean ? clean + '. ' : '') + this.aspectPhrase(arKey) + '.';
+  }
   makeImage(promptRaw) {
     const prompt = (promptRaw || '').trim();
     if (!prompt) return;
     const cost = this.IMG_COST();
     if (this.state.credits < cost) { this.setState({ creditModal: true }); return; }
     const ar = this.state.imgAspect || this.state.aspect;   // panelde seçilen kadraj öncelikli
+    const sendPrompt = this.withAspect(prompt, ar);         // kadrajı prompta yerleştir
     const id = 'img' + Date.now() + Math.floor(Math.random() * 1000);
     this.setState(st => ({ imgQueue: [{ id, prompt, ar, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue].slice(0, 8) }));
-    this.imageServer(prompt, ar).then(url => {
+    this.imageServer(sendPrompt, ar).then(url => {
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url } : x) }));
     }).catch(e => {
       const msg = e.message === 'YETERSIZ_KREDI' ? 'YETERSİZ KREDİ' : ('HATA: ' + e.message);
@@ -1329,8 +1356,16 @@ class Component extends DCLogic {
     const free = !item.editUsedFree;
     const cost = free ? 0 : 8;
     if (!free && this.state.credits < cost) { this.setState({ creditModal: true }); return; }
+    // Talimatı, orijinali koruyacak tam bir düzenleme promptuna çevir — böylece
+    // "kısa yazınca alakasız görsel" sorunu yerine SADECE istenen değişir.
+    const base = this.stripAspect(item.prompt || '');
+    const editPrompt =
+      (base ? 'Original image: ' + base + '. ' : '') +
+      'Keep the same overall composition, subject, colors and art style as the provided image. ' +
+      'Apply ONLY the following change and modify nothing else: ' + text + '. ' +
+      'Render in ' + this.aspectPhrase(item.ar) + '.';
     this.setImgItem(item.id, { editBusy: true, editErr: '' });
-    this.editServer(item.url, text, item.ar, free).then(url => {
+    this.editServer(item.url, editPrompt, item.ar, free).then(url => {
       this.setImgItem(item.id, { url, editBusy: false, editOpen: false, editText: '', editUsedFree: true });
     }).catch(e => {
       const msg = e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Düzenlenemedi: ' + e.message);
@@ -1965,7 +2000,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       hasSysAudio: !!s.sysAudioUrl, sysAudioUrl: s.sysAudioUrl,
       sysVoiceName: this.state.voice === 'kadin' ? 'Kadın (Nova)' : 'Erkek (Onyx)',
 
-      resKapak: mkCopy(r.kapak, 'kp'),
+      resKapak: mkCopy(r.kapak, 'kp').map(x => ({
+        ...x,
+        makeImg: () => { this.setState({ tab: 'imgstudio', imgPrompt: x.prompt || '' }); this.makeImage(x.prompt); }
+      })),
       resGorsel: mkCopy(r.gorsel_promptlar, 'gp').map((x, i) => this.sceneExtras(x, i, 'gp')),
       resVideo: mkCopy(r.video_promptlar, 'vp').map((x, i) => this.sceneExtras(x, i, 'vp')),
       resYtTitle: yt.baslik || '', resYtDesc: yt.aciklama || '',
