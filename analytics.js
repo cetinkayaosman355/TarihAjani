@@ -4,7 +4,7 @@
    Yönetici > Veri akışları > Web → "Ölçüm Kimliği" (G-XXXXXXXXXX) kopyala →
    aşağıdaki MEASUREMENT_ID'yi onunla değiştir. Tek yer, tüm sayfalar. */
 (function () {
-  var MEASUREMENT_ID = 'G-XXXXXXXXXX'; // ← buraya kendi G-ID'ni yaz
+  var MEASUREMENT_ID = 'G-01VLR47R3W'; // tarihajani.com GA4 mülkü
 
   if (!MEASUREMENT_ID || /X{4,}/.test(MEASUREMENT_ID)) {
     // ID henüz girilmedi — sessizce bekle (site çalışmaya devam eder)
