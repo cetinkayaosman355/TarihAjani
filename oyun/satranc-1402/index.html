@@ -223,6 +223,11 @@ function takeName(c,t,used){var k=c+t,arr=NAMES[k]||['İsimsiz'];var i=used[k]=(
 
 /* ───────── SATRANÇ MOTORU ───────── */
 var board,turn,castle,ep,hist,pieces,over,vsAI=true,thinking=false;
+var halfmove=0,repMap={};   // 50 hamle sayacı + pozisyon tekrarı (üç tekrar beraberliği)
+function posKey(){
+  var k='';for(var i=0;i<64;i++){var q=board[i];k+=q?q.c+q.t:'.';}
+  return k+turn+(castle.wk?'K':'')+(castle.wq?'Q':'')+(castle.bk?'k':'')+(castle.bq?'q':'')+ep;
+}
 function newGame(){
   board=[];pieces=[];hist=[];over=false;turn='w';ep=-1;castle={wk:true,wq:true,bk:true,bq:true};
   var used={},back=['R','N','B','Q','K','B','N','R'],i;
@@ -231,6 +236,7 @@ function newGame(){
     add(56+i,'w',back[i],used);add(48+i,'w','P',used);
     add(i,'b',back[i],used);add(8+i,'b','P',used);
   }
+  halfmove=0;repMap={};repMap[posKey()]=1;
 }
 function add(sq,c,t,used){var p={c:c,t:t,name:takeName(c,t,used),alive:true,id:pieces.length};pieces.push(p);board[sq]=p;}
 function rc(sq){return[Math.floor(sq/8),sq%8];}
@@ -384,7 +390,7 @@ function doMove(from,to,silent){
   var p=board[from],capT=board[to];
   var res=applyMove(board,from,to,ep);
   // rok/ep/terfi kayıtları
-  hist.push({b:board.slice(),castle:JSON.parse(JSON.stringify(castle)),ep:ep,turn:turn,last:last.slice(),capId:res.cap?res.cap.id:-1,promoId:-1});
+  hist.push({b:board.slice(),castle:JSON.parse(JSON.stringify(castle)),ep:ep,turn:turn,last:last.slice(),capId:res.cap?res.cap.id:-1,promoId:-1,half:halfmove,key:''});
   board=res.b;
   if(res.cap){res.cap.alive=false;burst(to);log(nmHtml(p)+', '+nmHtml(res.cap)+'’ı savaş dışı bıraktı ('+sqName(to)+').');}
   else if(res.special==='castle')log(nmHtml(p)+' kale arkasına çekildi — rok.');
@@ -398,13 +404,25 @@ function doMove(from,to,silent){
   if(to===56)castle.wq=false;if(to===63)castle.wk=false;if(to===0)castle.bq=false;if(to===7)castle.bk=false;
   ep=-1;
   if(p.t==='P'&&Math.abs(rc(to)[0]-rc(from)[0])===2)ep=(from+to)/2;
+  halfmove=(p.t==='P'||res.cap)?0:halfmove+1;
   last=[from,to];turn=foe(turn);sel=-1;legal=[];
+  var pk=posKey();repMap[pk]=(repMap[pk]||0)+1;hist[hist.length-1].key=pk;
   render();
   checkEnd();
 }
+function endDraw(kicker,msg){
+  over=true;
+  var veil=document.getElementById('endveil');
+  document.getElementById('endh').textContent='BERABERE';
+  document.getElementById('endk').textContent='VAKA KAPANDI · '+kicker;
+  document.getElementById('endp').textContent=msg;
+  veil.classList.add('on');
+}
 function checkEnd(){
-  if(anyLegal(turn))
-    {if(attacked(kingSq(turn,board),foe(turn),board))log((turn==='w'?'<b>Emir Timur</b>':'<b class="bz">Yıldırım Bayezid</b>')+' TEHDİT ALTINDA — şah!',true);return;}
+  if(anyLegal(turn)){
+    if(halfmove>=100){endDraw('50 HAMLE KURALI','Elli hamledir ne taş düştü ne asker ilerledi — meydan kilitlendi.');return;}
+    if((repMap[posKey()]||0)>=3){endDraw('ÜÇ TEKRAR','Aynı mevzilenme üçüncü kez kuruldu — iki ordu da yol bulamıyor.');return;}
+    if(attacked(kingSq(turn,board),foe(turn),board))log((turn==='w'?'<b>Emir Timur</b>':'<b class="bz">Yıldırım Bayezid</b>')+' TEHDİT ALTINDA — şah!',true);return;}
   over=true;
   var mate=attacked(kingSq(turn,board),foe(turn),board);
   var veil=document.getElementById('endveil'),h=document.getElementById('endh'),k=document.getElementById('endk'),pp=document.getElementById('endp');
@@ -443,7 +461,7 @@ document.getElementById('undoBtn').addEventListener('click',function(){
   for(var s=0;s<steps&&hist.length;s++){
     var h=hist.pop();
     board=h.b;castle=h.castle;ep=h.ep;turn=h.turn;last=h.last;
-    if(h.capId>=0)pieces[h.capId].alive=true;if(h.promoId>=0)pieces[h.promoId].t='P';
+    if(h.capId>=0)pieces[h.capId].alive=true;if(h.promoId>=0)pieces[h.promoId].t='P';if(h.key&&repMap[h.key])repMap[h.key]--;halfmove=h.half;
   }
   over=false;sel=-1;legal=[];document.getElementById('endveil').classList.remove('on');
   render();log('Zaman geri sarıldı — hamle iade edildi.',true);
