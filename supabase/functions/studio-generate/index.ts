@@ -5,9 +5,10 @@
 // Secrets: OPENAI_API_KEY ve/veya ANTHROPIC_API_KEY (araştırma için ANTHROPIC önerilir)
 //   SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY otomatik gelir (kredi düşme için gerekli)
 //
-// Kredi mantığı: ücret client'tan DEĞİL, sunucudaki action+duration->cost eşlemesinden gelir.
-//   action:"generate" -> süreye göre: 30sn=30 · 1-2dk=60 · 4-5dk=100 · 8-12dk=150 kredi
-//   action:"regen" -> 5 kredi   ·   diğer/boş -> 0 (ücretsiz)
+// Kredi mantığı: ücret client'tan DEĞİL, sunucudaki formülden gelir (anti-hile).
+//   action:"generate" -> süre kaydırmalı "s<saniye>" (30-600): kredi = max(30, round((20+sn/4)/5)*5)
+//     örn. 30sn=30 · 2dk=50 · 5dk=95 · 10dk=170 kredi
+//   action:"image" -> 12 kredi · action:"regen" -> 5 kredi · diğer/boş -> 0 (ücretsiz)
 // Ücretli çağrıda kullanıcı JWT'si (Authorization: Bearer <user token>) gerekir.
 // Yetersiz bakiyede 402 döner; üretim yapılmaz. Kredi ÜRETİM BAŞARILI olduktan sonra düşülür.
 // Yanıt: { ok:true, result, text, charged:boolean, credits:number }
@@ -77,8 +78,6 @@ function tryParseJson(text: string): any | null {
   try { return JSON.parse(clean); } catch { return null; }
 }
 
-// Süre kademesine göre KAPAK HARİÇ beklenen sahne sayısı (client format haritasıyla aynı)
-const SCENE_COUNT: Record<string, number> = { sn30: 6, dk1: 12, dk4: 20, dk8: 30 };
 // -1: geçersiz JSON · 0..N: gorsel_promptlar öğe sayısı
 function sceneCount(text: string): number {
   const o = tryParseJson(text);
@@ -126,13 +125,29 @@ async function callClaude(prompt: string, maxTokens?: number): Promise<string> {
 
 // Kredi ücretleri SUNUCUDA sabit; client değiştiremez.
 // Üretim maliyeti süre kademesine göre; sahne yenileme sabit.
-const DURATION_COST: Record<string, number> = { sn30: 30, dk1: 60, dk4: 100, dk8: 150 };
+// Süre kaydırmalı: client "s<saniye>" gönderir (30-600); eski anahtarlar geriye dönük.
+// Kredi ve sahne CLIENT ile AYNI formül — ama değer sunucuda hesaplanır (anti-hile).
 const IMAGE_COST = 12;
+function secsOf(duration: string): number {
+  const m = /^s(\d+)$/.exec(duration || "");
+  if (m) return Math.min(600, Math.max(30, parseInt(m[1], 10)));
+  return ({ sn30: 30, dk1: 90, dk4: 270, dk8: 600 } as Record<string, number>)[duration] ?? 270;
+}
 function costFor(action: string, duration: string): number {
-  if (action === "generate") return DURATION_COST[duration] ?? 100;
+  if (action === "generate") {
+    const sec = secsOf(duration);
+    return Math.max(30, Math.round((20 + sec / 4) / 5) * 5);
+  }
   if (action === "image") return IMAGE_COST;
   if (action === "regen") return 5;
   return 0;
+}
+// Kapak hariç beklenen sahne: kısa videoda 6 sn/sahne, uzadıkça seyrekleşir (tavan 40)
+function sceneFor(sec: number): number {
+  if (sec <= 90) return Math.max(6, Math.ceil(sec / 6));
+  if (sec <= 180) return Math.ceil(sec / 8);
+  if (sec <= 360) return Math.ceil(sec / 12);
+  return Math.min(40, Math.ceil(sec / 16));
 }
 
 // Gerçek görsel üretimi — OpenAI gpt-image-1.5 (base64 → data URI, süresiz).
@@ -294,7 +309,7 @@ ${prompt}`;
       }
     }
     const gen = () => useClaude ? callClaude(genPrompt, b.max_tokens) : callOpenAI(genPrompt, b.max_tokens, isGen);
-    const wantScenes = SCENE_COUNT[String(b.duration || "")] || 0;
+    const wantScenes = isGen ? sceneFor(secsOf(String(b.duration || ""))) : 0;
 
     let result = await gen();
     // Üretimde geçerli JSON şart. Sahne-eksiği tekrarı YALNIZ kısa formatlarda (sn30/dk1):
