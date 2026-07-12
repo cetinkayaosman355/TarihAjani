@@ -30,15 +30,35 @@
 
   var panel = null, msgBox = null, pollTimer = null, open = false;
 
+  // Metni güvenle linke çevir: URL, www. ve site-içi /yol'ları tıklanabilir yapar.
+  // textContent ile parça parça yazılır (XSS yok); yalnız link kısmı <a> olur.
+  function linkify(container, text) {
+    var re = /(https?:\/\/[^\s]+|www\.[^\s]+|\/(?:urunler|uyelik|studio|arsiv|egitim|satis|zaman-tuneli|vaka-dosyalari|ekitap|bulten)(?:\/[^\s]*)?)/g;
+    var last = 0, m;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) container.appendChild(document.createTextNode(text.slice(last, m.index)));
+      var raw = m[0], href = raw;
+      if (/^www\./.test(raw)) href = 'https://' + raw;
+      var a = document.createElement('a');
+      a.href = href;
+      a.textContent = raw;
+      var internal = raw.charAt(0) === '/';
+      if (!internal) { a.target = '_blank'; a.rel = 'noopener'; }
+      a.style.cssText = 'color:#e6c478;text-decoration:underline;word-break:break-all;';
+      container.appendChild(a);
+      last = m.index + raw.length;
+    }
+    if (last < text.length) container.appendChild(document.createTextNode(text.slice(last)));
+  }
   function bubble(text, who) {
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;margin:6px 0;justify-content:' + (who === 'ziyaretci' ? 'flex-end' : 'flex-start') + ';';
     var b = document.createElement('div');
-    b.textContent = text;
-    b.style.cssText = 'max-width:82%;padding:9px 12px;font-size:13px;line-height:1.5;border:1px solid ' +
+    b.style.cssText = 'max-width:82%;padding:9px 12px;font-size:13px;line-height:1.5;white-space:pre-wrap;border:1px solid ' +
       (who === 'ziyaretci' ? 'rgba(193,154,82,.4);background:rgba(193,154,82,.13);color:#e9dfc8;'
         : who === 'ajan' ? 'rgba(129,135,151,.3);background:#0b0e18;color:#cfc8b4;'
           : 'rgba(129,135,151,.2);background:transparent;color:#818797;font-size:12px;');
+    linkify(b, text);
     row.appendChild(b);
     if (msgBox) { msgBox.appendChild(row); msgBox.scrollTop = msgBox.scrollHeight; }
   }
@@ -67,10 +87,13 @@
       'box-shadow:0 24px 70px rgba(0,0,0,.65);font-family:' + FONT + ';';
 
     var head = document.createElement('div');
-    head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;border-bottom:1px solid rgba(193,154,82,.25);';
-    head.innerHTML = '<div style="display:flex;align-items:center;gap:8px;">' +
-      '<span style="width:8px;height:8px;border-radius:50%;background:#9ed3a8;box-shadow:0 0 8px rgba(158,211,168,.8);"></span>' +
-      '<span style="font-size:12px;letter-spacing:.18em;color:#e6c478;">CANLI HAT</span></div>';
+    head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 15px;border-bottom:1px solid rgba(193,154,82,.25);background:linear-gradient(180deg,rgba(193,154,82,.08),transparent);';
+    head.innerHTML = '<div style="display:flex;align-items:center;gap:10px;">' +
+      '<span style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#2a2f3d,#0b0e18);border:1px solid rgba(193,154,82,.5);font-size:17px;">🕵️</span>' +
+      '<span style="display:flex;flex-direction:column;line-height:1.25;">' +
+        '<span style="font-size:12.5px;letter-spacing:.08em;color:#e6c478;font-weight:700;">AJAN ASİSTAN</span>' +
+        '<span style="display:flex;align-items:center;gap:5px;font-size:10px;letter-spacing:.06em;color:#9ed3a8;"><span style="width:6px;height:6px;border-radius:50%;background:#9ed3a8;box-shadow:0 0 7px rgba(158,211,168,.9);"></span>ÇEVRİMİÇİ · ANINDA YANIT</span>' +
+      '</span></div>';
     var x = document.createElement('button');
     x.textContent = '×';
     x.style.cssText = 'border:0;background:transparent;color:#818797;font-size:20px;cursor:pointer;line-height:1;padding:0 2px;';
@@ -152,16 +175,33 @@
     stopPoll();
   }
 
+  function ensureCss() {
+    if (document.getElementById('ta-chat-css')) return;
+    var s = document.createElement('style');
+    s.id = 'ta-chat-css';
+    s.textContent =
+      '@keyframes ta-chat-pulse{0%{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 0 rgba(216,178,106,.5)}70%{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 14px rgba(216,178,106,0)}100%{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 0 rgba(216,178,106,0)}}' +
+      '#ta-chat-btn{transition:transform .2s ease}' +
+      '#ta-chat-btn:hover{transform:translateY(-2px) scale(1.04)}' +
+      '#ta-chat-btn .lbl{max-width:0;opacity:0;overflow:hidden;transition:max-width .3s ease,opacity .3s ease,margin .3s ease;white-space:nowrap;margin:0}' +
+      '#ta-chat-btn:hover .lbl{max-width:120px;opacity:1;margin-left:9px}';
+    document.head.appendChild(s);
+  }
   function ensureButton() {
+    ensureCss();
     if (document.getElementById('ta-chat-btn')) return;
     var b = document.createElement('button');
     b.id = 'ta-chat-btn';
-    b.title = 'Canlı Hat — bize yaz';
-    b.textContent = '💬';
-    b.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:998;width:56px;height:56px;border-radius:50%;' +
-      'border:1px solid rgba(23,18,7,.45);cursor:pointer;font-size:23px;line-height:1;' +
-      'background:linear-gradient(135deg,#a77d35,#d8b26a 55%,#c19a52);color:#171207;' +
-      'box-shadow:0 10px 34px rgba(0,0,0,.5), 0 0 0 1px rgba(193,154,82,.35);';
+    b.title = 'Ajan Asistan — sana yardımcı olayım';
+    b.setAttribute('aria-label', 'Ajan Asistan sohbeti');
+    b.innerHTML =
+      '<span style="width:30px;height:30px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:rgba(9,7,3,.14);font-size:17px;position:relative;">🕵️' +
+        '<span style="position:absolute;right:-1px;top:-1px;width:9px;height:9px;border-radius:50%;background:#4fd67e;border:2px solid #d8b26a;"></span>' +
+      '</span>' +
+      '<span class="lbl" style="font-family:\'Special Elite\',monospace;font-weight:800;font-size:12px;letter-spacing:.12em;">AJAN ASİSTAN</span>';
+    b.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:998;display:flex;align-items:center;height:56px;padding:0 13px;border-radius:30px;' +
+      'border:1px solid rgba(23,18,7,.45);cursor:pointer;line-height:1;color:#171207;' +
+      'background:linear-gradient(135deg,#a77d35,#d8b26a 55%,#c19a52);animation:ta-chat-pulse 2.6s infinite;';
     b.onclick = function () { open ? closePanel() : openPanel(); };
     document.body.appendChild(b);
     // panel DOM'dan düşmüşse (framework gövdeyi yeniden kurduysa) durumu sıfırla
