@@ -133,6 +133,12 @@ ${jsonld ? '<script type="application/ld+json">' + jsonld + '</script>' : ''}
 </header>
 ${bodyHtml}
 <footer class="site">© 2026 Tarih Ajanı · TARİH SAKLAR, AJAN BULUR · <a href="/">tarihajani.com</a></footer>
+<script src="/uye-nav.js" defer></script>
+<script src="/canli-sohbet.js" defer></script>
+<script src="/mobil-nav.js" defer></script>
+<script src="/ara.js" defer></script>
+<script src="/tema.js" defer></script>
+<script src="/alt-bilgi.js" defer></script>
 <script src="/analytics.js" defer></script>
 </body>
 </html>
