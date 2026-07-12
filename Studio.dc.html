@@ -1881,13 +1881,13 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
     const yt = r.youtube || {};
     const ig = r.instagram || {};
     const packs = [
-      { tier: 'AJAN', credits: '500', desc: '5 dosya · 199 TL', hl: false },
-      { tier: 'SAHA', credits: '1.500', desc: '15 dosya · öncelikli üretim · 449 TL', hl: true },
-      { tier: 'ARŞİV', credits: '4.000', desc: '40 dosya · ekip kullanımı · 999 TL', hl: false },
-      { tier: 'AYLIK', credits: '1.000/ay', desc: 'Her ay yenilenir · 299 TL/ay', hl: false }
+      { tier: 'AJAN', credits: '500', desc: '≈ 5 dosya · 199 TL', hl: false, buy: '/satis#studio-5' },
+      { tier: 'SAHA', credits: '1.500', desc: '≈ 15 dosya · öncelikli üretim · 449 TL', hl: true, buy: '/satis#studio-15' },
+      { tier: 'ARŞİV', credits: '4.000', desc: '≈ 40 dosya · ekip kullanımı · 999 TL', hl: false, buy: '/satis#studio-40' },
+      { tier: 'AYLIK', credits: '1.000/ay', desc: 'Aylık üyelikle · Gözlemci\'den itibaren', hl: false, buy: '/uyelik#seviyeler' }
     ].map(p => ({
       ...p,
-      mail: '/urunler',
+      mail: p.buy,
       style: {
         border: p.hl ? '1px solid ' + gold : '1px solid rgba(129,135,151,.25)',
         background: p.hl ? 'rgba(193,154,82,.07)' : 'rgba(8,11,19,.8)',
