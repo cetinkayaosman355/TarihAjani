@@ -24,6 +24,16 @@
         // sabit yükseklikli geniş görseller (ör. Studio logosu) ekrana sığsın
         'img{max-width:100% !important;object-fit:contain}' +
         '#ta-burger{display:grid !important}' +
+      '}' +
+      // Telefonda (≤600px) çok sütunlu grid'ler dar sütunlara sıkışıp metni
+      // kelime kelime kırıyordu (Kanalını Kur kartları, Nasıl çalışır vb.)
+      // → tek sütuna in. Tablet (601-840px) düzenini korur; zaman tüneli
+      // durakları (repeat(5)) yatay kalır.
+      '@media(max-width:600px){' +
+        '[style*="auto-fit"],[style*="auto-fill"],' +
+        '[style*="repeat(3"],[style*="repeat(4"],' +
+        '[style*="columns: 1fr 1fr"]' +
+        '{grid-template-columns:1fr !important}' +
       '}';
     document.head.appendChild(st);
   }
