@@ -174,7 +174,7 @@
             <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Canlı Sohbet</h2>
             <button onClick="{{ chatRefresh }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; padding: 10px 14px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1);">{{ chatRefreshLabel }}</button>
           </div>
-          <p style="margin: 0 0 14px; color: #818797; font-size: 13px;">Sitedeki Canlı Hat düğmesinden gelen mesajlar. Konuşmaya tıkla, yanıtını yaz — ziyaretçinin ekranına anında düşer.</p>
+          <p style="margin: 0 0 14px; color: #818797; font-size: 13px;">Sitedeki Canlı Hat mesajları. 🤖 işaretliler Ajan Asistan'ın (yapay zekâ) cevapları. Sen yanıt yazınca asistan o konuşmada 10 dakika susar — konuşmayı devralmış olursun.</p>
           <div style="border: 1px solid rgba(129,135,151,.18);">
             <sc-for list="{{ chatRows }}" as="c" hint-placeholder-count="2">
               <div style="border-bottom: 1px solid rgba(129,135,151,.1);">
@@ -840,7 +840,7 @@ class Component extends DCLogic {
       })),
       noChats: (s.chats || []).length === 0,
       chatMsgRows: (s.chatMsgs || []).map(m => ({
-        text: m.text,
+        text: (m.sender === 'ajan' && m.name === 'ASISTAN' ? '🤖 ' : '') + m.text,
         rowStyle: { display: 'flex', margin: '6px 0', justifyContent: m.sender === 'ajan' ? 'flex-end' : 'flex-start' },
         bubbleStyle: {
           maxWidth: '78%', padding: '9px 12px', fontSize: '13px', lineHeight: 1.5,
