@@ -56,7 +56,12 @@ body{overflow-x:hidden;background-image:radial-gradient(circle 800px at 20% 0%,r
 .top .t .vs{color:#565b69;font-size:.7em}
 .top .t .bz{color:#d0716d}
 .wrap{display:grid;grid-template-columns:minmax(150px,220px) minmax(300px,640px) minmax(150px,220px);gap:clamp(10px,2vw,26px);justify-content:center;align-items:start;padding:6px clamp(10px,2.5vw,30px) 50px;max-width:1240px;margin:0 auto}
-@media(max-width:900px){.wrap{grid-template-columns:1fr;max-width:640px}.roster{display:none}}
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;max-width:640px}
+  .stage{order:-1}
+  .roster ul{max-height:none;display:flex;flex-wrap:wrap;gap:3px 12px}
+  .roster li{border-bottom:0;width:auto;padding:2px 0}
+}
 
 /* ordu panelleri */
 .roster{background:var(--panel);border:1px solid rgba(201,162,90,.22);padding:14px 14px 10px}
