@@ -433,6 +433,18 @@
                   <p style="margin: 0; color: #cfc8b4; line-height: 1.8; white-space: pre-wrap; font-size: 15px;">{{ resVoiceText }}</p>
                 </div>
                 <div style="display: grid; gap: 14px;">
+                  <div style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); padding: 20px 22px;">
+                    <p style="margin: 0 0 4px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">◈ SİSTEMDE ÜRET · GERÇEK SES</p>
+                    <p style="margin: 6px 0 12px; color: #a4a9b5; font-size: 12.5px; line-height: 1.55;">Seslendirme metni tek tıkla MP3 olur — anahtar gerekmez, kredinle üretilir. Ses cinsi sihirbazdaki seçimine göre: <span style="color: #e6c478;">{{ sysVoiceName }}</span></p>
+                    <button onClick="{{ makeTts }}" disabled="{{ sysTtsBusy }}" style="width: 100%; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 13px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.35);">{{ sysTtsLabel }}</button>
+                    <sc-if value="{{ sysTtsError }}" hint-placeholder-val="{{ false }}">
+                      <p style="margin: 10px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">{{ sysTtsError }}</p>
+                    </sc-if>
+                    <sc-if value="{{ hasSysAudio }}" hint-placeholder-val="{{ false }}">
+                      <audio controls="{{ true }}" src="{{ sysAudioUrl }}" style="width: 100%; margin-top: 12px;"></audio>
+                      <a href="{{ sysAudioUrl }}" download="tarih-ajani-seslendirme.mp3" style="display: block; margin-top: 8px; text-align: center; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; color: #e6c478; border: 1px solid rgba(193,154,82,.5); padding: 10px; text-decoration: none;" style-hover="background: rgba(193,154,82,.12);">⬇ MP3 İNDİR</a>
+                    </sc-if>
+                  </div>
                   <div style="border: 1px solid rgba(193,154,82,.35); background: rgba(193,154,82,.05); padding: 20px 22px;">
                     <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">ELEVENLABS AYARLARI</p>
                     <div style="display: grid; gap: 8px; margin-top: 12px; font-size: 13.5px; color: #cfc8b4;">
@@ -445,7 +457,7 @@
                     <button onClick="{{ copyElJson }}" style="margin-top: 14px; width: 100%; border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 10px; font-size: 11px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ copyElLabel }}</button>
                   </div>
                   <div style="border: 1px solid rgba(129,135,151,.25); background: #070a12; padding: 20px 22px;">
-                    <p style="margin: 0 0 6px; font-weight: 700; font-size: 14px;">Sesi burada üret <span style="color: #676d7c; font-weight: 400;">(isteğe bağlı)</span></p>
+                    <p style="margin: 0 0 6px; font-weight: 700; font-size: 14px;">ElevenLabs ile üret <span style="color: #676d7c; font-weight: 400;">(alternatif — kendi anahtarınla)</span></p>
                     <p style="margin: 0 0 12px; color: #818797; font-size: 12.5px; line-height: 1.5;">ElevenLabs API anahtarını gir; seslendirme doğrudan burada üretilsin. Anahtar yalnızca bu tarayıcıda saklanır.</p>
                     <input type="password" value="{{ elKey }}" onChange="{{ onElKey }}" placeholder="xi-api-key" style="width: 100%; border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 11px; font-size: 13px;">
                     <button onClick="{{ genAudio }}" disabled="{{ ttsBusy }}" style="margin-top: 10px; width: 100%; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;">{{ ttsLabel }}</button>
@@ -734,6 +746,7 @@ class Component extends DCLogic {
       history: saved.history || [],
       creditModal: false,
       elKey: saved.elKey || '', ttsBusy: false, ttsError: '', audioUrl: '',
+      sysTtsBusy: false, sysTtsError: '', sysAudioUrl: '',
       copied: {}
     };
   }
@@ -1240,6 +1253,42 @@ class Component extends DCLogic {
     });
   }
 
+  // Gerçek seslendirme — sunucuda gpt-4o-mini-tts, kredi düşer (sunucuyla aynı formül)
+  ttsCost() {
+    const t = this.voiceText() || '';
+    return Math.max(10, Math.ceil(t.length / 1000) * 5);
+  }
+  sysVoiceId() { return this.state.voice === 'kadin' ? 'nova' : 'onyx'; }
+  async ttsServer(text) {
+    const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const token = this._token() || SB_KEY;
+    const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ action: 'tts', text, voice: this.sysVoiceId() })
+    });
+    const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
+    if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
+    if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Ses üretilemedi');
+    if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
+    return data.url;
+  }
+  makeTts() {
+    const text = (this.voiceText() || '').trim();
+    if (!text || this.state.sysTtsBusy) return;
+    const cost = this.ttsCost();
+    if (this.state.credits < cost) { this.setState({ creditModal: true }); return; }
+    this.setState({ sysTtsBusy: true, sysTtsError: '' });
+    this.ttsServer(text).then(url => {
+      this.setState({ sysTtsBusy: false, sysAudioUrl: url });
+    }).catch(e => {
+      const msg = e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Ses üretilemedi: ' + e.message);
+      this.setState({ sysTtsBusy: false, sysTtsError: msg });
+      if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
+    });
+  }
+
   buildPrompt(outlineOnly) {
     const s = this.state;
     const m = this.promptMaps();
@@ -1388,7 +1437,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       };
       this.setState(st => ({
         generating: false, genPct: 100, result, fileNo: no, step: 4, tab: 'senaryo',
-        history: [entry, ...st.history].slice(0, 12), audioUrl: '', ttsError: ''
+        history: [entry, ...st.history].slice(0, 12), audioUrl: '', ttsError: '', sysAudioUrl: '', sysTtsError: ''
       }), () => this.persist());
       // Kredi düşme: yeni studio-generate sunucuda düştüyse dönen bakiyeyi kullan;
       // düşmediyse (eski fonksiyon) eski yönteme düş
@@ -1638,7 +1687,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
         openFile: () => (a.bloklar || a.sayfalar) ? this.setState({ mode: 'arsiv', doc: a, docPage: 0 }) : this.setState({
           mode: 'wizard', step: 4, tab: 'senaryo',
           result: a.result, fileNo: a.fileNo, idea: a.result.baslik,
-          audioUrl: '', ttsError: '', genError: ''
+          audioUrl: '', ttsError: '', genError: '', sysAudioUrl: '', sysTtsError: ''
         })
       })),
       historyEmpty: (s.history || []).length === 0,
@@ -1784,6 +1833,14 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       ttsLabel: s.ttsBusy ? 'ÜRETİLİYOR…' : '🎙 SESİ ÜRET',
       ttsError: s.ttsError,
       hasAudio: !!s.audioUrl, audioUrl: s.audioUrl,
+
+      // sistemde gerçek seslendirme (kredili)
+      makeTts: () => this.makeTts(),
+      sysTtsBusy: s.sysTtsBusy,
+      sysTtsLabel: s.sysTtsBusy ? '🎙 ÜRETİLİYOR… (~20 sn)' : ('🎙 SESLENDİRME ÜRET · ' + this.ttsCost() + ' KR'),
+      sysTtsError: s.sysTtsError,
+      hasSysAudio: !!s.sysAudioUrl, sysAudioUrl: s.sysAudioUrl,
+      sysVoiceName: this.state.voice === 'kadin' ? 'Kadın (Nova)' : 'Erkek (Onyx)',
 
       resKapak: mkCopy(r.kapak, 'kp'),
       resGorsel: mkCopy(r.gorsel_promptlar, 'gp').map((x, i) => this.sceneExtras(x, i, 'gp')),

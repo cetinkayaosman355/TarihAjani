@@ -142,6 +142,10 @@ function costFor(action: string, duration: string): number {
   if (action === "regen") return 5;
   return 0;
 }
+// Seslendirme: 1000 karakter ≈ 1 dk ses ≈ 5 KR (taban 10) — client ile aynı formül
+function ttsCostOf(chars: number): number {
+  return Math.max(10, Math.ceil(chars / 1000) * 5);
+}
 // Kapak hariç beklenen sahne: kısa videoda 6 sn/sahne, uzadıkça seyrekleşir (tavan 40)
 function sceneFor(sec: number): number {
   if (sec <= 90) return Math.max(6, Math.ceil(sec / 6));
@@ -194,6 +198,50 @@ async function generateImage(prompt: string, size: string): Promise<string> {
     }
   } catch (_e) { /* boş dön */ }
   return "";
+}
+
+// Gerçek seslendirme — OpenAI gpt-4o-mini-tts (mp3). Uzun metin ≤3800
+// karakterlik parçalara bölünür (en fazla 3 parça ≈ 11 dk), mp3'ler art
+// arda eklenir (mp3 çerçeveleri ardışık oynatılabilir). Boş dönüş = hata.
+const TTS_VOICES = new Set(["onyx", "ash", "nova", "sage", "alloy", "echo", "shimmer"]);
+async function generateSpeech(text: string, voice: string): Promise<Uint8Array | null> {
+  const key = Deno.env.get("OPENAI_API_KEY");
+  if (!key || !text.trim()) return null;
+  const v = TTS_VOICES.has(voice) ? voice : "onyx";
+  // cümle sınırlarından bölmeye çalış
+  const chunks: string[] = [];
+  let rest = text.trim();
+  while (rest.length && chunks.length < 3) {
+    if (rest.length <= 3800) { chunks.push(rest); break; }
+    let cut = rest.lastIndexOf(". ", 3800);
+    if (cut < 2000) cut = 3800;
+    chunks.push(rest.slice(0, cut + 1));
+    rest = rest.slice(cut + 1).trim();
+  }
+  const parts: Uint8Array[] = [];
+  for (const c of chunks) {
+    try {
+      const r = await fetch("https://api.openai.com/v1/audio/speech", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "gpt-4o-mini-tts",
+          voice: v,
+          input: c,
+          response_format: "mp3",
+          instructions: "Türkçe belgesel anlatıcısı: sakin, derin, sürükleyici. Dedektif dosyası okur gibi; özel adlarda hafif duraklama, gerilim cümlelerinde tempo.",
+        }),
+      });
+      if (!r.ok) return null;
+      parts.push(new Uint8Array(await r.arrayBuffer()));
+    } catch (_e) { return null; }
+  }
+  if (!parts.length) return null;
+  const total = parts.reduce((a, p) => a + p.length, 0);
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const p of parts) { out.set(p, off); off += p.length; }
+  return out;
 }
 
 // ── ARAŞTIRMA BİRİMİ (grounding) ───────────────────────────────────────
@@ -256,7 +304,10 @@ Deno.serve(async (req) => {
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
     if (!prompt) return json({ ok: false, error: "Konu veya prompt gir." }, 400);
 
-    const cost = costFor(String(b.action || ""), String(b.duration || ""));
+    const ttsText = String(b.text || "").trim().slice(0, 11500);
+    const cost = String(b.action || "") === "tts"
+      ? ttsCostOf(ttsText.length)
+      : costFor(String(b.action || ""), String(b.duration || ""));
 
     // Ücretli çağrı → kullanıcıyı doğrula ve bakiyeyi ön-kontrol et (üretimden önce)
     let admin: any = null, userId = "";
@@ -287,6 +338,43 @@ Deno.serve(async (req) => {
         return json({ ok: true, url, charged: true, credits });
       }
       return json({ ok: true, url, charged: false });
+    }
+
+    // SESLENDİRME ÜRETİMİ — mp3 üret, Storage'a yükle, başarılıysa kredi düş
+    if (String(b.action || "") === "tts") {
+      if (!ttsText) return json({ ok: false, error: "Seslendirme metni boş." }, 400);
+      const bytes = await generateSpeech(ttsText, String(b.voice || ""));
+      if (!bytes) return json({ ok: false, error: "Ses üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
+      let url = "";
+      if (admin) {
+        try {
+          const path = (userId || "anon") + "/" + Date.now() + ".mp3";
+          const up = await admin.storage.from("studio-ses")
+            .upload(path, bytes, { contentType: "audio/mpeg", upsert: false });
+          if (!up.error) {
+            const pub = admin.storage.from("studio-ses").getPublicUrl(path);
+            url = pub?.data?.publicUrl || "";
+          }
+        } catch (_e) { /* data URI'ye düş */ }
+      }
+      if (!url) {
+        // bucket yoksa küçük dosyalar data URI olarak döner (≤2.5MB)
+        if (bytes.length > 2_500_000) {
+          return json({ ok: false, error: "Ses dosyası büyük ve 'studio-ses' Storage bucket'ı yok — kurulum SQL'ini çalıştırın (kredi düşülmedi)." }, 500);
+        }
+        let bin = "";
+        for (let i = 0; i < bytes.length; i += 32768) {
+          bin += String.fromCharCode(...bytes.subarray(i, i + 32768));
+        }
+        url = "data:audio/mpeg;base64," + btoa(bin);
+      }
+      if (cost > 0 && admin && userId) {
+        const { data: sp } = await admin.rpc("spend_credits", { p_user: userId, p_amount: cost, p_reason: "seslendirme" });
+        const spRow = Array.isArray(sp) ? sp[0] : sp;
+        const credits = spRow && typeof spRow.new_credits === "number" ? spRow.new_credits : undefined;
+        return json({ ok: true, url, charged: true, credits, cost });
+      }
+      return json({ ok: true, url, charged: false, cost });
     }
 
     // Üretim (metin)
