@@ -12,10 +12,11 @@
   var L = 'html[data-theme="light"] ';
   // koyu zemin hex'leri → kırık beyaz panel
   var BG = ['#03050b', '#02040a', '#04060c', '#05070d', '#06070d', '#060910', '#070a12', '#08090d', '#080a12', '#0a0d15', '#0a0d16', '#0b0e18', '#0c0a12', '#0c0f18', '#0d0a16'];
-  // parlak metin → neredeyse siyah
-  var TXT_LIGHT = ['#f2ecd9', '#e9dfc8', '#eadfc6', '#cfc8b4', '#d6d0c2', '#cfd3e0', '#e6e0d0', '#f4e4c1'];
-  // gri/ikincil metin → koyu gri
-  var TXT_MUTE = ['#a4a9b5', '#818797', '#676d7c', '#8b91a8', '#9aa0ad', '#7c8393', '#b6bcc9', '#a9adba', '#565b69', '#5a6070', '#8f8a7d', '#c3c8d3', '#b9c2d8'];
+  // parlak/gövde metin → neredeyse siyah (okuma alanları net okunsun)
+  var TXT_LIGHT = ['#f2ecd9', '#e9dfc8', '#eadfc6', '#cfc8b4', '#d6d0c2', '#cfd3e0', '#e6e0d0', '#f4e4c1',
+    '#d6cfbc', '#b6bcc9', '#b9c2d8', '#c3c8d3', '#a9adba', '#a4a9b5', '#d3d8e2', '#cbd0da', '#9aa0ad', '#8b91a8'];
+  // yalnız küçük/ikincil etiketler → orta koyu (okuma metni DEĞİL)
+  var TXT_MUTE = ['#818797', '#676d7c', '#7c8393', '#565b69', '#5a6070', '#8f8a7d'];
   // açık altın metin → koyu altın (beyaz üstünde okunur)
   var GOLD_TXT = ['#e6c478', '#d8b26a', '#c19a52', '#e6c478'];
 
@@ -69,8 +70,8 @@
     sel(BG, 'background') + '{background-color:#f8f3e9 !important;}' +
     sel(BG, 'background-color') + '{background-color:#f8f3e9 !important;}' +
     // metinler
-    sel(TXT_LIGHT, 'color') + '{color:#221e15 !important;}' +
-    sel(TXT_MUTE, 'color') + '{color:#5c5748 !important;}' +
+    sel(TXT_LIGHT, 'color') + '{color:#1c1810 !important;}' +
+    sel(TXT_MUTE, 'color') + '{color:#4f4a3c !important;}' +
     sel(GOLD_TXT, 'color') + '{color:#8a6417 !important;}' +
     // form alanları
     L + 'input,' + L + 'textarea,' + L + 'select{background:#fff !important;color:#211d15 !important;border-color:rgba(90,70,30,.35) !important;}' +
@@ -84,11 +85,27 @@
       '{-webkit-text-fill-color:#8a6417 !important;color:#8a6417 !important;background:none !important;}' +
     // GÖRSELLİ HERO KORUMASI: içinde kaplayan görsel olan section şeffaf kalır,
     // metni açık bırakılır (koyu görsel üstünde okunur) — :has() modern tarayıcı
-    L + 'section:has(> img[style*="object-fit: cover"]),' +
-    L + 'div:has(> img[style*="object-fit: cover"]) > [style*="position: relative"]{background-color:transparent !important;}' +
-    L + 'section:has(img[style*="object-fit: cover"]) [style*="color:"]{color:inherit;}' +
-    L + 'section:has(img[style*="object-fit: cover"]) h1,' +
-    L + 'section:has(img[style*="object-fit: cover"]) h2{color:#f6efdd !important;}';
+    // YALNIZ arka planı kaplayan (position:absolute) hero görseli olan bölümler
+    // aydınlıkta da KOYU ada kalır (görsel <img> zeminin üstünde görünür,
+    // metin açık okunur). Ürün kartı görselleri absolute değil → o bölümler light.
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]){background-color:#0b0e16 !important;}' +
+    // hero içindeki overlay/içerik katmanlarının açılmış zeminini temizle
+    // (section'ın koyusu ve görsel görünsün; link/buton hariç)
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) *:not(a):not(button):not(input):not(textarea){background-color:transparent !important;}' +
+    // hero içindeki tüm metin açık kalır (koyu görsel üstünde okunur)
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) h1,' +
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) h2,' +
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) h3,' +
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) p,' +
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) li,' +
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) span:not([style*="linear-gradient"]){color:#f4eedd !important;}' +
+    // hero içindeki altın butonların koyu metni korunur
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) a[style*="linear-gradient"],' +
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) button[style*="linear-gradient"]{color:#171207 !important;}' +
+    // hero içindeki gradient (clip:text) başlıklar koyu zeminde AÇIK altın kalır
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) [style*="-webkit-background-clip: text"],' +
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) [style*="background-clip: text"]' +
+      '{-webkit-text-fill-color:#e6c478 !important;color:#e6c478 !important;background:none !important;}';
 
   function ensureCss() {
     if (document.getElementById('ta-tema-css')) return;
