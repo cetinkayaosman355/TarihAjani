@@ -38,6 +38,13 @@
     });
   }
 
+  // GÜVENLİK: her koşulda içerik görünür kalsın — 2.6 sn sonra tüm
+  // bölümleri zorla aç (observer kaçırsa/JS gecikse bile kaybolmaz).
+  function forceAll() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ta-reveal]'), function (s) { s.classList.add('ta-in'); });
+  }
+  setTimeout(forceAll, 2600);
+
   function init() { tag(); setInterval(tag, 1500); }   // dc gövdeyi geç kurabilir
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
