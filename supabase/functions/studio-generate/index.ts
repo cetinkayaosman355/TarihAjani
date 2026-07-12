@@ -185,6 +185,14 @@ async function generateImage(prompt: string, size: string): Promise<string> {
 // Üretimden ÖNCE konuyu web'de araştırıp doğrulanmış bir "araştırma dosyası" çıkarır.
 // Claude'un sunucu-tarafı web_search aracını kullanır; yoksa modelin bilgisine düşer.
 // Tek-atış üretime göre çok daha derin, somut ve doğru çıktı sağlar (farkımız burası).
+// Verilen ms içinde bitmeyen fetch'i iptal eder (504 zaman aşımına karşı bütçe koruması)
+async function fetchT(url: string, init: RequestInit, ms: number): Promise<Response> {
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), ms);
+  try { return await fetch(url, { ...init, signal: ac.signal }); }
+  finally { clearTimeout(t); }
+}
+
 async function researchBrief(topic: string): Promise<string> {
   const q = `Sen "Tarih Ajanı" için çalışan titiz bir tarih araştırmacısısın. KONU: "${topic}".
 Güvenilir kaynaklara dayanarak KISA ama YOĞUN bir araştırma dosyası çıkar:
@@ -193,19 +201,21 @@ Güvenilir kaynaklara dayanarak KISA ama YOĞUN bir araştırma dosyası çıkar
 - Yaygın efsane ↔ gerçek ayrımı
 - Anlatıyı zenginleştirecek 4-6 somut sahne/görsel fikri
 Türkçe, madde madde yaz. UYDURMA yok; emin olmadığını "rivayete göre" diye işaretle.`;
+  // Araştırma toplam bütçesi ~35 sn: bitmezse üretim araştırmasız devam eder
+  // (504 zaman aşımı yaşamamak üretimin kendisinden önemli).
   const aKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (aKey) {
     try {
-      const r = await fetch("https://api.anthropic.com/v1/messages", {
+      const r = await fetchT("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "x-api-key": aKey, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-5",
-          max_tokens: 1800,
+          max_tokens: 1400,
           messages: [{ role: "user", content: q }],
-          tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 4 }],
+          tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
         }),
-      });
+      }, 35_000);
       if (r.ok) {
         const d = await r.json();
         const txt = (d.content || []).map((c: any) => (c && c.type === "text") ? c.text : "").join("\n").trim();
@@ -213,7 +223,15 @@ Türkçe, madde madde yaz. UYDURMA yok; emin olmadığını "rivayete göre" diy
       }
     } catch (_e) { /* aşağıdaki yedeğe düş */ }
   }
-  try { return (await callOpenAI(q, 1400)).trim(); } catch (_e) { return ""; }
+  try {
+    const r = await fetchT("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "gpt-4o", messages: [{ role: "user", content: q }], temperature: 0.5, max_tokens: 1200 }),
+    }, 20_000);
+    if (r.ok) { const d = await r.json(); return (d.choices?.[0]?.message?.content ?? "").trim(); }
+  } catch (_e) { /* araştırmasız devam */ }
+  return "";
 }
 
 Deno.serve(async (req) => {
@@ -279,13 +297,14 @@ ${prompt}`;
     const wantScenes = SCENE_COUNT[String(b.duration || "")] || 0;
 
     let result = await gen();
-    // Üretimde: geçerli JSON + yeterli sahne şart. Az/geçersizse bir kez daha dener,
-    // sahnesi daha çok olanı seçer. Hâlâ geçerli JSON değilse KREDİ DÜŞMEDEN hata döner.
+    // Üretimde geçerli JSON şart. Sahne-eksiği tekrarı YALNIZ kısa formatlarda (sn30/dk1):
+    // uzun dosyada ikinci tam üretim gateway zaman sınırını (504) aşıyor.
     if (isGen) {
-      let sc = sceneCount(result);
-      if (sc < wantScenes) {
+      const sc = sceneCount(result);
+      const retryable = sc < 0 || (sc < wantScenes && wantScenes <= 12);
+      if (retryable) {
         const retry = await gen();
-        if (sceneCount(retry) > sc) { result = retry; sc = sceneCount(retry); }
+        if (sceneCount(retry) > sc) result = retry;
       }
       if (sceneCount(result) < 0) {
         return json({ ok: false, error: "Yapay zekâ geçerli JSON döndürmedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);

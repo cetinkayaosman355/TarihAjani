@@ -1256,6 +1256,7 @@ GÖRSEL & VİDEO PROMPT KURALLARI (tümü İngilizce — bu promptlar DOĞRUDAN 
 - Her sahne için AYRI görsel ve AYRI video promptu üret.
 - Her görsel promptu "${stilStr}" ile BAŞLAR, ardından "${oran}", sonra ŞU katmanları içerir: (1) ana özne ve aksiyon, (2) dönem-doğru mekân ve nesneler (kıyafet, mimari, eşyalar tarihe uygun; anakronizm YASAK), (3) ışık ve atmosfer (ör. golden hour, candlelight, overcast, torch-lit), (4) kompozisyon ve kamera (ör. wide establishing shot, low-angle, close-up, rule of thirds, shallow depth of field), (5) renk paleti ve duygu, (6) doku/kalite (ör. detailed, film grain, volumetric light). Kısa değil; zengin ama dağınık olmayan tek paragraf.
 - Her görsel promptu ŞU satırla BİTER: "${antiArtifact}"
+- UZUNLUK: her görsel promptu ~50-80 kelime, her video promptu ~30-50 kelime — yoğun ve katmanlı ama tekrarsız; gereksiz sıfat yığını yapma.
 - Her video promptu tek bir kamera hareketi/aksiyon (5-8 sn) tarif eder (ör. slow push-in, gentle pan left, subtle parallax) ve ŞU satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker."
 - Görsellerde yazı/logo/altyazı YOK. Aynı karakter birden çok sahnede geçiyorsa sabit kimlik tarifini (yaş, ten, saç, yüz, kıyafet, ayırt edici detay) her ilgili promptun başında BİREBİR tekrarla (tutarlı yüz için).
 - Tarihî doğruluk görselde de esas: dönem-dışı nesne, modern kıyafet, yanlış coğrafya kullanma.
@@ -1345,7 +1346,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       // önce taslak, sonra bölüm bölüm dolu metin — bölüm başına kelime formata göre.
       const twoStage = s.duration === 'dk4' || s.duration === 'dk8';
       const wordsHint = { dk4: '120-170', dk8: '160-220' }[s.duration] || '300-420';
-      const text = await this.askAI(this.buildPrompt(twoStage), 16000, 'generate');
+      // Token tavanı süreye göre: uzun dosyada gereksiz büyük tavan üretimi
+      // yavaşlatıp sunucu zaman sınırına (504) yaklaştırıyordu.
+      const maxTok = { sn30: 6000, dk1: 9000, dk4: 11000, dk8: 13000 }[s.duration] || 11000;
+      const text = await this.askAI(this.buildPrompt(twoStage), maxTok, 'generate');
       const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
       let result = JSON.parse(clean);
       result = this.qualityFix(result);
@@ -1931,6 +1935,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'Sunucu yanıtı okunamadı' }));
     if (r.status === 402) { this._lastGen = { charged: false, insufficient: true, credits: data.credits }; throw new Error('YETERSIZ_KREDI'); }
+    if (r.status === 504 || r.status === 546) throw new Error('Sunucu zaman aşımı — uzun dosyalarda olabiliyor; kredi düşülmedi, TEKRAR DENE ile yeniden başlat.');
     if (!r.ok || !data.ok) throw new Error(data.error || ('studio-generate hatası (' + r.status + ')'));
     this._lastGen = { charged: !!data.charged, credits: data.credits };
     return norm(data.text || data.result || '');
