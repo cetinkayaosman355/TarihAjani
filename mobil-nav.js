@@ -14,6 +14,8 @@
     st.textContent =
       '#ta-burger{display:none}' +
       '@media(max-width:' + BP + 'px){' +
+        // iOS Safari'nin metni kendiliğinden büyütmesi taşma yaratabiliyor
+        'html{-webkit-text-size-adjust:100%}' +
         // yığılan header menüsü gizlenir (yerine ☰)
         'header nav{display:none !important}' +
         // satır içi sabit min-width değerleri mobilde taşma yapar → sıfırla

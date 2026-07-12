@@ -43,6 +43,10 @@
       header { height: auto !important; min-height: 58px; flex-wrap: wrap !important; padding: 10px 14px !important; }
       header nav { flex-wrap: wrap !important; gap: 2px !important; justify-content: flex-end; }
       header nav a { margin-left: 0 !important; }
+      /* dosya penceresi telefonda ekrana sabitlenir; uzun prompt satırları
+         (İngilizce, kesintisiz) sağa taşıyordu → kelime kır, taşmayı kilitle */
+      .arsiv-scroll { width: calc(100vw - 32px) !important; max-width: calc(100vw - 32px) !important; overflow-x: hidden !important; }
+      .arsiv-scroll * { max-width: 100%; min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
     }
   </style>
   <script>window.__taFadeBg='#06070d';window.__taNoIntroFade=true;</script>
