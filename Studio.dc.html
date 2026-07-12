@@ -548,6 +548,12 @@
                   </div>
                 </div>
                 <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir, 16:9" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">KADRAJ</span>
+                  <sc-for list="{{ imgAspects }}" as="ia" hint-placeholder-count="3">
+                    <button onClick="{{ ia.pick }}" style="{{ ia.style }}">{{ ia.label }}</button>
+                  </sc-for>
+                </div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                   <button onClick="{{ imgFromKapak }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 12px; letter-spacing: .08em; padding: 12px 18px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">KAPAK PROMPTUNU AL</button>
                   <button onClick="{{ queueImage }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">◈ GÖRSEL ÜRET · 12 KR</button>
@@ -557,16 +563,21 @@
                     <sc-for list="{{ imgQueue }}" as="iq" hint-placeholder-count="2">
                       <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12;">
                         <sc-if value="{{ iq.hasUrl }}" hint-placeholder-val="{{ false }}">
-                          <a href="{{ iq.url }}" target="_blank" title="Büyüt / indir" style="display: block;">
-                            <img src="{{ iq.url }}" alt="Üretilen görsel" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block;">
-                          </a>
+                          <img src="{{ iq.url }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
                         </sc-if>
                         <sc-if value="{{ iq.pending }}" hint-placeholder-val="{{ true }}">
-                          <div style="aspect-ratio: 16/9; display: grid; place-items: center; background: repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px);">
+                          <div style="{{ iq.pendStyle }}">
                             <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; text-align: center; padding: 10px;">{{ iq.status }}</span>
                           </div>
                         </sc-if>
-                        <p style="margin: 0; color: #818797; font-size: 11.5px; line-height: 1.5; padding: 10px 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ iq.prompt }}</p>
+                        <p style="margin: 0; color: #818797; font-size: 11.5px; line-height: 1.5; padding: 10px 12px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ iq.prompt }}</p>
+                        <sc-if value="{{ iq.hasUrl }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: flex; gap: 6px; flex-wrap: wrap; padding: 0 10px 10px;">
+                            <button onClick="{{ iq.zoom }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="color: #e6c478;">🔍 BÜYÜT</button>
+                            <button onClick="{{ iq.dl }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
+                            <button onClick="{{ iq.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="color: #e6c478;">✎ DÜZENLE</button>
+                          </div>
+                        </sc-if>
                       </div>
                     </sc-for>
                   </div>
@@ -691,6 +702,17 @@
   </sc-if>
 
   <!-- KREDİ PAKETLERİ MODAL -->
+  <!-- GÖRSEL BÜYÜTME (lightbox) -->
+  <sc-if value="{{ hasZoom }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeZoom }}" style="position: fixed; inset: 0; z-index: 95; display: grid; place-items: center; align-content: center; gap: 14px; background: rgba(2,3,8,.94); padding: 20px; cursor: zoom-out;">
+      <img src="{{ zoomUrl }}" alt="Üretilen görsel" style="max-width: 96vw; max-height: 80vh; object-fit: contain; border: 1px solid rgba(193,154,82,.4); box-shadow: 0 30px 90px rgba(0,0,0,.7);">
+      <div style="display: flex; gap: 10px;">
+        <button onClick="{{ zoomDl }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 11px; letter-spacing: .1em; padding: 12px 20px;">⬇ İNDİR</button>
+        <button onClick="{{ closeZoom }}" style="border: 1px solid rgba(129,135,151,.4); cursor: pointer; background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; padding: 12px 20px;">KAPAT ✕</button>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ showCreditModal }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ closeCredits }}" style="position: fixed; inset: 0; z-index: 50; background: rgba(2,3,8,.8); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 24px;">
       <div onClick="{{ stopProp }}" style="width: min(680px, 100%); border: 1px solid rgba(193,154,82,.4); background: #05070d; padding: 34px; animation: ta-rise .4s ease both;">
@@ -735,6 +757,7 @@ class Component extends DCLogic {
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
       imgNotice: false, imgPrompt: '', imgProvider: 'gpt', imgQueue: [],
+      imgAspect: null, imgZoom: '',
       step: 1,
       idea: '',
       tone: 'merak', voice: 'erkek', style: 'sinematik', duration: 'dk4', model: 'claude', aspect: 'yatay', regenKey: null,
@@ -1221,10 +1244,10 @@ class Component extends DCLogic {
 
   // Gerçek görsel üretimi — sunucuda OpenAI ile, her görsel kredi düşer (anti-hile).
   IMG_COST() { return 12; }
-  async imageServer(prompt) {
+  async imageServer(prompt, arKey) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
-    const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[this.state.aspect] || '16:9';
+    const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect] || '16:9';
     const token = this._token() || SB_KEY;
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
@@ -1237,14 +1260,24 @@ class Component extends DCLogic {
     if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
     return data.url;
   }
+  // Görseli indir: data URI ise dosya olarak, uzak URL ise yeni sekmede
+  dlImage(url) {
+    if (!url) return;
+    if (url.indexOf('data:') === 0) {
+      const a = document.createElement('a');
+      a.href = url; a.download = 'tarih-ajani-gorsel-' + Date.now() + '.jpg';
+      document.body.appendChild(a); a.click(); a.remove();
+    } else { window.open(url, '_blank'); }
+  }
   makeImage(promptRaw) {
     const prompt = (promptRaw || '').trim();
     if (!prompt) return;
     const cost = this.IMG_COST();
     if (this.state.credits < cost) { this.setState({ creditModal: true }); return; }
+    const ar = this.state.imgAspect || this.state.aspect;   // panelde seçilen kadraj öncelikli
     const id = 'img' + Date.now() + Math.floor(Math.random() * 1000);
-    this.setState(st => ({ imgQueue: [{ id, prompt, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue].slice(0, 8) }));
-    this.imageServer(prompt).then(url => {
+    this.setState(st => ({ imgQueue: [{ id, prompt, ar, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue].slice(0, 8) }));
+    this.imageServer(prompt, ar).then(url => {
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url } : x) }));
     }).catch(e => {
       const msg = e.message === 'YETERSIZ_KREDI' ? 'YETERSİZ KREDİ' : ('HATA: ' + e.message);
@@ -1741,7 +1774,39 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       },
       queueImage: () => this.makeImage(s.imgPrompt),
       hasImgQueue: (s.imgQueue || []).length > 0,
-      imgQueue: (s.imgQueue || []).map(x => ({ ...x, hasUrl: !!x.url, pending: !x.url })),
+      imgQueue: (s.imgQueue || []).map(x => {
+        const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[x.ar] || '16/9';
+        return {
+          ...x, hasUrl: !!x.url, pending: !x.url,
+          thumbStyle: { width: '100%', aspectRatio: arCss, objectFit: 'cover', display: 'block', cursor: 'zoom-in' },
+          pendStyle: { aspectRatio: arCss, display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px)' },
+          zoom: () => this.setState({ imgZoom: x.url }),
+          dl: () => this.dlImage(x.url),
+          edit: () => {
+            this.setState({ imgPrompt: x.prompt, imgAspect: x.ar || null });
+            setTimeout(() => {
+              const t = Array.prototype.slice.call(document.querySelectorAll('textarea')).find(el => /Candlelit/.test(el.placeholder || ''));
+              if (t) { t.focus(); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            }, 60);
+          }
+        };
+      }),
+      imgAspects: ['yatay', 'dikey', 'kare'].map(k => {
+        const eff = s.imgAspect || s.aspect;
+        return {
+          label: { yatay: 'YATAY 16:9', dikey: 'DİKEY 9:16', kare: 'KARE 1:1' }[k],
+          pick: () => this.setState({ imgAspect: k }),
+          style: {
+            cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em',
+            padding: '8px 12px', border: eff === k ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+            background: eff === k ? 'rgba(193,154,82,.14)' : 'transparent',
+            color: eff === k ? '#e6c478' : '#818797'
+          }
+        };
+      }),
+      hasZoom: !!s.imgZoom, zoomUrl: s.imgZoom,
+      closeZoom: () => this.setState({ imgZoom: '' }),
+      zoomDl: () => this.dlImage(s.imgZoom),
       wizardTabStyle: {
         border: 0, cursor: 'pointer', padding: '10px 16px',
         fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.12em',

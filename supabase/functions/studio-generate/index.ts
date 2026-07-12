@@ -218,23 +218,31 @@ async function generateSpeech(text: string, voice: string): Promise<Uint8Array |
     chunks.push(rest.slice(0, cut + 1));
     rest = rest.slice(cut + 1).trim();
   }
-  const parts: Uint8Array[] = [];
-  for (const c of chunks) {
+  async function ttsOnce(model: string, voice2: string, input: string): Promise<Uint8Array | null> {
+    const body: Record<string, unknown> = { model, voice: voice2, input, response_format: "mp3" };
+    if (model === "gpt-4o-mini-tts") {
+      body.instructions = "Türkçe belgesel anlatıcısı: sakin, derin, sürükleyici. Dedektif dosyası okur gibi; özel adlarda hafif duraklama, gerilim cümlelerinde tempo.";
+    }
     try {
       const r = await fetch("https://api.openai.com/v1/audio/speech", {
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "gpt-4o-mini-tts",
-          voice: v,
-          input: c,
-          response_format: "mp3",
-          instructions: "Türkçe belgesel anlatıcısı: sakin, derin, sürükleyici. Dedektif dosyası okur gibi; özel adlarda hafif duraklama, gerilim cümlelerinde tempo.",
-        }),
+        body: JSON.stringify(body),
       });
       if (!r.ok) return null;
-      parts.push(new Uint8Array(await r.arrayBuffer()));
+      return new Uint8Array(await r.arrayBuffer());
     } catch (_e) { return null; }
+  }
+  const parts: Uint8Array[] = [];
+  for (const c of chunks) {
+    // önce yönergeli yeni model; hesapta kapalıysa klasik tts-1'e düş
+    let part = await ttsOnce("gpt-4o-mini-tts", v, c);
+    if (!part) {
+      const v1 = ({ ash: "onyx", sage: "nova" } as Record<string, string>)[v] || v;
+      part = await ttsOnce("tts-1", v1, c);
+    }
+    if (!part) return null;
+    parts.push(part);
   }
   if (!parts.length) return null;
   const total = parts.reduce((a, p) => a + p.length, 0);
