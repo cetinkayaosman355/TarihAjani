@@ -31,15 +31,22 @@
     return 0;                                            // ÜYELİK, uzun metinler
   }
   function headerLinks() {
+    var out = [];
     var h = document.querySelector('header');
-    if (!h) return [];
-    return Array.prototype.slice.call(h.querySelectorAll('a[href="/uyelik"], a[href^="/uyelik?"]'));
+    if (h) out = out.concat(Array.prototype.slice.call(h.querySelectorAll('a[href="/uyelik"], a[href^="/uyelik?"]')));
+    // mobil menü paneli gibi işaretli kapsamlar da giriş göstergesine dahildir
+    Array.prototype.slice.call(document.querySelectorAll('[data-uye-scope] a[href="/uyelik"], [data-uye-scope] a[href^="/uyelik?"]')).forEach(function (a) {
+      if (out.indexOf(a) === -1) out.push(a);
+    });
+    return out;
   }
-  // Yalnız HEADER'daki giriş butonu (gövdedeki hero CTA'lara dokunma)
-  function pickTarget() {
-    var best = null, bestScore = 0;
-    headerLinks().forEach(function (a) { var s = ctaScore(a); if (s > bestScore) { bestScore = s; best = a; } });
-    return best;   // header'da login CTA yoksa null (ÜYELİK'e dokunulmaz)
+  // Header + işaretli kapsamlardaki TÜM giriş butonları (gövdedeki hero CTA'lara dokunma).
+  // Masaüstü CTA'sı ve mobil menüdeki satır aynı anda dönüştürülür.
+  function pickTargets() {
+    var links = headerLinks(), best = 0;
+    links.forEach(function (a) { var s = ctaScore(a); if (s > best) best = s; });
+    if (!best) return [];
+    return links.filter(function (a) { return ctaScore(a) === best; });
   }
   // e.target'tan güvenli closest (metin düğümü/eski tarayıcı koruması)
   function closestFrom(t, sel) {
@@ -129,16 +136,19 @@
       Array.prototype.slice.call(document.querySelectorAll('a[data-uye-nav]')).forEach(function (a) {
         if (a.getAttribute('data-uye-orig') == null && a.parentElement) a.parentElement.removeChild(a);
       });
-      // Header'daki "AJAN GİRİŞİ" butonunu doğrudan ada dönüştür.
+      // "AJAN GİRİŞİ" butonlarını doğrudan ada dönüştür (header + mobil menü).
       // Metin denetimi de yapılır: framework metni geri yazdıysa tazele.
-      var t = pickTarget() || document.querySelector('header a[data-uye-nav]');
-      if (t) {
+      var ts = pickTargets();
+      Array.prototype.slice.call(document.querySelectorAll('header a[data-uye-nav], [data-uye-scope] a[data-uye-nav]')).forEach(function (a) {
+        if (ts.indexOf(a) === -1) ts.push(a);
+      });
+      ts.forEach(function (t) {
         var want = currentName + ' ▾';
         if (t.getAttribute('data-uye-orig') == null) t.setAttribute('data-uye-orig', t.innerHTML);
         if (t.textContent !== want) t.textContent = want;   // "AJAN GİRİŞİ" → "Osman ▾"
         t.setAttribute('data-uye-nav', currentName);
         t.title = 'Hesap menüsü';
-      }
+      });
       // Header'da giriş butonu yoksa HİÇBİR ŞEY ekleme (ÜYELİK'e dokunma, ayrı ad yazma)
     } else {
       closeMenu();
