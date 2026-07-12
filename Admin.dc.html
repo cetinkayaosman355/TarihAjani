@@ -171,16 +171,17 @@
         <!-- ÜRÜNLER & FİYATLAR -->
         <section style="margin-top: 40px;">
           <h2 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Ürünler & Fiyatlar</h2>
-          <p style="margin: 0 0 14px; color: #818797; font-size: 13px;">Ürün adını ve fiyatını değiştirip Kaydet'e bas. Değişiklik satış sayfasına yansır.</p>
+          <p style="margin: 0 0 14px; color: #818797; font-size: 13px;">Ürün adını, fiyatını ve Shopier ödeme linkini değiştirip Kaydet'e bas. Link doluysa kart seçen müşteri sipariş sonrası doğrudan ödeme sayfasına yönlendirilir; boşsa link e-posta ile elle gönderilir.</p>
           <div style="border: 1px solid rgba(129,135,151,.18); overflow-x: auto;">
             <div style="min-width: 720px;">
-              <div style="display: grid; grid-template-columns: 2.4fr .9fr .8fr; gap: 12px; padding: 12px 16px; background: #070a12; border-bottom: 1px solid rgba(129,135,151,.18); color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">
-                <span>ÜRÜN ADI</span><span>FİYAT (TL)</span><span style="text-align: right;">İŞLEM</span>
+              <div style="display: grid; grid-template-columns: 1.8fr .6fr 1.5fr .7fr; gap: 12px; padding: 12px 16px; background: #070a12; border-bottom: 1px solid rgba(129,135,151,.18); color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">
+                <span>ÜRÜN ADI</span><span>FİYAT (TL)</span><span>ÖDEME LİNKİ (SHOPIER)</span><span style="text-align: right;">İŞLEM</span>
               </div>
               <sc-for list="{{ productRows }}" as="p" hint-placeholder-count="4">
-                <div style="display: grid; grid-template-columns: 2.4fr .9fr .8fr; gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid rgba(129,135,151,.1);">
+                <div style="display: grid; grid-template-columns: 1.8fr .6fr 1.5fr .7fr; gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid rgba(129,135,151,.1);">
                   <input value="{{ p.titleVal }}" onChange="{{ p.onTitle }}" style="border: 1px solid rgba(129,135,151,.25); background: #02040a; color: #e9dfc8; padding: 11px 12px; font-size: 13.5px; font-family: inherit;">
                   <input value="{{ p.priceVal }}" onChange="{{ p.onPrice }}" style="border: 1px solid rgba(129,135,151,.25); background: #02040a; color: #e6c478; padding: 11px 12px; font-size: 13.5px; font-family: 'Special Elite', monospace;">
+                  <input value="{{ p.payVal }}" onChange="{{ p.onPay }}" placeholder="https://www.shopier.com/…" style="border: 1px solid rgba(129,135,151,.25); background: #02040a; color: #9ed3a8; padding: 11px 12px; font-size: 12.5px; font-family: inherit;">
                   <span style="text-align: right;"><button onClick="{{ p.save }}" style="{{ p.saveStyle }}">{{ p.saveLabel }}</button></span>
                 </div>
               </sc-for>
@@ -516,12 +517,13 @@ class Component extends DCLogic {
     const d = this.state.productDrafts[p.slug] || {};
     const title = (d.title != null ? d.title : p.title);
     const price = parseFloat(d.price != null ? d.price : p.price) || 0;
+    const pay_url = String(d.pay_url != null ? d.pay_url : (p.pay_url || '')).trim();
     this.setState({ busyId: 'prod-' + p.slug });
-    const { data } = await this.call({ password: this.state.pass, action: 'updateProduct', slug: p.slug, title, price });
+    const { data } = await this.call({ password: this.state.pass, action: 'updateProduct', slug: p.slug, title, price, pay_url });
     if (data.ok) {
       this.setState(st => ({
         busyId: null,
-        products: st.products.map(x => x.slug === p.slug ? { ...x, title, price } : x),
+        products: st.products.map(x => x.slug === p.slug ? { ...x, title, price, pay_url } : x),
         productDrafts: { ...st.productDrafts, [p.slug]: undefined }
       }));
       this.flash('✓ Ürün güncellendi: ' + title);
@@ -751,13 +753,16 @@ class Component extends DCLogic {
       // ürün & fiyat düzenleme
       productRows: (s.products || []).map(p => {
         const d = s.productDrafts[p.slug] || {};
-        const dirty = (d.title != null && d.title !== p.title) || (d.price != null && String(d.price) !== String(p.price));
+        const dirty = (d.title != null && d.title !== p.title) || (d.price != null && String(d.price) !== String(p.price))
+          || (d.pay_url != null && d.pay_url !== (p.pay_url || ''));
         return {
           slug: p.slug,
           titleVal: d.title != null ? d.title : p.title,
           priceVal: d.price != null ? d.price : String(p.price),
+          payVal: d.pay_url != null ? d.pay_url : (p.pay_url || ''),
           onTitle: e => this.draft(p.slug, 'title', e.target.value),
           onPrice: e => this.draft(p.slug, 'price', e.target.value),
+          onPay: e => this.draft(p.slug, 'pay_url', e.target.value),
           save: () => this.saveProduct(p),
           saveLabel: s.busyId === ('prod-' + p.slug) ? '…' : 'KAYDET',
           saveStyle: {
