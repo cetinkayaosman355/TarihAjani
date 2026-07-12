@@ -81,6 +81,12 @@
     .boot-line{margin:18px 0 0;color:#4fd1e0;font:400 .62rem/1 'Special Elite',monospace;letter-spacing:.3em;opacity:0;animation:reveal .6s .9s ease forwards}
     .boot-bar{width:min(280px,60vw);height:1px;margin:14px auto 0;background:rgba(79,209,224,.2);position:relative;overflow:hidden}
     .boot-bar:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,#4fd1e0,transparent);transform:translateX(-100%);animation:boot-scan 1.5s .5s ease forwards}
+    .boot-ring{position:absolute;left:50%;top:50%;width:130vmax;height:130vmax;border:1px solid rgba(201,162,90,.35);border-radius:50%;transform:translate(-50%,-50%) scale(.05);opacity:0;animation:boot-ring 1.9s ease-out forwards}
+    .boot-ring.b2{border-color:rgba(79,209,224,.3);animation-delay:.35s}
+    .boot-ring.b3{border-color:rgba(201,162,90,.2);animation-delay:.7s}
+    @keyframes boot-ring{0%{transform:translate(-50%,-50%) scale(.05);opacity:0}15%{opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+    .btn.war{color:#f2d4b0;border-color:rgba(176,65,62,.85);background:linear-gradient(110deg,rgba(90,26,24,.55),rgba(56,18,16,.55));box-shadow:inset 0 0 22px rgba(176,65,62,.14)}
+    .btn.war:hover{box-shadow:0 0 34px rgba(192,82,78,.35);background:linear-gradient(110deg,rgba(112,32,30,.6),rgba(70,22,20,.6))}
     @keyframes stamp-in{from{opacity:0;transform:scale(2.2)}to{opacity:1;transform:scale(1)}}
     @keyframes boot-scan{to{transform:translateX(100%)}}
     @keyframes boot-out{to{opacity:0;visibility:hidden}}
@@ -134,6 +140,15 @@
   </style>
 </head>
 <body>
+  <!-- WOW GİRİŞ: mühür + tarama + genişleyen zaman halkaları -->
+  <div class="boot" aria-hidden="true">
+    <div class="boot-ring"></div><div class="boot-ring b2"></div><div class="boot-ring b3"></div>
+    <div class="boot-inner">
+      <span class="boot-stamp">ZAMAN TÜNELİ</span>
+      <p class="boot-line">KRONO-ÇEKİRDEK DEVREDE · BAĞLANTI KURULUYOR</p>
+      <div class="boot-bar"></div>
+    </div>
+  </div>
   <a class="site-return" href="/">TA · ANA SAYFA</a>
   <canvas id="universe" aria-hidden="true"></canvas>
   <div class="hero-art" aria-hidden="true"><div class="art-base"></div><div class="art-depth"></div><div class="art-glow"></div><div class="art-scan"></div></div>
@@ -144,8 +159,8 @@
         <h1 id="title">ZAMAN <span>GÖREVİ</span></h1>
         <p class="slogan">Tarihi ne kadar tanıyorsun, ajan?</p>
         <p class="game-lead">Rütbeni seç, zaman kapsüllerini çöz. Her doğru cevap seni saha ajanlığına bir adım yaklaştırır — sonunda kendi zaman sarmalın açılır.</p>
-        <div class="game-stat"><div><b>50+</b><span>SORU · TÜM ÇAĞLAR</span></div><div><b>3</b><span>RÜTBE SEVİYESİ</span></div><div><b>5</b><span>VAKA DOSYASI</span></div></div>
-        <div class="actions"><a class="btn primary" href="/oyun/sayi-tahmin/">GÖREVE BAŞLA →</a><a class="btn secondary" href="#arsiv">ZAMAN SARMALINI KEŞFET</a></div>
+        <div class="game-stat"><div><b>2</b><span>SAHA OYUNU</span></div><div><b>50+</b><span>SORU · TÜM ÇAĞLAR</span></div><div><b>1402</b><span>ANKARA · SATRANÇ</span></div></div>
+        <div class="actions"><a class="btn primary" href="/oyun/sayi-tahmin/">GÖREVE BAŞLA →</a><a class="btn war" href="/oyun/satranc-1402/">♞ SATRANÇ 1402 · TİMUR vs BAYEZİD</a><a class="btn secondary" href="#arsiv">ZAMAN SARMALINI KEŞFET</a></div>
       </div>
       <div class="game-orb" aria-hidden="true"><div class="orb-ring r1"></div><div class="orb-ring r2"></div><div class="orb-ring r3"></div><div class="orb-sweep"></div><div class="orb-blip b1"></div><div class="orb-blip b2"></div><div class="orb-blip b3"></div><div class="orb-core">?</div></div>
       <div class="scroll-hint">AŞAĞI KAY · ZAMAN SARMALI</div>
