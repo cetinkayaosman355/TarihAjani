@@ -865,12 +865,6 @@ class Component extends DCLogic {
         { id: 'yatay', name: 'Yatay · 16:9', desc: 'YouTube ana video kadrajı' },
         { id: 'dikey', name: 'Dikey · 9:16', desc: 'Shorts · Reels · TikTok' },
         { id: 'kare', name: 'Kare · 1:1', desc: 'Instagram gönderi kadrajı' }
-      ],
-      duration: [
-        { id: 'sn30', name: 'Kısa Vaka · 30 sn', desc: 'Shorts / Reels · 6 sahne · 30 kredi' },
-        { id: 'dk1', name: 'Mini Dosya · 1–2 dk', desc: 'Kısa anlatı · 12 sahne · 60 kredi' },
-        { id: 'dk4', name: 'Standart Dosya · 4–5 dk', desc: 'Ana kanal videosu · 20 sahne · 100 kredi' },
-        { id: 'dk8', name: 'Derin Dosya · 8–12 dk', desc: 'Uzun vaka incelemesi · 30 sahne · 150 kredi' }
       ]
     };
   }
@@ -1177,13 +1171,6 @@ class Component extends DCLogic {
         hollywood: 'cinematic ultra-photorealistic film still, ARRI Alexa, anamorphic, extreme detail, natural film lighting',
         sinematik: 'dark cinematic film still, candlelit chiaroscuro, deep shadows, noir moody atmosphere, ultra-photorealistic, anamorphic',
         gravur: 'antique engraving illustration, etched copperplate texture, period historical artwork, fine cross-hatching, muted aged tones'
-      },
-      // format matrisi: senaryo bölümü / toplam seslendirme kelimesi / sahne (görsel+video) promptu adedi
-      format: {
-        sn30: { bolum: '1-2 kısa an', kelime: '55-90', sahne: '6', etiket: '30 sn', kredi: 30 },
-        dk1:  { bolum: '3-4 bölüm', kelime: '180-320', sahne: '12', etiket: '1-2 dk', kredi: 60 },
-        dk4:  { bolum: '5-7 bölüm', kelime: '650-950', sahne: '20', etiket: '4-5 dk', kredi: 100 },
-        dk8:  { bolum: '8-10 bölüm', kelime: '1200-1800', sahne: '30', etiket: '8-12 dk', kredi: 150 }
       }
     };
   }
