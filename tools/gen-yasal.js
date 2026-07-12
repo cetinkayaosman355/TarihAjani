@@ -61,7 +61,7 @@ function shell(title, desc, canonPath, bodyHtml) {
 ${bodyHtml}
 </main>
 <footer class="site">
-  <a href="/gizlilik/">Gizlilik &amp; KVKK</a> · <a href="/mesafeli-satis/">Mesafeli Satış</a> · <a href="/iade/">İade &amp; Cayma</a><br>
+  <a href="/gizlilik/">Gizlilik</a> · <a href="/kvkk/">KVKK</a> · <a href="/mesafeli-satis/">Mesafeli Satış</a> · <a href="/on-bilgilendirme/">Ön Bilgilendirme</a> · <a href="/iade/">İade &amp; Cayma</a> · <a href="/kullanim-kosullari/">Kullanım Koşulları</a> · <a href="/cerez/">Çerez</a> · <a href="/iletisim/">İletişim</a><br>
   © 2026 Tarih Ajanı · <a href="/">tarihajani.com</a>
 </footer>
 <script src="/uye-nav.js" defer></script>
@@ -197,11 +197,117 @@ const iade = `
 <p>Tüm iade ve cayma talepleri için: <a href="mailto:iletisim@tarihajani.com">iletisim@tarihajani.com</a> — sipariş e-postanı ve ürün adını eklemeyi unutma. Talepler en geç 14 gün içinde sonuçlandırılır.</p>
 `;
 
+/* ── KVKK (ayrı URL) ── */
+const kvkk = `
+<div class="mono kicker">YASAL · KİŞİSEL VERİLER</div>
+<h1>KVKK Aydınlatma Metni</h1>
+<p class="tarih">Son güncelleme: ${GUNCELLEME}</p>
+<p>tarihajani.com işletmecisi ("Veri Sorumlusu"), 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında kişisel verilerinizi aşağıda açıklandığı şekilde işler.</p>
+<h2>İşlenen veriler</h2>
+<ul>
+  <li>Kimlik ve iletişim: ad-soyad, e-posta, telefon (sipariş formunda verilmişse)</li>
+  <li>Üyelik ve sipariş verileri: hesap e-postası, seviye, kredi bakiyesi, satın alınan ürün ve tutar</li>
+  <li>İletişim içerikleri (canlı sohbet, iletişim formu) ve teknik/çerez verileri</li>
+</ul>
+<h2>Amaç ve hukuki sebep</h2>
+<p>Veriler; üyeliğin yürütülmesi, siparişin oluşturulması ve teslimi, destek taleplerinin yanıtlanması ve yasal yükümlülüklerin yerine getirilmesi amacıyla, KVKK m.5/2 (sözleşmenin kurulması/ifası, hukuki yükümlülük, meşru menfaat) kapsamında işlenir.</p>
+<h2>Aktarım</h2>
+<p>Kart bilgileri Sitede saklanmaz; ödeme, ödeme kuruluşunun (ör. Shopier) güvenli ortamında gerçekleşir. Barındırma/altyapı için Netlify ve Supabase, ölçüm için Google Analytics, Studio üretimleri için yapay zekâ sağlayıcıları amaçla sınırlı olarak kullanılır. Veriler pazarlama amacıyla üçüncü kişilerle paylaşılmaz.</p>
+<h2>Haklarınız (m.11)</h2>
+<p>Verilerinizin işlenip işlenmediğini öğrenme, bilgi/düzeltme/silme talep etme haklarınızı <a href="mailto:iletisim@tarihajani.com">iletisim@tarihajani.com</a> adresine başvurarak kullanabilirsiniz; talep en geç 30 gün içinde yanıtlanır. Ayrıntılı gizlilik metni: <a href="/gizlilik/">Gizlilik Politikası</a>.</p>
+<div class="kutu">Hesabını ve verilerini silmek için üyelik e-postandan <a href="mailto:iletisim@tarihajani.com">iletisim@tarihajani.com</a> adresine yazman yeterli.</div>
+`;
+
+/* ── ÖN BİLGİLENDİRME FORMU (ayrı URL) ── */
+const onbilgi = `
+<div class="mono kicker">YASAL · ÖN BİLGİLENDİRME</div>
+<h1>Ön Bilgilendirme Formu</h1>
+<p class="tarih">Son güncelleme: ${GUNCELLEME}</p>
+<h2>Satıcı</h2>
+<p>tarihajani.com işletmecisi · E-posta: <a href="mailto:iletisim@tarihajani.com">iletisim@tarihajani.com</a> · Kurumsal bilgiler için <a href="/iletisim/">İletişim</a> sayfasına bakınız.</p>
+<h2>Ürün / hizmet ve bedel</h2>
+<ul>
+  <li>Sipariş sırasında seçtiğiniz dijital içerik (e-kitap, eğitim, hazır içerik, Studio kredisi), üyelik ya da fiziki ürün.</li>
+  <li>Ürünün adı, adedi ve KDV dâhil satış fiyatı; sipariş özetinde ve onay e-postasında yer alır. Ek ücret yansıtılmaz.</li>
+</ul>
+<h2>Ödeme ve teslimat</h2>
+<ul>
+  <li>Ödeme: kredi kartı (Shopier güvenli ödeme) veya havale/EFT. Kart bilgisi Sitede toplanmaz.</li>
+  <li>Dijital içerik/üyelik: ödeme onayının ardından erişim hesaba tanımlanır ve/veya e-posta ile iletilir. Fiziki ürün: kargoyla gönderilir.</li>
+</ul>
+<h2>Cayma hakkı</h2>
+<div class="kutu">Mesafeli Sözleşmeler Yönetmeliği m.15/1-ğ uyarınca, elektronik ortamda anında ifa edilen ve anında teslim edilen gayrimaddi mallarda (dijital içerik, üyelik, kredi paketi) cayma hakkı bulunmamaktadır. Fiziki ürünlerde 14 gün cayma hakkı geçerlidir. Ayrıntı: <a href="/iade/">İade &amp; Cayma</a>.</div>
+<p>Tam sözleşme metni: <a href="/mesafeli-satis/">Mesafeli Satış Sözleşmesi</a>. Sipariş formundaki onay kutusunun işaretlenmesi, bu formun okunduğu anlamına gelir.</p>
+`;
+
+/* ── KULLANIM KOŞULLARI (ayrı URL) ── */
+const kullanim = `
+<div class="mono kicker">YASAL · KULLANIM</div>
+<h1>Kullanım Koşulları</h1>
+<p class="tarih">Son güncelleme: ${GUNCELLEME}</p>
+<p>Bu siteyi kullanarak aşağıdaki koşulları kabul etmiş sayılırsın. Tarih Ajanı, koşulları güncelleme hakkını saklı tutar; güncel sürüm bu sayfada yayımlanır.</p>
+<h2>İçerik ve lisans</h2>
+<p>Satın alınan dijital içerikler, e-kitaplar ve eğitimler <strong>yalnızca kişisel kullanım</strong> içindir; izinsiz çoğaltılamaz, dağıtılamaz, yeniden satılamaz veya kamuya açık şekilde paylaşılamaz. Ticari kullanım ayrı yazılı izne tabidir.</p>
+<h2>Studio ile üretilen içerik</h2>
+<p>Studio, ürettiğin metin ve görselleri kendi projelerinde kullanman için sunulur. Yapay zekâ ile üretilen çıktılar bilgilendirme ve üretim amaçlıdır; tarihî doğruluk ve nihai kullanım sorumluluğu kullanıcıya aittir. Üretilen içeriğin üçüncü kişilerin haklarını ihlal etmeyecek şekilde kullanılması kullanıcının sorumluluğundadır.</p>
+<h2>Hesap</h2>
+<p>Hesabının güvenliğinden ve giriş bilgilerinin gizliliğinden kullanıcı sorumludur. Hesabın paylaşılması erişimin askıya alınmasına yol açabilir.</p>
+<h2>Fikri mülkiyet</h2>
+<p>Sitedeki tüm metin, görsel, video, arşiv dosyaları ve marka unsurları Tarih Ajanı'na aittir; izinsiz kullanılamaz.</p>
+<h2>Sorumluluk</h2>
+<p>Hizmet "olduğu gibi" sunulur. Hizmet kesintileri veya teknik sorunlarda sorumluluk ilgili mevzuat çerçevesinde sınırlıdır. Sorular için: <a href="mailto:iletisim@tarihajani.com">iletisim@tarihajani.com</a></p>
+`;
+
+/* ── ÇEREZ POLİTİKASI (ayrı URL) ── */
+const cerez = `
+<div class="mono kicker">YASAL · ÇEREZLER</div>
+<h1>Çerez Politikası</h1>
+<p class="tarih">Son güncelleme: ${GUNCELLEME}</p>
+<p>Çerezler, siteyi ziyaret ettiğinde tarayıcına kaydedilen küçük dosyalardır. Tarih Ajanı, siteyi çalıştırmak ve deneyimi iyileştirmek için aşağıdaki çerezleri/yerel depolamayı kullanır.</p>
+<h2>Kullanılan türler</h2>
+<ul>
+  <li><strong>Zorunlu:</strong> oturum yönetimi, tema tercihi, tek seferlik bildirimler ve üyelik durumu (yerel depolama). Bunlar olmadan site düzgün çalışmaz.</li>
+  <li><strong>Analitik:</strong> Google Analytics ile anonim kullanım istatistiği (hangi sayfaların ziyaret edildiği gibi). Kişisel kimlik amacı taşımaz.</li>
+</ul>
+<h2>Yönetim</h2>
+<p>Çerezleri tarayıcı ayarlarından sınırlayabilir veya silebilirsin. Zorunlu çerezleri engellersen üyelik ve Studio özellikleri çalışmayabilir. Ayrıntı: <a href="/gizlilik/">Gizlilik Politikası</a>.</p>
+`;
+
+/* ── İLETİŞİM (ayrı URL + kurumsal bilgi) ── */
+const iletisim = `
+<div class="mono kicker">İLETİŞİM</div>
+<h1>Bize Ulaş</h1>
+<p class="tarih">Aynı gün dönüş yapılır</p>
+<p>Sipariş, destek, iş birliği ve her türlü soru için bize ulaşabilirsin.</p>
+<h2>İletişim kanalları</h2>
+<ul>
+  <li><strong>E-posta:</strong> <a href="mailto:iletisim@tarihajani.com">iletisim@tarihajani.com</a> · Destek: <a href="mailto:destek@tarihajani.com">destek@tarihajani.com</a></li>
+  <li><strong>Canlı sohbet:</strong> Sitenin sağ altındaki "Ajanla Konuş" butonu</li>
+  <li><strong>Instagram:</strong> <a href="https://instagram.com/tarih.ajani" target="_blank" rel="noopener">@tarih.ajani</a> · <strong>YouTube:</strong> <a href="https://youtube.com/@TarihAjani" target="_blank" rel="noopener">Tarih Ajanı</a></li>
+  <li><strong>Web:</strong> tarihajani.com</li>
+</ul>
+<h2>Kurumsal bilgiler</h2>
+<div class="kutu">
+  <p style="margin:0 0 6px;">Ticari unvan: <strong>—</strong><br>
+  Adres: <strong>—</strong><br>
+  Telefon / WhatsApp: <strong>—</strong><br>
+  Vergi dairesi / no (veya T.C. no): <strong>—</strong><br>
+  Çalışma saatleri: <strong>Hafta içi 09.00–18.00</strong></p>
+  <p style="margin:8px 0 0;color:#818797;font-size:12.5px;">Not: Kurumsal bilgiler yasal gereklilik doğrultusunda güncellenecektir.</p>
+</div>
+<p>Ödemeler ödeme kuruluşu (Shopier) güvenli altyapısında alınır. Dijital ürünler ödeme onayının ardından erişime açılır; destek süresi üyelik/erişim boyunca devam eder.</p>
+`;
+
 /* ── yaz ── */
 const pages = [
   ['gizlilik', 'Gizlilik Politikası ve KVKK Aydınlatma Metni', 'tarihajani.com gizlilik politikası, KVKK aydınlatma metni ve çerez bilgilendirmesi.', gizlilik],
   ['mesafeli-satis', 'Ön Bilgilendirme ve Mesafeli Satış Sözleşmesi', 'tarihajani.com mesafeli satış sözleşmesi ve ön bilgilendirme formu.', mesafeli],
   ['iade', 'İade ve Cayma Koşulları', 'tarihajani.com iade politikası: dijital ürünlerde cayma istisnası, üyelik iptali ve fiziki ürün iadesi.', iade],
+  ['kvkk', 'KVKK Aydınlatma Metni', 'tarihajani.com KVKK aydınlatma metni: işlenen kişisel veriler, amaçlar, aktarım ve haklarınız.', kvkk],
+  ['on-bilgilendirme', 'Ön Bilgilendirme Formu', 'tarihajani.com ön bilgilendirme formu: satıcı, ürün, bedel, ödeme, teslimat ve cayma hakkı.', onbilgi],
+  ['kullanim-kosullari', 'Kullanım Koşulları', 'tarihajani.com kullanım koşulları: içerik lisansı, ticari kullanım, hesap ve fikri mülkiyet.', kullanim],
+  ['cerez', 'Çerez Politikası', 'tarihajani.com çerez politikası: zorunlu ve analitik çerezler ve yönetimi.', cerez],
+  ['iletisim', 'İletişim', 'tarihajani.com iletişim: e-posta, canlı sohbet, sosyal medya ve kurumsal bilgiler.', iletisim],
 ];
 for (const [slug, title, desc, body] of pages) {
   const dir = path.join(ROOT, slug);
