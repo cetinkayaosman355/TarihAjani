@@ -259,8 +259,8 @@ function rawMoves(sq,b,cs,epT){
       var home=p.c==='w'?7:0;
       if(r===home&&c===4){
         var ks=p.c==='w'?cs.wk:cs.bk,qs=p.c==='w'?cs.wq:cs.bq;
-        if(ks&&!b[home*8+5]&&!b[home*8+6]&&b[home*8+7]&&b[home*8+7].t==='R')out.push(home*8+6);
-        if(qs&&!b[home*8+3]&&!b[home*8+2]&&!b[home*8+1]&&b[home*8]&&b[home*8].t==='R')out.push(home*8+2);
+        if(ks&&!b[home*8+5]&&!b[home*8+6]&&b[home*8+7]&&b[home*8+7].t==='R'&&b[home*8+7].c===p.c)out.push(home*8+6);
+        if(qs&&!b[home*8+3]&&!b[home*8+2]&&!b[home*8+1]&&b[home*8]&&b[home*8].t==='R'&&b[home*8].c===p.c)out.push(home*8+2);
       }
     }
   }else{
@@ -308,7 +308,7 @@ function anyLegal(col){for(var i=0;i<64;i++)if(board[i]&&board[i].c===col&&legal
 /* ───────── YZ (Bayezid) — alfa-beta derinlik 2 ───────── */
 var VAL={P:100,N:320,B:330,R:500,Q:900,K:20000};
 function evalB(b){var s=0;for(var i=0;i<64;i++){var p=b[i];if(!p)continue;var v=VAL[p.t];var r=rc(i)[0],c=rc(i)[1];var ctr=(3.5-Math.abs(3.5-c))+(3.5-Math.abs(3.5-r));v+=ctr*3;if(p.t==='P')v+=(p.c==='b'?r:7-r)*4;s+=p.c==='b'?v:-v;}return s;}
-function movesFor(col,b,cs,epT){var out=[];for(var i=0;i<64;i++){var p=b[i];if(!p||p.c!==col)continue;rawMoves(i,b,cs,epT).forEach(function(to){var r=applyMove(b,i,to,epT);if(!attacked(kingSq(col,r.b),foe(col),r.b))out.push({from:i,to:to});});}return out;}
+function movesFor(col,b,cs,epT){var out=[];for(var i=0;i<64;i++){var p=b[i];if(!p||p.c!==col)continue;rawMoves(i,b,cs,epT).forEach(function(to){if(p.t==='K'&&Math.abs(rc(to)[1]-rc(i)[1])===2){var mid=(i+to)/2;if(attacked(i,foe(col),b)||attacked(mid,foe(col),b))return;}var r=applyMove(b,i,to,epT);if(!attacked(kingSq(col,r.b),foe(col),r.b))out.push({from:i,to:to});});}return out;}
 function aiMove(){
   var best=null,bestV=-1e9,ms=movesFor('b',board,castle,ep);
   ms.forEach(function(m){
@@ -395,6 +395,7 @@ function doMove(from,to,silent){
   // haklar
   if(p.t==='K'){if(p.c==='w'){castle.wk=castle.wq=false;}else{castle.bk=castle.bq=false;}}
   if(p.t==='R'){if(from===56)castle.wq=false;if(from===63)castle.wk=false;if(from===0)castle.bq=false;if(from===7)castle.bk=false;}
+  if(to===56)castle.wq=false;if(to===63)castle.wk=false;if(to===0)castle.bq=false;if(to===7)castle.bk=false;
   ep=-1;
   if(p.t==='P'&&Math.abs(rc(to)[0]-rc(from)[0])===2)ep=(from+to)/2;
   last=[from,to];turn=foe(turn);sel=-1;legal=[];
