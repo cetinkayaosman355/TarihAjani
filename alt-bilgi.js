@@ -44,7 +44,19 @@
     return '<a href="' + href + '" style="display:block;color:#a4a9b5;text-decoration:none;margin:3px 0;">' + label + '</a>';
   }
 
+  // Uygulama tipi sayfalarda (Studio, Admin, oyun) kurumsal footer gösterme —
+  // bu sayfaların kendi tam-ekran düzeni var, footer içeriğin üstüne biniyor.
+  var NO_FOOTER = ['/studio', '/admin', '/zaman-tuneli'];
+  function corpAllowed() {
+    var p = location.pathname.toLowerCase();
+    for (var i = 0; i < NO_FOOTER.length; i++) {
+      if (p === NO_FOOTER[i] || p.indexOf(NO_FOOTER[i]) === 0) return false;
+    }
+    return true;
+  }
+
   function injectCorpFooter() {
+    if (!corpAllowed()) return;
     if (document.getElementById('ta-corp-footer')) return;
     var footer = document.querySelector('footer');
     if (footer) {
@@ -147,7 +159,8 @@
     run();
     // dc yeniden render ederse yeniden enjekte et
     var mo = new MutationObserver(function () {
-      if (!document.getElementById('ta-corp-footer') || (onBuyPage() && !document.getElementById('ta-buy-bar'))) {
+      if ((corpAllowed() && !document.getElementById('ta-corp-footer')) ||
+          (onBuyPage() && !document.getElementById('ta-buy-bar'))) {
         run();
       }
     });
