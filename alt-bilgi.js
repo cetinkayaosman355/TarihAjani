@@ -62,8 +62,10 @@
     // <footer> yoksa EKLEME: gövdeye eklemek tam-ekran okuyucu/uygulama
     // sayfalarında (yarı saydam overlay) içeriğin üstüne biniyordu.
     if (!footer) return;
-    // Zaten yasal bağlantıları olan zengin bir footer varsa tekrar ekleme (çift footer olmasın)
-    if (footer.querySelector('a[href*="gizlilik"], a[href*="mesafeli"], a[href*="kvkk"], a[href*="iade"]')) return;
+    // Zaten yasal içeriği olan zengin bir footer varsa tekrar ekleme (çift footer
+    // olmasın). Ana sayfadaki yasal öğeler <a> değil <button> (modal açar); bu yüzden
+    // href yerine footer METNİNE bakıyoruz.
+    if (/gizlilik|kvkk|mesafeli|çerez|ön bilgilendirme|kullanım şart/i.test(footer.textContent || '')) return;
     footer.appendChild(buildCorpFooter());
   }
 

@@ -77,8 +77,16 @@
     if (txt === 'ara' || txt === '🔍 ara' || /^ara$/.test(txt.replace(/[^\wçğışöü ]/gi, '').trim())) return a;
     return null;
   }
-  document.addEventListener('click', function (e) {
+  // WINDOW capture: document-capture'da çalışan sayfa-geçiş scripti (420ms sonra
+  // yönlendiren) devreye girmeden önce yakala; stopImmediatePropagation ile onu durdur.
+  function handle(e) {
     var a = isAra(e.target);
-    if (a) { e.preventDefault(); e.stopPropagation(); open(); }
-  }, true);
+    if (!a) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    open();
+  }
+  window.addEventListener('click', handle, true);
+  document.addEventListener('click', handle, true);
 })();
