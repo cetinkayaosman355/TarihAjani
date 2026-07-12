@@ -219,9 +219,12 @@
                     <p style="margin: 0 0 4px; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">{{ h.meta }}</p>
                     <strong style="color: #f2ecd9; font-size: 15.5px; font-family: 'Playfair Display', serif;">{{ h.title }}</strong>
                   </div>
-                  <sc-if value="{{ h.canOpen }}" hint-placeholder-val="{{ true }}">
-                    <button onClick="{{ h.openFile }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .14em; padding: 11px 18px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.3);">DOSYAYI AÇ</button>
-                  </sc-if>
+                  <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+                    <sc-if value="{{ h.canOpen }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ h.openFile }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .14em; padding: 11px 18px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.3);">DOSYAYI AÇ</button>
+                    </sc-if>
+                    <button onClick="{{ h.del }}" title="Sil" style="border: 1px solid rgba(192,57,43,.45); background: transparent; color: #e08a80; cursor: pointer; font-size: 13px; padding: 10px 12px;" style-hover="background: rgba(192,57,43,.12);">🗑</button>
+                  </div>
                 </div>
               </sc-for>
             </div>
@@ -326,6 +329,21 @@
             <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ADIM 2 / 4 · ÜRETİM TARZI</p>
             <h2 style="margin: 10px 0 22px; font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 700;">Dosya nasıl anlatılsın?</h2>
             <div style="display: grid; gap: 26px;">
+              <!-- HAZIR ÜRETİM MODLARI: tek tıkla süre + kadraj + ton + stil -->
+              <div>
+                <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;">
+                  <span style="color: #e9dfc8; font-weight: 700; font-size: 15px; letter-spacing: .04em;">Hazır Mod</span>
+                  <span style="color: #676d7c; font-size: 12px;">Tek tıkla ayarları uygula, aşağıdan değiştir</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                  <sc-for list="{{ prodModes }}" as="pm" hint-placeholder-count="3">
+                    <button onClick="{{ pm.pick }}" style="{{ pm.cardStyle }}" style-hover="border-color: rgba(193,154,82,.7);">
+                      <span style="{{ pm.nameStyle }}">{{ pm.name }}</span>
+                      <span style="color: #818797; font-size: 12px; line-height: 1.45;">{{ pm.desc }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
               <!-- SÜRE KAYDIRICISI: 30 sn → 10 dk, 30'ar sn -->
               <div style="border: 1px solid rgba(193,154,82,.3); background: rgba(193,154,82,.05); padding: 20px 22px;">
                 <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 4px;">
@@ -881,6 +899,29 @@ class Component extends DCLogic {
   }
 
   set(patch) { this.setState(patch, () => this.persist()); }
+
+  // Hazır üretim modları (madde 7.4): tek tıkla süre + kadraj + ton + stil ayarlar
+  prodModes() {
+    return [
+      { id: 'kisa',     name: 'Kısa Video',  desc: 'Shorts · Reels · 60 sn · dikey',      duration: 's60',  aspect: 'dikey', tone: 'merak',    style: 'sinematik' },
+      { id: 'uzun',     name: 'Uzun Video',  desc: 'YouTube · 8 dk · yatay',              duration: 's480', aspect: 'yatay', tone: 'dramatik', style: 'sinematik' },
+      { id: 'belgesel', name: 'Belgesel',    desc: 'Derin anlatı · 10 dk · yatay',        duration: 's600', aspect: 'yatay', tone: 'belgesel', style: 'gravur' }
+    ];
+  }
+  applyProdMode(id) {
+    const m = this.prodModes().find(x => x.id === id);
+    if (!m) return;
+    this.set({ duration: m.duration, aspect: m.aspect, tone: m.tone, style: m.style });
+  }
+  prodModeActive(m) {
+    return this.state.duration === m.duration && this.state.aspect === m.aspect
+      && this.state.tone === m.tone && this.state.style === m.style;
+  }
+
+  // Proje silme (madde 7.11)
+  deleteHistory(idx) {
+    this.setState(st => ({ history: (st.history || []).filter((_, i) => i !== idx) }), () => this.persist());
+  }
 
   flash(key) {
     this.setState(s => ({ copied: { ...s.copied, [key]: true } }));
@@ -1814,7 +1855,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
         })
       })),
       historyEmpty: (s.history || []).length === 0,
-      savedList: (s.history || []).map(h => ({
+      savedList: (s.history || []).map((h, i) => ({
         title: h.title,
         meta: (h.fileNo ? h.fileNo + ' · ' : '') + h.date,
         canOpen: !!h.result,
@@ -1822,7 +1863,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
           mode: 'wizard', step: 4, tab: 'senaryo',
           result: h.result, fileNo: h.fileNo || '', idea: h.idea || '',
           ...(h.picks || {})
-        })
+        }),
+        del: () => { if (window.confirm('Bu üretimi geçmişten silmek istediğine emin misin?')) this.deleteHistory(i); }
       })),
       toggleChat: () => this.setState(st => ({ chatOpen: !st.chatOpen })),
       chatPanelStyle: {
@@ -1961,6 +2003,19 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       optionGroups: groups,
       startGenerate: () => this.startGenerate(),
       genCostLabel: 'DOSYAYI OLUŞTUR · ' + this.costOf() + ' KREDİ →',
+      prodModes: this.prodModes().map(m => {
+        const on = this.prodModeActive(m);
+        return {
+          name: m.name, desc: m.desc,
+          pick: () => this.applyProdMode(m.id),
+          cardStyle: {
+            cursor: 'pointer', textAlign: 'left', display: 'grid', gap: '4px', padding: '14px 16px',
+            border: '1px solid ' + (on ? '#c19a52' : 'rgba(129,135,151,.3)'),
+            background: on ? 'rgba(193,154,82,.12)' : 'rgba(3,5,11,.5)'
+          },
+          nameStyle: { color: on ? '#e6c478' : '#e9dfc8', fontWeight: 700, fontSize: '14px', letterSpacing: '.02em' }
+        };
+      }),
       durVal: String(this.durationSec()),
       durLabel: this.fmtFor(this.durationSec()).etiket,
       durInfo: (() => { const f = this.fmtFor(this.durationSec()); return f.sahne + ' sahne (kapak hariç) · ' + f.kredi + ' kredi · ~' + f.kelime + ' kelime seslendirme · ' + f.bolum; })(),
@@ -2222,5 +2277,6 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
 <script src="/tema.js" defer></script>
 <script src="/alt-bilgi.js" defer></script>
 <script src="/hos-geldin.js" defer></script>
+<script src="/studio-tur.js" defer></script>
 </body>
 </html>
