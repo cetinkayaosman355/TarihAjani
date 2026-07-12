@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3?v=3"><link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png?v=3?v=3"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3?v=3">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3"><link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png?v=3"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
 <title>Yönetim · Tarih Ajanı</title>
 <meta name="robots" content="noindex, nofollow">
 <script src="./support.js"></script>
@@ -168,6 +168,40 @@
           </div>
         </section>
 
+        <!-- CANLI SOHBET -->
+        <section style="margin-top: 40px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px;">
+            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Canlı Sohbet</h2>
+            <button onClick="{{ chatRefresh }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; padding: 10px 14px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1);">{{ chatRefreshLabel }}</button>
+          </div>
+          <p style="margin: 0 0 14px; color: #818797; font-size: 13px;">Sitedeki Canlı Hat düğmesinden gelen mesajlar. Konuşmaya tıkla, yanıtını yaz — ziyaretçinin ekranına anında düşer.</p>
+          <div style="border: 1px solid rgba(129,135,151,.18);">
+            <sc-for list="{{ chatRows }}" as="c" hint-placeholder-count="2">
+              <div style="border-bottom: 1px solid rgba(129,135,151,.1);">
+                <div onClick="{{ c.open }}" style="cursor: pointer; display: grid; grid-template-columns: 1.4fr 2.4fr .9fr; gap: 10px; align-items: center; padding: 13px 16px;" style-hover="background: rgba(193,154,82,.04);">
+                  <span style="font-size: 13px; color: #e9dfc8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.who }}</span>
+                  <span style="font-size: 12.5px; color: #a9adba; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.preview }}</span>
+                  <span style="text-align: right; font-family: 'Special Elite', monospace; font-size: 10px; color: #676d7c;">{{ c.when }}</span>
+                </div>
+                <sc-if value="{{ c.openNow }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 4px 16px 16px; background: #04060c;">
+                    <sc-for list="{{ chatMsgRows }}" as="m" hint-placeholder-count="3">
+                      <div style="{{ m.rowStyle }}"><span style="{{ m.bubbleStyle }}">{{ m.text }}</span></div>
+                    </sc-for>
+                    <div style="display: flex; gap: 10px; margin-top: 12px;">
+                      <input value="{{ chatReply }}" onChange="{{ onChatReply }}" onKeyDown="{{ onChatReplyKey }}" placeholder="Yanıtını yaz…" style="flex: 1; border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 12px; font-size: 13px; font-family: inherit; min-width: 0;">
+                      <button onClick="{{ sendChatReply }}" disabled="{{ chatBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .1em; padding: 12px 16px;">{{ chatSendLabel }}</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noChats }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 26px 16px; text-align: center; color: #676d7c; font-size: 13px;">Henüz sohbet yok.</div>
+            </sc-if>
+          </div>
+        </section>
+
         <!-- ÜRÜNLER & FİYATLAR -->
         <section style="margin-top: 40px;">
           <h2 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Ürünler & Fiyatlar</h2>
@@ -255,12 +289,14 @@ class Component extends DCLogic {
     profiles: [], orders: [], products: [], expenses: [], productDrafts: {},
     expTitle: '', expAmount: '', expNote: '',
     search: '', refreshing: false, busyId: null, toast: '',
-    memberMeta: {}, tierDefs: null
+    memberMeta: {}, tierDefs: null,
+    chats: [], chatThread: null, chatMsgs: [], chatReply: '', chatBusy: false, chatRefreshing: false
   };
 
   FN_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/admin';
   CREDITS_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/credits';
   SEND_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/send-emails';
+  CHAT_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/chat';
   ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
 
   componentDidMount() {
@@ -292,6 +328,7 @@ class Component extends DCLogic {
     if (data.ok) {
       try { sessionStorage.setItem('ta_admin_pass', pass); } catch (e) {}
       this.setState({ authed: true, loading: false, profiles: data.profiles || [], orders: data.orders || [], products: data.products || [], expenses: data.expenses || [] });
+      this.loadChats();
     } else {
       this.setState({ loading: false, authed: false, err: silent ? '' : (data.error || 'Giriş başarısız.') });
     }
@@ -302,6 +339,47 @@ class Component extends DCLogic {
     const { data } = await this.call({ password: this.state.pass, action: 'list' });
     if (data.ok) this.setState({ profiles: data.profiles || [], orders: data.orders || [], products: data.products || [], expenses: data.expenses || [], refreshing: false });
     else this.setState({ refreshing: false });
+    this.loadChats();
+  }
+
+  /* ── canlı sohbet ── */
+  async chatCall(payload) {
+    const r = await fetch(this.CHAT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.ANON },
+      body: JSON.stringify({ password: this.state.pass, ...payload })
+    });
+    return r.json().catch(() => ({ ok: false }));
+  }
+
+  async loadChats() {
+    this.setState({ chatRefreshing: true });
+    const d = await this.chatCall({ action: 'threads' });
+    this.setState({ chats: (d && d.ok && d.threads) || [], chatRefreshing: false });
+  }
+
+  async openChat(thread) {
+    if (this.state.chatThread === thread) { this.setState({ chatThread: null, chatMsgs: [] }); return; }
+    this.setState({ chatThread: thread, chatMsgs: [] });
+    const d = await this.chatCall({ action: 'messagesOf', thread });
+    if (d && d.ok) this.setState({ chatMsgs: d.messages || [] });
+  }
+
+  async sendChatReply() {
+    const s = this.state;
+    const text = (s.chatReply || '').trim();
+    if (!text || !s.chatThread || s.chatBusy) return;
+    this.setState({ chatBusy: true });
+    const d = await this.chatCall({ action: 'reply', thread: s.chatThread, text });
+    if (d && d.ok) {
+      this.setState(st => ({
+        chatBusy: false, chatReply: '',
+        chatMsgs: [...st.chatMsgs, { id: d.id, sender: 'ajan', text, created_at: new Date().toISOString() }]
+      }));
+    } else {
+      this.setState({ chatBusy: false });
+      this.flash('Yanıt gönderilemedi: ' + ((d && d.error) || 'hata'));
+    }
   }
 
   async toggleAccess(id, current) {
@@ -749,6 +827,34 @@ class Component extends DCLogic {
       orderRows,
       noOrders: orderRows.length === 0,
       toast: s.toast,
+
+      // canlı sohbet
+      chatRefresh: () => this.loadChats(),
+      chatRefreshLabel: s.chatRefreshing ? 'YENİLENİYOR…' : '↻ SOHBETLERİ YENİLE',
+      chatRows: (s.chats || []).map(c => ({
+        who: (c.name || 'Ziyaretçi') + (c.email ? ' · ' + c.email : ''),
+        preview: (c.lastSender === 'ajan' ? 'Sen: ' : '') + String(c.last || '').slice(0, 90),
+        when: c.lastAt ? new Date(c.lastAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '',
+        open: () => this.openChat(c.thread),
+        openNow: s.chatThread === c.thread
+      })),
+      noChats: (s.chats || []).length === 0,
+      chatMsgRows: (s.chatMsgs || []).map(m => ({
+        text: m.text,
+        rowStyle: { display: 'flex', margin: '6px 0', justifyContent: m.sender === 'ajan' ? 'flex-end' : 'flex-start' },
+        bubbleStyle: {
+          maxWidth: '78%', padding: '9px 12px', fontSize: '13px', lineHeight: 1.5,
+          border: m.sender === 'ajan' ? '1px solid rgba(193,154,82,.4)' : '1px solid rgba(129,135,151,.3)',
+          background: m.sender === 'ajan' ? 'rgba(193,154,82,.13)' : '#0b0e18',
+          color: m.sender === 'ajan' ? '#e9dfc8' : '#cfc8b4'
+        }
+      })),
+      chatReply: s.chatReply,
+      onChatReply: e => this.setState({ chatReply: e.target.value }),
+      onChatReplyKey: e => { if (e.key === 'Enter') this.sendChatReply(); },
+      sendChatReply: () => this.sendChatReply(),
+      chatBusy: s.chatBusy,
+      chatSendLabel: s.chatBusy ? '…' : 'YANITLA',
 
       // ürün & fiyat düzenleme
       productRows: (s.products || []).map(p => {
