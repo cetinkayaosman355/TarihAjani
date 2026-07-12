@@ -131,7 +131,13 @@
         <div style="text-align: center; border: 1px solid rgba(193,154,82,.4); padding: clamp(32px, 5vw, 54px); background: #070a12;">
           <div style="width: 62px; height: 62px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c0392b, #7c1f16 70%); border: 3px solid #8e2a1d; color: #f4e4c1; font-family: 'Playfair Display', serif; font-weight: 800; font-size: 22px; display: grid; place-items: center;">TA</div>
           <h2 style="margin: 20px 0 10px; font-family: 'Playfair Display', serif; font-size: 27px; font-weight: 800;">Siparişin alındı, ajan.</h2>
-          <p style="margin: 0 auto; max-width: 44ch; color: #a9adba; line-height: 1.7; font-size: 15px;">Talebin bize ulaştı. Havale/EFT seçtiysen dekontunu <a href="mailto:iletisim@tarihajani.com">iletisim@tarihajani.com</a> adresine ilet; ödeme onaylanınca erişimin açılır ve e-posta ile bilgilendirilirsin.</p>
+          <p style="margin: 0 auto; max-width: 44ch; color: #a9adba; line-height: 1.7; font-size: 15px;">{{ orderedMsg }}</p>
+          <sc-if value="{{ showPayNow }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top: 24px;">
+              <a href="{{ payNowUrl }}" target="_blank" rel="noopener" style="display: inline-block; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 13.5px; letter-spacing: .12em; color: #171207; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); padding: 18px 34px; text-decoration: none; box-shadow: 0 12px 44px rgba(230,196,120,.3);">🔒 ŞİMDİ ÖDE · GÜVENLİ ÖDEME →</a>
+              <p style="margin: 12px 0 0; font-size: 12px; color: #676d7c;">Shopier güvenli ödeme sayfası yeni sekmede açılır. Ödemen alındığında erişimin onaylanır ve e-posta ile bilgilendirilirsin.</p>
+            </div>
+          </sc-if>
           <div style="margin-top: 22px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
             <a href="/" style="font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; color: #171207; background: linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52); padding: 14px 26px; text-decoration: none;">ANA SAYFA</a>
             <a href="/urunler" style="font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; color: #e6c478; border: 1px solid rgba(193,154,82,.5); padding: 14px 26px; text-decoration: none;">DİĞER ÜRÜNLER</a>
@@ -165,7 +171,7 @@
               </div>
             </sc-if>
             <sc-if value="{{ showCard }}" hint-placeholder-val="{{ false }}">
-              <div style="border: 1px solid rgba(193,154,82,.3); background: #070a12; padding: 16px 18px; font-size: 13px; color: #a9adba; line-height: 1.6;">Kredi kartı ödemesi Shopier güvenli ödeme sayfasında tamamlanır. "Siparişi Gönder"e bastıktan sonra ödeme bağlantısı e-postana iletilir.</div>
+              <div style="border: 1px solid rgba(193,154,82,.3); background: #070a12; padding: 16px 18px; font-size: 13px; color: #a9adba; line-height: 1.6;">{{ cardInfoText }}</div>
             </sc-if>
 
             <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
@@ -238,10 +244,13 @@ class Component extends DCLogic {
   async loadProducts() {
     if (!this.sb) return;
     try {
-      const { data, error } = await this.sb.from('products').select('slug,title,price');
-      if (error || !data) return;
+      // pay_url kolonu henüz eklenmediyse fiyat senkronu yine çalışsın
+      let res = await this.sb.from('products').select('slug,title,price,pay_url');
+      if (res.error) res = await this.sb.from('products').select('slug,title,price');
+      const data = res.data;
+      if (res.error || !data) return;
       const ov = {};
-      data.forEach(p => { ov[p.slug] = { title: p.title, price: String(p.price) }; });
+      data.forEach(p => { ov[p.slug] = { title: p.title, price: String(p.price), payUrl: (p.pay_url || '').trim() }; });
       this.setState({ overrides: ov });
     } catch (e) {}
   }
@@ -358,6 +367,10 @@ class Component extends DCLogic {
       p = { ...base, title: title, price: price };
     }
     const b = p.badges || [['', ''], ['', ''], ['', '']];
+    // Ödeme linki tam slug eşleşmesiyle alınır (yıllık paketin fiyatı farklı
+    // olduğundan aylık ürünün linki yıllığa uygulanmaz)
+    const ovExact = (s.overrides || {})[s.slug];
+    const payUrl = (ovExact && ovExact.payUrl) || '';
     const payBtn = (active) => ({
       cursor: 'pointer', border: active ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
       background: active ? 'rgba(193,154,82,.12)' : 'transparent',
@@ -376,6 +389,14 @@ class Component extends DCLogic {
       cartLabel: s.cartLabel,
 
       formOpen: !s.ordered, ordered: s.ordered,
+      orderedMsg: (s.payMethod === 'card' && payUrl)
+        ? 'Talebin bize ulaştı. Aşağıdaki düğmeden güvenli ödemeni tamamla — ödemen alınınca erişimin açılır ve e-posta ile bilgilendirilirsin.'
+        : 'Talebin bize ulaştı. Havale/EFT seçtiysen dekontunu iletisim@tarihajani.com adresine ilet; ödeme onaylanınca erişimin açılır ve e-posta ile bilgilendirilirsin.',
+      showPayNow: s.ordered && s.payMethod === 'card' && !!payUrl,
+      payNowUrl: payUrl,
+      cardInfoText: payUrl
+        ? 'Kredi kartı ödemesi Shopier güvenli ödeme sayfasında tamamlanır. "Siparişi Gönder"e bastıktan sonra ödeme sayfasına geçebilirsin.'
+        : 'Kredi kartı ödemesi Shopier güvenli ödeme sayfasında tamamlanır. "Siparişi Gönder"e bastıktan sonra ödeme bağlantısı e-postana iletilir.',
       fName: s.fName, onFName: e => this.setState({ fName: e.target.value }),
       fEmail: s.fEmail, onFEmail: e => this.setState({ fEmail: e.target.value }),
       fPhone: s.fPhone, onFPhone: e => this.setState({ fPhone: e.target.value }),
