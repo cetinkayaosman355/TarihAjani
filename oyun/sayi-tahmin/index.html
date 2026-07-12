@@ -7,6 +7,15 @@
 </head>
 <body>
 <style>
+.ta-return{position:fixed;z-index:60;top:16px;color:#f0ece2;text-decoration:none;font:700 11px/1 "Special Elite","Courier New",monospace;letter-spacing:.14em;padding:10px 13px;border:1px solid rgba(201,162,90,.45);background:rgba(3,5,11,.78);backdrop-filter:blur(10px);transition:color .2s,border-color .2s}
+.ta-return:hover{color:#e6c478;border-color:#e6c478}
+.ta-return.l{left:16px}.ta-return.r{right:16px}
+@media(max-width:560px){.ta-return{font-size:9.5px;padding:8px 10px;top:10px}.ta-return.l{left:10px}.ta-return.r{right:10px}}
+</style>
+<a class="ta-return l" href="/zaman-tuneli">&#8592; OYUN T&#220;NEL&#304;</a>
+<a class="ta-return r" href="/">TA &#183; ANA SAYFA</a>
+
+<style>
   :root {
     --ink-900: #05091a;
     --ink-850: #070c22;
@@ -50,7 +59,7 @@
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
   }
 
-  .app { position: relative; z-index: 2; width: 100%; max-width: 660px; }
+  .app { position: relative; z-index: 2; width: 100%; max-width: min(1020px, 96vw); }
 
   /* ---- CARD ---- */
   .card {
