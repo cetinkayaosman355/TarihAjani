@@ -495,9 +495,12 @@
             <!-- GÖRSEL PROMPTLARI -->
             <sc-if value="{{ tabGorsel }}" hint-placeholder-val="{{ false }}">
               <div style="display: grid; gap: 14px;">
-                <sc-if value="{{ imgNotice }}" hint-placeholder-val="{{ false }}">
-                  <div style="border: 1px solid rgba(193,154,82,.4); background: rgba(193,154,82,.08); color: #e6c478; padding: 14px 18px; font-size: 13.5px; line-height: 1.6;">Görsel üretim API bağlantısı yakında ekleniyor. Şimdilik promptu kopyalayıp Midjourney, DALL·E ya da Ideogram'da kullanabilirsin.</div>
-                </sc-if>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border: 1px solid rgba(193,154,82,.25); background: rgba(193,154,82,.05); padding: 12px 16px;">
+                  <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.5;">Her promptun yanındaki <strong style="color:#e6c478;">GÖRSEL ÜRET</strong>'e bas — görsel <strong style="color:#e6c478;">bu sayfada</strong>, altında çıkar. Sekme değişmez; hepsini sırayla üretebilirsin.</p>
+                  <sc-if value="{{ hasAnyImg }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ downloadAll }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; cursor: pointer; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">⬇ TÜMÜNÜ İNDİR ({{ imgDoneCount }})</button>
+                  </sc-if>
+                </div>
                 <div style="border: 1px solid rgba(193,154,82,.35); background: rgba(193,154,82,.05); padding: 18px 22px;">
                   <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">KAPAK GÖRSELLERİ · {{ styleName }}</p>
                   <div style="display: grid; gap: 12px; margin-top: 12px;">
@@ -513,6 +516,30 @@
                         <code style="display: block; color: #b9c2d8; font-size: 13px; line-height: 1.6; font-family: 'Special Elite', monospace; white-space: pre-wrap;">{{ kp.prompt }}</code>
                         <span style="color: #e6c478; font-size: 12.5px; font-weight: 600;">Kapak üzerindeki yazı: “{{ kp.yazi }}”</span>
                         <span style="color: #676d7c; font-size: 12.5px;">{{ kp.not }}</span>
+                        <sc-if value="{{ kp.img.pending }}" hint-placeholder-val="{{ false }}">
+                          <div style="{{ kp.img.pendStyle }}"><span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; text-align: center; padding: 10px;">{{ kp.img.status }}</span></div>
+                        </sc-if>
+                        <sc-if value="{{ kp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: grid; gap: 8px; margin-top: 4px;">
+                            <img src="{{ kp.img.url }}" onClick="{{ kp.img.zoom }}" title="Büyütmek için tıkla" style="{{ kp.img.thumbStyle }}">
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                              <button onClick="{{ kp.img.zoom }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="color: #e6c478;">🔍 BÜYÜT</button>
+                              <button onClick="{{ kp.img.dl }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
+                              <button onClick="{{ kp.img.editToggle }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="color: #e6c478;">{{ kp.img.toggleLabel }}</button>
+                            </div>
+                            <sc-if value="{{ kp.img.editOpen }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: grid; gap: 8px;">
+                                <textarea value="{{ kp.img.editText }}" onChange="{{ kp.img.onEditText }}" rows="2" placeholder="Ne değiştireyim? ör. arka planı gece yap · yazıyı büyüt" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 10px; font-size: 12.5px; line-height: 1.5;"></textarea>
+                                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                  <button onClick="{{ kp.img.runEdit }}" disabled="{{ kp.img.editBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .08em; padding: 9px 14px;">{{ kp.img.editRunLabel }}</button>
+                                </div>
+                                <sc-if value="{{ kp.img.editErr }}" hint-placeholder-val="{{ false }}">
+                                  <p style="margin: 0; color: #e8a9a9; font-size: 11px; line-height: 1.5;">{{ kp.img.editErr }}</p>
+                                </sc-if>
+                              </div>
+                            </sc-if>
+                          </div>
+                        </sc-if>
                       </div>
                     </sc-for>
                   </div>
@@ -532,6 +559,30 @@
                       </div>
                     </div>
                     <code style="display: block; color: #b9c2d8; font-size: 13px; line-height: 1.6; font-family: 'Special Elite', monospace; white-space: pre-wrap;">{{ gp.prompt }}</code>
+                    <sc-if value="{{ gp.img.pending }}" hint-placeholder-val="{{ false }}">
+                      <div style="{{ gp.img.pendStyle }}"><span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; text-align: center; padding: 10px;">{{ gp.img.status }}</span></div>
+                    </sc-if>
+                    <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
+                      <div style="display: grid; gap: 8px; margin-top: 4px;">
+                        <img src="{{ gp.img.url }}" onClick="{{ gp.img.zoom }}" title="Büyütmek için tıkla" style="{{ gp.img.thumbStyle }}">
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                          <button onClick="{{ gp.img.zoom }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="color: #e6c478;">🔍 BÜYÜT</button>
+                          <button onClick="{{ gp.img.dl }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
+                          <button onClick="{{ gp.img.editToggle }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="color: #e6c478;">{{ gp.img.toggleLabel }}</button>
+                        </div>
+                        <sc-if value="{{ gp.img.editOpen }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: grid; gap: 8px;">
+                            <textarea value="{{ gp.img.editText }}" onChange="{{ gp.img.onEditText }}" rows="2" placeholder="Ne değiştireyim? ör. arka planı gece yap · kılıcı daha büyük" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 10px; font-size: 12.5px; line-height: 1.5;"></textarea>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                              <button onClick="{{ gp.img.runEdit }}" disabled="{{ gp.img.editBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .08em; padding: 9px 14px;">{{ gp.img.editRunLabel }}</button>
+                            </div>
+                            <sc-if value="{{ gp.img.editErr }}" hint-placeholder-val="{{ false }}">
+                              <p style="margin: 0; color: #e8a9a9; font-size: 11px; line-height: 1.5;">{{ gp.img.editErr }}</p>
+                            </sc-if>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
                   </div>
                 </sc-for>
               </div>
@@ -791,7 +842,7 @@ class Component extends DCLogic {
       editTarget: null, editLabel: '',
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
-      imgNotice: false, imgPrompt: '', imgProvider: 'gpt', imgQueue: [],
+      imgNotice: false, imgPrompt: '', imgProvider: 'gpt', imgQueue: [], sceneImgs: {},
       imgAspect: null, imgZoom: '',
       step: 1,
       idea: '',
@@ -1415,6 +1466,90 @@ class Component extends DCLogic {
       this.setImgItem(item.id, { editBusy: false, editErr: msg });
       if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
     });
+  }
+
+  // ── SATIR İÇİ görsel üretimi ── (Görsel Promptları sekmesinde, sekme değiştirmeden;
+  // her prompt kendi görselini yanında tutar — kaybolmaz, tek sayfada üretilir)
+  setSceneImg(key, patch) {
+    this.setState(st => ({ sceneImgs: { ...st.sceneImgs, [key]: { ...(st.sceneImgs[key] || {}), ...patch } } }));
+  }
+  makeSceneImg(key, promptRaw) {
+    const prompt = (promptRaw || '').trim();
+    if (!prompt) return;
+    const cur = this.state.sceneImgs[key];
+    if (cur && cur.busy) return;                       // zaten üretiliyor
+    const cost = this.IMG_COST();
+    if (this.state.credits < cost) { this.setState({ creditModal: true }); return; }
+    const ar = this.state.imgAspect || this.state.aspect;
+    const sendPrompt = this.withAspect(prompt, ar);
+    this.setSceneImg(key, { prompt, ar, busy: true, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '', editOpen: false, editErr: '' });
+    this.imageServer(sendPrompt, ar).then(url => {
+      this.setSceneImg(key, { busy: false, status: 'HAZIR', url });
+    }).catch(e => {
+      const msg = e.message === 'YETERSIZ_KREDI' ? 'YETERSİZ KREDİ' : ('HATA: ' + e.message);
+      this.setSceneImg(key, { busy: false, status: msg });
+      if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
+    });
+  }
+  toggleSceneEdit(key) {
+    const cur = this.state.sceneImgs[key] || {};
+    this.setSceneImg(key, { editOpen: !cur.editOpen, editErr: '' });
+  }
+  runSceneEdit(key) {
+    const it = this.state.sceneImgs[key]; if (!it) return;
+    const text = (it.editText || '').trim();
+    if (!text || it.editBusy) return;
+    if (!/^data:image\//.test(it.url || '')) { this.setSceneImg(key, { editErr: 'Bu görsel düzenlenemiyor (bağlantı süreli). Tekrar üret.' }); return; }
+    const free = !it.editUsedFree;
+    const cost = free ? 0 : 8;
+    if (!free && this.state.credits < cost) { this.setState({ creditModal: true }); return; }
+    const base = this.stripAspect(it.prompt || '');
+    const editPrompt =
+      (base ? 'Original image: ' + base + '. ' : '') +
+      'Keep the same overall composition, subject, colors and art style as the provided image. ' +
+      'Apply ONLY the following change and modify nothing else: ' + text + '. ' +
+      'Render in ' + this.aspectPhrase(it.ar) + '.';
+    this.setSceneImg(key, { editBusy: true, editErr: '' });
+    this.editServer(it.url, editPrompt, it.ar, free).then(url => {
+      this.setSceneImg(key, { url, editBusy: false, editOpen: false, editText: '', editUsedFree: true });
+    }).catch(e => {
+      const msg = e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Düzenlenemedi: ' + e.message);
+      this.setSceneImg(key, { editBusy: false, editErr: msg });
+      if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
+    });
+  }
+  // Üretilmiş tüm görselleri (satır içi + stüdyo rafı) toplu indir
+  downloadAllImages() {
+    const urls = [];
+    Object.keys(this.state.sceneImgs || {}).forEach(k => { const v = this.state.sceneImgs[k]; if (v && v.url) urls.push(v.url); });
+    (this.state.imgQueue || []).forEach(v => { if (v && v.url) urls.push(v.url); });
+    if (!urls.length) return;
+    urls.forEach((u, i) => setTimeout(() => this.dlImage(u), i * 500));  // tarayıcı engellemesin diye aralıklı
+  }
+  // Bir prompt anahtarı için satır içi görsel görünümü (renderVals'ta kullanılır)
+  sceneImgView(key) {
+    const si = (this.state.sceneImgs || {})[key] || null;
+    const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[(si && si.ar) || this.state.imgAspect || this.state.aspect] || '16/9';
+    return {
+      has: !!si,
+      hasUrl: !!(si && si.url),
+      pending: !!(si && si.busy),
+      status: si ? si.status : '',
+      url: si ? si.url : '',
+      thumbStyle: { width: '100%', maxWidth: '440px', aspectRatio: arCss, objectFit: 'cover', display: 'block', cursor: 'zoom-in', border: '1px solid rgba(193,154,82,.3)' },
+      pendStyle: { width: '100%', maxWidth: '440px', aspectRatio: arCss, display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px)' },
+      zoom: () => (si && si.url) ? this.setState({ imgZoom: si.url }) : null,
+      dl: () => (si && si.url) ? this.dlImage(si.url) : null,
+      editToggle: () => this.toggleSceneEdit(key),
+      toggleLabel: (si && si.editOpen) ? '✕ KAPAT' : '✎ DÜZENLE',
+      editOpen: !!(si && si.editOpen),
+      editText: (si && si.editText) || '',
+      onEditText: e => this.setSceneImg(key, { editText: e.target.value }),
+      runEdit: () => this.runSceneEdit(key),
+      editBusy: !!(si && si.editBusy),
+      editRunLabel: (si && si.editBusy) ? 'DÜZENLENİYOR… (~20 sn)' : ((si && si.editUsedFree) ? '✎ UYGULA · 8 KR' : '✎ UYGULA · ÜCRETSİZ'),
+      editErr: (si && si.editErr) || ''
+    };
   }
 
   // Gerçek seslendirme — sunucuda gpt-4o-mini-tts, kredi düşer (sunucuyla aynı formül)
@@ -2057,12 +2192,24 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       hasSysAudio: !!s.sysAudioUrl, sysAudioUrl: s.sysAudioUrl,
       sysVoiceName: this.state.voice === 'kadin' ? 'Kadın (Nova)' : 'Erkek (Onyx)',
 
-      resKapak: mkCopy(r.kapak, 'kp').map(x => ({
+      resKapak: mkCopy(r.kapak, 'kp').map((x, i) => ({
         ...x,
-        makeImg: () => { this.setState({ tab: 'imgstudio', imgPrompt: x.prompt || '' }); this.makeImage(x.prompt); }
+        makeImg: () => this.makeSceneImg('kp' + i, x.prompt),
+        img: this.sceneImgView('kp' + i)
       })),
       resGorsel: mkCopy(r.gorsel_promptlar, 'gp').map((x, i) => this.sceneExtras(x, i, 'gp')),
       resVideo: mkCopy(r.video_promptlar, 'vp').map((x, i) => this.sceneExtras(x, i, 'vp')),
+      downloadAll: () => this.downloadAllImages(),
+      imgDoneCount: (() => {
+        const a = Object.keys(s.sceneImgs || {}).filter(k => s.sceneImgs[k] && s.sceneImgs[k].url).length;
+        const b = (s.imgQueue || []).filter(x => x.url).length;
+        return a + b;
+      })(),
+      hasAnyImg: (() => {
+        const a = Object.keys(s.sceneImgs || {}).some(k => s.sceneImgs[k] && s.sceneImgs[k].url);
+        const b = (s.imgQueue || []).some(x => x.url);
+        return a || b;
+      })(),
       resYtTitle: yt.baslik || '', resYtDesc: yt.aciklama || '',
       resYtTags: (yt.etiketler || []).map(t => ({ t })),
       resIgDesc: ig.aciklama || '',
@@ -2164,7 +2311,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       edit: () => this.startEdit(kind, i, (kind === 'gp' ? 'Görsel promptu · Sahne ' : 'Video promptu · Sahne ') + (i + 1)),
       regen: () => this.regenScene(kind, i),
       regenLabel: busy ? '⟳ ÜRETİLİYOR…' : '↻ YENİLE · 5 KR',
-      makeImg: () => { this.setState({ tab: 'imgstudio', imgPrompt: x.prompt || '' }); this.makeImage(x.prompt); }
+      // Görseli SATIR İÇİNDE üret — sekme değişmez, sahnede kalırsın (kind==='gp' için)
+      makeImg: () => this.makeSceneImg(kind + i, x.prompt),
+      img: this.sceneImgView(kind + i)
     };
   }
 
