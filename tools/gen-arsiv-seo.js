@@ -2,8 +2,8 @@
 // Arşiv SEO sayfaları üretici — arsiv-data.js'ten 44 tanıtım sayfası
 // (arsiv/<slug>/index.html) + katalog (arsiv/katalog/index.html) üretir
 // ve sitemap.xml'e eksik URL'leri ekler.
-// Tanıtım sayfaları TAM İÇERİK VERMEZ: özet + kısa fragman + bölüm listesi
-// + üyelik CTA'sı. Tam dosya /arsiv'de, Gözlemci+ üyelikte kalır.
+// "Vaka Günlüğü" blog makaleleri: okunur hikâye (anlatım metni) + özet;
+// üretim jargonu YOK. Üretim dosyaları (promptlar vb.) /arsiv uygulamasında.
 // Çalıştır: node tools/gen-arsiv-seo.js   (repo kökünde)
 'use strict';
 const fs = require('fs');
@@ -57,6 +57,27 @@ function voiceExcerpt(story) {
   const ses = (story.sections || []).find(x => /SESLENDİRME/i.test(x.ad));
   const b = ses && ses.bloklar && ses.bloklar[0];
   return b ? clip(b.t, 460) : '';
+}
+// Okunur hikâye gövdesi (anlatım metni → paragraf/bölüm). Üretim jargonu YOK.
+function storyHtml(story) {
+  const ses = (story.sections || []).find(x => /SESLENDİRME/i.test(x.ad));
+  const blk = (ses && ses.bloklar) || [];
+  if (!blk.length) return '';
+  const multi = blk.length > 1;
+  return blk.map(b => {
+    const paras = String(b.t || '').split(/\n+/).map(p => p.trim()).filter(Boolean)
+      .map(p => `<p>${esc(p)}</p>`).join('\n    ');
+    // çok bölümlü (perde) hikâyelerde bölüm başlığı göster; tek blokta gösterme
+    const kk = String(b.k || '').replace(/\s*\([^)]*\)\s*$/, '').trim();   // "(0:00–1:30)" gibi zaman damgasını at
+    const head = (multi && kk && !/^SESLEND/i.test(kk)) ? `<h2>${esc(kk)}</h2>\n    ` : '';
+    return '    ' + head + paras;
+  }).join('\n');
+}
+// hikâye kaç dakikalık okuma (≈200 kelime/dk)
+function readMin(story) {
+  const ses = (story.sections || []).find(x => /SESLENDİRME/i.test(x.ad));
+  const words = ((ses && ses.bloklar) || []).map(b => String(b.t || '').split(/\s+/).length).reduce((a, c) => a + c, 0);
+  return Math.max(1, Math.round(words / 200));
 }
 function sectionList(story) {
   return (story.sections || []).map(x => ({
@@ -116,6 +137,12 @@ ${jsonld ? '<script type="application/ld+json">' + jsonld + '</script>' : ''}
   h1 { font-family: 'Playfair Display', serif; font-weight: 800; font-size: clamp(26px, 5vw, 42px); line-height: 1.15; margin: 10px 0 14px; }
   .box { border: 1px solid rgba(193,154,82,.28); background: #070a12; padding: clamp(18px, 3vw, 28px); margin: 18px 0; }
   .quote { border-left: 3px solid #c19a52; padding-left: 16px; color: #cfc8b4; white-space: pre-line; font-size: 15px; }
+  .lede { color: #d3d8e2; font-size: 18px; line-height: 1.75; max-width: 64ch; margin: 6px 0 26px; font-family: 'Playfair Display', serif; font-style: italic; }
+  .story { max-width: 68ch; }
+  .story p { font-size: 17px; line-height: 1.85; color: #d8dbe2; margin: 0 0 20px; }
+  .story h2 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: clamp(20px, 3vw, 27px); color: #f2ecd9; margin: 34px 0 12px; }
+  .story p:first-of-type::first-letter { font-family: 'Playfair Display', serif; font-size: 3.4em; line-height: .8; float: left; margin: 6px 12px 0 0; color: #e6c478; }
+  .endcta { border-color: rgba(193,154,82,.45); background: rgba(193,154,82,.06); text-align: center; margin-top: 34px; }
   .cta { display: inline-block; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12.5px; letter-spacing: .12em; padding: 15px 26px; text-decoration: none; }
   .ghost { display: inline-block; color: #e6c478; border: 1px solid rgba(193,154,82,.5); font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; padding: 14px 22px; text-decoration: none; }
   ul.sec { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
@@ -194,28 +221,18 @@ items.forEach((s, i) => {
   const body = `
 <main class="wrap" style="padding-top: clamp(28px, 5vw, 56px);">
   <nav class="mono" style="font-size:11px;color:#818797;margin-bottom:14px;"><a href="/" style="color:#818797;text-decoration:none;">Ana Sayfa</a> › <a href="/arsiv/katalog/" style="color:#c19a52;text-decoration:none;">Vaka Günlüğü</a></nav>
-  <div class="mono kicker">VAKA GÜNLÜĞÜ · ${esc(s.era)} · ${esc(s.fileNo)}</div>
+  <div class="mono kicker">VAKA GÜNLÜĞÜ · ${esc(s.era)} · ${readMin(s)} DK OKUMA</div>
   <h1>${esc(bt)}</h1>
-  <p style="color:#a9adba;font-size:16px;max-width:62ch;">${esc(s.ozet || s.teaser || '')}</p>
+  <p class="lede">${esc(s.ozet || s.teaser || '')}</p>
 
-  ${excerpt ? `<div class="box">
-    <div class="mono kicker" style="margin-bottom:12px;">DOSYADAN — SESLENDİRME FRAGMANI</div>
-    <div class="quote">${esc(excerpt)}</div>
-  </div>` : ''}
+  <article class="story">
+${storyHtml(s)}
+  </article>
 
-  <div class="box">
-    <div class="mono kicker" style="margin-bottom:12px;">TAM DOSYADA NELER VAR</div>
-    <ul class="sec">
-      ${secs.map(x => `<li><span>${esc(x.ad)}</span><span>${x.adet} blok</span></li>`).join('\n      ')}
-    </ul>
-    <p style="margin:16px 0 0;color:#818797;font-size:13px;">Eksiksiz üretim dosyası: seslendirme metni, sahne &amp; görsel promptları, video promptları, kapak &amp; thumbnail, YouTube ve Instagram yayın paketi, üretim notları.</p>
-  </div>
-
-  <div class="box" style="border-color: rgba(193,154,82,.5); background: rgba(193,154,82,.06); text-align:center;">
-    <p class="mono kicker" style="margin:0 0 10px;">TAM DOSYA ÜYELERE AÇIK</p>
-    <p style="margin:0 0 18px;color:#cfc8b4;font-size:15px;">Bu vaka dosyasının tamamı — ve ${items.length} dosyalık arşiv — <strong style="color:#e6c478;">Gözlemci</strong> ve üzeri üyelikle açılır. Ücretsiz üyelik 30 deneme kredisiyle Studio'yu da denemeni sağlar.</p>
-    <a class="cta" href="/uyelik">ÜYELİKLE AÇ →</a>
-    <a class="ghost" href="/arsiv" style="margin-left:10px;">ARŞİVE GİT</a>
+  <div class="box endcta">
+    <p style="margin:0 0 16px;color:#cfc8b4;font-size:15px;">Bu tarihi kendi videon olarak üretmek ister misin? <strong style="color:#e6c478;">Studio</strong>; senaryo, seslendirme ve sahne promptlarını dakikalar içinde hazırlar.</p>
+    <a class="cta" href="/studio">STUDIO'DA ÜRET →</a>
+    <a class="ghost" href="/arsiv/katalog/" style="margin-left:10px;">DAHA FAZLA VAKA →</a>
   </div>
 
   <div class="pn">
@@ -242,7 +259,7 @@ const katBody = `
   <nav class="mono" style="font-size:11px;color:#818797;margin-bottom:14px;"><a href="/" style="color:#818797;text-decoration:none;">Ana Sayfa</a> › <span style="color:#c19a52;">Vaka Günlüğü</span></nav>
   <div class="mono kicker">VAKA GÜNLÜĞÜ · BLOG · ${items.length} HİKÂYE</div>
   <h1>Vaka Günlüğü</h1>
-  <p style="color:#a9adba;font-size:16px;max-width:66ch;">Asur'dan Roma'ya, Mısır'dan Bizans'a — çözülmemiş tarih sırlarının hikâyeleri. Her vakayı oku; istersen <a href="/studio">Studio</a>'da videoya dönüştür. Eksiksiz üretim dosyaları (senaryo, seslendirme, sahne &amp; görsel promptları, yayın paketi) <a href="/uyelik">Gözlemci üyelikle</a> açılır.</p>
+  <p style="color:#a9adba;font-size:16px;max-width:66ch;">Asur'dan Roma'ya, Mısır'dan Bizans'a — çözülmemiş tarih sırlarının hikâyeleri. Ücretsiz oku, keşfet; dilersen <a href="/studio">Studio</a>'da kendi videona dönüştür. Bir dijital hikâye arşivi.</p>
   <div class="grid" style="margin-top:26px;">
     ${items.map(s => `<a class="card" href="/arsiv/${s.slug}/">
       <span class="mono kicker">${esc(s.era)}</span>
