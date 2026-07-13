@@ -165,7 +165,7 @@ ${jsonld ? '<script type="application/ld+json">' + jsonld + '</script>' : ''}
   </a>
   <nav>
     <a href="/">ANA SAYFA</a>
-    <a href="/arsiv/katalog/">VAKA GÜNLÜĞÜ</a>
+    <a href="/vaka-gunlugu/">VAKA GÜNLÜĞÜ</a>
     <a href="/arsiv">ARŞİV</a>
     <a href="/uyelik" class="cta">ÜYELİK</a>
   </nav>
@@ -211,7 +211,7 @@ items.forEach((s, i) => {
       {
         '@type': 'BreadcrumbList', itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: SITE + '/' },
-          { '@type': 'ListItem', position: 2, name: 'Vaka Günlüğü', item: SITE + '/arsiv/katalog/' },
+          { '@type': 'ListItem', position: 2, name: 'Vaka Günlüğü', item: SITE + '/vaka-gunlugu/' },
           { '@type': 'ListItem', position: 3, name: bt, item: SITE + canon }
         ]
       }
@@ -220,7 +220,7 @@ items.forEach((s, i) => {
 
   const body = `
 <main class="wrap" style="padding-top: clamp(28px, 5vw, 56px);">
-  <nav class="mono" style="font-size:11px;color:#818797;margin-bottom:14px;"><a href="/" style="color:#818797;text-decoration:none;">Ana Sayfa</a> › <a href="/arsiv/katalog/" style="color:#c19a52;text-decoration:none;">Vaka Günlüğü</a></nav>
+  <nav class="mono" style="font-size:11px;color:#818797;margin-bottom:14px;"><a href="/" style="color:#818797;text-decoration:none;">Ana Sayfa</a> › <a href="/vaka-gunlugu/" style="color:#c19a52;text-decoration:none;">Vaka Günlüğü</a></nav>
   <div class="mono kicker">VAKA GÜNLÜĞÜ · ${esc(s.era)} · ${readMin(s)} DK OKUMA</div>
   <h1>${esc(bt)}</h1>
   <p class="lede">${esc(s.ozet || s.teaser || '')}</p>
@@ -232,7 +232,7 @@ ${storyHtml(s)}
   <div class="box endcta">
     <p style="margin:0 0 16px;color:#cfc8b4;font-size:15px;">Bu tarihi kendi videon olarak üretmek ister misin? <strong style="color:#e6c478;">Studio</strong>; senaryo, seslendirme ve sahne promptlarını dakikalar içinde hazırlar.</p>
     <a class="cta" href="/studio">STUDIO'DA ÜRET →</a>
-    <a class="ghost" href="/arsiv/katalog/" style="margin-left:10px;">DAHA FAZLA VAKA →</a>
+    <a class="ghost" href="/vaka-gunlugu/" style="margin-left:10px;">DAHA FAZLA VAKA →</a>
   </div>
 
   <div class="pn">
@@ -250,7 +250,7 @@ ${storyHtml(s)}
 /* ── katalog ── */
 const katJsonld = JSON.stringify({
   '@context': 'https://schema.org', '@type': 'Blog', name: 'Tarih Ajanı — Vaka Günlüğü',
-  description: items.length + ' tarih vakası; çözülmemiş sırların hikâyeleri.', url: SITE + '/arsiv/katalog/', inLanguage: 'tr',
+  description: items.length + ' tarih vakası; çözülmemiş sırların hikâyeleri.', url: SITE + '/vaka-gunlugu/', inLanguage: 'tr',
   publisher: { '@type': 'Organization', name: 'Tarih Ajanı', url: SITE },
   blogPost: items.map(s => ({ '@type': 'BlogPosting', headline: dispTitle(s.baslik), url: SITE + '/arsiv/' + s.slug + '/', datePublished: TODAY }))
 });
@@ -268,19 +268,19 @@ const katBody = `
     </a>`).join('\n    ')}
   </div>
 </main>`;
-fs.mkdirSync(path.join(ROOT, 'arsiv', 'katalog'), { recursive: true });
+fs.mkdirSync(path.join(ROOT, 'vaka-gunlugu'), { recursive: true });
 fs.writeFileSync(
-  path.join(ROOT, 'arsiv', 'katalog', 'index.html'),
+  path.join(ROOT, 'vaka-gunlugu', 'index.html'),
   shell('Vaka Günlüğü · Tarih Blog · ' + items.length + ' Hikâye · Tarih Ajanı',
     items.length + ' tarih vakası; çözülmemiş sırların hikâyeleri. Oku, keşfet; istersen Studio\'da videoya dönüştür.',
-    '/arsiv/katalog/', katBody, katJsonld)
+    '/vaka-gunlugu/', katBody, katJsonld)
 );
 
 /* ── sitemap ── */
 const smPath = path.join(ROOT, 'sitemap.xml');
 let sm = fs.readFileSync(smPath, 'utf8');
 const today = new Date().toISOString().slice(0, 10);
-const urls = ['/arsiv/katalog/'].concat(items.map(s => '/arsiv/' + s.slug + '/'));
+const urls = ['/vaka-gunlugu/'].concat(items.map(s => '/arsiv/' + s.slug + '/'));
 let added = 0;
 const entries = urls.filter(u => sm.indexOf('<loc>' + SITE + u + '</loc>') === -1)
   .map(u => `  <url>\n    <loc>${SITE}${u}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>`);

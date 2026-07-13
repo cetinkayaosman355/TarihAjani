@@ -11,6 +11,7 @@
   var INDEX = [
     { t: 'Studio — Kendi vaka dosyanı üret', u: '/studio', k: 'studio üret senaryo seslendirme görsel video prompt yapay zeka ai' },
     { t: 'Hazır Arşiv — 42 vaka dosyası', u: '/arsiv', k: 'arşiv hazır dosya vaka senaryo prompt tarih' },
+    { t: 'Vaka Günlüğü — Tarih blogu', u: '/vaka-gunlugu', k: 'blog günlük vaka hikaye oku makale tarih' },
     { t: 'Vaka Dosyaları — Okuma odası', u: '/vaka-dosyalari', k: 'vakalar hikaye oku e-kitap etrüsk sümer' },
     { t: 'E-Kitaplar', u: '/ekitap', k: 'ekitap kitap pdf set cilt okuma' },
     { t: 'Akademi — İçerik üretim eğitimi', u: '/egitim', k: 'eğitim akademi kurs ders üretim yöntem' },
