@@ -147,6 +147,7 @@
 
           <sc-if value="{{ member }}" hint-placeholder-val="{{ false }}">
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: -8px 0 22px;">
+              <a href="{{ uretHref }}" style="text-decoration: none; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px 18px; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.35);">◈ STUDIO'DA ÜRET →</a>
               <button onClick="{{ ekitap }}" style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); color: #e6c478; padding: 11px 18px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="background: rgba(193,154,82,.16);">📖 E-KİTAP / PDF</button>
               <button onClick="{{ copyAllSel }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 11px 18px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ copyAllSelLabel }}</button>
             </div>
@@ -317,6 +318,7 @@ class Component extends DCLogic {
       locked: !!sel && !member,
       selEra: sel ? sel.era : '',
       selFileNo: sel ? sel.fileNo : '',
+      uretHref: sel ? ('/studio?uret=' + encodeURIComponent(sel.fileNo || '')) : '/studio',
       selTitle: sel ? sel.baslik : '',
       selOzet: sel ? sel.ozet : '',
       selSections: sel ? (sel.sections || []).map((sec, si) => ({

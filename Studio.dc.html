@@ -281,7 +281,8 @@
                   <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: #f2ecd9; line-height: 1.3;">{{ af.title }}</h3>
                   <p style="margin: 0; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em;">{{ af.era }}</p>
                   <p style="margin: 0; color: #a4a9b5; font-size: 13.5px; line-height: 1.6; flex: 1;">{{ af.teaser }}</p>
-                  <button onClick="{{ af.openFile }}" style="margin-top: 6px; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 14px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">DOSYAYI AÇ →</button>
+                  <button onClick="{{ af.uret }}" style="margin-top: 6px; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 14px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">◈ STUDIO'DA ÜRET →</button>
+                  <button onClick="{{ af.openFile }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; cursor: pointer; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .12em; padding: 9px;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">DOSYAYI OKU / E-KİTAP</button>
                 </div>
               </sc-for>
             </div>
@@ -313,10 +314,27 @@
             <textarea value="{{ idea }}" onChange="{{ onIdea }}" rows="4" placeholder="ör. Fatih'in ölümünün ardındaki zehir şüphesi… ya da Enigma'yı kıran görünmez kadınlar…" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 18px; font-size: 17px; line-height: 1.6; min-height: 130px;"></textarea>
             <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;">
               <button onClick="{{ suggestIdea }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 8px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">◈ {{ suggestLabel }}</button>
+              <button onClick="{{ openArsivPick }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 8px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">🗂 ARŞİVDEN HİKÂYE BUL</button>
               <sc-for list="{{ ideaChips }}" as="chip" hint-placeholder-count="3">
                 <button onClick="{{ chip.use }}" style="border: 1px solid rgba(129,135,151,.3); background: rgba(8,11,19,.8); color: #a4a9b5; padding: 8px 14px; font-size: 12.5px; cursor: pointer;" style-hover="border-color: rgba(193,154,82,.6); color: #e6c478;">{{ chip.text }}</button>
               </sc-for>
             </div>
+            <sc-if value="{{ arsivPickOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top: 16px; border: 1px solid rgba(193,154,82,.35); background: #070a12;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid rgba(193,154,82,.2);">
+                  <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .16em;">ARŞİVDEN SEÇ · tıkla, fikre düşsün</span>
+                  <button onClick="{{ closeArsivPick }}" style="border: 0; background: transparent; color: #818797; font-size: 16px; cursor: pointer; line-height: 1;">✕</button>
+                </div>
+                <div style="max-height: 300px; overflow-y: auto; display: grid;">
+                  <sc-for list="{{ arsivPickList }}" as="ap" hint-placeholder-count="6">
+                    <button onClick="{{ ap.pick }}" style="text-align: left; border: 0; border-bottom: 1px solid rgba(129,135,151,.14); background: transparent; color: #cfc8b4; padding: 12px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 3px;" style-hover="background: rgba(193,154,82,.08); color: #e6c478;">
+                      <span style="font-size: 14px; font-weight: 600;">{{ ap.title }}</span>
+                      <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .12em;">{{ ap.era }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
             <div style="display: flex; justify-content: flex-end; margin-top: 26px;">
               <button onClick="{{ toStep2 }}" disabled="{{ ideaEmpty }}" style="{{ nextBtnStyle }}" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">SEÇENEKLERE GEÇ →</button>
             </div>
@@ -410,6 +428,9 @@
                 <p style="margin: 0; color: #a4a9b5; max-width: 640px; line-height: 1.6;">{{ resLogline }}</p>
               </div>
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <sc-if value="{{ fromArsiv }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ regenStory }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">↻ HİKÂYEYİ YENİDEN ÜRET</button>
+                </sc-if>
                 <button onClick="{{ ekitapResult }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">📖 E-KİTAP / PDF</button>
                 <button onClick="{{ copyAll }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ copyAllLabel }}</button>
                 <button onClick="{{ newFile }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px 18px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;">+ YENİ DOSYA</button>
@@ -848,6 +869,7 @@ class Component extends DCLogic {
       imgAspect: null, imgZoom: '',
       step: 1,
       idea: '',
+      fromArsiv: false, arsivPick: false, chipSeed: this._pickChips(),
       tone: 'merak', voice: 'erkek', style: 'sinematik', duration: 'dk4', model: 'claude', aspect: 'yatay', regenKey: null,
       generating: false, genMsg: '', genError: '', genPct: 0,
       result: null, fileNo: '',
@@ -869,6 +891,16 @@ class Component extends DCLogic {
       .catch(() => {});
     this.initSupabase();
     this.loadSavedImgs();   // kalıcı "Önceki Üretimler" galerisini yükle
+    // /studio?uret=<fileNo> ile gelen hazır arşiv isteği
+    try {
+      const uret = new URLSearchParams(location.search).get('uret');
+      if (uret) {
+        this._pendingUret = uret;
+        history.replaceState(null, '', location.pathname);   // parametreyi temizle
+        this._tryPendingUret();                              // arşiv hazırsa hemen dene
+        if (this._pendingUret) setTimeout(() => this._tryPendingUret(), 400);  // veri geç yüklendiyse
+      }
+    } catch (e) {}
   }
 
   // Üyelik sayfasında açılan oturum aynı origin'de olduğu için burada da görünür
@@ -924,7 +956,7 @@ class Component extends DCLogic {
     try {
       const { d } = await this._creditsCall({ action: 'balance' });
       if (d && d.ok && typeof d.credits === 'number') {
-        this.setState({ credits: d.credits, tier: d.tier || this.state.tier }, () => this.persist());
+        this.setState({ credits: d.credits, tier: d.tier || this.state.tier }, () => { this.persist(); this._tryPendingUret(); });
       }
     } catch (e) {}
   }
@@ -1026,12 +1058,142 @@ class Component extends DCLogic {
     if (!A.length) return null;
     return A.map(a => ({
       no: a.no, era: a.era, fileNo: a.fileNo,
-      baslik: a.baslik, teaser: a.teaser || a.ozet || '',
+      baslik: a.baslik, ozet: a.ozet || '', teaser: a.teaser || a.ozet || '',
+      result: a.result || null,
+      sections: a.sections || [],        // "Studio'da üret" için ham bölümler korunur
       sayfalar: (a.sections || []).map(sec => ({
         ad: sec.ad,
         bloklar: (sec.bloklar || []).map(b => ({ k: b.k || sec.ad, t: b.t }))
       }))
     }));
+  }
+
+  // ── HAZIR ARŞİV → STUDIO'DA ÜRET ─────────────────────────────────
+  // Arşiv öğesini (ham bölümler) stüdyo "result" şekline çevirir; böylece
+  // hazır dosya, fikir/seçenekler adımları atlanarak doğrudan sonucta açılır.
+  masterToResult(a) {
+    if (!a) return null;
+    if (a.result) return a.result;                       // zaten stüdyo-şekilli (arsivData)
+    const secs = a.sections || [];
+    const low = (t) => String(t || '').toLocaleLowerCase('tr');   // Türkçe İ güvenli
+    const sec = (name) => secs.find(x => (x.ad || '') === name);
+    const blocks = (name) => (sec(name) ? (sec(name).bloklar || []) : []);
+    const findBlock = (name, ...kws) => blocks(name).find(b => kws.some(kw => low(b.k).indexOf(kw) >= 0));
+    const parseList = (t) => String(t || '').replace(/^[^:]*:/, '').split(/[,\n]/)
+      .map(x => x.replace(/^#/, '').trim()).filter(x => x && x.length < 40).slice(0, 15);
+
+    // Seslendirme → senaryo (voiceText de buradan okur)
+    const sesBlocks = blocks('SESLENDİRME');
+    const sesMain = sesBlocks[0] || null;
+    const sesText = sesMain ? sesMain.t : (a.ozet || a.teaser || '');
+    const sureM = sesMain ? (String(sesMain.k).match(/~?\s*\d+\s*(?:-\s*\d+\s*)?(?:sn|dk|saniye|dakika)/i) || [''])[0] : '';
+    const senaryo = sesText ? [{ bolum: 'Seslendirme Metni', sure: String(sureM || '').trim(), metin: sesText }] : [];
+
+    // YouTube
+    let ytBaslik = a.baslik || a.teaser || '';
+    const ytBaslikB = findBlock('YOUTUBE PAKETİ', 'başlık', 'baslik');
+    if (ytBaslikB) {
+      const first = String(ytBaslikB.t).split('\n').map(x => x.trim()).filter(Boolean)[0] || '';
+      ytBaslik = first.replace(/^\d+[\.\)]\s*/, '') || ytBaslik;
+    }
+    const ytAcikB = findBlock('YOUTUBE PAKETİ', 'açıklama', 'aciklama');
+    const ytEtiketB = findBlock('YOUTUBE PAKETİ', 'etiket');
+    let etiketler = ytEtiketB ? parseList(ytEtiketB.t) : [];
+    if (!etiketler.length) {
+      const metaTxt = blocks('META & ÜRETİM NOTLARI').map(b => b.t).join('\n');
+      const mm = metaTxt.match(/etiketler\s*:\s*([^\n]+)/i);
+      if (mm) etiketler = parseList(mm[1]);
+    }
+
+    // Instagram
+    const igBlocks = blocks('INSTAGRAM');
+    const igHashB = igBlocks.find(b => low(b.k).indexOf('hashtag') >= 0) || null;
+    const igAcikB = igBlocks.find(b => ['açıklama', 'aciklama', 'caption'].some(kw => low(b.k).indexOf(kw) >= 0))
+      || igBlocks.filter(b => b !== igHashB).sort((x, y) => (y.t || '').length - (x.t || '').length)[0] || null;
+    const hashtagler = igHashB ? (String(igHashB.t).match(/#[\wçğıöşüÇĞİÖŞÜ]+/g) || []).slice(0, 15) : [];
+
+    // Kapak · Görsel · Video promptları
+    const kapak = blocks('KAPAK & THUMBNAIL').map((b, i) => ({ ad: b.k || ('Kapak ' + (i + 1)), prompt: b.t || '', yazi: '', not: '' }));
+    const gorsel_promptlar = blocks('GÖRSEL PROMPTLARI').map(b => ({ sahne: b.k || '', prompt: b.t || '' }));
+    const video_promptlar = blocks('VİDEO PROMPTLARI').map(b => ({ sahne: b.k || '', prompt: b.t || '' }));
+
+    // Üretim notları (META)
+    const metaBlocks = blocks('META & ÜRETİM NOTLARI');
+    const uretim_notu = metaBlocks.map(b => (b.k ? b.k + ': ' : '') + (b.t || '')).join('\n\n');
+    const muzikB = metaBlocks.find(b => ['müzik', 'montaj'].some(kw => low(b.k).indexOf(kw) >= 0));
+
+    return {
+      baslik: a.baslik || ytBaslik || 'Vaka Dosyası',
+      logline: a.teaser || a.ozet || '',
+      senaryo,
+      seslendirme_notu: muzikB ? muzikB.t : '',
+      youtube: { baslik: ytBaslik, aciklama: ytAcikB ? ytAcikB.t : (a.ozet || ''), etiketler },
+      instagram: { aciklama: igAcikB ? igAcikB.t : '', hashtagler },
+      kapak, gorsel_promptlar, video_promptlar, uretim_notu
+    };
+  }
+
+  // Hazır arşiv dosyasını Studio'da aç (fikir + seçenekler atlanır, kredi harcamaz)
+  uretFromArsiv(a) {
+    const result = this.masterToResult(a);
+    if (!result) return;
+    this.setState({
+      mode: 'wizard', step: 4, tab: 'senaryo', doc: null,
+      result, fileNo: a.fileNo || '', idea: result.baslik || '',
+      fromArsiv: true,
+      audioUrl: '', ttsError: '', genError: '', sysAudioUrl: '', sysTtsError: ''
+    });
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+
+  // "Hikâyeyi yeniden üret" — seçenekler adımından, bu başlıkla başla
+  regenStory() {
+    const t = ((this.state.result || {}).baslik) || this.state.idea || '';
+    this.setState({ mode: 'wizard', step: 2, fromArsiv: false, result: null, idea: t, tab: 'senaryo' });
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+
+  // Arşiv başlıkları — "Arşivden hikâye bul" paneli ve fikir önerileri için
+  arsivRaw() { return (this.masterArsiv() || this.arsivData() || []); }
+  arsivTitles() {
+    return this.arsivRaw().map(a => ({ title: a.baslik || a.teaser || '', era: a.era || '' })).filter(x => x.title);
+  }
+  // Fikir önerileri havuzu (arşiv başlıkları + sabit kancalar) — her açılışta 3'ü döner
+  _ideaPool() {
+    const base = [
+      'Titanic\'te hayatta kalan Osmanlı yolcusu var mıydı?',
+      'Mimar Sinan\'ın gizli imzaları',
+      'İstanbul\'un kayıp yeraltı şehri',
+      'Kanuni\'yi zehirlediği söylenen mektup',
+      'Piri Reis haritasındaki imkânsız ayrıntı',
+      'Endülüs\'ün son gecesi',
+      'Timur\'un satranç saplantısı',
+      'Truva gerçekten yandı mı?',
+      'Bizans\'ın kayıp Grek ateşi formülü',
+      'Vikinglerin İstanbul\'a bıraktığı yazıt'
+    ];
+    const arsiv = this.arsivRaw().map(a => a.baslik).filter(Boolean);
+    return base.concat(arsiv);
+  }
+  _pickChips(n = 3) {
+    const pool = this._ideaPool();
+    const out = []; const used = {}; let guard = 0;
+    while (out.length < Math.min(n, pool.length) && guard++ < 300) {
+      const i = Math.floor(Math.random() * pool.length);
+      if (used[i]) continue;
+      used[i] = 1; out.push(pool[i]);
+    }
+    return out;
+  }
+  // /studio?uret=<fileNo> ile gelindiğinde hazır dosyayı aç (erişim varsa)
+  _tryPendingUret() {
+    const fn = this._pendingUret;
+    if (!fn) return;
+    const item = this.arsivRaw().find(a => (a.fileNo || '') === fn);
+    if (!item) return;
+    this._pendingUret = null;
+    if (this.isPaidUser()) this.uretFromArsiv(item);
+    else this.setState({ mode: 'arsiv' });   // kilitli arşiv ekranına düş
   }
 
   // ── E-KİTAP FORMATI ─────────────────────────────────────────────
@@ -1745,7 +1907,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
         picks: { tone: this.state.tone, voice: this.state.voice, style: this.state.style, duration: this.state.duration, model: this.state.model }
       };
       this.setState(st => ({
-        generating: false, genPct: 100, result, fileNo: no, step: 4, tab: 'senaryo',
+        generating: false, genPct: 100, result, fileNo: no, step: 4, tab: 'senaryo', fromArsiv: false,
         history: [entry, ...st.history].slice(0, 12), audioUrl: '', ttsError: '', sysAudioUrl: '', sysTtsError: ''
       }), () => this.persist());
       // Kredi düşme: yeni studio-generate sunucuda düştüyse dönen bakiyeyi kullan;
@@ -1997,7 +2159,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
           mode: 'wizard', step: 4, tab: 'senaryo',
           result: a.result, fileNo: a.fileNo, idea: a.result.baslik,
           audioUrl: '', ttsError: '', genError: '', sysAudioUrl: '', sysTtsError: ''
-        })
+        }),
+        uret: () => this.uretFromArsiv(a)    // "Studio'da üret" — hazır dosyayı sonuçta aç
       })),
       historyEmpty: (s.history || []).length === 0,
       savedList: (s.history || []).map((h, i) => ({
@@ -2154,7 +2317,14 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       onIdea: e => this.setState({ idea: e.target.value }),
       ideaEmpty: !s.idea.trim(),
       ideaShort: s.idea.length > 70 ? s.idea.slice(0, 70) + '…' : s.idea,
-      ideaChips: chips.map(c => ({ text: c, use: () => this.setState({ idea: c }) })),
+      ideaChips: ((s.chipSeed && s.chipSeed.length) ? s.chipSeed : chips).map(c => ({ text: c, use: () => this.setState({ idea: c }) })),
+      openArsivPick: () => this.setState({ arsivPick: true }),
+      closeArsivPick: () => this.setState({ arsivPick: false }),
+      arsivPickOpen: !!s.arsivPick,
+      arsivPickList: this.arsivTitles().map(x => ({
+        title: x.title, era: x.era,
+        pick: () => this.setState({ idea: x.title, arsivPick: false })
+      })),
       nextBtnStyle: {
         border: 0, padding: '14px 26px', fontWeight: 800, fontSize: '13px', letterSpacing: '.12em',
         cursor: s.idea.trim() ? 'pointer' : 'not-allowed',
@@ -2190,6 +2360,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
 
       fileNo: s.fileNo,
       resTitle: r.baslik || '', resLogline: r.logline || '',
+      fromArsiv: !!s.fromArsiv,
+      regenStory: () => this.regenStory(),
       tabs: tabDefs,
       tabSenaryo: s.tab === 'senaryo', tabSes: s.tab === 'ses', tabGorsel: s.tab === 'gorsel',
       tabVideo: s.tab === 'video', tabYayin: s.tab === 'yayin', tabImgStudio: s.tab === 'imgstudio',
@@ -2242,7 +2414,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       copyIgLabel: s.copied['ig'] ? 'KOPYALANDI ✓' : 'KOPYALA',
       copyAll: () => this.copy('all', fullText()),
       copyAllLabel: s.copied['all'] ? 'KOPYALANDI ✓' : 'TÜMÜNÜ KOPYALA',
-      newFile: () => this.setState({ step: 1, idea: '', result: null, audioUrl: '', genError: '' }),
+      newFile: () => this.setState({ step: 1, idea: '', result: null, audioUrl: '', genError: '', fromArsiv: false, arsivPick: false }),
 
       credits: s.credits,
       history: (s.history || []).map(h => ({ title: h.title, date: h.date, cost: '−' + (h.cost || 100) + ' KREDİ' })),
