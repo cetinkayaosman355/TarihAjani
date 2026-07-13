@@ -1100,7 +1100,7 @@ class Component extends DCLogic {
     const ytEtiketB = findBlock('YOUTUBE PAKETİ', 'etiket');
     let etiketler = ytEtiketB ? parseList(ytEtiketB.t) : [];
     if (!etiketler.length) {
-      const metaTxt = blocks('META & ÜRETİM NOTLARI').map(b => b.t).join('\n');
+      const metaTxt = blocks('ÜRETİM NOTU').map(b => b.t).join('\n');
       const mm = metaTxt.match(/etiketler\s*:\s*([^\n]+)/i);
       if (mm) etiketler = parseList(mm[1]);
     }
@@ -1117,10 +1117,10 @@ class Component extends DCLogic {
     const gorsel_promptlar = blocks('GÖRSEL PROMPTLARI').map(b => ({ sahne: b.k || '', prompt: b.t || '' }));
     const video_promptlar = blocks('VİDEO PROMPTLARI').map(b => ({ sahne: b.k || '', prompt: b.t || '' }));
 
-    // Üretim notları (META)
-    const metaBlocks = blocks('META & ÜRETİM NOTLARI');
-    const uretim_notu = metaBlocks.map(b => (b.k ? b.k + ': ' : '') + (b.t || '')).join('\n\n');
-    const muzikB = metaBlocks.find(b => ['müzik', 'montaj'].some(kw => low(b.k).indexOf(kw) >= 0));
+    // Üretim notu + "nasıl üretilir" rehberi
+    const metaBlocks = [...blocks('ÜRETİM NOTU'), ...blocks('NASIL ÜRETİLİR'), ...blocks('META & ÜRETİM NOTLARI')];
+    const uretim_notu = metaBlocks.map(b => (b.k ? b.k + ':\n' : '') + (b.t || '')).join('\n\n');
+    const muzikB = metaBlocks.find(b => ['müzik', 'montaj', 'üretim'].some(kw => low(b.k).indexOf(kw) >= 0));
 
     return {
       baslik: a.baslik || ytBaslik || 'Vaka Dosyası',
@@ -1137,12 +1137,16 @@ class Component extends DCLogic {
   uretFromArsiv(a) {
     const result = this.masterToResult(a);
     if (!result) return;
-    this.setState({
+    const fileNo = a.fileNo || '';
+    // Geçmişe ekle (arşivden açılan dosyalar da "Geçmiş"te bulunur) — fileNo ile tekilleştir
+    const entry = { title: result.baslik || a.baslik || 'Arşiv dosyası', date: new Date().toLocaleDateString('tr-TR'), cost: 0, fileNo, result, idea: result.baslik || '' };
+    this.setState(st => ({
       mode: 'wizard', step: 4, tab: 'senaryo', doc: null,
-      result, fileNo: a.fileNo || '', idea: result.baslik || '',
+      result, fileNo, idea: result.baslik || '',
       fromArsiv: true,
+      history: [entry, ...(st.history || []).filter(h => !(h.fileNo && h.fileNo === fileNo))].slice(0, 12),
       audioUrl: '', ttsError: '', genError: '', sysAudioUrl: '', sysTtsError: ''
-    });
+    }), () => this.persist());
     try { window.scrollTo(0, 0); } catch (e) {}
   }
 
