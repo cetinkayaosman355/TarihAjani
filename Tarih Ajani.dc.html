@@ -28,7 +28,6 @@
 <script src="/alt-bilgi.js" defer></script><script src="/hos-geldin.js" defer></script>
 <script src="/sosyal-kanit.js" defer></script>
 <script src="/gecis.js" defer></script>
-<script src="/kaydir-belir.js" defer></script>
 </head>
 <body>
 <noscript>
@@ -506,7 +505,7 @@
 
   <!-- SAHA RAPORU · Studio çıktı vitrini -->
   <section id="saha-raporu" data-screen-label="Saha Raporu" style="position: relative; background: #0a0d15; padding: clamp(56px, 6vw, 88px) 0; overflow: hidden;">
-    <img src="assets/real-studio.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; filter: brightness(.5) saturate(.6);">
+    <img src="assets/real-studio.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; filter: brightness(.3) saturate(.4);">
     <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,10,17,.92) 0%, rgba(7,9,15,.82) 48%, rgba(6,8,14,.93) 100%);"></div>
     <div style="position: absolute; inset: 0; background: radial-gradient(circle 620px at 82% 8%, rgba(230,196,120,.10), transparent 60%);"></div>
     <div style="position: relative; z-index: 2; width: min(1340px, 92vw); margin: 0 auto; padding: 0 clamp(20px, 4vw, 40px);">
@@ -585,24 +584,9 @@
     </div>
   </section>
 
-  <!-- YÖNTEM VURGUSU · krem kırılım (koyu bölümlerin arasında dikkat toplayan aydınlık bant) -->
-  <section data-screen-label="Yöntem" style="position: relative; overflow: hidden; background: linear-gradient(105deg, #e7dabd 0%, #f3ecd9 46%, #dcc79c 100%); color: #241c10; padding: clamp(52px, 6vw, 88px) clamp(20px, 4vw, 40px); text-align: center;">
-    <div style="position: absolute; inset: 0; background: radial-gradient(circle 520px at 14% 18%, rgba(255,255,255,.55), transparent 62%), radial-gradient(circle 420px at 88% 92%, rgba(150,116,54,.14), transparent 60%); pointer-events: none;"></div>
-    <div style="position: absolute; left: 0; top: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, rgba(120,90,40,.5), transparent);"></div>
-    <div style="position: relative; z-index: 2; width: min(880px, 92vw); margin: 0 auto;">
-      <p style="margin: 0; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .3em; color: #8a6d2f;">TARİH AJANI YÖNTEMİ</p>
-      <h2 style="margin: 16px 0 0; font-family: 'Playfair Display', serif; font-weight: 800; font-size: clamp(26px, 3.7vw, 46px); line-height: 1.12; color: #221a0e;">Tarihi bir dedektif gibi anlat;<br>izleyicini ilk üç saniyede yakala.</h2>
-      <p style="margin: 20px auto 0; max-width: 60ch; color: #5c4d30; font-size: 15.5px; line-height: 1.72;">Her iddia belgeye dayanır, her dosya bir vaka gibi kurgulanır. Senaryodan seslendirmeye, kapaktan sahne sahne görsele — hepsi tek masada, dakikalar içinde.</p>
-      <div style="margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
-        <a href="/studio" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; background: #241c10; color: #f3ecd9; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 15px 30px;" style-hover="background: #3a2e18; transform: translateY(-2px);">STUDIO'YA GİR →</a>
-        <a href="/arsiv" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; border: 1px solid rgba(90,70,35,.5); color: #4a3a1c; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 15px 30px;" style-hover="background: rgba(90,70,35,.08);">HİKÂYE ARŞİVİ</a>
-      </div>
-    </div>
-  </section>
-
   <!-- AJANLAR NE DİYOR · yorumlar -->
   <section data-screen-label="Yorumlar" style="position: relative; overflow: hidden; width: min(1340px, 92vw); margin: 0 auto; padding: 80px clamp(20px, 4vw, 40px) 20px;">
-    <img src="assets/evidence-board.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .2; filter: brightness(.6) saturate(.85); pointer-events: none; z-index: -1;">
+    <img src="assets/evidence-board.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .1; filter: brightness(.55) saturate(.7); pointer-events: none; z-index: -1;">
     <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,7,13,.88), rgba(6,7,13,.92)); pointer-events: none; z-index: -1;"></div>
     <!-- Gerçek sosyal kanıt: canlı sayaçlar + onaylı kullanıcı yorumları (sosyal-kanit.js doldurur) -->
     <div id="ta-sosyal-kanit" style="min-height: 220px;">
@@ -612,7 +596,7 @@
 
   <!-- SSS · Sorgu Tutanağı -->
   <section id="sss" data-screen-label="SSS" style="position: relative; overflow: hidden; background: #07090f; border-top: 1px solid rgba(193,154,82,.12);">
-    <img src="assets/real-wall.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .2; filter: saturate(.72) brightness(.78);">
+    <img src="assets/real-wall.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .12; filter: saturate(.6) brightness(.7);">
     <div style="position: absolute; inset: 0; background: radial-gradient(circle 760px at 50% 12%, rgba(7,9,15,.5), #07090f 84%);"></div>
     <div style="position: relative; z-index: 2; width: min(920px, 92vw); margin: 0 auto; padding: clamp(56px, 6vw, 92px) clamp(20px, 4vw, 40px);">
       <div style="text-align: center; margin-bottom: 40px;">
