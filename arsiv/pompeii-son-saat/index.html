@@ -37,6 +37,12 @@
   h1 { font-family: 'Playfair Display', serif; font-weight: 800; font-size: clamp(26px, 5vw, 42px); line-height: 1.15; margin: 10px 0 14px; }
   .box { border: 1px solid rgba(193,154,82,.28); background: #070a12; padding: clamp(18px, 3vw, 28px); margin: 18px 0; }
   .quote { border-left: 3px solid #c19a52; padding-left: 16px; color: #cfc8b4; white-space: pre-line; font-size: 15px; }
+  .lede { color: #d3d8e2; font-size: 18px; line-height: 1.75; max-width: 64ch; margin: 6px 0 26px; font-family: 'Playfair Display', serif; font-style: italic; }
+  .story { max-width: 68ch; }
+  .story p { font-size: 17px; line-height: 1.85; color: #d8dbe2; margin: 0 0 20px; }
+  .story h2 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: clamp(20px, 3vw, 27px); color: #f2ecd9; margin: 34px 0 12px; }
+  .story p:first-of-type::first-letter { font-family: 'Playfair Display', serif; font-size: 3.4em; line-height: .8; float: left; margin: 6px 12px 0 0; color: #e6c478; }
+  .endcta { border-color: rgba(193,154,82,.45); background: rgba(193,154,82,.06); text-align: center; margin-top: 34px; }
   .cta { display: inline-block; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12.5px; letter-spacing: .12em; padding: 15px 26px; text-decoration: none; }
   .ghost { display: inline-block; color: #e6c478; border: 1px solid rgba(193,154,82,.5); font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; padding: 14px 22px; text-decoration: none; }
   ul.sec { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
@@ -67,35 +73,23 @@
 
 <main class="wrap" style="padding-top: clamp(28px, 5vw, 56px);">
   <nav class="mono" style="font-size:11px;color:#818797;margin-bottom:14px;"><a href="/" style="color:#818797;text-decoration:none;">Ana Sayfa</a> › <a href="/arsiv/katalog/" style="color:#c19a52;text-decoration:none;">Vaka Günlüğü</a></nav>
-  <div class="mono kicker">VAKA GÜNLÜĞÜ · MS 79 · TA-ARSIV-001</div>
+  <div class="mono kicker">VAKA GÜNLÜĞÜ · MS 79 · 1 DK OKUMA</div>
   <h1>Pompeii — Son Saat</h1>
-  <p style="color:#a9adba;font-size:16px;max-width:62ch;">Modern gezgin Pompeii'yi gezerken bir anda MS 79'a ışınlanır; Vezüv patlar, son anda bugüne döner — ve yanı başında küle dönmüş bir beden görür.</p>
+  <p class="lede">Modern gezgin Pompeii'yi gezerken bir anda MS 79'a ışınlanır; Vezüv patlar, son anda bugüne döner — ve yanı başında küle dönmüş bir beden görür.</p>
 
-  <div class="box">
-    <div class="mono kicker" style="margin-bottom:12px;">DOSYADAN — SESLENDİRME FRAGMANI</div>
-    <div class="quote">Bugün Pompeii'yi geziyordum. Sonra bir anda... başka bir yerdeydim. İki bin yıl öncesi. Sokaklar dolu, şehir capcanlı. Derken dağdan dumanlar yükseldi. Vezüv uyanıyordu. Bir patlama... her yer kül, herkes kaçışıyor. Öhö— nefes alamıyorum. Sonra gözümü açtım, yine bugündeydim. Oh, kurtuldum derken... hemen yanımda küle dönmüş bir beden gördüm. Burada, tam burada ölmüş biri.</div>
-  </div>
+  <article class="story">
+    <p>Bugün Pompeii'yi geziyordum. Sonra bir anda... başka bir yerdeydim.</p>
+    <p>İki bin yıl öncesi. Sokaklar dolu, şehir capcanlı.</p>
+    <p>Derken dağdan dumanlar yükseldi. Vezüv uyanıyordu.</p>
+    <p>Bir patlama... her yer kül, herkes kaçışıyor. Öhö— nefes alamıyorum.</p>
+    <p>Sonra gözümü açtım, yine bugündeydim. Oh, kurtuldum derken...</p>
+    <p>hemen yanımda küle dönmüş bir beden gördüm. Burada, tam burada ölmüş biri.</p>
+  </article>
 
-  <div class="box">
-    <div class="mono kicker" style="margin-bottom:12px;">TAM DOSYADA NELER VAR</div>
-    <ul class="sec">
-      <li><span>SESLENDİRME</span><span>1 blok</span></li>
-      <li><span>GÖRSEL PROMPTLARI</span><span>5 blok</span></li>
-      <li><span>VİDEO PROMPTLARI</span><span>5 blok</span></li>
-      <li><span>KAPAK &amp; THUMBNAIL</span><span>1 blok</span></li>
-      <li><span>YOUTUBE PAKETİ</span><span>3 blok</span></li>
-      <li><span>INSTAGRAM</span><span>1 blok</span></li>
-      <li><span>ÜRETİM NOTU</span><span>1 blok</span></li>
-      <li><span>NASIL ÜRETİLİR</span><span>1 blok</span></li>
-    </ul>
-    <p style="margin:16px 0 0;color:#818797;font-size:13px;">Eksiksiz üretim dosyası: seslendirme metni, sahne &amp; görsel promptları, video promptları, kapak &amp; thumbnail, YouTube ve Instagram yayın paketi, üretim notları.</p>
-  </div>
-
-  <div class="box" style="border-color: rgba(193,154,82,.5); background: rgba(193,154,82,.06); text-align:center;">
-    <p class="mono kicker" style="margin:0 0 10px;">TAM DOSYA ÜYELERE AÇIK</p>
-    <p style="margin:0 0 18px;color:#cfc8b4;font-size:15px;">Bu vaka dosyasının tamamı — ve 42 dosyalık arşiv — <strong style="color:#e6c478;">Gözlemci</strong> ve üzeri üyelikle açılır. Ücretsiz üyelik 30 deneme kredisiyle Studio'yu da denemeni sağlar.</p>
-    <a class="cta" href="/uyelik">ÜYELİKLE AÇ →</a>
-    <a class="ghost" href="/arsiv" style="margin-left:10px;">ARŞİVE GİT</a>
+  <div class="box endcta">
+    <p style="margin:0 0 16px;color:#cfc8b4;font-size:15px;">Bu tarihi kendi videon olarak üretmek ister misin? <strong style="color:#e6c478;">Studio</strong>; senaryo, seslendirme ve sahne promptlarını dakikalar içinde hazırlar.</p>
+    <a class="cta" href="/studio">STUDIO'DA ÜRET →</a>
+    <a class="ghost" href="/arsiv/katalog/" style="margin-left:10px;">DAHA FAZLA VAKA →</a>
   </div>
 
   <div class="pn">

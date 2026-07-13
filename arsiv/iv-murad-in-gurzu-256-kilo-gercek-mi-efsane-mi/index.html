@@ -37,6 +37,12 @@
   h1 { font-family: 'Playfair Display', serif; font-weight: 800; font-size: clamp(26px, 5vw, 42px); line-height: 1.15; margin: 10px 0 14px; }
   .box { border: 1px solid rgba(193,154,82,.28); background: #070a12; padding: clamp(18px, 3vw, 28px); margin: 18px 0; }
   .quote { border-left: 3px solid #c19a52; padding-left: 16px; color: #cfc8b4; white-space: pre-line; font-size: 15px; }
+  .lede { color: #d3d8e2; font-size: 18px; line-height: 1.75; max-width: 64ch; margin: 6px 0 26px; font-family: 'Playfair Display', serif; font-style: italic; }
+  .story { max-width: 68ch; }
+  .story p { font-size: 17px; line-height: 1.85; color: #d8dbe2; margin: 0 0 20px; }
+  .story h2 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: clamp(20px, 3vw, 27px); color: #f2ecd9; margin: 34px 0 12px; }
+  .story p:first-of-type::first-letter { font-family: 'Playfair Display', serif; font-size: 3.4em; line-height: .8; float: left; margin: 6px 12px 0 0; color: #e6c478; }
+  .endcta { border-color: rgba(193,154,82,.45); background: rgba(193,154,82,.06); text-align: center; margin-top: 34px; }
   .cta { display: inline-block; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12.5px; letter-spacing: .12em; padding: 15px 26px; text-decoration: none; }
   .ghost { display: inline-block; color: #e6c478; border: 1px solid rgba(193,154,82,.5); font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; padding: 14px 22px; text-decoration: none; }
   ul.sec { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
@@ -67,35 +73,52 @@
 
 <main class="wrap" style="padding-top: clamp(28px, 5vw, 56px);">
   <nav class="mono" style="font-size:11px;color:#818797;margin-bottom:14px;"><a href="/" style="color:#818797;text-decoration:none;">Ana Sayfa</a> › <a href="/arsiv/katalog/" style="color:#c19a52;text-decoration:none;">Vaka Günlüğü</a></nav>
-  <div class="mono kicker">VAKA GÜNLÜĞÜ · TARİH DOSYASI · TA-ARSIV-035</div>
+  <div class="mono kicker">VAKA GÜNLÜĞÜ · TARİH DOSYASI · 4 DK OKUMA</div>
   <h1>Iv. Murad'ın Gürzü — 256 Kilo: Gerçek mi, Efsane mi?</h1>
-  <p style="color:#a9adba;font-size:16px;max-width:62ch;">Kaynaklar IV. Murad'ın 200 okkalık (~256 kg) gürz kullandığını yazar; Silahdar Musa'yı kuşağından kaldırdığı, 'delinmez' kalkanı mızrakla deldiği kayıtlıdır. Asıl bulgu: rakam savaş ölçüsü değil, vakanüvis mübalağası — heybet büyüdükçe gürz ağırlaştı. Gerçek gürz Topkapı'da.</p>
+  <p class="lede">Kaynaklar IV. Murad'ın 200 okkalık (~256 kg) gürz kullandığını yazar; Silahdar Musa'yı kuşağından kaldırdığı, 'delinmez' kalkanı mızrakla deldiği kayıtlıdır. Asıl bulgu: rakam savaş ölçüsü değil, vakanüvis mübalağası — heybet büyüdükçe gürz ağırlaştı. Gerçek gürz Topkapı'da.</p>
 
-  <div class="box">
-    <div class="mono kicker" style="margin-bottom:12px;">DOSYADAN — SESLENDİRME FRAGMANI</div>
-    <div class="quote">S1 (Hook): Topkapı Sarayı'nda, camekânın ardında bir gürz asılı. Rivayete göre onu tek eliyle savuran adam… koca bir imparatorluğu da tek eliyle sarsmıştı. S2: Dördüncü Murad. On bir yaşında tahta çıktı, yirmi sekiz yıl yaşadı. Ama bıraktığı efsaneler dört asır sürdü. S3: Kaynaklar diyor ki: kullandığı gürz tam iki yüz okka. Yani bugünün ölçüsüyle iki yüz elli altı kilo. Tek elle.…</div>
-  </div>
+  <article class="story">
+    <p>S1 (Hook): Topkapı Sarayı'nda, camekânın ardında bir gürz asılı. Rivayete göre onu tek eliyle savuran adam… koca bir imparatorluğu da tek eliyle sarsmıştı.</p>
+    <p>S2: Dördüncü Murad. On bir yaşında tahta çıktı, yirmi sekiz yıl yaşadı. Ama bıraktığı efsaneler dört asır sürdü.</p>
+    <p>S3: Kaynaklar diyor ki: kullandığı gürz tam iki yüz okka. Yani bugünün ölçüsüyle iki yüz elli altı kilo. Tek elle.</p>
+    <p>S4: İriyarı Silahdar Musa'yı kuşağından tutup Has Oda'yı defalarca dolaştırdığı; Hint elçisinin &quot;delinmez&quot; dediği kalkanı bir mızrak darbesiyle deldiği yazılıdır.</p>
+    <p>S5 (Merak): Peki bir insan gerçekten iki yüz elli altı kiloyu savurabilir mi? İşte tarihin sakladığı yer tam burası.</p>
+    <p>S6 (Bulgu): İşin sırrı: o rakam savaş için değil, gücün kanıtı içindi. Vakanüvisler heybeti büyüttükçe gürz ağırlaştı. Gerçek gürz hâlâ Topkapı'da — ama efsanenin ağırlığı, demirinden çok daha fazla.</p>
+    <p>S7 (Outro): ## 🎬 SAHNELER (görsel + video) — standart formatta yeniden üretildi</p>
+    <p>Sahne 1 — görsel</p>
+    <p>Cinematic ultra-photorealistic film still, 9:16 vertical, an ornate heavy Ottoman iron mace displayed behind glass in a dim Topkapi Palace gallery, a single warm spotlight on the weathered metal, dark museum shadows, ominous regal mood, ARRI Alexa, anamorphic, extreme detail. No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.</p>
+    <p>Sahne 1 — video</p>
+    <p>Very slow push-in toward the mace behind the glass; reflections shifting, dust in the light beam. Stable face and anatomy, no warping, no morphing, no flicker.</p>
+    <p>Sahne 2 — görsel</p>
+    <p>Cinematic ultra-photorealistic film still, 9:16 vertical, a stern young Ottoman sultan (Murad IV) in dark imperial robes and turban seated on a golden throne in a torchlit hall, piercing intense gaze, imposing presence, ARRI Alexa, anamorphic, extreme detail. No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.</p>
+    <p>Sahne 2 — video</p>
+    <p>Slow push-in on the sultan's unflinching face; torch flames flickering on gold. Stable face and anatomy, no warping, no morphing, no flicker.</p>
+    <p>Sahne 3 — görsel</p>
+    <p>Cinematic ultra-photorealistic film still, 9:16 vertical, an extreme close-up of a massive iron mace gripped in one strong hand, veins and tension, dramatic side light carving the metal ridges, dark background, ARRI Alexa, anamorphic, extreme detail. No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.</p>
+    <p>Sahne 3 — video</p>
+    <p>Slow rotation of the gripped mace as light travels across the ridges. Stable face and anatomy, no warping, no morphing, no flicker.</p>
+    <p>Sahne 4 — görsel</p>
+    <p>Cinematic ultra-photorealistic film still, 9:16 vertical, the powerful sultan lifting a large armored guard by the belt with one arm inside an ornate Ottoman palace chamber, astonished courtiers watching in torchlight, a feat of legendary strength, non-graphic, ARRI Alexa, anamorphic, extreme detail. No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.</p>
+    <p>Sahne 4 — video</p>
+    <p>The sultan lifts the guard by the belt and strides forward as courtiers recoil; robes swaying. Stable face and anatomy, no warping, no morphing, no flicker.</p>
+    <p>Sahne 5 — görsel</p>
+    <p>Cinematic ultra-photorealistic film still, 9:16 vertical, a spear punching through a thick ornate round shield held on a wooden stand in a palace courtyard, splinters frozen mid-air, stunned foreign envoys in rich robes watching, dramatic light, ARRI Alexa, anamorphic, extreme detail. No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.</p>
+    <p>Sahne 5 — video</p>
+    <p>The spear strikes and pierces the shield, splinters bursting as the envoys flinch. Stable face and anatomy, no warping, no morphing, no flicker.</p>
+    <p>Sahne 6 — görsel</p>
+    <p>Cinematic ultra-photorealistic film still, 9:16 vertical, an old Ottoman chronicler writing by candlelight, the shadow of a mace on the wall behind him growing far larger than the real weapon on his desk — legend outgrowing iron, symbolic chiaroscuro, ARRI Alexa, anamorphic, extreme detail. No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.</p>
+    <p>Sahne 6 — video</p>
+    <p>The candle flickers as the mace's shadow slowly grows on the wall while the scribe writes. Stable face and anatomy, no warping, no morphing, no flicker.</p>
+    <p>Sahne 7 — görsel</p>
+    <p>Cinematic ultra-photorealistic film still, 9:16 vertical, the mace behind museum glass at night, a faint golden reflection of a sultan's silhouette appearing in the glass beside it, haunting final image, ARRI Alexa, anamorphic, extreme detail. No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.</p>
+    <p>Sahne 7 — video</p>
+    <p>Very slow push-in as the faint silhouette reflection appears then fades in the glass. Stable face and anatomy, no warping, no morphing, no flicker.</p>
+  </article>
 
-  <div class="box">
-    <div class="mono kicker" style="margin-bottom:12px;">TAM DOSYADA NELER VAR</div>
-    <ul class="sec">
-      <li><span>SESLENDİRME</span><span>1 blok</span></li>
-      <li><span>GÖRSEL PROMPTLARI</span><span>3 blok</span></li>
-      <li><span>VİDEO PROMPTLARI</span><span>3 blok</span></li>
-      <li><span>KAPAK &amp; THUMBNAIL</span><span>1 blok</span></li>
-      <li><span>YOUTUBE PAKETİ</span><span>3 blok</span></li>
-      <li><span>INSTAGRAM</span><span>1 blok</span></li>
-      <li><span>ÜRETİM NOTU</span><span>1 blok</span></li>
-      <li><span>NASIL ÜRETİLİR</span><span>1 blok</span></li>
-    </ul>
-    <p style="margin:16px 0 0;color:#818797;font-size:13px;">Eksiksiz üretim dosyası: seslendirme metni, sahne &amp; görsel promptları, video promptları, kapak &amp; thumbnail, YouTube ve Instagram yayın paketi, üretim notları.</p>
-  </div>
-
-  <div class="box" style="border-color: rgba(193,154,82,.5); background: rgba(193,154,82,.06); text-align:center;">
-    <p class="mono kicker" style="margin:0 0 10px;">TAM DOSYA ÜYELERE AÇIK</p>
-    <p style="margin:0 0 18px;color:#cfc8b4;font-size:15px;">Bu vaka dosyasının tamamı — ve 42 dosyalık arşiv — <strong style="color:#e6c478;">Gözlemci</strong> ve üzeri üyelikle açılır. Ücretsiz üyelik 30 deneme kredisiyle Studio'yu da denemeni sağlar.</p>
-    <a class="cta" href="/uyelik">ÜYELİKLE AÇ →</a>
-    <a class="ghost" href="/arsiv" style="margin-left:10px;">ARŞİVE GİT</a>
+  <div class="box endcta">
+    <p style="margin:0 0 16px;color:#cfc8b4;font-size:15px;">Bu tarihi kendi videon olarak üretmek ister misin? <strong style="color:#e6c478;">Studio</strong>; senaryo, seslendirme ve sahne promptlarını dakikalar içinde hazırlar.</p>
+    <a class="cta" href="/studio">STUDIO'DA ÜRET →</a>
+    <a class="ghost" href="/arsiv/katalog/" style="margin-left:10px;">DAHA FAZLA VAKA →</a>
   </div>
 
   <div class="pn">
