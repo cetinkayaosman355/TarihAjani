@@ -1821,7 +1821,9 @@ class Component extends DCLogic {
     const tonStr = m.ton[s.tone] || m.ton.merak;
     const sesStr = m.ses[s.voice] || m.ses.erkek;
     const stilStr = m.stil[s.style] || m.stil.sinematik;
-    const fmt = this.fmtFor(this.durationSec());
+    const sec = this.durationSec();
+    const fmt = this.fmtFor(sec);
+    const wmin = Math.round(sec * 2.0), wmax = Math.round(sec * 2.6);   // Türkçe ≈ 2.4 kelime/sn
     const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
     // Tarihî Gravür fotogerçekçi değildir; anti-artifact satırı stile göre değişir
     const antiArtifact = s.style === 'gravur'
@@ -1836,11 +1838,12 @@ BU ÜRETİMİN PARAMETRELERİ:
 - Seslendirme tarzı: ${sesStr}
 - Görsel stil çekirdeği (her görsel/video promptunun BAŞINA birebir konur): ${stilStr}
 - Kadraj / en-boy oranı: ${oran}
-- Format: ${fmt.etiket} · ${fmt.bolum} · toplam ${fmt.kelime} kelime seslendirme
-- SAHNE SAYISI (KESİN KURAL): KAPAK HARİÇ tam ${fmt.sahne} sahne. gorsel_promptlar ve video_promptlar dizilerinin HER BİRİ tam ${fmt.sahne} öğe içermeli. Seslendirme kısa olsa bile anlatıyı ${fmt.sahne} ayrı görsel âna böl (birbirini izleyen anlar); ${fmt.sahne}'den AZ sahne ASLA verme. Kapak bu sayıya dahil değildir.
+- Format: ${fmt.etiket} · ${fmt.bolum} · toplam seslendirme HEDEFİ ${fmt.kelime} kelime
+- ⏱ SÜRE KİLİDİ (EN ÖNEMLİ KURAL): Bu video ${fmt.etiket} (≈ ${sec} saniye) UZUNLUĞUNDA olacak. Türkçe seslendirme ≈ 2.4 kelime/saniye okunur. Bu yüzden TÜM senaryo[].metin alanlarındaki kelimelerin TOPLAMI ${wmin}-${wmax} kelime olmalı; ÜST SINIR ${wmax} kelimeyi ASLA AŞMA. Daha fazla yazarsan video ${fmt.etiket}'yi aşar — bu KESİN bir HATADIR. Kısa videoda az sözle çok şey anlat, doldurma/tekrar yapma.
+- SAHNE SAYISI (KESİN KURAL): KAPAK HARİÇ tam ${fmt.sahne} sahne. gorsel_promptlar ve video_promptlar dizilerinin HER BİRİ tam ${fmt.sahne} öğe içermeli. Kapak bu sayıya dahil değildir. ÖNEMLİ: Sahneler yalnızca GÖRSEL bölünmedir; sahne sayısı seslendirmeye kelime EKLEMEZ. Aynı ${wmin}-${wmax} kelimelik seslendirmeyi ${fmt.sahne} görsel âna DAĞIT — her sahne için fazladan cümle yazıp süreyi uzatma.
 
 KALİTE BARI (EN KRİTİK — zayıf çıktı geçersizdir):
-- SESLENDİRME (senaryo[].metin): O bölümün TAM, kelimesi kelimesine okunacak metni. Somut isim/tarih/yer/sayı geçir; duyusal ve sinematik dil kur; her bölüm mikro-kanca ile açılıp merak bırakarak bitsin. Toplam ${fmt.kelime} kelime bütçesine UY ve ALT SINIRIN ALTINA DÜŞME. Dolgu, klişe, "tarih boyunca insanlar…" tarzı genel cümle YASAK.
+- SESLENDİRME (senaryo[].metin): O bölümün TAM, kelimesi kelimesine okunacak metni. Somut isim/tarih/yer/sayı geçir; duyusal ve sinematik dil kur; her bölüm mikro-kanca ile açılıp merak bırakarak bitsin. Toplam kelime ${wmin}-${wmax} aralığında KALMALI: ${wmin} altına düşme, ${wmax} üstüne ÇIKMA (süre kilidi kesindir). Dolgu, klişe, "tarih boyunca insanlar…" tarzı genel cümle YASAK — kısalık kaliteyi düşürmez, netleştirir.
 - KANCA: İlk 3 saniye maksimum merak; ilk cümle bir soru, çelişki ya da çarpıcı iddia olsun.
 - YOUTUBE AÇIKLAMASI (aciklama): EN AZ 3 dolu paragraf — 1) merak açan giriş, 2) videoda ne var/neyi kanıtlıyoruz, 3) abonelik + kaynak/uyarı çağrısı. Ardından "00:00 Giriş" biçiminde EN AZ 3 zaman damgası, sonra 5-8 arama-dostu anahtar kelime. Kısa/tek paragraf KABUL EDİLMEZ.
 - INSTAGRAM (aciklama): 1 vurucu hook satırı + 2 kısa paragraf + net CTA (izleyiciye yorumda soru sordur). Emoji ölçülü.
@@ -1880,7 +1883,7 @@ TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan
  "uretim_notu": "kurgu, müzik ve ritim önerisi (3-4 cümle)"
 }
 
-SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar = TAM ${fmt.sahne} öğe · video_promptlar = TAM ${fmt.sahne} öğe · youtube.etiketler = 15 · instagram.hashtagler = 5 · her senaryo[].metin dolu, akıcı ve bütçeye uygun · youtube.aciklama 3+ paragraf ve zaman damgalı. Eksik varsa düzelt, öyle gönder.`;
+SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].metin toplam kelime = ${wmin}-${wmax} arası (${wmax} AŞILMAMIŞ — aşıldıysa kısalt) · gorsel_promptlar = TAM ${fmt.sahne} öğe · video_promptlar = TAM ${fmt.sahne} öğe · youtube.etiketler = 15 · instagram.hashtagler = 5 · her senaryo[].metin dolu ve akıcı · youtube.aciklama 3+ paragraf ve zaman damgalı. Eksik/fazla varsa düzelt, öyle gönder.`;
     return outlineOnly
       ? p + '\n\nEK KURAL (İKİ AŞAMALI ÜRETİM): Bu üretimde senaryo bölümlerinin "metin" alanına yalnızca 2-3 cümlelik yoğun bölüm özeti yaz; tam seslendirme metinleri ikinci aşamada bölüm bölüm yazılacak. Diğer TÜM alanları (youtube, instagram, kapak, gorsel_promptlar, video_promptlar) eksiksiz üret.'
       : p;
@@ -1917,7 +1920,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
     for (let i = 0; i < secs.length; i++) {
       this.setState({ genMsg: 'BÖLÜM ' + (i + 1) + ' / ' + secs.length + ' KALEME ALINIYOR…', genPct: 55 + Math.round((i / Math.max(1, secs.length)) * 42) });
       try {
-        const reply = await this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secs[i].bolum || '') + '" bölümünün TAM seslendirme metnini yaz: ' + words + ' kelime, akıcı Türkçe, şu tonla: ' + tonStr + '. Somut isim/tarih/yer/sayı geçir; klişe ve dolgu YOK. Önceki bölümden doğal biçimde devral, bir sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver. YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + secs.map(x => x.bolum).join(' | ') + '\nBu bölümün özeti: ' + (secs[i].metin || ''), 2500);
+        const reply = await this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secs[i].bolum || '') + '" bölümünün TAM seslendirme metnini yaz: KESİN ' + words + ' kelime (bu aralığı AŞMA — süre kilidi), akıcı Türkçe, şu tonla: ' + tonStr + '. Somut isim/tarih/yer/sayı geçir; klişe ve dolgu YOK. Önceki bölümden doğal biçimde devral, bir sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver. YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + secs.map(x => x.bolum).join(' | ') + '\nBu bölümün özeti: ' + (secs[i].metin || ''), 2500);
         if (reply && reply.trim()) secs[i].metin = reply.trim();
       } catch (e) { /* özetle devam et */ }
     }
