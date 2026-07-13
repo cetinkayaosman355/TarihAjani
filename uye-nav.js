@@ -33,9 +33,9 @@
   function headerLinks() {
     var out = [];
     var h = document.querySelector('header');
-    if (h) out = out.concat(Array.prototype.slice.call(h.querySelectorAll('a[href="/uyelik"], a[href^="/uyelik?"]')));
+    if (h) out = out.concat(Array.prototype.slice.call(h.querySelectorAll('a[href^="/uyelik"]')));
     // mobil menü paneli gibi işaretli kapsamlar da giriş göstergesine dahildir
-    Array.prototype.slice.call(document.querySelectorAll('[data-uye-scope] a[href="/uyelik"], [data-uye-scope] a[href^="/uyelik?"]')).forEach(function (a) {
+    Array.prototype.slice.call(document.querySelectorAll('[data-uye-scope] a[href^="/uyelik"]')).forEach(function (a) {
       if (out.indexOf(a) === -1) out.push(a);
     });
     return out;
