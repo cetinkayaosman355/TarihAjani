@@ -288,7 +288,7 @@ function footer(){
       <div><div class="fw">Tarih Ajanı <span class="h">Haber</span></div>
         <div class="ft">Tarihin dönüm noktalarını, sanki bugün oluyormuş gibi haber diliyle veren bağımsız kronik yayın.</div></div>
       <div class="cols">
-        <div class="col"><b>Bölümler</b><a href="/haber#savas">Savaş</a><a href="/haber#siyaset">Siyaset</a><a href="/haber#sir">Sır Dosyaları</a><a href="/haber#bilim">Keşif &amp; Bilim</a></div>
+        <div class="col"><b>Bölümler</b><a href="/haber#savas" data-f="savas">Savaş</a><a href="/haber#siyaset" data-f="siyaset">Siyaset</a><a href="/haber#sir" data-f="sir">Sır Dosyaları</a><a href="/haber#bilim" data-f="bilim">Keşif &amp; Bilim</a></div>
         <div class="col"><b>Tarih Ajanı</b><a href="/">Ana Sayfa</a><a href="/arsiv">Hikâye Arşivi</a><a href="/studio">Studio</a><a href="/iletisim">Künye</a></div>
         <div class="col"><b>Takip</b><a href="https://www.youtube.com/@TarihAjani">YouTube</a><a href="https://www.instagram.com/tarih.ajani">Instagram</a><a href="/bulten">Bülten</a></div>
       </div>
@@ -401,24 +401,28 @@ document.getElementById('raillist').innerHTML=REST.slice(0,5).map(function(h){
   return '<a class="rrow" href="'+url(h)+'" data-slug="'+h.slug+'"><div class="t">'+esc(h.yil)+'</div>'+
     '<div><h4>'+esc(h.baslik)+'</h4><div class="m">'+esc(catAd(h.cat))+' · '+esc(h.yer)+'</div></div></a>';
 }).join('');
+/* hover görsellerini önceden yükle — geçişlerde titreme/flaş olmasın */
+[LEAD].concat(REST.slice(0,5)).forEach(function(h){if(h.img){var im=new Image();im.src=h.img;}});
 (function(){
   var host=document.getElementById('raillist');
+  var curSlug=LEAD.slug;
+  function show(h,preview){ if(!h||h.slug===curSlug)return; curSlug=h.slug; renderLead(h,preview); }
   host.addEventListener('mouseover',function(e){
     var row=e.target.closest('.rrow'); if(!row)return;
     var h=bySlug(row.getAttribute('data-slug')); if(!h)return;
     [].forEach.call(host.querySelectorAll('.rrow'),function(r){r.classList.toggle('act',r===row);});
-    renderLead(h,true);
+    show(h,true);
   });
   host.addEventListener('mouseleave',function(){
     [].forEach.call(host.querySelectorAll('.rrow'),function(r){r.classList.remove('act');});
-    renderLead(LEAD);
+    show(LEAD,false);
   });
 })();
 
-/* lead altı ek manşetler (sol sütunu doldurur) */
+/* lead altı ek manşetler (sol sütunu doldurur) — 3 manşet */
 document.getElementById('leadmore').innerHTML=
   '<div class="lm-h">Daha Fazla Manşet</div>'+
-  REST.slice(5,7).map(function(h){
+  REST.slice(5,8).map(function(h){
     return '<a class="lmrow" href="'+url(h)+'"><div class="media">'+media(h)+'</div>'+
       '<div><div class="c">'+esc(catAd(h.cat))+'</div><h4>'+esc(h.baslik)+'</h4></div></a>';
   }).join('');
@@ -432,7 +436,7 @@ document.getElementById('leadmore').innerHTML=
 
 /* ikincil manşetler (3) */
 (function(){
-  document.getElementById('secondary').innerHTML=REST.slice(7,10).map(function(h){
+  document.getElementById('secondary').innerHTML=REST.slice(8,11).map(function(h){
     return '<a class="mcard" href="'+url(h)+'"><div class="media">'+media(h)+'</div>'+
       '<div class="c">'+esc(catAd(h.cat))+'</div><h3>'+esc(h.baslik)+'</h3><p>'+esc(h.spot)+'</p></a>';
   }).join('');
@@ -461,13 +465,25 @@ function renderSections(filter){
 }
 renderSections('hepsi');
 
+/* kategori tıklaması: filtre değil, ilgili bölüme yumuşak kaydırma */
+var SECMAP=(function(){var m={};GRUPLAR.forEach(function(g){g.cats.forEach(function(c){m[c]='sec-'+g.cats[0];});});return m;})();
+function scrollToSec(id){
+  var el=id?document.getElementById(id):document.getElementById('sections');
+  if(!el)el=document.getElementById('sections');
+  if(!el)return;
+  var nav=document.querySelector('.catnav');
+  var off=(nav?nav.offsetHeight:0)+16;
+  var y=el.getBoundingClientRect().top+window.pageYOffset-off;
+  window.scrollTo({top:Math.max(0,y),behavior:'smooth'});
+}
 document.addEventListener('click',function(e){
   var a=e.target.closest('[data-f]'); if(!a)return; e.preventDefault();
   var f=a.getAttribute('data-f');
   [].forEach.call(document.querySelectorAll('#catnav a'),function(x){x.classList.toggle('on', x.getAttribute('data-f')===f);});
-  renderSections(f);
-  var sc=document.getElementById('sections'); if(sc)sc.scrollIntoView({behavior:'smooth',block:'start'});
+  scrollToSec(f==='hepsi'?null:SECMAP[f]);
 });
+/* başka sayfadan #kategori ile gelindiyse o bölüme in */
+(function(){var h=(location.hash||'').replace('#','');if(h&&SECMAP[h]){setTimeout(function(){scrollToSec(SECMAP[h]);},220);}})();
 
 /* kaydırınca beliren kartlar */
 var _io;
