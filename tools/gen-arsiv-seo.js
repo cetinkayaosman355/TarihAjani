@@ -12,6 +12,7 @@ const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
 const SITE = 'https://tarihajani.com';
+const TODAY = new Date().toISOString().slice(0, 10);
 
 /* ── veri ── */
 const ctx = { window: {} };
@@ -27,6 +28,17 @@ function slugify(s) {
   t = t.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   if (t.length > 60) t = t.slice(0, 60).replace(/-[^-]*$/, '');
   return t || 'dosya';
+}
+// TÜMÜ BÜYÜK kelimeleri Başlık Düzeni'ne çevir (okunur başlıklar)
+function dispTitle(s) {
+  return String(s || '').split(/(\s+)/).map(w => {
+    const letters = w.replace(/[^A-Za-zÇĞİıÖŞÜçğıöşü]/g, '');
+    if (letters.length > 1 && w === w.toLocaleUpperCase('tr') && /[A-ZÇĞİÖŞÜ]/.test(w)) {
+      const lc = w.toLocaleLowerCase('tr');
+      return lc.replace(/[A-Za-zÇĞİıÖŞÜçğıöşü]/, c => c.toLocaleUpperCase('tr'));
+    }
+    return w;
+  }).join('');
 }
 function esc(s) {
   return String(s == null ? '' : s)
@@ -126,7 +138,7 @@ ${jsonld ? '<script type="application/ld+json">' + jsonld + '</script>' : ''}
   </a>
   <nav>
     <a href="/">ANA SAYFA</a>
-    <a href="/arsiv/katalog/">DOSYA KATALOĞU</a>
+    <a href="/arsiv/katalog/">VAKA GÜNLÜĞÜ</a>
     <a href="/arsiv">ARŞİV</a>
     <a href="/uyelik" class="cta">ÜYELİK</a>
   </nav>
@@ -149,24 +161,41 @@ ${bodyHtml}
 let written = 0;
 items.forEach((s, i) => {
   const canon = '/arsiv/' + s.slug + '/';
-  const title = s.baslik.replace(/\s+/g, ' ') + ' · Vaka Dosyası · Tarih Ajanı';
+  const bt = dispTitle(s.baslik.replace(/\s+/g, ' '));
+  const title = bt + ' · Vaka Günlüğü · Tarih Ajanı';
   const desc = clip(s.ozet || s.teaser || s.baslik, 158);
   const excerpt = voiceExcerpt(s);
   const secs = sectionList(s);
   const prev = items[(i - 1 + items.length) % items.length];
   const next = items[(i + 1) % items.length];
   const jsonld = JSON.stringify({
-    '@context': 'https://schema.org', '@type': 'Article',
-    headline: s.baslik, description: desc,
-    inLanguage: 'tr', mainEntityOfPage: SITE + canon,
-    publisher: { '@type': 'Organization', name: 'Tarih Ajanı', url: SITE },
-    isAccessibleForFree: false
+    '@context': 'https://schema.org', '@graph': [
+      {
+        '@type': 'BlogPosting',
+        headline: bt, description: desc, inLanguage: 'tr',
+        mainEntityOfPage: SITE + canon, url: SITE + canon,
+        image: SITE + '/assets/dossier-bundle.jpg',
+        datePublished: TODAY, dateModified: TODAY,
+        articleSection: 'Vaka Günlüğü', keywords: (s.era || '') + ', tarih, vaka dosyası, belgesel',
+        author: { '@type': 'Organization', name: 'Tarih Ajanı', url: SITE },
+        publisher: { '@type': 'Organization', name: 'Tarih Ajanı', url: SITE, logo: { '@type': 'ImageObject', url: SITE + '/assets/logo-mark.png' } },
+        isAccessibleForFree: true
+      },
+      {
+        '@type': 'BreadcrumbList', itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: SITE + '/' },
+          { '@type': 'ListItem', position: 2, name: 'Vaka Günlüğü', item: SITE + '/arsiv/katalog/' },
+          { '@type': 'ListItem', position: 3, name: bt, item: SITE + canon }
+        ]
+      }
+    ]
   });
 
   const body = `
 <main class="wrap" style="padding-top: clamp(28px, 5vw, 56px);">
-  <div class="mono kicker">${esc(s.no)} · ${esc(s.era)} · ${esc(s.fileNo)}</div>
-  <h1>${esc(s.baslik)}</h1>
+  <nav class="mono" style="font-size:11px;color:#818797;margin-bottom:14px;"><a href="/" style="color:#818797;text-decoration:none;">Ana Sayfa</a> › <a href="/arsiv/katalog/" style="color:#c19a52;text-decoration:none;">Vaka Günlüğü</a></nav>
+  <div class="mono kicker">VAKA GÜNLÜĞÜ · ${esc(s.era)} · ${esc(s.fileNo)}</div>
+  <h1>${esc(bt)}</h1>
   <p style="color:#a9adba;font-size:16px;max-width:62ch;">${esc(s.ozet || s.teaser || '')}</p>
 
   ${excerpt ? `<div class="box">
@@ -190,8 +219,8 @@ items.forEach((s, i) => {
   </div>
 
   <div class="pn">
-    <a href="/arsiv/${prev.slug}/">← ${esc(clip(prev.baslik, 40))}</a>
-    <a href="/arsiv/${next.slug}/">${esc(clip(next.baslik, 40))} →</a>
+    <a href="/arsiv/${prev.slug}/">← ${esc(dispTitle(clip(prev.baslik, 40)))}</a>
+    <a href="/arsiv/${next.slug}/">${esc(dispTitle(clip(next.baslik, 40)))} →</a>
   </div>
 </main>`;
 
@@ -202,15 +231,22 @@ items.forEach((s, i) => {
 });
 
 /* ── katalog ── */
+const katJsonld = JSON.stringify({
+  '@context': 'https://schema.org', '@type': 'Blog', name: 'Tarih Ajanı — Vaka Günlüğü',
+  description: items.length + ' tarih vakası; çözülmemiş sırların hikâyeleri.', url: SITE + '/arsiv/katalog/', inLanguage: 'tr',
+  publisher: { '@type': 'Organization', name: 'Tarih Ajanı', url: SITE },
+  blogPost: items.map(s => ({ '@type': 'BlogPosting', headline: dispTitle(s.baslik), url: SITE + '/arsiv/' + s.slug + '/', datePublished: TODAY }))
+});
 const katBody = `
 <main class="wrap" style="padding-top: clamp(28px, 5vw, 56px);">
-  <div class="mono kicker">GİZLİ ARŞİV · ${items.length} VAKA DOSYASI</div>
-  <h1>Vaka Dosyası Kataloğu</h1>
-  <p style="color:#a9adba;font-size:16px;max-width:66ch;">Yayınladığımız tarih vakalarının eksiksiz üretim dosyaları: senaryo, seslendirme, sahne &amp; görsel promptları ve yayın paketi. Her dosyanın tanıtımını incele; tamamı <a href="/uyelik">Gözlemci üyelikle</a> açılır.</p>
+  <nav class="mono" style="font-size:11px;color:#818797;margin-bottom:14px;"><a href="/" style="color:#818797;text-decoration:none;">Ana Sayfa</a> › <span style="color:#c19a52;">Vaka Günlüğü</span></nav>
+  <div class="mono kicker">VAKA GÜNLÜĞÜ · BLOG · ${items.length} HİKÂYE</div>
+  <h1>Vaka Günlüğü</h1>
+  <p style="color:#a9adba;font-size:16px;max-width:66ch;">Asur'dan Roma'ya, Mısır'dan Bizans'a — çözülmemiş tarih sırlarının hikâyeleri. Her vakayı oku; istersen <a href="/studio">Studio</a>'da videoya dönüştür. Eksiksiz üretim dosyaları (senaryo, seslendirme, sahne &amp; görsel promptları, yayın paketi) <a href="/uyelik">Gözlemci üyelikle</a> açılır.</p>
   <div class="grid" style="margin-top:26px;">
     ${items.map(s => `<a class="card" href="/arsiv/${s.slug}/">
       <span class="mono kicker">${esc(s.era)}</span>
-      <h3>${esc(s.baslik)}</h3>
+      <h3>${esc(dispTitle(s.baslik))}</h3>
       <p>${esc(clip(s.ozet || s.teaser || '', 110))}</p>
     </a>`).join('\n    ')}
   </div>
@@ -218,9 +254,9 @@ const katBody = `
 fs.mkdirSync(path.join(ROOT, 'arsiv', 'katalog'), { recursive: true });
 fs.writeFileSync(
   path.join(ROOT, 'arsiv', 'katalog', 'index.html'),
-  shell('Vaka Dosyası Kataloğu · ' + items.length + ' Tarih Dosyası · Tarih Ajanı',
-    items.length + ' tarih vakasının eksiksiz üretim dosyaları: senaryo, seslendirme, görsel promptları ve yayın paketi. Kataloğu incele.',
-    '/arsiv/katalog/', katBody, '')
+  shell('Vaka Günlüğü · Tarih Blog · ' + items.length + ' Hikâye · Tarih Ajanı',
+    items.length + ' tarih vakası; çözülmemiş sırların hikâyeleri. Oku, keşfet; istersen Studio\'da videoya dönüştür.',
+    '/arsiv/katalog/', katBody, katJsonld)
 );
 
 /* ── sitemap ── */

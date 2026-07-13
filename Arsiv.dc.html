@@ -103,8 +103,22 @@
     </div>
   </section>
 
+  <!-- VAKA / BLOG şeridi -->
+  <section style="width: min(1340px, 92vw); margin: 0 auto; padding: 26px clamp(20px, 4vw, 40px) 0;">
+    <a href="/arsiv/katalog/" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; text-decoration: none; border: 1px solid rgba(193,154,82,.35); background: linear-gradient(100deg, rgba(193,154,82,.1), rgba(8,7,12,.4)); padding: 18px 22px;" style-hover="border-color: rgba(193,154,82,.6);">
+      <span style="display: flex; align-items: center; gap: 14px;">
+        <span style="font-size: 26px;">📖</span>
+        <span style="display: grid; gap: 3px;">
+          <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em;">VAKA GÜNLÜĞÜ · BLOG</span>
+          <span style="color: #cfd3dc; font-size: 14px; line-height: 1.4;">42 tarih vakasını hikâye olarak oku — çözülmemiş sırların günlüğü.</span>
+        </span>
+      </span>
+      <span style="color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .1em; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); padding: 12px 20px; white-space: nowrap;">GÜNLÜĞÜ AÇ →</span>
+    </a>
+  </section>
+
   <!-- ARŞİV IZGARA -->
-  <section data-screen-label="Arşiv Izgara" style="width: min(1340px, 92vw); margin: 0 auto; padding: 48px clamp(20px, 4vw, 40px) 80px;">
+  <section data-screen-label="Arşiv Izgara" style="width: min(1340px, 92vw); margin: 0 auto; padding: 32px clamp(20px, 4vw, 40px) 80px;">
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
       <sc-for list="{{ list }}" as="d" hint-placeholder-count="9">
         <div onClick="{{ d.open }}" style="position: relative; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; gap: 11px; border: 1px solid rgba(193,154,82,.2); background: linear-gradient(160deg, rgba(15,13,19,.92), rgba(8,7,12,.96)); padding: 22px 22px 24px; transition: border-color .2s, transform .2s;" style-hover="border-color: rgba(193,154,82,.55); transform: translateY(-3px);">
