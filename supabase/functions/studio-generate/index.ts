@@ -357,7 +357,8 @@ Deno.serve(async (req) => {
     const act = String(b.action || "");
     const isEdit = act === "edit";
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
-    if (!prompt) return json({ ok: false, error: "Konu veya prompt gir." }, 400);
+    // TTS'in prompt/konusu yok, yalnız seslendirme METNİ var — bu kontrolden muaf
+    if (!prompt && act !== "tts") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
 
     const ttsText = String(b.text || "").trim().slice(0, 11500);
     const cost = act === "tts"
