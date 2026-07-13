@@ -478,10 +478,15 @@
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
                     <sc-for list="{{ grp.options }}" as="opt" hint-placeholder-count="3">
-                      <button onClick="{{ opt.pick }}" style="{{ opt.cardStyle }}" style-hover="border-color: rgba(193,154,82,.7);">
-                        <span style="{{ opt.nameStyle }}">{{ opt.name }}</span>
-                        <span style="color: #818797; font-size: 12px; line-height: 1.45;">{{ opt.desc }}</span>
-                      </button>
+                      <div style="display: grid;">
+                        <button onClick="{{ opt.pick }}" style="{{ opt.cardStyle }}" style-hover="border-color: rgba(193,154,82,.7);">
+                          <span style="{{ opt.nameStyle }}">{{ opt.name }}</span>
+                          <span style="color: #818797; font-size: 12px; line-height: 1.45;">{{ opt.desc }}</span>
+                        </button>
+                        <sc-if value="{{ opt.canPreview }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ opt.preview }}" style="{{ opt.previewStyle }}" style-hover="border-color: rgba(193,154,82,.7); color: #e6c478;">{{ opt.previewLabel }}</button>
+                        </sc-if>
+                      </div>
                     </sc-for>
                   </div>
                 </div>
@@ -1005,6 +1010,7 @@ class Component extends DCLogic {
       shortBusy: false, suggestBusy: false,
       imgPrompt: '', imgQueue: [], sceneImgs: {}, imgStyle: null, savedImgs: [], imgSel: {},
       imgAspect: null, imgZoom: '',
+      vpPlaying: '', vpBusy: '',
       step: 1,
       idea: '',
       fromArsiv: false, arsivPick: false, chipSeed: this._pickChips(),
@@ -1170,9 +1176,11 @@ class Component extends DCLogic {
         { id: 'belgesel', name: 'Belgesel · Ciddi', desc: 'Kaynak odaklı, ölçülü ve otoriter ton' }
       ],
       voice: [
-        { id: 'erkek', name: 'Erkek · Anlatıcı', desc: 'Derin, güven veren klasik anlatıcı', el: { name: 'Adam', id: 'pNInz6obpgDQGcFmaJgB', stability: 0.5, style: 0.35 } },
-        { id: 'erkek-gizemli', name: 'Erkek · Gizemli', desc: 'Alçak tonlu, sır verir gibi', el: { name: 'Antoni', id: 'ErXwobaYiN019PkySvjV', stability: 0.42, style: 0.5 } },
-        { id: 'kadin-belgesel', name: 'Kadın · Belgesel', desc: 'Net, akıcı, profesyonel sunum', el: { name: 'Bella', id: 'EXAVITQu4vr4xnSDxMaL', stability: 0.6, style: 0.2 } }
+        { id: 'erkek', name: 'Erkek · Anlatıcı', desc: 'Derin, güven veren klasik anlatıcı', oa: 'onyx', el: { name: 'Adam', id: 'pNInz6obpgDQGcFmaJgB', stability: 0.5, style: 0.35 } },
+        { id: 'erkek-gizemli', name: 'Erkek · Gizemli', desc: 'Alçak tonlu, sır verir gibi', oa: 'echo', el: { name: 'Antoni', id: 'ErXwobaYiN019PkySvjV', stability: 0.42, style: 0.5 } },
+        { id: 'erkek-net', name: 'Erkek · Net', desc: 'Berrak, güçlü, tempolu sunum', oa: 'ash', el: { name: 'Josh', id: 'TxGEqnHWrfWFTfGW9XjX', stability: 0.5, style: 0.3 } },
+        { id: 'kadin-belgesel', name: 'Kadın · Belgesel', desc: 'Sıcak, akıcı, profesyonel', oa: 'nova', el: { name: 'Bella', id: 'EXAVITQu4vr4xnSDxMaL', stability: 0.6, style: 0.2 } },
+        { id: 'kadin-olgun', name: 'Kadın · Olgun', desc: 'Sakin, ağırbaşlı, güven veren', oa: 'sage', el: { name: 'Rachel', id: '21m00Tcm4TlvDq8ikWAM', stability: 0.62, style: 0.18 } }
       ],
       style: [
         { id: 'hollywood', name: 'Hollywood Gerçekçi', desc: 'Fotogerçekçi kadrajlar, film ışığı' },
@@ -1902,7 +1910,48 @@ class Component extends DCLogic {
     const t = this.voiceText() || '';
     return Math.max(10, Math.ceil(t.length / 1000) * 5);
   }
-  sysVoiceId() { return this.state.voice === 'kadin' ? 'nova' : 'onyx'; }
+  sysVoiceId() { const o = this.find('voice', this.state.voice); return (o && o.oa) || 'onyx'; }
+  // ── Ses önizleme ── ücretsiz (kredi düşmez); üretilen kısa örnek cihazda
+  // localStorage'da saklanır → ikinci dinlemede tekrar üretilmez, maliyet olmaz.
+  async previewServer(oaVoice) {
+    const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (this._token() || SB_KEY) },
+      body: JSON.stringify({ action: 'tts', preview: true, voice: oaVoice })
+    });
+    const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
+    if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Önizleme üretilemedi');
+    return data.url;
+  }
+  previewVoice(id, oaVoice) {
+    const oa = oaVoice || 'onyx';
+    // Çalıyorsa durdur (aynı sese tekrar basınca)
+    if (this._vpAudio) { try { this._vpAudio.pause(); } catch (e) {} this._vpAudio = null; }
+    if (this.state.vpPlaying === id) { this.setState({ vpPlaying: '' }); return; }
+    const play = (url) => {
+      try {
+        const a = new Audio(url);
+        this._vpAudio = a;
+        a.onended = () => { if (this.state.vpPlaying === id) this.setState({ vpPlaying: '' }); };
+        a.play().catch(() => {});
+        this.setState({ vpPlaying: id, vpBusy: '' });
+      } catch (e) { this.setState({ vpPlaying: '', vpBusy: '' }); }
+    };
+    let cached = null;
+    try { cached = localStorage.getItem('ta_vp_' + oa); } catch (e) {}
+    if (cached) { play(cached); return; }
+    if (this.state.vpBusy) return;
+    this.setState({ vpBusy: id });
+    this.previewServer(oa).then(url => {
+      try { if (String(url).indexOf('data:') === 0) localStorage.setItem('ta_vp_' + oa, url); } catch (e) {}
+      play(url);
+    }).catch(e => {
+      this.setState({ vpBusy: '' });
+      alert('Ses önizlemesi alınamadı: ' + e.message);
+    });
+  }
   async ttsServer(text) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
@@ -2300,16 +2349,28 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const groups = [
       { key: 'model', title: 'Yapay Zekâ Modeli', hint: 'Senaryoyu kim yazsın?' },
       { key: 'tone', title: 'Anlatım Tonu', hint: 'Dosyanın duygusal rengi' },
-      { key: 'voice', title: 'Seslendirme', hint: 'ElevenLabs ses karakteri' },
+      { key: 'voice', title: 'Seslendirme', hint: '▶ Dinle, beğendiğini seç (ücretsiz önizleme)' },
       { key: 'style', title: 'Görsel Stil', hint: 'Kapak ve sahne üretim estetiği' },
       { key: 'aspect', title: 'En-Boy Oranı', hint: 'Görsel ve video kadrajı' }
     ].map(g => ({
       title: g.title, hint: g.hint,
       options: optionDefs[g.key].map(o => {
         const on = s[g.key] === o.id;
+        const canPreview = g.key === 'voice' && !!o.oa;
+        const vp = s.vpPlaying === o.id, vb = s.vpBusy === o.id;
         return {
           name: o.name, desc: o.desc,
           pick: () => this.setState({ [g.key]: o.id }),
+          canPreview,
+          previewLabel: vb ? '⏳ ÜRETİLİYOR…' : vp ? '⏸ DURDUR' : '▶ DİNLE',
+          preview: () => this.previewVoice(o.id, o.oa),
+          previewStyle: {
+            marginTop: '8px', justifySelf: 'start', cursor: 'pointer',
+            border: '1px solid ' + (vp ? 'rgba(193,154,82,.7)' : 'rgba(129,135,151,.4)'),
+            background: vp ? 'rgba(193,154,82,.14)' : 'transparent',
+            color: vp ? '#e6c478' : '#a4a9b5',
+            fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.1em', padding: '6px 12px'
+          },
           cardStyle: {
             display: 'grid', gap: '6px', textAlign: 'left', cursor: 'pointer', padding: '16px 18px',
             border: on ? '1px solid ' + gold : '1px solid rgba(129,135,151,.25)',
@@ -2726,7 +2787,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       sysTtsLabel: s.sysTtsBusy ? '🎙 ÜRETİLİYOR… (~20 sn)' : ('🎙 SESLENDİRME ÜRET · ' + this.ttsCost() + ' KR'),
       sysTtsError: s.sysTtsError,
       hasSysAudio: !!s.sysAudioUrl, sysAudioUrl: s.sysAudioUrl,
-      sysVoiceName: this.state.voice === 'kadin' ? 'Kadın (Nova)' : 'Erkek (Onyx)',
+      sysVoiceName: (() => { const o = this.find('voice', s.voice); return o ? o.name + ' (' + (o.oa || 'onyx') + ')' : 'Erkek · Anlatıcı (onyx)'; })(),
 
       resKapak: mkCopy(r.kapak, 'kp').map((x, i) => ({
         ...x,
