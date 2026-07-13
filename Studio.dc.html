@@ -515,7 +515,7 @@
 
             <!-- GÖRSEL PROMPTLARI -->
             <sc-if value="{{ tabGorsel }}" hint-placeholder-val="{{ false }}">
-              <div style="display: grid; gap: 14px;">
+              <div style="display: grid; gap: 10px;">
                 <div style="border: 1px solid rgba(193,154,82,.25); background: rgba(193,154,82,.05); padding: 12px 16px; display: grid; gap: 10px;">
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.5; max-width: 62ch;">Aşağıda seçtiğin <strong style="color:#e6c478;">KADRAJ</strong> ve <strong style="color:#e6c478;">STİL</strong> her sahnenin <strong style="color:#e6c478;">GÖRSEL ÜRET</strong>'ine uygulanır (sihirbazda seçtiğin ayar hazır gelir). Üretilenler <strong style="color:#e6c478;">Görsel Stüdyo (Üretilenler)</strong> rafına eklenir; sekme değişmez, hepsini sırayla üretebilirsin.</p>
@@ -542,17 +542,23 @@
                       <div style="display: grid; gap: 6px; border-top: 1px dashed rgba(193,154,82,.25); padding-top: 12px;">
                         <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
                           <span style="font-weight: 700; font-size: 14px; color: #e6c478;">{{ kp.ad }}</span>
-                          <span style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button onClick="{{ kp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">◈ GÖRSEL ÜRET · 12 KR</button>
+                          <span style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                            <sc-if value="{{ kp.img.notDone }}" hint-placeholder-val="{{ true }}">
+                              <button onClick="{{ kp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">◈ GÖRSEL ÜRET · 12 KR</button>
+                            </sc-if>
+                            <sc-if value="{{ kp.img.done }}" hint-placeholder-val="{{ false }}">
+                              <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ ÜRETİLDİ · {{ kp.img.count }}</span>
+                              <button onClick="{{ kp.makeImg }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">↻ TEKRAR ÜRET · 12 KR</button>
+                            </sc-if>
                             <button onClick="{{ kp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ kp.copyLabel }}</button>
                           </span>
                         </div>
                         <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px; padding: 12px 14px;">{{ kp.prompt }}</code>
                         <span style="color: #e6c478; font-size: 12.5px; font-weight: 600;">Kapak üzerindeki yazı: “{{ kp.yazi }}”</span>
                         <span style="color: #676d7c; font-size: 12.5px;">{{ kp.not }}</span>
-                        <sc-if value="{{ kp.img.transferred }}" hint-placeholder-val="{{ false }}">
+                        <sc-if value="{{ kp.img.done }}" hint-placeholder-val="{{ false }}">
                           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: #9ed3a8; font-size: 11.5px; margin-top: 2px;">
-                            <span>✓ Görsel Stüdyo'ya (Üretilenler) aktarıldı</span>
+                            <span>✓ Görsel Stüdyo'da hazır</span>
                             <button onClick="{{ kp.img.goStudio }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 6px 10px; cursor: pointer;">GÖRSEL STÜDYO'YA GEÇ →</button>
                           </div>
                         </sc-if>
@@ -561,23 +567,29 @@
                   </div>
                 </div>
                 <sc-for list="{{ resGorsel }}" as="gp" hint-placeholder-count="3">
-                  <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 18px 22px; display: grid; gap: 8px;">
+                  <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 13px 16px; display: grid; gap: 7px;">
                     <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
                       <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="border: 1px solid rgba(193,154,82,.5); color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; padding: 4px 9px; white-space: nowrap;">{{ gp.no }}</span>
                         <span style="font-weight: 700; font-size: 14px;">{{ gp.sahne }}</span>
                       </div>
-                      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button onClick="{{ gp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">◈ GÖRSEL ÜRET · 12 KR</button>
-                        <button onClick="{{ gp.regen }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.regenLabel }}</button>
-                        <button onClick="{{ gp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ PROMPTU DÜZENLE</button>
+                      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <sc-if value="{{ gp.img.notDone }}" hint-placeholder-val="{{ true }}">
+                          <button onClick="{{ gp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">◈ GÖRSEL ÜRET · 12 KR</button>
+                        </sc-if>
+                        <sc-if value="{{ gp.img.done }}" hint-placeholder-val="{{ false }}">
+                          <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ ÜRETİLDİ · {{ gp.img.count }}</span>
+                          <button onClick="{{ gp.makeImg }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">↻ TEKRAR ÜRET · 12 KR</button>
+                        </sc-if>
+                        <button onClick="{{ gp.regen }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ gp.regenLabel }}</button>
+                        <button onClick="{{ gp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
                         <button onClick="{{ gp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ gp.copyLabel }}</button>
                       </div>
                     </div>
                     <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px; padding: 12px 14px;">{{ gp.prompt }}</code>
-                    <sc-if value="{{ gp.img.transferred }}" hint-placeholder-val="{{ false }}">
+                    <sc-if value="{{ gp.img.done }}" hint-placeholder-val="{{ false }}">
                       <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: #9ed3a8; font-size: 11.5px; margin-top: 2px;">
-                        <span>✓ Görsel Stüdyo'ya (Üretilenler) aktarıldı</span>
+                        <span>✓ Görsel Stüdyo'da hazır</span>
                         <button onClick="{{ gp.img.goStudio }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 6px 10px; cursor: pointer;">GÖRSEL STÜDYO'YA GEÇ →</button>
                       </div>
                     </sc-if>
@@ -588,9 +600,9 @@
 
             <!-- VİDEO PROMPTLARI -->
             <sc-if value="{{ tabVideo }}" hint-placeholder-val="{{ false }}">
-              <div style="display: grid; gap: 14px;">
+              <div style="display: grid; gap: 10px;">
                 <sc-for list="{{ resVideo }}" as="vp" hint-placeholder-count="3">
-                  <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 18px 22px; display: grid; gap: 8px;">
+                  <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 13px 16px; display: grid; gap: 7px;">
                     <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
                       <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="border: 1px solid rgba(193,154,82,.5); color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; padding: 4px 9px; white-space: nowrap;">{{ vp.no }}</span>
@@ -611,7 +623,7 @@
             <!-- GÖRSEL STÜDYO -->
             <sc-if value="{{ tabImgStudio }}" hint-placeholder-val="{{ false }}">
               <div style="display: grid; gap: 16px; max-width: 760px;">
-                <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 56ch;">Prompt yaz ya da kapak promptunu al; kadraj ve stili seç, görsel üret. Üretimler aşağıdaki rafta birikir ve <strong style="color:#e6c478;">Önceki Üretimler</strong>'de kalıcı saklanır.</p>
+                <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 56ch;">Prompt yaz ya da kapak promptunu al; kadraj ve stili seç, görsel üret. Bu hikâyede ürettiklerin aşağıdaki rafta çıkar. Tüm eski üretimlerin <strong style="color:#e6c478;">Geçmiş Görseller</strong> sekmesinde bu cihazda kalıcı saklanır.</p>
                 <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                   <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">KADRAJ</span>
@@ -632,15 +644,19 @@
                 </div>
                 <sc-if value="{{ hasImgQueue }}" hint-placeholder-val="{{ false }}">
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-top: 1px solid rgba(193,154,82,.18); padding-top: 14px;">
-                    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">ÜRETİLENLER · {{ imgDoneCount }}</p>
+                    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">BU HİKÂYEDE ÜRETİLENLER · {{ imgDoneCount }}</p>
                     <sc-if value="{{ hasAnyImg }}" hint-placeholder-val="{{ false }}">
-                      <button onClick="{{ downloadAll }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10px; letter-spacing: .1em; padding: 8px 13px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ TÜMÜNÜ İNDİR</button>
+                      <span style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button onClick="{{ downloadSelected }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10px; letter-spacing: .1em; padding: 8px 13px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ SEÇİLENLERİ İNDİR ({{ imgSelCount }})</button>
+                        <button onClick="{{ downloadAll }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10px; letter-spacing: .1em; padding: 8px 13px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">TÜMÜNÜ İNDİR</button>
+                      </span>
                     </sc-if>
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
                     <sc-for list="{{ imgQueue }}" as="iq" hint-placeholder-count="2">
                       <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12;">
                         <sc-if value="{{ iq.hasUrl }}" hint-placeholder-val="{{ false }}">
+                          <label style="display: flex; align-items: center; gap: 7px; padding: 8px 10px 2px; color: #a4a9b5; font-size: 11px; cursor: pointer;"><input type="checkbox" checked="{{ iq.sel }}" onChange="{{ iq.onSel }}" style="accent-color: #c19a52; width: 15px; height: 15px; cursor: pointer;">İndirmek için seç</label>
                           <img src="{{ iq.url }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
                         </sc-if>
                         <sc-if value="{{ iq.pending }}" hint-placeholder-val="{{ true }}">
@@ -671,27 +687,33 @@
                       </div>
                     </sc-for>
                   </div>
-                  <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Görseller OpenAI ile gerçek olarak üretilir; her görsel kredi düşer. <strong style="color: #e6c478;">Üretilenler aşağıda "Önceki Üretimler"de bu cihazda kalıcı saklanır — istediğin zaman bul, büyüt, indir.</strong></p>
+                  <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Görseller OpenAI ile gerçek olarak üretilir; her görsel kredi düşer. Eski üretimlerin tümü <strong style="color: #e6c478;">Geçmiş Görseller</strong> sekmesinde bu cihazda kalıcı saklanır.</p>
                 </sc-if>
-                <div style="border-top: 1px solid rgba(193,154,82,.18); padding-top: 16px; display: grid; gap: 12px; margin-top: 4px;">
-                  <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">ÖNCEKİ ÜRETİMLER · {{ savedImgCount }} <span style="color: #676d7c; letter-spacing: 0; font-size: 11px;">(bu cihazda kalıcı saklanır)</span></p>
-                  <sc-if value="{{ hasSavedImgs }}" hint-placeholder-val="{{ true }}">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
-                      <sc-for list="{{ savedImgList }}" as="sv" hint-placeholder-count="4">
-                        <div style="border: 1px solid rgba(129,135,151,.22); background: #070a12;">
-                          <img src="{{ sv.url }}" alt="Önceki üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
-                          <div style="display: flex; gap: 6px; padding: 6px;">
-                            <button onClick="{{ sv.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 9.5px; letter-spacing: .04em; padding: 6px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
-                            <button onClick="{{ sv.del }}" title="Sil" style="border: 1px solid rgba(192,57,43,.4); background: transparent; color: #e08a80; font-size: 11px; padding: 6px 9px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12);">🗑</button>
-                          </div>
-                        </div>
-                      </sc-for>
-                    </div>
-                  </sc-if>
-                  <sc-if value="{{ noSavedImgs }}" hint-placeholder-val="{{ false }}">
-                    <p style="margin: 0; color: #676d7c; font-size: 12.5px; line-height: 1.6; border: 1px dashed rgba(129,135,151,.3); padding: 14px 16px;">Henüz kalıcı üretim yok. <strong style="color: #e6c478;">GÖRSEL ÜRET</strong>'e bastığın her görsel buraya bu cihazda kalıcı eklenir — sayfayı kapatıp açsan da burada bulursun.</p>
-                  </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- GEÇMİŞ GÖRSELLER (kalıcı arşiv, tüm oturumlar) -->
+            <sc-if value="{{ tabGecmis }}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; gap: 14px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                  <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">GEÇMİŞ GÖRSELLER · {{ savedImgCount }} <span style="color: #676d7c; letter-spacing: 0; font-size: 11px;">(bu cihazda kalıcı saklanır)</span></p>
                 </div>
+                <sc-if value="{{ hasSavedImgs }}" hint-placeholder-val="{{ true }}">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                    <sc-for list="{{ savedImgList }}" as="sv" hint-placeholder-count="6">
+                      <div style="border: 1px solid rgba(129,135,151,.22); background: #070a12;">
+                        <img src="{{ sv.url }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
+                        <div style="display: flex; gap: 6px; padding: 6px;">
+                          <button onClick="{{ sv.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 9.5px; letter-spacing: .04em; padding: 6px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
+                          <button onClick="{{ sv.del }}" title="Sil" style="border: 1px solid rgba(192,57,43,.4); background: transparent; color: #e08a80; font-size: 11px; padding: 6px 9px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12);">🗑</button>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ noSavedImgs }}" hint-placeholder-val="{{ false }}">
+                  <p style="margin: 0; color: #676d7c; font-size: 12.5px; line-height: 1.6; border: 1px dashed rgba(129,135,151,.3); padding: 14px 16px;">Henüz kalıcı üretim yok. Görsel Stüdyo'da <strong style="color: #e6c478;">GÖRSEL ÜRET</strong>'e bastığın her görsel buraya bu cihazda kalıcı eklenir — sayfayı kapatıp açsan da burada bulursun.</p>
+                </sc-if>
               </div>
             </sc-if>
 
@@ -865,7 +887,7 @@ class Component extends DCLogic {
       editTarget: null, editLabel: '',
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
-      imgPrompt: '', imgQueue: [], sceneImgs: {}, imgStyle: null, savedImgs: [],
+      imgPrompt: '', imgQueue: [], sceneImgs: {}, imgStyle: null, savedImgs: [], imgSel: {},
       imgAspect: null, imgZoom: '',
       step: 1,
       idea: '',
@@ -1724,11 +1746,9 @@ class Component extends DCLogic {
     if (!prompt) return;
     if (this.state.credits < this.IMG_COST()) { this.setState({ creditModal: true }); return; }
     this.makeImage(prompt);                             // imgQueue'ya ekler (kadraj: imgAspect||aspect)
-    this.setState({ imgPrompt: prompt });               // Görsel Stüdyo bu sahnenin hikâyesini tutsun:
-                                                        // farklı kadraj seçip yeniden üretince sahne korunur
-    this.setSceneImg(key, { transferred: true });
-    clearTimeout(this['_scn' + key]);
-    this['_scn' + key] = setTimeout(() => this.setSceneImg(key, { transferred: false }), 5000);
+    this.setState({ imgPrompt: prompt });               // Görsel Stüdyo bu sahnenin hikâyesini tutsun
+    const si = (this.state.sceneImgs || {})[key] || {};
+    this.setSceneImg(key, { done: true, count: (si.count || 0) + 1 });   // kalıcı "üretildi" durumu
   }
   goImgStudio() { this.setState({ tab: 'imgstudio' }); }
   // Üretilen tüm görselleri (Üretilenler rafı) toplu indir
@@ -1737,11 +1757,23 @@ class Component extends DCLogic {
     if (!urls.length) return;
     urls.forEach((u, i) => setTimeout(() => this.dlImage(u), i * 500));  // tarayıcı engellemesin diye aralıklı
   }
-  // Prompt yanındaki "aktarıldı" onayı
+  // Seçili görselleri indir (kutucuk işaretli olanlar); hiç seçili yoksa tümü
+  toggleImgSel(id) {
+    this.setState(st => { const m = { ...(st.imgSel || {}) }; if (m[id]) delete m[id]; else m[id] = true; return { imgSel: m }; });
+  }
+  downloadSelectedImages() {
+    const sel = this.state.imgSel || {};
+    const urls = (this.state.imgQueue || []).filter(v => v && v.url && sel[v.id]).map(v => v.url);
+    if (!urls.length) { this.downloadAllImages(); return; }
+    urls.forEach((u, i) => setTimeout(() => this.dlImage(u), i * 500));
+  }
+  // Prompt yanındaki kalıcı "üretildi" durumu
   sceneImgView(key) {
     const si = (this.state.sceneImgs || {})[key] || null;
+    const done = !!(si && si.done);
     return {
-      transferred: !!(si && si.transferred),
+      done, notDone: !done,
+      count: (si && si.count) || 0,
       goStudio: () => this.goImgStudio()
     };
   }
@@ -2047,7 +2079,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
     const tabDefs = [
       { id: 'senaryo', label: 'Senaryo' }, { id: 'ses', label: 'Seslendirme' },
       { id: 'gorsel', label: 'Görsel Promptları' }, { id: 'video', label: 'Video Promptları' },
-      { id: 'imgstudio', label: 'Görsel Stüdyo' }, { id: 'yayin', label: 'Yayın Paketi' }
+      { id: 'imgstudio', label: 'Görsel Stüdyo' }, { id: 'gecmis', label: 'Geçmiş Görseller' }, { id: 'yayin', label: 'Yayın Paketi' }
     ].map(t => ({
       label: t.label,
       go: () => this.setState({ tab: t.id }),
@@ -2231,6 +2263,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
           pendStyle: { aspectRatio: arCss, display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px)' },
           zoom: () => this.setState({ imgZoom: x.url }),
           dl: () => this.dlImage(x.url),
+          sel: !!(s.imgSel || {})[x.id],
+          onSel: () => this.toggleImgSel(x.id),
           // gerçek düzenleme kutusu (mevcut görseli korur, istediğini değiştirir)
           edit: () => this.toggleEditBox(x.id),
           editToggleLabel: x.editOpen ? '✕ KAPAT' : '✎ DÜZENLE',
@@ -2386,7 +2420,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       regenStory: () => this.regenStory(),
       tabs: tabDefs,
       tabSenaryo: s.tab === 'senaryo', tabSes: s.tab === 'ses', tabGorsel: s.tab === 'gorsel',
-      tabVideo: s.tab === 'video', tabYayin: s.tab === 'yayin', tabImgStudio: s.tab === 'imgstudio',
+      tabVideo: s.tab === 'video', tabYayin: s.tab === 'yayin', tabImgStudio: s.tab === 'imgstudio', tabGecmis: s.tab === 'gecmis',
       resSenaryo: (r.senaryo || []).map((sec, i) => ({
         ...sec,
         edit: () => this.startEdit('sec', i, 'Senaryo — ' + (sec.bolum || 'Bölüm ' + (i + 1)))
@@ -2423,6 +2457,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       resGorsel: mkCopy(r.gorsel_promptlar, 'gp').map((x, i) => this.sceneExtras(x, i, 'gp')),
       resVideo: mkCopy(r.video_promptlar, 'vp').map((x, i) => this.sceneExtras(x, i, 'vp')),
       downloadAll: () => this.downloadAllImages(),
+      downloadSelected: () => this.downloadSelectedImages(),
+      imgSelCount: Object.keys(s.imgSel || {}).length,
       imgDoneCount: (s.imgQueue || []).filter(x => x.url).length,
       hasAnyImg: (s.imgQueue || []).length > 0,
       resYtTitle: yt.baslik || '', resYtDesc: yt.aciklama || '',
