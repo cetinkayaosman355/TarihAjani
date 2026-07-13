@@ -498,8 +498,8 @@
                 <div style="border: 1px solid rgba(193,154,82,.25); background: rgba(193,154,82,.05); padding: 12px 16px; display: grid; gap: 10px;">
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.5; max-width: 62ch;">Aşağıda seçtiğin <strong style="color:#e6c478;">KADRAJ</strong> ve <strong style="color:#e6c478;">STİL</strong> her sahnenin <strong style="color:#e6c478;">GÖRSEL ÜRET</strong>'ine uygulanır (sihirbazda seçtiğin ayar hazır gelir). Üretilenler <strong style="color:#e6c478;">Görsel Stüdyo (Üretilenler)</strong> rafına eklenir; sekme değişmez, hepsini sırayla üretebilirsin.</p>
-                    <sc-if value="{{ hasAnyImg }}" hint-placeholder-val="{{ false }}">
-                      <button onClick="{{ goImgStudio }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;">ÜRETİLENLER ({{ imgDoneCount }}) →</button>
+                    <sc-if value="{{ hasAnyOutput }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ goImgStudio }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;">ÜRETİLENLER ({{ outputCount }}) →</button>
                     </sc-if>
                   </div>
                   <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
@@ -652,9 +652,9 @@
                   </div>
                   <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Görseller OpenAI ile gerçek olarak üretilir; her görsel kredi düşer. <strong style="color: #e6c478;">Üretilenler aşağıda "Önceki Üretimler"de bu cihazda kalıcı saklanır — istediğin zaman bul, büyüt, indir.</strong></p>
                 </sc-if>
-                <sc-if value="{{ hasSavedImgs }}" hint-placeholder-val="{{ false }}">
-                  <div style="border-top: 1px solid rgba(193,154,82,.18); padding-top: 16px; display: grid; gap: 12px; margin-top: 4px;">
-                    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">ÖNCEKİ ÜRETİMLER · {{ savedImgCount }} <span style="color: #676d7c; letter-spacing: 0; font-size: 11px;">(bu cihazda saklanır)</span></p>
+                <div style="border-top: 1px solid rgba(193,154,82,.18); padding-top: 16px; display: grid; gap: 12px; margin-top: 4px;">
+                  <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">ÖNCEKİ ÜRETİMLER · {{ savedImgCount }} <span style="color: #676d7c; letter-spacing: 0; font-size: 11px;">(bu cihazda kalıcı saklanır)</span></p>
+                  <sc-if value="{{ hasSavedImgs }}" hint-placeholder-val="{{ true }}">
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
                       <sc-for list="{{ savedImgList }}" as="sv" hint-placeholder-count="4">
                         <div style="border: 1px solid rgba(129,135,151,.22); background: #070a12;">
@@ -666,8 +666,11 @@
                         </div>
                       </sc-for>
                     </div>
-                  </div>
-                </sc-if>
+                  </sc-if>
+                  <sc-if value="{{ noSavedImgs }}" hint-placeholder-val="{{ false }}">
+                    <p style="margin: 0; color: #676d7c; font-size: 12.5px; line-height: 1.6; border: 1px dashed rgba(129,135,151,.3); padding: 14px 16px;">Henüz kalıcı üretim yok. <strong style="color: #e6c478;">GÖRSEL ÜRET</strong>'e bastığın her görsel buraya bu cihazda kalıcı eklenir — sayfayı kapatıp açsan da burada bulursun.</p>
+                  </sc-if>
+                </div>
               </div>
             </sc-if>
 
@@ -2132,7 +2135,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       sendChat: () => this.sendChat(),
       chatBusy: s.chatBusy,
       hasSavedImgs: (s.savedImgs || []).length > 0,
+      noSavedImgs: (s.savedImgs || []).length === 0,
       savedImgCount: (s.savedImgs || []).length,
+      hasAnyOutput: ((s.imgQueue || []).length > 0) || ((s.savedImgs || []).length > 0),
+      outputCount: Math.max((s.imgQueue || []).filter(x => x.url).length, (s.savedImgs || []).length),
       savedImgList: (s.savedImgs || []).map(x => {
         const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[x.ar] || '16/9';
         return {
