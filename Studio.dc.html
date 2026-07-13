@@ -1541,10 +1541,12 @@ class Component extends DCLogic {
   // Süreden türetilen format: sahne yoğunluğu kısa videoda 6 sn/sahne, uzadıkça seyrekleşir
   // (60 sahnelik dosya hem üretimde 504 hem görsel maliyetinde patlama demek — tavan 40).
   fmtFor(sec) {
+    // Sahne sayısı: uzun videoda tavan düşük tutulur (çok sahne = dev üretim +
+    // görsel maliyeti patlaması + zaman aşımı). En fazla 24 sahne.
     const sahne = sec <= 90 ? Math.max(6, Math.ceil(sec / 6))
-      : sec <= 180 ? Math.ceil(sec / 8)
-      : sec <= 360 ? Math.ceil(sec / 12)
-      : Math.min(40, Math.ceil(sec / 16));
+      : sec <= 180 ? Math.ceil(sec / 10)
+      : sec <= 360 ? Math.ceil(sec / 16)
+      : Math.min(24, Math.ceil(sec / 22));
     const kredi = Math.max(30, Math.round((20 + sec / 4) / 5) * 5);
     const dk = Math.floor(sec / 60), sn = sec % 60;
     const etiket = dk ? (sn ? dk + ' dk ' + sn + ' sn' : dk + ' dk') : sec + ' sn';
@@ -1885,8 +1887,35 @@ TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan
 
 SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].metin toplam kelime = ${wmin}-${wmax} arası (${wmax} AŞILMAMIŞ — aşıldıysa kısalt) · gorsel_promptlar = TAM ${fmt.sahne} öğe · video_promptlar = TAM ${fmt.sahne} öğe · youtube.etiketler = 15 · instagram.hashtagler = 5 · her senaryo[].metin dolu ve akıcı · youtube.aciklama 3+ paragraf ve zaman damgalı. Eksik/fazla varsa düzelt, öyle gönder.`;
     return outlineOnly
-      ? p + '\n\nEK KURAL (İKİ AŞAMALI ÜRETİM): Bu üretimde senaryo bölümlerinin "metin" alanına yalnızca 2-3 cümlelik yoğun bölüm özeti yaz; tam seslendirme metinleri ikinci aşamada bölüm bölüm yazılacak. Diğer TÜM alanları (youtube, instagram, kapak, gorsel_promptlar, video_promptlar) eksiksiz üret.'
+      ? p + '\n\nEK KURAL (İKİ AŞAMALI ÜRETİM — HIZ İÇİN, zaman aşımını önler): 1) senaryo bölümlerinin "metin" alanına yalnızca 2-3 cümlelik yoğun bölüm özeti yaz (tam metinler 2. aşamada yazılacak). 2) gorsel_promptlar ve video_promptlar dizilerini BOŞ dizi [] olarak bırak — sahne promptları AYRI aşamada üretilecek, bu aşamada ÜRETME. youtube, instagram, kapak, seslendirme_notu, uretim_notu alanlarını eksiksiz üret. SON KONTROL\'daki sahne sayısı kuralını bu aşamada UYGULAMA (prompt dizileri boş kalacak).'
       : p;
+  }
+
+  // Sahne promptlarını AYRI, hafif bir çağrıyla üret (uzun videoda tek dev
+  // çağrı edge zaman aşımına düşüyordu; bölerek her çağrı hızlı tamamlanır).
+  async genScenePrompts(result) {
+    const s = this.state;
+    const m = this.promptMaps();
+    const stilStr = m.stil[s.style] || m.stil.sinematik;
+    const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
+    const anti = s.style === 'gravur'
+      ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
+      : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
+    const n = this.fmtFor(this.durationSec()).sahne;
+    const secs = (result.senaryo || []).map((x, i) => (i + 1) + '. ' + (x.bolum || '') + ': ' + (x.metin || '')).join('\n').slice(0, 4000);
+    const prompt = 'Aşağıdaki Türkçe tarih videosu için TAM ' + n + ' sahnelik GÖRSEL ve VİDEO promptu üret. Sahneler videonun anlatısını sırayla, sinematik biçimde görselleştirmeli.\n' +
+      'KURALLAR: Her görsel promptu İngilizce ve "' + stilStr + '" ile BAŞLAR, "' + oran + '" içerir; ana özne+aksiyon, dönem-doğru mekân/kıyafet (anakronizm yok), ışık/atmosfer, kompozisyon/kamera, renk/duygu, doku katmanlarını içerir (~50-80 kelime) ve şu satırla BİTER: "' + anti + '". ' +
+      'Her video promptu tek bir kamera hareketi/aksiyon (5-8 sn) tarifler (~30-50 kelime) ve şu satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker." Aynı karakter birden çok sahnede geçerse kimlik tarifini her promptun başında birebir tekrarla.\n' +
+      'ÇIKTI: SADECE geçerli tek JSON; ilk karakter { son karakter }. Şema: {"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","prompt":"İngilizce görsel"}],"video_promptlar":[{"sahne":"aynı sahne adı","prompt":"İngilizce video"}]}. Her dizi TAM ' + n + ' öğe.\n\n' +
+      'BAŞLIK: ' + (result.baslik || '') + '\nSENARYO:\n' + secs;
+    try {
+      const txt = await this.askAI(prompt, Math.min(9000, 1200 + n * 220), 'scenes');
+      const clean = txt.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
+      const j = JSON.parse(clean);
+      if (Array.isArray(j.gorsel_promptlar) && j.gorsel_promptlar.length) result.gorsel_promptlar = j.gorsel_promptlar;
+      if (Array.isArray(j.video_promptlar) && j.video_promptlar.length) result.video_promptlar = j.video_promptlar;
+    } catch (e) { /* sahne promptları üretilemedi — dosya yine de açılır, sonra 'yenile' ile eklenebilir */ }
+    return this.qualityFix(result);
   }
 
   qualityFix(result) {
@@ -1945,17 +1974,24 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       // İki aşamalı üretim: orta ve uzun formatta (4-5 dk, 8-12 dk) senaryo
       // önce taslak, sonra bölüm bölüm dolu metin — bölüm başına kelime formata göre.
       const sec = this.durationSec();
-      // 3 dk ve üstü iki aşamalı: önce taslak, sonra bölüm bölüm dolu metin
-      const twoStage = sec >= 180;
+      // 2 dk ve üstü çok-aşamalı: taslak (sahne promptları BOŞ) → bölüm metinleri
+      // → sahne promptları ayrı çağrı. Böylece hiçbir tek çağrı devasa olmaz,
+      // edge zaman aşımı (504/546) yaşanmaz.
+      const twoStage = sec >= 120;
       const wpb = Math.round(sec * 2.3 / Math.max(2, Math.round(sec / 70)));
       const wordsHint = Math.round(wpb * 0.85) + '-' + Math.round(wpb * 1.15);
-      // Token tavanı süreye göre: gereksiz büyük tavan üretimi yavaşlatıp 504'e yaklaştırıyordu
-      const maxTok = sec <= 60 ? 6000 : sec <= 150 ? 9000 : sec <= 360 ? 11000 : 13000;
+      // Taslak çağrısı hafif (twoStage'de sahne promptu yok) → düşük tavan, hızlı biter
+      const maxTok = twoStage ? 5000 : (sec <= 60 ? 5000 : 8000);
       const text = await this.askAI(this.buildPrompt(twoStage), maxTok, 'generate');
+      const genCharge = this._lastGen;   // kredi düşmesi ilk 'generate' çağrısına ait; sonraki çağrılar üzerine yazmadan yakala
       const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
       let result = JSON.parse(clean);
       result = this.qualityFix(result);
-      if (twoStage) result = await this.expandActs(result, wordsHint);
+      if (twoStage) {
+        result = await this.expandActs(result, wordsHint);
+        this.setState({ genMsg: 'SAHNE PROMPTLARI ÜRETİLİYOR…', genPct: 90 });
+        result = await this.genScenePrompts(result);   // sahne promptlarını ayrı, hafif çağrıyla üret
+      }
       clearInterval(this._mt);
       const no = 'TA-' + new Date().getFullYear() + '-' + String(Math.floor(100 + Math.random() * 900));
       const entry = {
@@ -1970,8 +2006,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       }), () => this.persist());
       // Kredi düşme: yeni studio-generate sunucuda düştüyse dönen bakiyeyi kullan;
       // düşmediyse (eski fonksiyon) eski yönteme düş
-      if (this._lastGen && this._lastGen.charged && typeof this._lastGen.credits === 'number') {
-        this.setState({ credits: this._lastGen.credits }, () => this.persist());
+      if (genCharge && genCharge.charged && typeof genCharge.credits === 'number') {
+        this.setState({ credits: genCharge.credits }, () => this.persist());
       } else if (this.hasSession()) {
         try { await this.spendServer(cost, 'uretim'); } catch (e) {}
       } else {
