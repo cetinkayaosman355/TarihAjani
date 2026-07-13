@@ -547,7 +547,7 @@
                             <button onClick="{{ kp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ kp.copyLabel }}</button>
                           </span>
                         </div>
-                        <code style="display: block; color: #b9c2d8; font-size: 13px; line-height: 1.6; font-family: 'Special Elite', monospace; white-space: pre-wrap;">{{ kp.prompt }}</code>
+                        <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px; padding: 12px 14px;">{{ kp.prompt }}</code>
                         <span style="color: #e6c478; font-size: 12.5px; font-weight: 600;">Kapak üzerindeki yazı: “{{ kp.yazi }}”</span>
                         <span style="color: #676d7c; font-size: 12.5px;">{{ kp.not }}</span>
                         <sc-if value="{{ kp.img.transferred }}" hint-placeholder-val="{{ false }}">
@@ -574,7 +574,7 @@
                         <button onClick="{{ gp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ gp.copyLabel }}</button>
                       </div>
                     </div>
-                    <code style="display: block; color: #b9c2d8; font-size: 13px; line-height: 1.6; font-family: 'Special Elite', monospace; white-space: pre-wrap;">{{ gp.prompt }}</code>
+                    <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px; padding: 12px 14px;">{{ gp.prompt }}</code>
                     <sc-if value="{{ gp.img.transferred }}" hint-placeholder-val="{{ false }}">
                       <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: #9ed3a8; font-size: 11.5px; margin-top: 2px;">
                         <span>✓ Görsel Stüdyo'ya (Üretilenler) aktarıldı</span>
@@ -602,7 +602,7 @@
                         <button onClick="{{ vp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ vp.copyLabel }}</button>
                       </div>
                     </div>
-                    <code style="display: block; color: #b9c2d8; font-size: 13px; line-height: 1.6; font-family: 'Special Elite', monospace; white-space: pre-wrap;">{{ vp.prompt }}</code>
+                    <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px; padding: 12px 14px;">{{ vp.prompt }}</code>
                   </div>
                 </sc-for>
               </div>
@@ -1051,6 +1051,19 @@ class Component extends DCLogic {
 
   find(group, id) { return this.optionData()[group].find(o => o.id === id); }
 
+  // Başlıkları okunur hâle getir: TÜMÜ BÜYÜK kelimeleri Başlık Düzenine çevir
+  // (göz yormasın), zaten karışık yazılanları olduğu gibi bırak.
+  dispTitle(s) {
+    return String(s || '').split(/(\s+)/).map(w => {
+      const letters = w.replace(/[^A-Za-zÇĞİıÖŞÜçğıöşü]/g, '');
+      if (letters.length > 1 && w === w.toLocaleUpperCase('tr') && /[A-ZÇĞİÖŞÜ]/.test(w)) {
+        const lc = w.toLocaleLowerCase('tr');
+        return lc.replace(/[A-Za-zÇĞİıÖŞÜçğıöşü]/, c => c.toLocaleUpperCase('tr'));
+      }
+      return w;
+    }).join('');
+  }
+
   // MASTER arşiv (arsiv-data.js → /arsiv ile AYNI kaynak): sections → sayfalar çevirisi.
   // Master yüklüyse Studio Hazır Arşiv bu 40 dosyayı gösterir; yoksa eski gömülü listeye düşer.
   masterArsiv() {
@@ -1082,12 +1095,17 @@ class Component extends DCLogic {
     const parseList = (t) => String(t || '').replace(/^[^:]*:/, '').split(/[,\n]/)
       .map(x => x.replace(/^#/, '').trim()).filter(x => x && x.length < 40).slice(0, 15);
 
-    // Seslendirme → senaryo (voiceText de buradan okur)
-    const sesBlocks = blocks('SESLENDİRME');
-    const sesMain = sesBlocks[0] || null;
-    const sesText = sesMain ? sesMain.t : (a.ozet || a.teaser || '');
-    const sureM = sesMain ? (String(sesMain.k).match(/~?\s*\d+\s*(?:-\s*\d+\s*)?(?:sn|dk|saniye|dakika)/i) || [''])[0] : '';
-    const senaryo = sesText ? [{ bolum: 'Seslendirme Metni', sure: String(sureM || '').trim(), metin: sesText }] : [];
+    // Seslendirme → senaryo (voiceText de buradan okur). Çok bloklu (uzun
+    // belgesel) dosyalarda her blok bir bölüm/perde olur.
+    const sesBlocks = blocks('SESLENDİRME').filter(b => (b.t || '').trim());
+    const sureOf = (k) => (String(k || '').match(/\(?\s*~?\s*\d+[:.]?\d*\s*(?:[–-]\s*\d+[:.]?\d*\s*)?(?:sn|dk|saniye|dakika)?\s*\)?/) || [''])[0].replace(/[()]/g, '').trim();
+    let senaryo;
+    if (sesBlocks.length > 1) {
+      senaryo = sesBlocks.map((b, i) => ({ bolum: (b.k || ('Bölüm ' + (i + 1))).replace(/\s*\([^)]*\)\s*$/, '').trim(), sure: sureOf(b.k), metin: b.t }));
+    } else {
+      const sesText = sesBlocks[0] ? sesBlocks[0].t : (a.ozet || a.teaser || '');
+      senaryo = sesText ? [{ bolum: 'Seslendirme Metni', sure: sesBlocks[0] ? sureOf(sesBlocks[0].k) : '', metin: sesText }] : [];
+    }
 
     // YouTube
     let ytBaslik = a.baslik || a.teaser || '';
@@ -2158,7 +2176,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
         color: s.mode === 'arsiv' ? '#e6c478' : '#818797'
       },
       arsivList: [...(this.masterArsiv() || this.arsivData()), ...(s.arsivEk || [])].map(a => ({
-        no: a.no, era: a.era, teaser: a.teaser, title: (a.result && a.result.baslik) || a.baslik || a.teaser,
+        no: a.no, era: a.era, teaser: a.teaser, title: this.dispTitle((a.result && a.result.baslik) || a.baslik || a.teaser),
         openFile: () => (a.bloklar || a.sayfalar) ? this.setState({ mode: 'arsiv', doc: a, docPage: 0 }) : this.setState({
           mode: 'wizard', step: 4, tab: 'senaryo',
           result: a.result, fileNo: a.fileNo, idea: a.result.baslik,
@@ -2326,8 +2344,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       closeArsivPick: () => this.setState({ arsivPick: false }),
       arsivPickOpen: !!s.arsivPick,
       arsivPickList: this.arsivTitles().map(x => ({
-        title: x.title, era: x.era,
-        pick: () => this.setState({ idea: x.title, arsivPick: false })
+        title: this.dispTitle(x.title), era: x.era,
+        pick: () => this.setState({ idea: this.dispTitle(x.title), arsivPick: false })
       })),
       nextBtnStyle: {
         border: 0, padding: '14px 26px', fontWeight: 800, fontSize: '13px', letterSpacing: '.12em',

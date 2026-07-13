@@ -283,6 +283,17 @@ class Component extends DCLogic {
     sb.auth.onAuthStateChange((_e, s) => check(s));
   }
   isMember() { return this.state.mem === true; }
+  // Başlıkları okunur hâle getir: TÜMÜ BÜYÜK kelimeleri Başlık Düzenine çevir
+  dispTitle(s) {
+    return String(s || '').split(/(\s+)/).map(w => {
+      const letters = w.replace(/[^A-Za-zÇĞİıÖŞÜçğıöşü]/g, '');
+      if (letters.length > 1 && w === w.toLocaleUpperCase('tr') && /[A-ZÇĞİÖŞÜ]/.test(w)) {
+        const lc = w.toLocaleLowerCase('tr');
+        return lc.replace(/[A-Za-zÇĞİıÖŞÜçğıöşü]/, c => c.toLocaleUpperCase('tr'));
+      }
+      return w;
+    }).join('');
+  }
   renderVals() {
     const raw = this.state.all || [];
     const q = (this.state.q || '').toLocaleLowerCase('tr');
@@ -297,7 +308,7 @@ class Component extends DCLogic {
         const m = String(a.no || '').match(/\d+/);
         return {
           num: m ? String(m[0]).padStart(2, '0') : '•',
-          era: a.era, fileNo: a.fileNo, title: a.baslik, teaser: a.teaser,
+          era: a.era, fileNo: a.fileNo, title: this.dispTitle(a.baslik), teaser: a.teaser,
           open: () => this.setState({ sel: i }),
         };
       });
@@ -319,7 +330,7 @@ class Component extends DCLogic {
       selEra: sel ? sel.era : '',
       selFileNo: sel ? sel.fileNo : '',
       uretHref: sel ? ('/studio?uret=' + encodeURIComponent(sel.fileNo || '')) : '/studio',
-      selTitle: sel ? sel.baslik : '',
+      selTitle: sel ? this.dispTitle(sel.baslik) : '',
       selOzet: sel ? sel.ozet : '',
       selSections: sel ? (sel.sections || []).map((sec, si) => ({
         ad: sec.ad,
