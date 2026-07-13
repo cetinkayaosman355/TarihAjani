@@ -102,9 +102,10 @@
 
     return '<div id="ta-sk-root">' +
       '<div style="text-align:center;margin-bottom:6px;">' +
-        '<p style="margin:0 0 4px;color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.2em;">SAHADAN</p>' +
-        '<h2 style="margin:0;font-family:\'Playfair Display\',serif;font-size:28px;font-weight:800;color:#f2ecd9;">Ajanlar ne diyor?</h2>' +
-        '<div style="margin-top:10px;">' + ratingLine + '</div>' +
+        '<p style="margin:0 0 6px;color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.24em;">SAHADAN · GERÇEK AJANLAR</p>' +
+        '<h2 style="margin:0;font-family:\'Playfair Display\',serif;font-size:clamp(26px,3vw,33px);font-weight:800;color:#f2ecd9;">Ajanlar ne <span style="color:#e6c478;">diyor?</span></h2>' +
+        '<div style="width:58px;height:2px;margin:13px auto 0;background:linear-gradient(90deg,transparent,#c19a52,transparent);"></div>' +
+        '<div style="margin-top:12px;">' + ratingLine + '</div>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:22px;border:1px solid rgba(193,154,82,.18);background:#05070d;padding:20px 10px;">' + statHtml + '</div>' +
       reviewsHtml +
