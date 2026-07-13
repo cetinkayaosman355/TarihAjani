@@ -46,9 +46,8 @@
     ['ÜRÜNLER', '/urunler'],
     ['ÜYELİK', '/uyelik'],
     ['AKADEMİ', '/egitim'],
-    ['ARŞİV', '/arsiv'],
+    ['HİKÂYE ARŞİVİ', '/arsiv'],
     ['STUDIO', '/studio'],
-    ['VAKA DOSYALARI', '/vaka-dosyalari'],
     ['OYUN TÜNELİ', '/zaman-tuneli']
   ];
 
