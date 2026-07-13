@@ -83,6 +83,7 @@
           <span style="display: inline-flex; align-items: center; gap: 8px;"><span style="color: #a8c8a2;">✓</span> İstediğin an iptal</span>
           <span style="display: inline-flex; align-items: center; gap: 8px;"><span style="color: #a8c8a2;">✓</span> Anında erişim</span>
         </div>
+        <button onClick="{{ openGiris }}" style="margin: 22px 0 0; border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; cursor: pointer; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11.5px; letter-spacing: .14em; padding: 12px 22px;" style-hover="background: rgba(193,154,82,.12);">GİRİŞ YAP / ÜCRETSİZ KAYIT →</button>
       </div>
     </sc-if>
 
@@ -267,38 +268,44 @@
       </section>
     </div>
 
-    <!-- GİRİŞ / KAYIT — üye olmayanlara (sayfanın altında) -->
-    <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
-      <div id="giris" style="max-width: 470px; margin: 54px auto 0; animation: ta-rise .5s ease both;">
-        <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em; text-align: center;">AJAN KİMLİK KONTROLÜ</p>
-        <h2 style="margin: 10px 0 6px; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800; text-align: center;">{{ loginTitle }}</h2>
-        <p style="margin: 0 0 26px; color: #a4a9b5; font-size: 14px; line-height: 1.6; text-align: center;">Hesabını oluştur; 30 ücretsiz deneme kredisiyle hemen üretmeye başla. Dilediğinde yukarıdan bir seviye seçebilirsin.</p>
+    <!-- GİRİŞ / KAYIT — açılır pencere (pop-up); "AJAN GİRİŞİ" ile açılır, sayfa kaymaz -->
+    <sc-if value="{{ loginModalOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div onClick="{{ closeLoginBtn }}" style="position: absolute; inset: 0; background: rgba(3,4,9,.82);"></div>
+        <div id="giris" style="position: relative; z-index: 1; width: 100%; max-width: 440px; max-height: 92vh; overflow: auto; border: 1px solid rgba(193,154,82,.42); background: #070a12; box-shadow: 0 30px 90px rgba(0,0,0,.75); animation: ta-rise .28s ease both;">
+          <button onClick="{{ closeLoginBtn }}" title="Kapat" style="position: absolute; top: 6px; right: 6px; z-index: 2; border: 0; background: transparent; color: #818797; font-size: 22px; line-height: 1; cursor: pointer; padding: 6px 11px;" style-hover="color: #e6c478;">✕</button>
+          <div style="padding: 34px 28px 26px;">
+            <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em; text-align: center;">AJAN KİMLİK KONTROLÜ</p>
+            <h2 style="margin: 10px 0 6px; font-family: 'Playfair Display', serif; font-size: 27px; font-weight: 800; text-align: center;">{{ loginTitle }}</h2>
+            <p style="margin: 0 0 22px; color: #a4a9b5; font-size: 13.5px; line-height: 1.6; text-align: center;">Giriş yap ya da ücretsiz kayıt ol; hesabına 30 deneme kredisi tanımlanır.</p>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; border: 1px solid rgba(193,154,82,.3);">
-          <button onClick="{{ modeGiris }}" style="{{ tabGirisStyle }}">GİRİŞ YAP</button>
-          <button onClick="{{ modeKayit }}" style="{{ tabKayitStyle }}">KAYIT OL</button>
-        </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; border: 1px solid rgba(193,154,82,.3);">
+              <button onClick="{{ modeGiris }}" style="{{ tabGirisStyle }}">GİRİŞ YAP</button>
+              <button onClick="{{ modeKayit }}" style="{{ tabKayitStyle }}">KAYIT OL</button>
+            </div>
 
-        <div style="border: 1px solid rgba(193,154,82,.3); border-top: 0; background: #070a12; padding: 26px; display: grid; gap: 14px;">
-          <sc-if value="{{ isKayit }}" hint-placeholder-val="{{ false }}">
-            <label style="display: grid; gap: 6px;">
-              <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">AJAN ADIN</span>
-              <input value="{{ fName }}" onChange="{{ onFName }}" placeholder="ör. Osman Çetinkaya" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
-            </label>
-          </sc-if>
-          <label style="display: grid; gap: 6px;">
-            <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">E-POSTA</span>
-            <input value="{{ fEmail }}" onChange="{{ onFEmail }}" type="email" placeholder="ajan@ornek.com" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
-          </label>
-          <label style="display: grid; gap: 6px;">
-            <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">ŞİFRE</span>
-            <input value="{{ fPass }}" onChange="{{ onFPass }}" type="password" placeholder="••••••••" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
-          </label>
-          <sc-if value="{{ hasFormError }}" hint-placeholder-val="{{ false }}">
-            <p style="margin: 0; color: #e08a80; font-size: 13px;">{{ formError }}</p>
-          </sc-if>
-          <button onClick="{{ submitForm }}" style="border: 0; cursor: pointer; margin-top: 4px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12.5px; letter-spacing: .16em; padding: 15px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ submitLabel }}</button>
-          <p style="margin: 4px 0 0; color: #676d7c; font-size: 12px; line-height: 1.6; text-align: center;">Üyeliğin yoksa ücretsiz kayıt ol; hesabına 30 deneme kredisi tanımlanır. Arşiv ve tam Studio için yukarıdan bir seviye seçebilirsin.</p>
+            <div style="border: 1px solid rgba(193,154,82,.3); border-top: 0; background: #070a12; padding: 22px; display: grid; gap: 13px;">
+              <sc-if value="{{ isKayit }}" hint-placeholder-val="{{ false }}">
+                <label style="display: grid; gap: 6px;">
+                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">AJAN ADIN</span>
+                  <input value="{{ fName }}" onChange="{{ onFName }}" placeholder="ör. Osman Çetinkaya" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
+                </label>
+              </sc-if>
+              <label style="display: grid; gap: 6px;">
+                <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">E-POSTA</span>
+                <input value="{{ fEmail }}" onChange="{{ onFEmail }}" type="email" placeholder="ajan@ornek.com" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
+              </label>
+              <label style="display: grid; gap: 6px;">
+                <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">ŞİFRE</span>
+                <input value="{{ fPass }}" onChange="{{ onFPass }}" type="password" placeholder="••••••••" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
+              </label>
+              <sc-if value="{{ hasFormError }}" hint-placeholder-val="{{ false }}">
+                <p style="margin: 0; color: #e08a80; font-size: 13px;">{{ formError }}</p>
+              </sc-if>
+              <button onClick="{{ submitForm }}" style="border: 0; cursor: pointer; margin-top: 4px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12.5px; letter-spacing: .16em; padding: 15px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ submitLabel }}</button>
+              <p style="margin: 2px 0 0; color: #676d7c; font-size: 12px; line-height: 1.6; text-align: center;">Üyeliğin yoksa ücretsiz kayıt ol; hesabına 30 deneme kredisi tanımlanır.</p>
+            </div>
+          </div>
         </div>
       </div>
     </sc-if>
@@ -349,7 +356,8 @@ class Component extends DCLogic {
       since: acc.since || '',
       expiresAt: null,
       billing: 'ay',
-      mode: 'giris', fName: '', fEmail: '', fPass: '', formError: '', busy: false
+      mode: 'giris', fName: '', fEmail: '', fPass: '', formError: '', busy: false,
+      loginOpen: false   // giriş/kayıt açılır penceresi (pop-up)
     };
     this.sb = null;
   }
@@ -359,25 +367,31 @@ class Component extends DCLogic {
       const qp = new URLSearchParams(location.search);
       this._next = qp.get('next') || '';
       const em = qp.get('email');
-      if (em) this.setState({ fEmail: em, mode: 'kayit' });   // satın almadan geldiyse kayıt sekmesi
+      if (em) this.setState({ fEmail: em, mode: 'kayit', loginOpen: true });   // satın almadan geldiyse kayıt penceresi
     } catch (e) {}
     this.initSupabase();
-    this.maybeFocusLogin();
+    // "AJAN GİRİŞİ" (/uyelik#giris) ile gelindiyse pencereyi aç (sayfa KAYMAZ).
+    try {
+      if ((location.hash || '').toLowerCase().indexOf('giris') !== -1 && !this.state.loggedIn) this.openLogin('giris');
+    } catch (e) {}
+    // ESC ile kapat
+    this._escLogin = (e) => { if (e.key === 'Escape' && this.state.loginOpen) this.closeLogin(); };
+    document.addEventListener('keydown', this._escLogin);
   }
 
-  // "AJAN GİRİŞİ" (/uyelik#giris) ile gelindiyse doğrudan giriş formuna in ve odakla.
-  maybeFocusLogin(tries = 0) {
-    try {
-      if ((location.hash || '').toLowerCase().indexOf('giris') === -1) return;
-      const el = document.getElementById('giris');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        const inp = el.querySelector('input');
-        if (inp) { try { inp.focus({ preventScroll: true }); } catch (e) {} }
-      } else if (tries < 24) {
-        setTimeout(() => this.maybeFocusLogin(tries + 1), 150);   // hidrasyon geç kurabilir
-      }
-    } catch (e) {}
+  componentWillUnmount() {
+    if (this._escLogin) document.removeEventListener('keydown', this._escLogin);
+  }
+
+  openLogin(mode) {
+    this.setState({ loginOpen: true, mode: mode || this.state.mode || 'giris', formError: '' });
+    setTimeout(() => this.focusLoginInput(0), 60);
+  }
+  closeLogin() { this.setState({ loginOpen: false }); }
+  focusLoginInput(tries = 0) {
+    const box = document.getElementById('giris');
+    if (box) { const i = box.querySelector('input'); if (i) { try { i.focus({ preventScroll: true }); } catch (e) {} } }
+    else if (tries < 20) setTimeout(() => this.focusLoginInput(tries + 1), 80);
   }
 
   initSupabase(tries = 0) {
@@ -620,6 +634,9 @@ class Component extends DCLogic {
     return {
       showLogin: !s.loggedIn,
       showAccount: s.loggedIn,
+      loginModalOpen: !s.loggedIn && s.loginOpen,     // giriş/kayıt açılır penceresi
+      openGiris: () => this.openLogin('giris'),
+      closeLoginBtn: () => this.closeLogin(),
       loginTitle: s.mode === 'giris' ? 'Tekrar hoş geldin, Ajan' : 'Aramıza katıl',
       isKayit: s.mode === 'kayit',
       modeGiris: () => this.setState({ mode: 'giris', formError: '' }),
