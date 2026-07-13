@@ -32,10 +32,10 @@
     return out;
   }
 
-  function mount() {
+  function mount(force) {
     var host = document.getElementById('ta-sosyal-kanit');
     if (!host) return;
-    if (host.querySelector('#ta-sk-root')) return; // zaten çizili
+    if (!force && host.querySelector('#ta-sk-root')) return; // zaten çizili
     host.innerHTML = render();
     wire(host);
     animateCounters(host);
@@ -47,7 +47,7 @@
     var stats = [
       { val: st.members || 0, label: 'KAYITLI AJAN', live: true },
       { val: st.productions || 0, label: 'STUDIO ÜRETİMİ', live: true },
-      { val: 44, label: 'HAZIR VAKA DOSYASI', live: false },
+      { val: 42, label: 'HAZIR VAKA DOSYASI', live: false },
       { val: 9, label: 'DERSLİK AKADEMİ', live: false }
     ];
     var statHtml = stats.map(function (s) {
@@ -166,21 +166,22 @@
   }
 
   function load() {
-    if (state.loaded) { mount(); return; }
+    if (state.loaded) { mount(true); return; }
     Promise.all([api({ action: 'stats' }), api({ action: 'list', limit: 24 })]).then(function (res) {
       state.stats = (res[0] && res[0].ok) ? res[0] : { members: 0, productions: 0, reviews: 0, avgRating: 0 };
       state.reviews = (res[1] && res[1].ok && res[1].reviews) ? res[1].reviews : [];
       state.loaded = true;
-      mount();
+      mount(true);   // veri gelince gerçek sayılarla yeniden çiz
     });
   }
 
   function start() {
     if (!document.getElementById('ta-sosyal-kanit')) return; // yalnız yer tutucu olan sayfada
+    mount();   // HEMEN çiz — "yükleniyor…" asılı kalmasın (veri gelince güncellenir)
     load();
     var mo = new MutationObserver(function () {
       var host = document.getElementById('ta-sosyal-kanit');
-      if (host && !host.querySelector('#ta-sk-root') && state.loaded) mount();
+      if (host && !host.querySelector('#ta-sk-root')) mount();  // dc yeniden render ederse geri çiz
     });
     mo.observe(document.body, { childList: true, subtree: true });
   }
