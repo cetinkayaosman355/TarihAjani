@@ -252,6 +252,16 @@ async function generateSpeech(text: string, voice: string): Promise<Uint8Array |
   for (const p of parts) { out.set(p, off); off += p.length; }
   return out;
 }
+// Ses ÖNİZLEME metni (kısa ~5 sn) — ücretsiz, kredi düşmez, kullanıcı sesi seçmeden dinler
+const PREVIEW_TEXT = "Tarih Ajanı dosyayı açıyor. Bu ses, senin anlatıcın olabilir.";
+function bytesToB64(bytes: Uint8Array): string {
+  let bin = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
+}
 
 // ── ARAŞTIRMA BİRİMİ (grounding) ───────────────────────────────────────
 // Üretimden ÖNCE konuyu web'de araştırıp doğrulanmış bir "araştırma dosyası" çıkarır.
@@ -361,12 +371,13 @@ Deno.serve(async (req) => {
     // TTS'in prompt/konusu yok, yalnız seslendirme METNİ var — bu kontrolden muaf
     if (!prompt && act !== "tts") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
 
+    const isPreview = act === "tts" && b.preview === true;   // ücretsiz ses önizlemesi
     const ttsText = String(b.text || "").trim().slice(0, 11500);
-    const cost = act === "tts"
+    const cost = isPreview ? 0 : (act === "tts"
       ? ttsCostOf(ttsText.length)
       : isEdit
         ? (b.free ? 0 : EDIT_COST)
-        : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0);
+        : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
 
     // Ücretli çağrı → kullanıcıyı doğrula ve bakiyeyi ön-kontrol et.
     // Düzenleme ücretsiz olsa bile giriş şarttır (istismarı önler).
@@ -411,6 +422,14 @@ Deno.serve(async (req) => {
         return json({ ok: true, url, charged: true, credits });
       }
       return json({ ok: true, url, charged: false });
+    }
+
+    // SES ÖNİZLEME — ücretsiz, kredi düşmez, giriş gerekmez; kısa örnek data URI döner
+    if (isPreview) {
+      const pv = TTS_VOICES.has(String(b.voice || "")) ? String(b.voice) : "onyx";
+      const bytes = await generateSpeech(PREVIEW_TEXT, pv);
+      if (!bytes) return json({ ok: false, error: "Önizleme üretilemedi." }, 502);
+      return json({ ok: true, url: "data:audio/mpeg;base64," + bytesToB64(bytes), charged: false });
     }
 
     // SESLENDİRME ÜRETİMİ — mp3 üret, Storage'a yükle, başarılıysa kredi düş
