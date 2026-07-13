@@ -43,8 +43,11 @@ img{display:block;max-width:100%}
 .util .dot{width:7px;height:7px;border-radius:50%;background:var(--kirmizi);box-shadow:0 0 0 0 rgba(158,43,35,.6);animation:pulse 1.9s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(158,43,35,.55)}70%{box-shadow:0 0 0 7px rgba(158,43,35,0)}100%{box-shadow:0 0 0 0 rgba(158,43,35,0)}}
 .util .clock{font-variant-numeric:tabular-nums;color:#efe6d2;font-weight:700;letter-spacing:.06em}
-.util .r{display:flex;gap:18px;color:#b0a68f}
+.util .r{display:flex;align-items:center;gap:18px;color:#b0a68f}
 .util .r a:hover{color:var(--gold3)}
+.util .r a.tadon{color:var(--gold3);font-weight:700;letter-spacing:.06em;border:1px solid rgba(193,154,82,.42);border-radius:3px;padding:4px 11px}
+.util .r a.tadon:hover{background:rgba(193,154,82,.14);border-color:var(--gold2);color:#f4ecd8}
+@media(max-width:640px){.util .r a:not(.tadon){display:none}}
 
 /* ── MASTHEAD ── */
 .mast{background:transparent;text-align:center;position:relative;padding:6px 0 0}
@@ -89,9 +92,11 @@ img{display:block;max-width:100%}
 .kick .dot{width:6px;height:6px;border-radius:50%;background:var(--kirmizi);animation:pulse2 1.5s infinite}
 .lead{display:block;cursor:pointer}
 .lead .media{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--paper2);border:1px solid var(--line2);box-shadow:0 1px 0 rgba(193,154,82,.4),0 24px 50px -30px rgba(33,26,15,.4)}
-.lead h1{font-family:var(--serif);font-weight:900;font-size:clamp(32px,4.7vw,60px);line-height:1;letter-spacing:-.018em;margin:22px 0 14px;text-wrap:balance;color:var(--ink);transition:color .2s}
+.lead .media .lmg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s ease}
+.lead .media .lmg.on{opacity:1}
+.lead h1{font-family:var(--serif);font-weight:800;font-size:clamp(25px,2.7vw,38px);line-height:1.06;letter-spacing:-.015em;margin:19px 0 11px;text-wrap:balance;color:var(--ink);transition:color .2s}
 .lead:hover h1{color:var(--kirmizi)}
-.lead .sf{font-family:var(--serif);font-weight:400;font-size:18.5px;line-height:1.55;color:#3d3524;max-width:62ch;margin:0 0 18px}
+.lead .sf{font-family:var(--serif);font-weight:400;font-size:16.5px;line-height:1.55;color:#3d3524;max-width:60ch;margin:0 0 16px}
 .lead .by{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:14px}
 .lead .by .c{color:var(--kirmizi)} .lead .by i{font-style:normal;color:var(--line2)}
 
@@ -102,7 +107,7 @@ img{display:block;max-width:100%}
 .lmrow:last-child{border-bottom:0;padding-bottom:0}
 .lmrow .media{position:relative;aspect-ratio:16/11;overflow:hidden;background:var(--paper2);border:1px solid var(--line2)}
 .lmrow .c{font-family:var(--sans);font-weight:800;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--kirmizi)}
-.lmrow h4{margin:5px 0 0;font-family:var(--serif);font-weight:700;font-size:19px;line-height:1.15;color:var(--ink);text-wrap:balance}
+.lmrow h4{margin:5px 0 0;font-family:var(--serif);font-weight:700;font-size:17px;line-height:1.18;color:var(--ink);text-wrap:balance}
 .lmrow:hover h4{color:var(--kirmizi)}
 
 /* sidebar paneller */
@@ -148,14 +153,14 @@ img{display:block;max-width:100%}
 .mcard{display:block;cursor:pointer}
 .mcard .media{position:relative;aspect-ratio:16/10;overflow:hidden;background:var(--paper2);border:1px solid var(--line2);margin-bottom:14px}
 .mcard .c{font-family:var(--sans);font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--kirmizi)}
-.mcard h3{font-family:var(--serif);font-weight:700;font-size:22px;line-height:1.1;margin:8px 0 9px;color:var(--ink);text-wrap:balance}
+.mcard h3{font-family:var(--serif);font-weight:700;font-size:19.5px;line-height:1.16;margin:8px 0 9px;color:var(--ink);text-wrap:balance}
 .mcard:hover h3{color:var(--kirmizi)}
 .mcard p{font-family:var(--serif);font-size:14.5px;line-height:1.5;color:var(--ink2);margin:0}
 
 /* ── KATEGORİ BÖLÜMLERİ ── */
 .section{padding:42px 0 6px}
 .section .bar{display:flex;align-items:baseline;gap:18px;border-bottom:1px solid var(--gold2);padding-bottom:12px;margin-bottom:26px}
-.section .bar h2{font-family:var(--serif);font-weight:900;font-size:clamp(24px,2.8vw,34px);margin:0;letter-spacing:-.015em}
+.section .bar h2{font-family:var(--serif);font-weight:900;font-size:clamp(21px,2.2vw,29px);margin:0;letter-spacing:-.015em}
 .section .bar h2 span{color:var(--kirmizi)}
 .section .bar .fill{flex:1}
 .section .bar .more{font-family:var(--sans);font-weight:800;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
@@ -165,7 +170,7 @@ img{display:block;max-width:100%}
 .ncard:hover .media{box-shadow:0 20px 44px -26px rgba(33,26,15,.55)}
 .ncard .c{position:absolute;top:0;left:0;font-family:var(--sans);font-weight:800;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--kirmizi);padding:6px 11px}
 .ncard .m{font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
-.ncard h3{font-family:var(--serif);font-weight:700;font-size:20px;line-height:1.14;margin:0 0 8px;color:var(--ink);text-wrap:balance}
+.ncard h3{font-family:var(--serif);font-weight:700;font-size:18.5px;line-height:1.18;margin:0 0 8px;color:var(--ink);text-wrap:balance}
 .ncard:hover h3{color:var(--kirmizi)}
 .ncard p{font-family:var(--serif);font-size:14px;line-height:1.5;color:var(--ink2);margin:0}
 
@@ -184,8 +189,8 @@ img{display:block;max-width:100%}
 .story .hero{position:relative;aspect-ratio:16/7;overflow:hidden;background:var(--paper2);border:1px solid var(--line2);box-shadow:0 1px 0 rgba(193,154,82,.4),0 26px 54px -32px rgba(33,26,15,.42)}
 .story .hero .hc{position:absolute;left:0;bottom:0;font-family:var(--sans);font-weight:800;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#fff;background:var(--kirmizi);padding:8px 15px}
 .story .col{max-width:760px;margin:0 auto}
-.story h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,4.4vw,50px);line-height:1.02;letter-spacing:-.018em;margin:30px 0 8px;text-wrap:balance;color:var(--ink)}
-.story .spot{font-family:var(--serif);font-weight:400;font-size:20px;line-height:1.5;color:#3d3524;margin:0 0 18px}
+.story h1{font-family:var(--serif);font-weight:800;font-size:clamp(26px,3vw,40px);line-height:1.08;letter-spacing:-.015em;margin:26px 0 10px;text-wrap:balance;color:var(--ink)}
+.story .spot{font-family:var(--serif);font-weight:400;font-size:18px;line-height:1.52;color:#3d3524;margin:0 0 18px}
 .story .byline{display:flex;align-items:center;gap:12px;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:13px 0;margin-bottom:26px}
 .story .byline .src{color:var(--kirmizi)} .story .byline i{width:4px;height:4px;border-radius:50%;background:var(--line2)}
 .story .art p{font-family:var(--serif);font-size:18px;line-height:1.82;color:#332c1d;margin:0 0 19px}
@@ -249,7 +254,7 @@ ${extra||''}</head>
 function util(){
   return `<div class="util"><div class="wrap">
   <div class="l"><span class="canli"><span class="dot"></span>CANLI YAYIN</span><span class="clock" id="clock">--:--:--</span><span id="tarih"></span></div>
-  <div class="r"><a href="/arsiv">Arşiv</a><a href="/studio">Studio</a><a href="/bulten">Bülten</a><a href="/iletisim">Künye</a></div>
+  <div class="r"><a href="/" class="tadon">◀ tarihajani.com</a><a href="/arsiv">Arşiv</a><a href="/studio">Studio</a><a href="/bulten">Bülten</a><a href="/iletisim">Künye</a></div>
 </div></div>`;
 }
 function masthead(){
@@ -383,18 +388,33 @@ var BUGUN=(function(){var d=new Date();var p=function(n){return (n<10?'0':'')+n;
 var LEAD=BUGUN;
 var REST=HABER.filter(function(h){return h!==LEAD;});
 
-/* lead render (hover ile önizleme) */
-function renderLead(h,preview){
-  var el=document.getElementById('lead');
-  el.href=url(h);
-  el.innerHTML=
-    '<div class="media">'+media(h)+'</div>'+
-    (h.__otd&&!preview?'<span class="kick"><span class="dot"></span>Bugün Tarihte · Son Dakika</span>':(preview?'<span class="kick"><span class="dot"></span>Öne Çıkan Dosya</span>':'<span class="kick"><span class="dot"></span>Günün Manşeti</span>'))+
-    '<h1>'+esc(h.baslik)+'</h1>'+
-    '<p class="sf">'+esc(h.spot)+'</p>'+
-    '<div class="by"><span class="c">'+esc(catAd(h.cat))+'</span><i>·</i><span>'+esc(h.tarih)+'</span><i>·</i><span>'+esc(h.yer)+'</span><i>·</i><span>Tarih Ajanı Haber Merkezi</span></div>';
+/* lead — iskelet bir kez kurulur; hover'da içerik YERİNDE güncellenir.
+   Görsel iki katmanlı çapraz geçişle değişir → yeniden yaratma/flaş yok. */
+var leadEl=document.getElementById('lead');
+leadEl.innerHTML=
+  '<div class="media"><img class="lmg" id="lead-a" alt=""><img class="lmg" id="lead-b" alt=""></div>'+
+  '<span class="kick"><span class="dot"></span><span id="lead-kt"></span></span>'+
+  '<h1 id="lead-h1"></h1>'+
+  '<p class="sf" id="lead-sf"></p>'+
+  '<div class="by" id="lead-by"></div>';
+var _imgs=[document.getElementById('lead-a'),document.getElementById('lead-b')],_act=-1;
+function _setImg(src){
+  if(_act>=0 && _imgs[_act].getAttribute('src')===src)return;
+  var nxt=_act===0?1:0, im=_imgs[nxt];
+  function show(){ im.onload=null; im.classList.add('on'); if(_act!==nxt){ if(_act>=0)_imgs[_act].classList.remove('on'); _act=nxt; } }
+  im.onload=show; im.src=src; if(im.complete && im.naturalWidth) show();
 }
-renderLead(LEAD);
+var _lkt=document.getElementById('lead-kt'),_lh1=document.getElementById('lead-h1'),
+    _lsf=document.getElementById('lead-sf'),_lby=document.getElementById('lead-by');
+function setLead(h,preview){
+  leadEl.href=url(h);
+  if(h.img)_setImg(h.img);
+  _lkt.textContent=(h.__otd&&!preview)?'Bugün Tarihte · Son Dakika':(preview?'Öne Çıkan Dosya':'Günün Manşeti');
+  _lh1.textContent=h.baslik;
+  _lsf.textContent=h.spot;
+  _lby.innerHTML='<span class="c">'+esc(catAd(h.cat))+'</span><i>·</i><span>'+esc(h.tarih)+'</span><i>·</i><span>'+esc(h.yer)+'</span><i>·</i><span>Tarih Ajanı Haber Merkezi</span>';
+}
+setLead(LEAD);
 
 /* rail — hover ile soldaki lead değişir, tıklayınca sayfaya gider */
 document.getElementById('raillist').innerHTML=REST.slice(0,5).map(function(h){
@@ -406,7 +426,7 @@ document.getElementById('raillist').innerHTML=REST.slice(0,5).map(function(h){
 (function(){
   var host=document.getElementById('raillist');
   var curSlug=LEAD.slug;
-  function show(h,preview){ if(!h||h.slug===curSlug)return; curSlug=h.slug; renderLead(h,preview); }
+  function show(h,preview){ if(!h||h.slug===curSlug)return; curSlug=h.slug; setLead(h,preview); }
   host.addEventListener('mouseover',function(e){
     var row=e.target.closest('.rrow'); if(!row)return;
     var h=bySlug(row.getAttribute('data-slug')); if(!h)return;

@@ -176,20 +176,30 @@
     stepA();
   }
 
-  function boot() {
+  function injectStyle() {
+    if (document.getElementById('sd-style')) return;
+    var style = document.createElement('style'); style.id = 'sd-style'; style.textContent = CSS;
+    document.head.appendChild(style);
+  }
+  // dc framework gövdeyi yeniden kurabildiği için tek seferlik hidrasyon silinebiliyor.
+  // Mount boşaldıysa yeniden kur; etkileşim sürüyorsa (sd-app duruyorsa) dokunma.
+  function ensure() {
     var mount = document.getElementById('studio-demo-mount');
-    if (!mount) return false;
-    if (mount.getAttribute('data-ready')) return true;
-    var style = document.createElement('style'); style.textContent = CSS; document.head.appendChild(style);
-    mount.setAttribute('data-ready', '1');
+    if (!mount) return;
+    if (mount.__sdDone && mount.querySelector('.sd-app')) return;
+    injectStyle();
+    mount.__sdDone = true;
     render(mount);
-    return true;
   }
 
   window.__sdInit = true;
-  if (!boot()) {
-    var tries = 0;
-    var iv = setInterval(function () { if (boot() || ++tries > 60) clearInterval(iv); }, 120);
-    document.addEventListener('DOMContentLoaded', boot);
+  ensure();
+  document.addEventListener('DOMContentLoaded', ensure);
+  // dc geç/yeniden render ederse yakala: periyodik + MutationObserver
+  var ticks = 0, iv = setInterval(function () { ensure(); if (++ticks > 40) clearInterval(iv); }, 500);
+  if (window.MutationObserver) {
+    var moT = null;
+    new MutationObserver(function () { clearTimeout(moT); moT = setTimeout(ensure, 150); })
+      .observe(document.documentElement, { childList: true, subtree: true });
   }
 })();

@@ -76,10 +76,17 @@
       var st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}');
       delete st.agent; delete st.email;
       localStorage.setItem('ta_studio_v5', JSON.stringify(st));
+      // Supabase oturum anahtarını da sil ki yeniden yüklemede tekrar girmesin
+      Object.keys(localStorage).forEach(function (k) {
+        if (k.indexOf('sb-') === 0 || k.toLocaleLowerCase().indexOf('supabase') !== -1) localStorage.removeItem(k);
+      });
     } catch (e) {}
-    if (sbClient) {
-      sbClient.auth.signOut().then(function () { currentName = null; apply(); });
-    } else { currentName = null; apply(); }
+    // Arayüzü anında geri döndür; sunucu çıkışını arka planda tetikle (yanıtı bekleme)
+    currentName = null;
+    try { apply(); } catch (e) {}
+    try { if (sbClient && sbClient.auth) sbClient.auth.signOut(); } catch (e) {}
+    // Temiz oturumsuz durum için sayfayı tazele ("bitti gitti") — giriş akışıyla aynı
+    setTimeout(function () { try { location.reload(); } catch (e) {} }, 150);
   }
   function openMenu(btn) {
     if (menuEl) { cancelClose(); return; }
