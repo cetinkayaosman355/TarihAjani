@@ -10,7 +10,7 @@
 <body>
 <div class="util"><div class="wrap">
   <div class="l"><span class="canli"><span class="dot"></span>CANLI YAYIN</span><span class="clock" id="clock">--:--:--</span><span id="tarih"></span></div>
-  <div class="r"><a href="/arsiv">Arşiv</a><a href="/studio">Studio</a><a href="/bulten">Bülten</a><a href="/iletisim">Künye</a></div>
+  <div class="r"><a href="/" class="tadon">◀ tarihajani.com</a><a href="/arsiv">Arşiv</a><a href="/studio">Studio</a><a href="/bulten">Bülten</a><a href="/iletisim">Künye</a></div>
 </div></div>
 <header class="mast">
   <div class="rule d"></div>
@@ -370,18 +370,33 @@ var BUGUN=(function(){var d=new Date();var p=function(n){return (n<10?'0':'')+n;
 var LEAD=BUGUN;
 var REST=HABER.filter(function(h){return h!==LEAD;});
 
-/* lead render (hover ile önizleme) */
-function renderLead(h,preview){
-  var el=document.getElementById('lead');
-  el.href=url(h);
-  el.innerHTML=
-    '<div class="media">'+media(h)+'</div>'+
-    (h.__otd&&!preview?'<span class="kick"><span class="dot"></span>Bugün Tarihte · Son Dakika</span>':(preview?'<span class="kick"><span class="dot"></span>Öne Çıkan Dosya</span>':'<span class="kick"><span class="dot"></span>Günün Manşeti</span>'))+
-    '<h1>'+esc(h.baslik)+'</h1>'+
-    '<p class="sf">'+esc(h.spot)+'</p>'+
-    '<div class="by"><span class="c">'+esc(catAd(h.cat))+'</span><i>·</i><span>'+esc(h.tarih)+'</span><i>·</i><span>'+esc(h.yer)+'</span><i>·</i><span>Tarih Ajanı Haber Merkezi</span></div>';
+/* lead — iskelet bir kez kurulur; hover'da içerik YERİNDE güncellenir.
+   Görsel iki katmanlı çapraz geçişle değişir → yeniden yaratma/flaş yok. */
+var leadEl=document.getElementById('lead');
+leadEl.innerHTML=
+  '<div class="media"><img class="lmg" id="lead-a" alt=""><img class="lmg" id="lead-b" alt=""></div>'+
+  '<span class="kick"><span class="dot"></span><span id="lead-kt"></span></span>'+
+  '<h1 id="lead-h1"></h1>'+
+  '<p class="sf" id="lead-sf"></p>'+
+  '<div class="by" id="lead-by"></div>';
+var _imgs=[document.getElementById('lead-a'),document.getElementById('lead-b')],_act=-1;
+function _setImg(src){
+  if(_act>=0 && _imgs[_act].getAttribute('src')===src)return;
+  var nxt=_act===0?1:0, im=_imgs[nxt];
+  function show(){ im.onload=null; im.classList.add('on'); if(_act!==nxt){ if(_act>=0)_imgs[_act].classList.remove('on'); _act=nxt; } }
+  im.onload=show; im.src=src; if(im.complete && im.naturalWidth) show();
 }
-renderLead(LEAD);
+var _lkt=document.getElementById('lead-kt'),_lh1=document.getElementById('lead-h1'),
+    _lsf=document.getElementById('lead-sf'),_lby=document.getElementById('lead-by');
+function setLead(h,preview){
+  leadEl.href=url(h);
+  if(h.img)_setImg(h.img);
+  _lkt.textContent=(h.__otd&&!preview)?'Bugün Tarihte · Son Dakika':(preview?'Öne Çıkan Dosya':'Günün Manşeti');
+  _lh1.textContent=h.baslik;
+  _lsf.textContent=h.spot;
+  _lby.innerHTML='<span class="c">'+esc(catAd(h.cat))+'</span><i>·</i><span>'+esc(h.tarih)+'</span><i>·</i><span>'+esc(h.yer)+'</span><i>·</i><span>Tarih Ajanı Haber Merkezi</span>';
+}
+setLead(LEAD);
 
 /* rail — hover ile soldaki lead değişir, tıklayınca sayfaya gider */
 document.getElementById('raillist').innerHTML=REST.slice(0,5).map(function(h){
@@ -393,7 +408,7 @@ document.getElementById('raillist').innerHTML=REST.slice(0,5).map(function(h){
 (function(){
   var host=document.getElementById('raillist');
   var curSlug=LEAD.slug;
-  function show(h,preview){ if(!h||h.slug===curSlug)return; curSlug=h.slug; renderLead(h,preview); }
+  function show(h,preview){ if(!h||h.slug===curSlug)return; curSlug=h.slug; setLead(h,preview); }
   host.addEventListener('mouseover',function(e){
     var row=e.target.closest('.rrow'); if(!row)return;
     var h=bySlug(row.getAttribute('data-slug')); if(!h)return;
