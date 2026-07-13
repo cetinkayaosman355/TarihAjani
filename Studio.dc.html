@@ -628,6 +628,17 @@
                     </sc-for>
                   </div>
                 </div>
+                <sc-if value="{{ hasSceneChars }}" hint-placeholder-val="{{ false }}">
+                  <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12; padding: 14px 18px; display: grid; gap: 8px;">
+                    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">KARAKTERLER · SABİT KİMLİK <span style="color:#676d7c;letter-spacing:0;">(her sahnede birebir aynı yüz/kıyafet için kullanılır)</span></p>
+                    <sc-for list="{{ sceneChars }}" as="ch" hint-placeholder-count="2">
+                      <div style="border-top: 1px dashed rgba(129,135,151,.2); padding-top: 7px;">
+                        <span style="color: #e6c478; font-weight: 700; font-size: 13.5px;">{{ ch.ad }}</span>
+                        <span style="color: #a4a9b5; font-size: 12.5px; line-height: 1.55;"> — {{ ch.gorunum }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
                 <div style="border: 1px solid rgba(193,154,82,.35); background: rgba(193,154,82,.05); padding: 18px 22px;">
                   <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">KAPAK GÖRSELLERİ · {{ styleName }}</p>
                   <div style="display: grid; gap: 12px; margin-top: 12px;">
@@ -1984,6 +1995,7 @@ TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan
 {
  "baslik": "çarpıcı Türkçe başlık",
  "logline": "tek cümlelik merak uyandıran özet",
+ "karakterler": [{"ad": "Türkçe kişi adı/rolü (ör. II. Rudolf)", "gorunum": "SABİT görsel kimlik — İngilizce: yaş aralığı, vücut yapısı, ten, saç/sakal, yüz hatları, ayırt edici detay (yara izi, gözlük, taç vb.) ve DÖNEME UYGUN kıyafet. Bu tarif bu kişinin geçtiği HER sahnede birebir kullanılacak."}],
  "senaryo": [{"bolum": ${chaptered ? '"1. Bölüm — çarpıcı başlık"' : '"bölüm adı"'}, "sure": "zaman aralığı", "metin": "o bölümün TAM seslendirme metni (kalite barına uygun)"}],
  "seslendirme_notu": "ElevenLabs okuma temposu, vurgu ve duraklama yönergeleri + gerçek/efsane ayrımı (3-4 cümle)",
  "youtube": {"baslik": "70 karakteri geçmeyen tıklanabilir başlık", "aciklama": "yukarıdaki yapıda 3+ paragraf + zaman damgaları + anahtar kelimeler", "etiketler": ["TAM 15 etiket"]},
@@ -2042,9 +2054,13 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   async sceneBatch(section, k, idx, totalSecs, cfg, labelBase) {
     const bolum = (section && section.bolum) || (idx + '. bölüm');
     const metin = ((section && section.metin) || '').slice(0, 1800);
+    const bibleLine = (cfg.bible)
+      ? 'TEKRAR EDEN KARAKTERLER (bir sahnede bu kişilerden biri geçiyorsa, görsel tarifini AŞAĞIDAKİYLE BİREBİR AYNI ver — kelimesi kelimesine, promptun başında; tüm sahnelerde aynı yüz/kıyafet için ŞART): ' + cfg.bible + '\n'
+      : '';
     const prompt = 'Bir Türkçe tarih belgeselinin "' + bolum + '" (bölüm ' + idx + '/' + totalSecs + ') kısmı için TAM ' + k + ' sahnelik GÖRSEL ve VİDEO promptu üret. Sahneler bu bölümün anlatısını SIRAYLA, sinematik biçimde görselleştirmeli; metindeki somut kişi/mekân/nesne/aksiyonu birebir yansıt (hikâyeyi tanı, jenerik sahne yazma).\n' +
+      bibleLine +
       'GÖRSEL PROMPT: İngilizce, "' + cfg.stilStr + '" ile BAŞLAR, "' + cfg.oran + '" içerir; ana özne+aksiyon, dönem-doğru mekân/kıyafet/nesne (anakronizm YOK), ışık/atmosfer, kompozisyon/kamera, renk/duygu, doku katmanları (~50-80 kelime), şu satırla BİTER: "' + cfg.anti + '".\n' +
-      'VİDEO PROMPT: tek kamera hareketi/aksiyon 5-8 sn (~30-50 kelime), şu satırla biter: "' + cfg.vidTail + '". Aynı karakter birden çok sahnede geçerse kimlik tarifini (yaş, ten, saç, kıyafet, ayırt edici detay) her promptun başında birebir tekrarla.\n' +
+      'VİDEO PROMPT: tek kamera hareketi/aksiyon 5-8 sn (~30-50 kelime), şu satırla biter: "' + cfg.vidTail + '". Bir karakter sahnede geçiyorsa yukarıdaki SABİT kimlik tarifini promptun başında birebir tekrarla (tutarlı yüz için).\n' +
       'ÇIKTI: SADECE geçerli tek JSON, ilk karakter { son karakter }. Şema: {"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","prompt":"İngilizce görsel"}],"video_promptlar":[{"sahne":"aynı sahne adı","prompt":"İngilizce video"}]}. Her dizi TAM ' + k + ' öğe.\n\nBÖLÜM METNİ:\n' + (metin || bolum);
     const maxTok = Math.min(4000, 800 + k * 260);
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -2086,6 +2102,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   // hatasını kökten çözer; kısa videoda da aynı güvenli yolu kullanır.
   async genScenePrompts(result) {
     const cfg = this.sceneCfg();
+    // Karakter tutarlılığı: taslakta üretilen SABİT kimlik tarifleri her sahne
+    // grubuna verilir → aynı kişi tüm sahnelerde birebir aynı görünür.
+    cfg.bible = (Array.isArray(result.karakterler) ? result.karakterler : [])
+      .filter(k => k && k.ad && k.gorunum)
+      .map(k => k.ad + ': ' + k.gorunum).join(' | ').slice(0, 1400);
     const N = this.fmtFor(this.durationSec()).sahne;
     let secs = (result.senaryo || []).filter(x => x && ((x.metin || '').trim() || (x.bolum || '').trim()));
     // Senaryo yoksa tek "bölüm" gibi davran ki yine de N sahne üretilsin
@@ -2712,6 +2733,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         makeImg: () => this.makeSceneImg('kp' + i, x.prompt),
         img: this.sceneImgView('kp' + i)
       })),
+      sceneChars: (r.karakterler || []).filter(k => k && k.ad).map(k => ({ ad: k.ad, gorunum: k.gorunum || '' })),
+      hasSceneChars: (r.karakterler || []).filter(k => k && k.ad && k.gorunum).length > 0,
       resGorsel: mkCopy(r.gorsel_promptlar, 'gp').map((x, i) => this.sceneExtras(x, i, 'gp')),
       resVideo: mkCopy(r.video_promptlar, 'vp').map((x, i) => this.sceneExtras(x, i, 'vp')),
       noScenePrompts: !!s.result && !(r.gorsel_promptlar || []).length,
