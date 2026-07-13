@@ -29,6 +29,59 @@ function clean(s: unknown, max: number): string {
   return String(s ?? "").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
+/* ── e-posta bildirimi (sağlayıcı-bağımsız: Resend / Brevo / SendGrid) ── */
+function fromParts(): { name: string; email: string; full: string } {
+  const raw = Deno.env.get("MAIL_FROM") || "Tarih Ajanı <iletisim@tarihajani.com>";
+  const m = raw.match(/^(.*)<(.+)>\s*$/);
+  if (m) return { name: m[1].trim() || "Tarih Ajanı", email: m[2].trim(), full: raw };
+  return { name: "Tarih Ajanı", email: raw.trim(), full: `Tarih Ajanı <${raw.trim()}>` };
+}
+async function sendMail(to: string, subject: string, html: string): Promise<boolean> {
+  const from = fromParts();
+  const resend = Deno.env.get("RESEND_API_KEY");
+  if (resend) {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${resend}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: from.full, to: [to], subject, html }),
+    });
+    return r.ok;
+  }
+  const brevo = Deno.env.get("BREVO_API_KEY");
+  if (brevo) {
+    const r = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: { "api-key": brevo, "Content-Type": "application/json" },
+      body: JSON.stringify({ sender: { name: from.name, email: from.email }, to: [{ email: to }], subject, htmlContent: html }),
+    });
+    return r.ok;
+  }
+  const sg = Deno.env.get("SENDGRID_API_KEY");
+  if (sg) {
+    const r = await fetch("https://api.sendgrid.com/v3/mail/send", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${sg}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ personalizations: [{ to: [{ email: to }] }], from: { email: from.email, name: from.name }, subject, content: [{ type: "text/html", value: html }] }),
+    });
+    return r.ok;
+  }
+  return false;
+}
+async function notifyNewReview(name: string, tier: string, rating: number, body: string): Promise<void> {
+  const to = Deno.env.get("ADMIN_EMAIL") || Deno.env.get("MAIL_TO") || "iletisim@tarihajani.com";
+  const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!));
+  const stars = "★★★★★☆☆☆☆☆".slice(5 - rating, 10 - rating);
+  const html =
+    `<div style="font-family:system-ui,sans-serif;max-width:520px;color:#222;">` +
+    `<h2 style="margin:0 0 8px;">Yeni yorum · onay bekliyor</h2>` +
+    `<p style="margin:0 0 4px;"><b>${esc(name)}</b>${tier ? " · " + esc(tier) : ""}</p>` +
+    `<p style="margin:0 0 8px;color:#b8860b;font-size:18px;">${stars} <span style="color:#666;font-size:13px;">(${rating}/5)</span></p>` +
+    `<blockquote style="margin:0 0 14px;padding:10px 14px;border-left:3px solid #c19a52;background:#faf7ef;">${esc(body)}</blockquote>` +
+    `<p style="margin:0;"><a href="https://tarihajani.com/admin" style="color:#a77d35;">Admin panelinden onayla veya sil →</a></p>` +
+    `</div>`;
+  try { await sendMail(to, "Tarih Ajanı · Yeni yorum onay bekliyor", html); } catch { /* bildirim hatası submit'i etkilemesin */ }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
@@ -93,6 +146,8 @@ Deno.serve(async (req) => {
       .insert({ name, tier, rating, body, approved: false })
       .select("id").single();
     if (ins.error) return json({ ok: false, error: ins.error.message }, 500);
+    // yorum gelince yöneticiye e-posta bildirimi (hata olsa da submit başarılı)
+    await notifyNewReview(name, tier, rating, body);
     return json({ ok: true, id: ins.data.id });
   }
 
