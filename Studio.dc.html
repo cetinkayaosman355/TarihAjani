@@ -590,15 +590,8 @@
             <!-- GÖRSEL STÜDYO -->
             <sc-if value="{{ tabImgStudio }}" hint-placeholder-val="{{ false }}">
               <div style="display: grid; gap: 16px; max-width: 760px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
-                  <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 46ch;">Prompt yaz ya da kapak promptunu al; seçtiğin motorla görsel üret. Üretimler bu rafta birikir.</p>
-                  <div style="display: flex; gap: 8px;">
-                    <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
-                      <button onClick="{{ ip.pick }}" style="{{ ip.style }}">{{ ip.label }}</button>
-                    </sc-for>
-                  </div>
-                </div>
-                <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir, 16:9" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
+                <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 56ch;">Prompt yaz ya da kapak promptunu al; kadraj ve stili seç, görsel üret. Üretimler aşağıdaki rafta birikir ve <strong style="color:#e6c478;">Önceki Üretimler</strong>'de kalıcı saklanır.</p>
+                <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                   <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">KADRAJ</span>
                   <sc-for list="{{ imgAspects }}" as="ia" hint-placeholder-count="3">
@@ -656,7 +649,23 @@
                       </div>
                     </sc-for>
                   </div>
-                  <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Görseller OpenAI ile gerçek olarak üretilir; her görsel kredi düşer. <strong style="color: #e6c478;">Bağlantı sürelidir — beğendiğin görseli 1 saat içinde indir.</strong></p>
+                  <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Görseller OpenAI ile gerçek olarak üretilir; her görsel kredi düşer. <strong style="color: #e6c478;">Üretilenler aşağıda "Önceki Üretimler"de bu cihazda kalıcı saklanır — istediğin zaman bul, büyüt, indir.</strong></p>
+                </sc-if>
+                <sc-if value="{{ hasSavedImgs }}" hint-placeholder-val="{{ false }}">
+                  <div style="border-top: 1px solid rgba(193,154,82,.18); padding-top: 16px; display: grid; gap: 12px; margin-top: 4px;">
+                    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">ÖNCEKİ ÜRETİMLER · {{ savedImgCount }} <span style="color: #676d7c; letter-spacing: 0; font-size: 11px;">(bu cihazda saklanır)</span></p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
+                      <sc-for list="{{ savedImgList }}" as="sv" hint-placeholder-count="4">
+                        <div style="border: 1px solid rgba(129,135,151,.22); background: #070a12;">
+                          <img src="{{ sv.url }}" alt="Önceki üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
+                          <div style="display: flex; gap: 6px; padding: 6px;">
+                            <button onClick="{{ sv.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 9.5px; letter-spacing: .04em; padding: 6px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
+                            <button onClick="{{ sv.del }}" title="Sil" style="border: 1px solid rgba(192,57,43,.4); background: transparent; color: #e08a80; font-size: 11px; padding: 6px 9px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12);">🗑</button>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
                 </sc-if>
               </div>
             </sc-if>
@@ -831,7 +840,7 @@ class Component extends DCLogic {
       editTarget: null, editLabel: '',
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
-      imgNotice: false, imgPrompt: '', imgProvider: 'gpt', imgQueue: [], sceneImgs: {}, imgStyle: 'sinematik',
+      imgPrompt: '', imgQueue: [], sceneImgs: {}, imgStyle: 'sinematik', savedImgs: [],
       imgAspect: null, imgZoom: '',
       step: 1,
       idea: '',
@@ -855,6 +864,7 @@ class Component extends DCLogic {
       .then(list => { if (Array.isArray(list) && list.length) this.setState({ arsivEk: list }); })
       .catch(() => {});
     this.initSupabase();
+    this.loadSavedImgs();   // kalıcı "Önceki Üretimler" galerisini yükle
   }
 
   // Üyelik sayfasında açılan oturum aynı origin'de olduğu için burada da görünür
@@ -1410,11 +1420,57 @@ class Component extends DCLogic {
     this.setState(st => ({ imgQueue: [{ id, prompt, ar, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue].slice(0, 40) }));
     this.imageServer(sendPrompt, ar).then(url => {
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url } : x) }));
+      this.saveImg({ id, prompt, ar, url, ts: Date.now() });   // kalıcı arşive (Önceki Üretimler)
     }).catch(e => {
       const msg = e.message === 'YETERSIZ_KREDI' ? 'YETERSİZ KREDİ' : ('HATA: ' + e.message);
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: msg } : x) }));
       if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
     });
+  }
+
+  // ── Kalıcı görsel arşivi (IndexedDB) — "Önceki Üretimler" ──
+  _openImgDB() {
+    if (this._imgDB) return this._imgDB;
+    this._imgDB = new Promise((res, rej) => {
+      try {
+        const rq = indexedDB.open('ta_studio_img', 1);
+        rq.onupgradeneeded = () => { const db = rq.result; if (!db.objectStoreNames.contains('imgs')) db.createObjectStore('imgs', { keyPath: 'id' }); };
+        rq.onsuccess = () => res(rq.result);
+        rq.onerror = () => rej(rq.error);
+      } catch (e) { rej(e); }
+    });
+    return this._imgDB;
+  }
+  async saveImg(rec) {
+    if (!rec || !rec.url || rec.url.indexOf('data:') !== 0) return;   // yalnız kalıcı data URI saklanır
+    try {
+      const db = await this._openImgDB();
+      await new Promise((res) => { const tx = db.transaction('imgs', 'readwrite'); tx.objectStore('imgs').put(rec); tx.oncomplete = res; tx.onerror = res; });
+      this.setState(st => ({ savedImgs: [rec, ...(st.savedImgs || []).filter(x => x.id !== rec.id)].slice(0, 120) }));
+      this._pruneImgs();
+    } catch (e) { /* kota/erişim hatası sessiz */ }
+  }
+  async loadSavedImgs() {
+    try {
+      const db = await this._openImgDB();
+      const all = await new Promise((res) => { const rq = db.transaction('imgs', 'readonly').objectStore('imgs').getAll(); rq.onsuccess = () => res(rq.result || []); rq.onerror = () => res([]); });
+      all.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+      this.setState({ savedImgs: all.slice(0, 120) });
+    } catch (e) {}
+  }
+  async delSavedImg(id) {
+    try { const db = await this._openImgDB(); db.transaction('imgs', 'readwrite').objectStore('imgs').delete(id); } catch (e) {}
+    this.setState(st => ({ savedImgs: (st.savedImgs || []).filter(x => x.id !== id) }));
+  }
+  async _pruneImgs() {   // 120'den fazlaysa en eskileri sil
+    try {
+      const db = await this._openImgDB();
+      const all = await new Promise((res) => { const rq = db.transaction('imgs', 'readonly').objectStore('imgs').getAll(); rq.onsuccess = () => res(rq.result || []); rq.onerror = () => res([]); });
+      if (all.length <= 120) return;
+      all.sort((a, b) => (a.ts || 0) - (b.ts || 0));
+      const tx = db.transaction('imgs', 'readwrite');
+      all.slice(0, all.length - 120).forEach(x => tx.objectStore('imgs').delete(x.id));
+    } catch (e) {}
   }
 
   // ── gerçek görsel düzenleme ── (mevcut görseli korur; ilk düzenleme ücretsiz)
@@ -1459,6 +1515,7 @@ class Component extends DCLogic {
     this.setImgItem(item.id, { editBusy: true, editErr: '' });
     this.editServer(item.url, editPrompt, item.ar, free).then(url => {
       this.setImgItem(item.id, { url, editBusy: false, editOpen: false, editText: '', editUsedFree: true });
+      this.saveImg({ id: 'edit' + Date.now() + Math.floor(Math.random() * 1000), prompt: item.prompt || '', ar: item.ar, url, ts: Date.now() });
     }).catch(e => {
       const msg = e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Düzenlenemedi: ' + e.message);
       this.setImgItem(item.id, { editBusy: false, editErr: msg });
@@ -1966,19 +2023,6 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       suggestLabel: s.suggestBusy ? 'AJAN DÜŞÜNÜYOR…' : 'SEN ÖNER',
       addShort: () => this.addShortNow(),
       shortLabel: s.shortBusy ? 'YAZILIYOR…' : '+ 30 SN SHORTS VERSİYONU EKLE',
-      imgProviders: [
-        { id: 'gpt', label: 'DALL·E' }, { id: 'gemini', label: 'Gemini' }, { id: 'mj', label: 'Midjourney' }
-      ].map(p => ({
-        label: p.label,
-        pick: () => this.setState({ imgProvider: p.id }),
-        style: {
-          border: s.imgProvider === p.id ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
-          background: s.imgProvider === p.id ? 'rgba(193,154,82,.12)' : 'transparent',
-          color: s.imgProvider === p.id ? '#e6c478' : '#a4a9b5',
-          fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.1em',
-          padding: '8px 13px', cursor: 'pointer'
-        }
-      })),
       imgPrompt: s.imgPrompt,
       onImgPrompt: e => this.setState({ imgPrompt: e.target.value }),
       imgFromKapak: () => {
@@ -2075,8 +2119,18 @@ SON KONTROL (göndermeden önce doğrula ve eksikse TAMAMLA): gorsel_promptlar =
       onChatKey: e => { if (e.key === 'Enter') this.sendChat(); },
       sendChat: () => this.sendChat(),
       chatBusy: s.chatBusy,
-      imgNotice: s.imgNotice,
-      genImage: () => this.setState({ imgNotice: true }),
+      hasSavedImgs: (s.savedImgs || []).length > 0,
+      savedImgCount: (s.savedImgs || []).length,
+      savedImgList: (s.savedImgs || []).map(x => {
+        const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[x.ar] || '16/9';
+        return {
+          url: x.url,
+          thumbStyle: { width: '100%', aspectRatio: arCss, objectFit: 'cover', display: 'block', cursor: 'zoom-in' },
+          zoom: () => this.setState({ imgZoom: x.url }),
+          dl: () => this.dlImage(x.url),
+          del: () => this.delSavedImg(x.id)
+        };
+      }),
 
       idea: s.idea,
       onIdea: e => this.setState({ idea: e.target.value }),
