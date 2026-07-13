@@ -70,41 +70,20 @@
     </nav>
   </header>
 
-  <main style="max-width: 1060px; margin: 0 auto; padding: clamp(28px, 5vw, 60px) clamp(18px, 4vw, 48px) 80px;">
+  <main style="max-width: 1160px; margin: 0 auto; padding: clamp(28px, 5vw, 60px) clamp(18px, 4vw, 48px) 80px;">
 
-    <!-- GİRİŞ / KAYIT -->
+    <!-- KARŞILAMA — üye olmayanlara (sayfanın en üstü) -->
     <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
-      <div style="max-width: 460px; margin: 40px auto 0; animation: ta-rise .5s ease both;">
-        <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em; text-align: center;">AJAN KİMLİK KONTROLÜ</p>
-        <h1 style="margin: 10px 0 6px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 800; text-align: center;">{{ loginTitle }}</h1>
-        <p style="margin: 0 0 26px; color: #a4a9b5; font-size: 14px; line-height: 1.6; text-align: center;">Tüm üyeliklerini, kredilerini ve erişimlerini tek yerden yönet.</p>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; border: 1px solid rgba(193,154,82,.3);">
-          <button onClick="{{ modeGiris }}" style="{{ tabGirisStyle }}">GİRİŞ YAP</button>
-          <button onClick="{{ modeKayit }}" style="{{ tabKayitStyle }}">KAYIT OL</button>
+      <div style="text-align: center; max-width: 780px; margin: 6px auto 0; animation: ta-rise .5s ease both;">
+        <span style="display: inline-block; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .26em; border: 1px solid rgba(193,154,82,.3); padding: 7px 15px;">TARİH AJANI ÜYELİĞİ</span>
+        <h1 style="margin: 20px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(32px, 6vw, 54px); font-weight: 800; line-height: 1.08; letter-spacing: -.015em;">Tarihi üreten ekip,<br>artık senin masanda.</h1>
+        <p style="margin: 18px auto 0; max-width: 620px; color: #a4a9b5; font-size: clamp(15px, 2.2vw, 17px); line-height: 1.7;">Fikirden yayına hazır dosyaya: senaryo, seslendirme metni, sahne sahne görsel ve video promptları. Sana uygun seviyeyi seç, dakikalar içinde tarihin gizli dosyalarını üretmeye başla.</p>
+        <div style="margin: 24px 0 0; display: flex; gap: 14px 28px; flex-wrap: wrap; justify-content: center; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .08em;">
+          <span style="display: inline-flex; align-items: center; gap: 8px;"><span style="color: #a8c8a2;">✓</span> 30 ücretsiz deneme kredisi</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px;"><span style="color: #a8c8a2;">✓</span> İstediğin an iptal</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px;"><span style="color: #a8c8a2;">✓</span> Anında erişim</span>
         </div>
-
-        <div style="border: 1px solid rgba(193,154,82,.3); border-top: 0; background: #070a12; padding: 26px; display: grid; gap: 14px;">
-          <sc-if value="{{ isKayit }}" hint-placeholder-val="{{ false }}">
-            <label style="display: grid; gap: 6px;">
-              <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">AJAN ADIN</span>
-              <input value="{{ fName }}" onChange="{{ onFName }}" placeholder="ör. Osman Çetinkaya" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
-            </label>
-          </sc-if>
-          <label style="display: grid; gap: 6px;">
-            <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">E-POSTA</span>
-            <input value="{{ fEmail }}" onChange="{{ onFEmail }}" type="email" placeholder="ajan@ornek.com" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
-          </label>
-          <label style="display: grid; gap: 6px;">
-            <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">ŞİFRE</span>
-            <input value="{{ fPass }}" onChange="{{ onFPass }}" type="password" placeholder="••••••••" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
-          </label>
-          <sc-if value="{{ hasFormError }}" hint-placeholder-val="{{ false }}">
-            <p style="margin: 0; color: #e08a80; font-size: 13px;">{{ formError }}</p>
-          </sc-if>
-          <button onClick="{{ submitForm }}" style="border: 0; cursor: pointer; margin-top: 4px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12.5px; letter-spacing: .16em; padding: 15px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ submitLabel }}</button>
-          <p style="margin: 4px 0 0; color: #676d7c; font-size: 12px; line-height: 1.6; text-align: center;">Üyeliğin yoksa ücretsiz kayıt ol; hesabına 30 deneme kredisi tanımlanır. Arşiv ve tam Studio için paralı seviye seçebilirsin.</p>
-        </div>
+        <a href="#giris" style="display: inline-block; margin: 26px 0 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; text-decoration: none; border-bottom: 1px solid rgba(129,135,151,.4); padding-bottom: 3px;" style-hover="color: #e6c478;">Önce ücretsiz denemek istiyorum →</a>
       </div>
     </sc-if>
 
@@ -163,147 +142,201 @@
       </div>
     </sc-if>
 
-    <!-- ÜYELİK AVANTAJLARI — neden üye olmalısın (herkese görünür) -->
-    <div id="avantajlar" style="margin-top: 44px; animation: ta-rise .5s ease both;">
+    <!-- SEVİYELER — büyük fiyat kartları (herkese görünür, en üstte) -->
+    <div id="seviyeler" style="margin-top: 46px; animation: ta-rise .5s ease both;">
       <section>
-        <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">NEDEN ÜYE OLMALISIN?</p>
-        <h2 style="margin: 0 0 8px; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700;">Üyelik avantajları</h2>
-        <p style="margin: 0 0 22px; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 640px;">Tarih Ajanı üyeliği; tarihi bir dedektif titizliğiyle araştıran bir üretim ekibini cebine koyar. Fikirden yayına hazır dosyaya kadar her adımı üyelik içinde çözersin.</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;">
+        <div style="text-align: center; max-width: 680px; margin: 0 auto;">
+          <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .24em;">{{ tierKicker }}</p>
+          <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(28px, 4.4vw, 40px); font-weight: 800; letter-spacing: -.01em;">{{ tierTitle }}</h2>
+          <p style="margin: 12px 0 0; color: #a4a9b5; font-size: 15px; line-height: 1.65;">{{ tierDesc }}</p>
+        </div>
 
-          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
-            <div style="font-size: 24px; margin-bottom: 10px;">🎬</div>
-            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">AI Üretim Stüdyosu</h3>
-            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">Konuyu yaz, seç ve üret: senaryo, seslendirme metni, sahne sahne görsel & video promptları ve YouTube/Reels yayın paketi tek dosyada gelir. Süreyi seçersin — 30 sn'den 8-12 dk'ya, sahne sayısı ve kredi ona göre.</p>
+        <div style="display: flex; justify-content: center; margin: 26px 0 8px;">
+          <div style="display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(193,154,82,.35); background: #070a12; padding: 4px;">
+            <button onClick="{{ setBillAy }}" style="{{ billAyStyle }}">AYLIK</button>
+            <button onClick="{{ setBillYil }}" style="{{ billYilStyle }}">YILLIK · 2 AY HEDİYE</button>
+          </div>
+        </div>
+        <p style="text-align: center; margin: 0 0 32px; color: #7c8290; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em;">{{ billHint }}</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; align-items: stretch;">
+          <sc-for list="{{ tierList }}" as="tr" hint-placeholder-count="3">
+            <div style="{{ tr.cardStyle }}">
+              <sc-if value="{{ tr.hasRibbon }}" hint-placeholder-val="{{ false }}">
+                <div style="{{ tr.ribbonStyle }}">{{ tr.ribbon }}</div>
+              </sc-if>
+              <p style="margin: 0; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .2em;">{{ tr.name }}</p>
+              <p style="margin: 7px 0 0; color: #818797; font-size: 13px; line-height: 1.5; min-height: 38px;">{{ tr.blurb }}</p>
+              <div style="margin: 16px 0 0; display: flex; align-items: baseline; gap: 7px;">
+                <span style="font-family: 'Playfair Display', serif; font-size: clamp(38px, 5vw, 46px); font-weight: 800; line-height: 1;">{{ tr.price }}</span>
+                <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 13px;">TL{{ tr.per }}</span>
+              </div>
+              <p style="margin: 6px 0 0; color: #a4a9b5; font-size: 12.5px; min-height: 18px;">{{ tr.subPrice }}</p>
+              <div style="margin: 14px 0 0; display: flex; align-items: center; gap: 7px; flex-wrap: wrap;">
+                <span style="border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .05em; padding: 5px 10px;">🎬 {{ tr.videoLine }}</span>
+                <sc-if value="{{ tr.showSaving }}" hint-placeholder-val="{{ false }}">
+                  <span style="border: 1px solid rgba(122,168,116,.5); color: #a8c8a2; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .07em; padding: 5px 10px;">{{ tr.savingBadge }}</span>
+                </sc-if>
+              </div>
+              <div style="height: 1px; background: rgba(193,154,82,.18); margin: 20px 0;"></div>
+              <ul style="margin: 0 0 22px; padding: 0; list-style: none; display: grid; gap: 11px; flex: 1;">
+                <sc-for list="{{ tr.features }}" as="ft" hint-placeholder-count="4">
+                  <li style="display: flex; gap: 10px; color: #d6d9e2; font-size: 13.5px; line-height: 1.5;"><span style="color: #c19a52; font-size: 11px; margin-top: 2px;">✦</span><span>{{ ft.t }}</span></li>
+                </sc-for>
+              </ul>
+              <button onClick="{{ tr.act }}" style="{{ tr.btnStyle }}">{{ tr.btnLabel }}</button>
+              <p style="margin: 12px 0 0; text-align: center; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .08em;">{{ tr.foot }}</p>
+            </div>
+          </sc-for>
+        </div>
+        <p style="margin: 24px 0 0; text-align: center; color: #676d7c; font-size: 12.5px; line-height: 1.6;">Her seviyede Studio erişimi ve hazır hikâye arşivi vardır. Eğitim Akademisi ve e-kitap arşivi Ajan seviyesiyle birlikte gelir. Tek seferlik ürünler <a href="/urunler">Ürünler</a> sayfasında.</p>
+      </section>
+    </div>
+
+    <!-- ÖZELLİKLER — üyelik avantajları (herkese görünür) -->
+    <div id="avantajlar" style="margin-top: 54px; animation: ta-rise .5s ease both;">
+      <section>
+        <div style="text-align: center; max-width: 640px; margin: 0 auto 24px;">
+          <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">HER SEVİYEDE NELER VAR?</p>
+          <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(24px, 3.6vw, 32px); font-weight: 800;">Üyelikle açılan özellikler</h2>
+          <p style="margin: 12px 0 0; color: #a4a9b5; font-size: 14px; line-height: 1.65;">Tarih Ajanı üyeliği; tarihi bir dedektif titizliğiyle araştıran bir üretim ekibini cebine koyar. Fikirden yayına hazır dosyaya kadar her adımı üyelik içinde çözersin.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px;">
+
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 24px;">
+            <div style="font-size: 26px; margin-bottom: 12px;">🎬</div>
+            <h3 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">AI Üretim Stüdyosu</h3>
+            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">Konuyu yaz, seç ve üret: senaryo, seslendirme metni, sahne sahne görsel &amp; video promptları ve YouTube/Reels yayın paketi tek dosyada gelir. Süreyi seçersin — 30 sn'den 8-12 dk'ya, sahne sayısı ve kredi ona göre.</p>
           </div>
 
-          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
-            <div style="font-size: 24px; margin-bottom: 10px;">⚡</div>
-            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Her Ay Yenilenen Kredi</h3>
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 24px;">
+            <div style="font-size: 26px; margin-bottom: 12px;">⚡</div>
+            <h3 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Her Ay Yenilenen Kredi</h3>
             <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">Seviyene göre aylık Studio kredin her ayın 1'inde otomatik yenilenir. Biterse Studio içinden ek kredi paketi alabilirsin — kredi asla kaybolmaz.</p>
           </div>
 
-          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
-            <div style="font-size: 24px; margin-bottom: 10px;">📚</div>
-            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Hazır Dosya Arşivi</h3>
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 24px;">
+            <div style="font-size: 26px; margin-bottom: 12px;">📚</div>
+            <h3 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Hazır Dosya Arşivi</h3>
             <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">Yayınladığımız vakaların eksiksiz üretim dosyaları: senaryo, seslendirme, kapak ve sahne promptları. Aç, kopyala ya da kendine göre düzenle — arşivden dosya açmak kredi harcamaz.</p>
           </div>
 
-          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
-            <div style="font-size: 24px; margin-bottom: 10px;">🎓</div>
-            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Eğitim Akademisi</h3>
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 24px;">
+            <div style="font-size: 26px; margin-bottom: 12px;">🎓</div>
+            <h3 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Eğitim Akademisi</h3>
             <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">Kanalı büyütmenin, araştırmanın ve anlatının inceliklerini adım adım anlatan video eğitimler. <span style="color: #c19a52;">Ajan seviyesiyle birlikte gelir</span> — ayrıca satın almana gerek kalmaz.</p>
           </div>
 
-          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
-            <div style="font-size: 24px; margin-bottom: 10px;">📖</div>
-            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">E-Kitap Hediyeleri</h3>
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 24px;">
+            <div style="font-size: 26px; margin-bottom: 12px;">📖</div>
+            <h3 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">E-Kitap Hediyeleri</h3>
             <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">E-kitaplar tek seferlik satın alınır. <span style="color: #c19a52;">Ajan ve üstü üyelere</span> zaman zaman e-kitap hediye edilir; dilediğini ayrıca alıp arşivine ekleyebilirsin.</p>
           </div>
 
-          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
-            <div style="font-size: 24px; margin-bottom: 10px;">🚀</div>
-            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Öncelik & Mentorluk</h3>
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 24px;">
+            <div style="font-size: 26px; margin-bottom: 12px;">🚀</div>
+            <h3 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Öncelik &amp; Mentorluk</h3>
             <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">En yoğun anlarda bile öncelikli üretim ve birebir mentorluk görüşmesi. <span style="color: #c19a52;">Başmüfettiş seviyesine</span> özel — projeni doğrudan bizimle konuşarak ilerletirsin.</p>
           </div>
 
         </div>
-        <p style="margin: 20px 0 0; color: #676d7c; font-size: 12.5px; line-height: 1.6;">Aşağıdan sana uygun seviyeyi seç; hesabın anında tanımlanır ve avantajlar açılır.</p>
       </section>
     </div>
 
-    <!-- seviye yönetimi — girişli ve girişsiz her iki durumda görünür -->
-    <div id="seviyeler" style="margin-top: 44px; animation: ta-rise .5s ease both;">
-        <section>
-          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 14px; margin-bottom: 18px;">
-            <div>
-              <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">{{ tierKicker }}</p>
-              <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700;">{{ tierTitle }}</h2>
-              <p style="margin: 8px 0 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 560px;">{{ tierDesc }}</p>
-            </div>
-            <div style="display: flex; border: 1px solid rgba(193,154,82,.35);">
-              <button onClick="{{ setBillAy }}" style="{{ billAyStyle }}">AYLIK</button>
-              <button onClick="{{ setBillYil }}" style="{{ billYilStyle }}">YILLIK · 2 AY HEDİYE</button>
-            </div>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;">
-            <sc-for list="{{ tierList }}" as="tr" hint-placeholder-count="3">
-              <div style="{{ tr.cardStyle }}">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .18em;">{{ tr.name }}</span>
-                  <span style="{{ tr.tagStyle }}">{{ tr.tag }}</span>
-                </div>
-                <p style="margin: 12px 0 2px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 800;">{{ tr.price }} <span style="font-size: 14px; color: #676d7c; font-family: 'Special Elite', monospace;">TL{{ tr.per }}</span></p>
-                <p style="margin: 2px 0 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 11.5px; letter-spacing: .03em;">{{ tr.subPrice }}</p>
-                <div style="margin: 11px 0 2px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap;">
-                  <span style="border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .05em; padding: 4px 9px;">🎬 {{ tr.videoLine }}</span>
-                  <sc-if value="{{ tr.showSaving }}" hint-placeholder-val="{{ false }}">
-                    <span style="border: 1px solid rgba(122,168,116,.5); color: #a8c8a2; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .07em; padding: 4px 9px;">{{ tr.savingBadge }}</span>
-                  </sc-if>
-                </div>
-                <ul style="margin: 12px 0 16px; padding: 0; list-style: none; display: grid; gap: 8px;">
-                  <sc-for list="{{ tr.features }}" as="ft" hint-placeholder-count="4">
-                    <li style="display: flex; gap: 9px; color: #cfd3e0; font-size: 13px; line-height: 1.5;"><span style="color: #c19a52; font-size: 10px; margin-top: 3px;">◆</span><span>{{ ft.t }}</span></li>
-                  </sc-for>
-                </ul>
-                <button onClick="{{ tr.act }}" style="{{ tr.btnStyle }}">{{ tr.btnLabel }}</button>
-              </div>
-            </sc-for>
-          </div>
-          <p style="margin: 16px 0 0; color: #676d7c; font-size: 12.5px; line-height: 1.6;">Her seviyede Studio erişimi ve hazır hikâye arşivi vardır. Eğitim Akademisi ve e-kitap arşivi Ajan seviyesiyle birlikte gelir — ayrıca satın almana gerek kalmaz. Tek seferlik ürünler <a href="/urunler">Ürünler</a> sayfasında.</p>
+    <!-- TEK BAKIŞTA — karşılaştırma tablosu -->
+    <div id="karsilastirma" style="margin-top: 54px; animation: ta-rise .5s ease both;">
+      <section>
+        <div style="text-align: center; max-width: 640px; margin: 0 auto 20px;">
+          <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">TEK BAKIŞTA</p>
+          <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(24px, 3.6vw, 32px); font-weight: 800;">Seviyeler neyi kapsıyor?</h2>
+        </div>
+        <div style="overflow-x: auto; border: 1px solid rgba(193,154,82,.22);">
+          <table style="width: 100%; min-width: 560px; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #0a0d16;">
+                <th style="padding: 14px 16px; text-align: left; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #a4a9b5;">ÖZELLİK</th>
+                <th style="padding: 14px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #c19a52;">GÖZLEMCİ</th>
+                <th style="padding: 14px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #e6c478; background: rgba(193,154,82,.09); border-left: 1px solid rgba(193,154,82,.25); border-right: 1px solid rgba(193,154,82,.25);">AJAN ★</th>
+                <th style="padding: 14px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #c19a52;">BAŞMÜFETTİŞ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ compareRows }}" as="cr" hint-placeholder-count="8">
+                <tr>
+                  <td style="padding: 12px 16px; text-align: left; font-size: 12.5px; color: #cfd3e0; border-top: 1px solid rgba(193,154,82,.14);">{{ cr.label }}</td>
+                  <td style="{{ cr.gStyle }}">{{ cr.g }}</td>
+                  <td style="{{ cr.aStyle }}">{{ cr.a }}</td>
+                  <td style="{{ cr.bStyle }}">{{ cr.b }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
 
-          <!-- Tek karşılaştırma tablosu -->
-          <div style="margin-top: 40px;">
-            <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">TEK BAKIŞTA</p>
-            <h3 style="margin: 0 0 16px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Seviyeler neyi kapsıyor?</h3>
-            <div style="overflow-x: auto; border: 1px solid rgba(193,154,82,.22);">
-              <table style="width: 100%; min-width: 520px; border-collapse: collapse;">
-                <thead>
-                  <tr style="background: #0a0d16;">
-                    <th style="padding: 13px 14px; text-align: left; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #a4a9b5;">ÖZELLİK</th>
-                    <th style="padding: 13px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #c19a52;">GÖZLEMCİ</th>
-                    <th style="padding: 13px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #e6c478;">AJAN</th>
-                    <th style="padding: 13px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #c19a52;">BAŞMÜFETTİŞ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <sc-for list="{{ compareRows }}" as="cr" hint-placeholder-count="8">
-                    <tr>
-                      <td style="padding: 11px 14px; text-align: left; font-size: 12.5px; color: #cfd3e0; border-top: 1px solid rgba(193,154,82,.14);">{{ cr.label }}</td>
-                      <td style="{{ cr.gStyle }}">{{ cr.g }}</td>
-                      <td style="{{ cr.aStyle }}">{{ cr.a }}</td>
-                      <td style="{{ cr.bStyle }}">{{ cr.b }}</td>
-                    </tr>
-                  </sc-for>
-                </tbody>
-              </table>
-            </div>
-          </div>
+    <!-- GİRİŞ / KAYIT — üye olmayanlara (sayfanın altında) -->
+    <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
+      <div id="giris" style="max-width: 470px; margin: 54px auto 0; animation: ta-rise .5s ease both;">
+        <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em; text-align: center;">AJAN KİMLİK KONTROLÜ</p>
+        <h2 style="margin: 10px 0 6px; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800; text-align: center;">{{ loginTitle }}</h2>
+        <p style="margin: 0 0 26px; color: #a4a9b5; font-size: 14px; line-height: 1.6; text-align: center;">Hesabını oluştur; 30 ücretsiz deneme kredisiyle hemen üretmeye başla. Dilediğinde yukarıdan bir seviye seçebilirsin.</p>
 
-          <!-- İptal / yenileme / otomatik ödeme -->
-          <div style="margin-top: 40px;">
-            <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">SIKÇA SORULANLAR</p>
-            <h3 style="margin: 0 0 16px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Kredi, yenileme ve iptal</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
-              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
-                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Kredi ne işe yarar?</h4>
-                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Studio kredisi; senaryo, seslendirme ve görsel üretiminde harcanır. Kabaca <span style="color: #cfd3e0;">1.000 kredi ≈ 30 kısa video</span> demektir. Krediler her ayın başında planına göre yenilenir.</p>
-              </div>
-              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
-                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Krediler devreder mi?</h4>
-                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Aylık kredi o ay içinde kullanılmak içindir; kullanılmayan kredi bir sonraki aya devretmez. Daha fazlasına ihtiyaç duyarsan Studio içinden ek kredi paketi alabilirsin.</p>
-              </div>
-              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
-                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Otomatik yenileme &amp; iptal</h4>
-                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Üyelik seçtiğin dönemde (aylık/yıllık) otomatik yenilenir. Dilediğin an <a href="mailto:destek@tarihajani.com?subject=Üyelik İptali" style="color: #c19a52;">tek e-postayla</a> iptal edebilirsin; iptalde dönem sonuna kadar erişimin sürer, sonraki tahsilat yapılmaz.</p>
-              </div>
-              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
-                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Yıllık ödemenin avantajı</h4>
-                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Yıllık planda <span style="color: #a8c8a2;">2 ay bedava</span> — yani 12 ay yerine 10 ay ödersin (~%17 tasarruf). Seviyeni istediğin zaman yükseltebilir, kalan sürenin farkını mahsup ederek geçebilirsin.</p>
-              </div>
-            </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; border: 1px solid rgba(193,154,82,.3);">
+          <button onClick="{{ modeGiris }}" style="{{ tabGirisStyle }}">GİRİŞ YAP</button>
+          <button onClick="{{ modeKayit }}" style="{{ tabKayitStyle }}">KAYIT OL</button>
+        </div>
+
+        <div style="border: 1px solid rgba(193,154,82,.3); border-top: 0; background: #070a12; padding: 26px; display: grid; gap: 14px;">
+          <sc-if value="{{ isKayit }}" hint-placeholder-val="{{ false }}">
+            <label style="display: grid; gap: 6px;">
+              <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">AJAN ADIN</span>
+              <input value="{{ fName }}" onChange="{{ onFName }}" placeholder="ör. Osman Çetinkaya" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
+            </label>
+          </sc-if>
+          <label style="display: grid; gap: 6px;">
+            <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">E-POSTA</span>
+            <input value="{{ fEmail }}" onChange="{{ onFEmail }}" type="email" placeholder="ajan@ornek.com" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
+          </label>
+          <label style="display: grid; gap: 6px;">
+            <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">ŞİFRE</span>
+            <input value="{{ fPass }}" onChange="{{ onFPass }}" type="password" placeholder="••••••••" style="border: 1px solid rgba(129,135,151,.35); background: #060910; color: #f2ecd9; padding: 13px 14px; font-size: 15px;">
+          </label>
+          <sc-if value="{{ hasFormError }}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 0; color: #e08a80; font-size: 13px;">{{ formError }}</p>
+          </sc-if>
+          <button onClick="{{ submitForm }}" style="border: 0; cursor: pointer; margin-top: 4px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12.5px; letter-spacing: .16em; padding: 15px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ submitLabel }}</button>
+          <p style="margin: 4px 0 0; color: #676d7c; font-size: 12px; line-height: 1.6; text-align: center;">Üyeliğin yoksa ücretsiz kayıt ol; hesabına 30 deneme kredisi tanımlanır. Arşiv ve tam Studio için yukarıdan bir seviye seçebilirsin.</p>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- SIKÇA SORULANLAR -->
+    <div id="sss" style="margin-top: 54px; animation: ta-rise .5s ease both;">
+      <section>
+        <div style="text-align: center; max-width: 640px; margin: 0 auto 20px;">
+          <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">SIKÇA SORULANLAR</p>
+          <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(24px, 3.6vw, 32px); font-weight: 800;">Kredi, yenileme ve iptal</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+          <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+            <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Kredi ne işe yarar?</h4>
+            <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Studio kredisi; senaryo, seslendirme ve görsel üretiminde harcanır. Kabaca <span style="color: #cfd3e0;">1.000 kredi ≈ 30 kısa video</span> demektir. Krediler her ayın başında planına göre yenilenir.</p>
           </div>
-        </section>
+          <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+            <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Krediler devreder mi?</h4>
+            <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Aylık kredi o ay içinde kullanılmak içindir; kullanılmayan kredi bir sonraki aya devretmez. Daha fazlasına ihtiyaç duyarsan Studio içinden ek kredi paketi alabilirsin.</p>
+          </div>
+          <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+            <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Otomatik yenileme &amp; iptal</h4>
+            <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Üyelik seçtiğin dönemde (aylık/yıllık) otomatik yenilenir. Dilediğin an <a href="mailto:destek@tarihajani.com?subject=Üyelik İptali" style="color: #c19a52;">tek e-postayla</a> iptal edebilirsin; iptalde dönem sonuna kadar erişimin sürer, sonraki tahsilat yapılmaz.</p>
+          </div>
+          <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+            <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Yıllık ödemenin avantajı</h4>
+            <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Yıllık planda <span style="color: #a8c8a2;">2 ay bedava</span> — yani 12 ay yerine 10 ay ödersin (~%17 tasarruf). Seviyeni istediğin zaman yükseltebilir, kalan sürenin farkını mahsup ederek geçebilirsin.</p>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 </div>
@@ -482,13 +515,20 @@ class Component extends DCLogic {
     }));
 
     const yil = s.billing === 'yil';
+    const blurbs = {
+      gozlemci: 'Tarih içeriği üretmeye yeni başlayanlar için.',
+      ajan: 'Kanalını düzenli büyütenler için — en çok tercih edilen.',
+      basmufettis: 'Yüksek hacimli, profesyonel üreticiler için.'
+    };
     const tierList = this.tiers().map(t => {
       const isCur = s.loggedIn && t.id === s.tier;
+      const pop = !!t.populer && !isCur;               // vurgulu "popüler" kart (mevcut seviye değilse)
       const up = order[t.id] > order[s.tier];
       const yearlyTotal = t.ay * 10;
       const monthlyEq = Math.round(yearlyTotal / 12);
       return {
         name: t.name,
+        blurb: blurbs[t.id] || '',
         price: fmtTL(yil ? yearlyTotal : t.ay),
         per: yil ? ' / yıl' : ' / ay',
         subPrice: yil
@@ -498,23 +538,28 @@ class Component extends DCLogic {
         savingBadge: yil ? '~%17 TASARRUF' : '',
         showSaving: yil,
         features: t.features.map(x => ({ t: x })),
-        tag: isCur ? 'MEVCUT SEVİYEN' : (t.populer ? 'EN POPÜLER' : ''),
-        tagStyle: {
-          fontFamily: "'Special Elite', monospace", fontSize: '9px', letterSpacing: '.14em', padding: isCur || t.populer ? '4px 8px' : 0,
-          border: isCur ? '1px solid rgba(122,168,116,.55)' : (t.populer ? '1px solid rgba(193,154,82,.5)' : '0'),
-          color: isCur ? '#a8c8a2' : '#e6c478'
+        hasRibbon: isCur || pop,
+        ribbon: isCur ? '● MEVCUT SEVİYEN' : '★ EN POPÜLER',
+        ribbonStyle: {
+          position: 'absolute', top: '0', left: '50%', transform: 'translate(-50%, -50%)', whiteSpace: 'nowrap',
+          fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.16em', padding: '6px 15px',
+          background: isCur ? 'linear-gradient(110deg,#3c5a34,#5f8150)' : 'linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52)',
+          color: isCur ? '#eaf3e6' : '#171207', boxShadow: '0 6px 18px rgba(0,0,0,.45)'
         },
+        foot: isCur ? 'Şu an bu seviyedesin' : (t.id === 'gozlemci' ? 'İstediğin an iptal edebilirsin' : 'Yükseltmede kalan süre mahsup edilir'),
         cardStyle: {
-          border: isCur ? '1px solid rgba(122,168,116,.5)' : '1px solid rgba(193,154,82,.28)',
-          background: '#070a12', padding: '24px', display: 'grid', alignContent: 'start',
-          boxShadow: t.populer && !isCur ? '0 0 30px rgba(193,154,82,.1)' : 'none'
+          position: 'relative',
+          border: isCur ? '1px solid rgba(122,168,116,.55)' : (pop ? '1px solid rgba(216,178,106,.7)' : '1px solid rgba(193,154,82,.26)'),
+          background: pop ? 'linear-gradient(180deg, rgba(28,22,10,.75), #070a12 60%)' : (isCur ? 'linear-gradient(180deg, rgba(18,26,16,.6), #070a12 60%)' : '#070a12'),
+          padding: '32px 26px 26px', display: 'flex', flexDirection: 'column',
+          boxShadow: pop ? '0 24px 60px rgba(0,0,0,.5), 0 0 46px rgba(193,154,82,.13)' : '0 14px 34px rgba(0,0,0,.34)'
         },
-        btnLabel: isCur ? 'AKTİF SEVİYE' : (!s.loggedIn ? 'BU SEVİYEYİ SEÇ →' : (up ? 'YÜKSELT →' : 'BU SEVİYEYE GEÇ')),
+        btnLabel: isCur ? '✓ AKTİF SEVİYE' : (!s.loggedIn ? 'BU SEVİYEYİ SEÇ →' : (up ? 'YÜKSELT →' : 'BU SEVİYEYE GEÇ')),
         btnStyle: {
           border: isCur ? '1px solid rgba(122,168,116,.5)' : 0,
-          cursor: isCur ? 'default' : 'pointer', padding: '13px',
-          fontFamily: "'Special Elite', monospace", fontWeight: 700, fontSize: '11.5px', letterSpacing: '.14em',
-          background: isCur ? 'transparent' : 'linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52)',
+          cursor: isCur ? 'default' : 'pointer', padding: '15px', width: '100%',
+          fontFamily: "'Special Elite', monospace", fontWeight: 700, fontSize: '12px', letterSpacing: '.14em',
+          background: isCur ? 'transparent' : (pop ? 'linear-gradient(110deg, #a77d35, #e6c478 50%, #c19a52)' : 'linear-gradient(110deg, #8f6a2c, #c9a659 50%, #a9863f)'),
           color: isCur ? '#a8c8a2' : '#171207'
         },
         act: () => { if (!isCur) window.location.href = '/satis#uyelik-' + t.id + (yil ? '-yil' : ''); }
@@ -550,10 +595,10 @@ class Component extends DCLogic {
       color: on ? '#e6c478' : '#676d7c'
     });
     const billStyle = on => ({
-      border: 0, cursor: 'pointer', padding: '10px 16px',
-      fontFamily: "'Special Elite', monospace", fontWeight: 700, fontSize: '10px', letterSpacing: '.12em',
-      background: on ? 'rgba(193,154,82,.18)' : 'transparent',
-      color: on ? '#e6c478' : '#818797'
+      border: 0, cursor: 'pointer', padding: '11px 22px',
+      fontFamily: "'Special Elite', monospace", fontWeight: 700, fontSize: '10.5px', letterSpacing: '.12em',
+      background: on ? 'linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52)' : 'transparent',
+      color: on ? '#171207' : '#818797', transition: 'background .2s ease'
     });
 
     return {
@@ -648,9 +693,12 @@ class Component extends DCLogic {
       accessList: access,
       tierList,
       compareRows,
-      tierKicker: s.loggedIn ? 'SEVİYENİ YÖNET' : 'ÜYELİKLE NELER AÇILIR?',
-      tierTitle: s.loggedIn ? 'Erişim seviyeleri' : 'Tek üyelik, tüm arşiv',
-      tierDesc: s.loggedIn ? '' : 'Studio kredileri, hazır hikâye arşivi, eğitim ve mentorluk — hepsi tek üyelikte. Seviye yükseldikçe kapılar açılır. (E-kitaplar ayrıca satılır; üyelere zaman zaman hediye edilir.)',
+      tierKicker: s.loggedIn ? 'SEVİYENİ YÖNET' : 'SEVİYENİ SEÇ',
+      tierTitle: s.loggedIn ? 'Erişim seviyeleri' : 'Sana uygun üyeliği seç',
+      tierDesc: s.loggedIn
+        ? 'Aşağıdan seviyeni yükseltebilir ya da yıllığa geçebilirsin. Mevcut seviyen işaretli.'
+        : 'Studio kredisi, hazır hikâye arşivi, eğitim ve mentorluk — hepsi tek üyelikte. Seviye yükseldikçe kapılar açılır. E-kitaplar ayrıca satılır; üyelere zaman zaman hediye edilir.',
+      billHint: yil ? 'Yıllık planda 2 ay bedava — yaklaşık %17 tasarruf.' : 'İstediğin an yıllığa geçip 2 ay hediye kazan.',
       setBillAy: () => this.setState({ billing: 'ay' }),
       setBillYil: () => this.setState({ billing: 'yil' }),
       billAyStyle: billStyle(!yil),
