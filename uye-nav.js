@@ -244,17 +244,20 @@
   // ── Olay delegasyonu: dinleyiciler DOCUMENT üzerinde (capture) yaşar.
   // Framework butonu yeniden kursa da tıklama/hover çalışmaya devam eder;
   // capture aşaması site içi yönlendirme dinleyicilerinden de önce koşar.
-  document.addEventListener('click', function (e) {
-    // SADECE ANA SAYFADA, header'daki "AJAN GİRİŞİ" → yerinde pop-up.
-    // Diğer sayfalarda buton normal davranır (/uyelik'e gider). Gövde CTA'larına dokunmaz.
-    if (!currentName && !loginEl && isHomePage()) {
-      var la = closestFrom(e.target, 'header a[href^="/uyelik"], [data-uye-scope] a[href^="/uyelik"]');
-      if (la && ctaScore(la) >= 5) {
-        e.preventDefault(); e.stopPropagation();
-        openLogin('giris');
-        return;
-      }
+  // SADECE ANA SAYFADA, header'daki "AJAN GİRİŞİ" → yerinde pop-up.
+  // WINDOW capture: page-transition.js gibi DOCUMENT-capture dinleyicilerinden ÖNCE
+  // koşar; preventDefault edince onlar (e.defaultPrevented kontrolü) yönlendirmeyi atlar.
+  window.addEventListener('click', function (e) {
+    if (currentName || loginEl || !isHomePage()) return;
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var la = closestFrom(e.target, 'header a[href^="/uyelik"], [data-uye-scope] a[href^="/uyelik"]');
+    if (la && ctaScore(la) >= 5) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      openLogin('giris');
     }
+  }, true);
+
+  document.addEventListener('click', function (e) {
     var btn = closestFrom(e.target, 'a[data-uye-nav]');
     if (btn) {
       e.preventDefault(); e.stopPropagation();
