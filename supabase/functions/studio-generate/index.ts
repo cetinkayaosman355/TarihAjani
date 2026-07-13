@@ -127,18 +127,20 @@ async function callClaude(prompt: string, maxTokens?: number): Promise<string> {
 // Üretim maliyeti süre kademesine göre; sahne yenileme sabit.
 // Süre kaydırmalı: client "s<saniye>" gönderir (30-600); eski anahtarlar geriye dönük.
 // Kredi ve sahne CLIENT ile AYNI formül — ama değer sunucuda hesaplanır (anti-hile).
-const IMAGE_COST = 12;
+const IMAGE_COST = 12;        // ilk 20 sahne görseli
+const IMAGE_COST_BULK = 8;    // 21. sahneden itibaren (kademeli indirim)
 function secsOf(duration: string): number {
   const m = /^s(\d+)$/.exec(duration || "");
   if (m) return Math.min(600, Math.max(30, parseInt(m[1], 10)));
   return ({ sn30: 30, dk1: 90, dk4: 270, dk8: 600 } as Record<string, number>)[duration] ?? 270;
 }
-function costFor(action: string, duration: string): number {
+function costFor(action: string, duration: string, imgIndex = 0): number {
   if (action === "generate") {
     const sec = secsOf(duration);
     return Math.max(30, Math.round((20 + sec / 4) / 5) * 5);
   }
-  if (action === "image") return IMAGE_COST;
+  // Kademeli görsel: ilk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR
+  if (action === "image") return (Number(imgIndex) || 0) >= 20 ? IMAGE_COST_BULK : IMAGE_COST;
   if (action === "regen") return 5;
   return 0;
 }
@@ -146,12 +148,11 @@ function costFor(action: string, duration: string): number {
 function ttsCostOf(chars: number): number {
   return Math.max(10, Math.ceil(chars / 1000) * 5);
 }
-// Kapak hariç beklenen sahne: kısa videoda 6 sn/sahne, uzadıkça seyrekleşir (tavan 40)
+// Kapak hariç beklenen sahne — CLIENT fmtFor ile AYNI formül: 120·sn/(600+sn)
+// (30→6, 90→16, 4dk→37, 8dk→53, 10dk→60). Sahne promptları ayrı 'scenes'
+// çağrılarında bölüm bölüm üretildiği için yüksek sayı sorun değil.
 function sceneFor(sec: number): number {
-  if (sec <= 90) return Math.max(6, Math.ceil(sec / 6));
-  if (sec <= 180) return Math.ceil(sec / 8);
-  if (sec <= 360) return Math.ceil(sec / 12);
-  return Math.min(40, Math.ceil(sec / 16));
+  return Math.max(6, Math.round(120 * sec / (600 + sec)));
 }
 
 // Gerçek görsel üretimi — OpenAI gpt-image-1.5 (base64 → data URI, süresiz).
@@ -365,7 +366,7 @@ Deno.serve(async (req) => {
       ? ttsCostOf(ttsText.length)
       : isEdit
         ? (b.free ? 0 : EDIT_COST)
-        : costFor(act, String(b.duration || ""));
+        : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0);
 
     // Ücretli çağrı → kullanıcıyı doğrula ve bakiyeyi ön-kontrol et.
     // Düzenleme ücretsiz olsa bile giriş şarttır (istismarı önler).
@@ -469,17 +470,15 @@ ${prompt}`;
       }
     }
     const gen = () => useClaude ? callClaude(genPrompt, b.max_tokens) : callOpenAI(genPrompt, b.max_tokens, isGen);
-    const wantScenes = isGen ? sceneFor(secsOf(String(b.duration || ""))) : 0;
 
     let result = await gen();
-    // Üretimde geçerli JSON şart. Sahne-eksiği tekrarı YALNIZ kısa formatlarda (sn30/dk1):
-    // uzun dosyada ikinci tam üretim gateway zaman sınırını (504) aşıyor.
+    // Sahne promptları AYRI 'scenes' çağrılarında bölüm bölüm üretiliyor; taslakta
+    // sahne olmadığından burada YALNIZ geçerli JSON şart. (Sahne-sayısı tekrarı
+    // kaldırıldı — eskiden kısa videoda gereksiz çift üretime yol açıyordu.)
     if (isGen) {
-      const sc = sceneCount(result);
-      const retryable = sc < 0 || (sc < wantScenes && wantScenes <= 12);
-      if (retryable) {
+      if (sceneCount(result) < 0) {
         const retry = await gen();
-        if (sceneCount(retry) > sc) result = retry;
+        if (sceneCount(retry) >= 0) result = retry;
       }
       if (sceneCount(result) < 0) {
         return json({ ok: false, error: "Yapay zekâ geçerli JSON döndürmedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
