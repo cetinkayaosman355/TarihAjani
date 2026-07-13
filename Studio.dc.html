@@ -271,7 +271,7 @@
                   <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12;">
                     <sc-if value="{{ iq.hasUrl }}" hint-placeholder-val="{{ false }}">
                       <label style="display: flex; align-items: center; gap: 7px; padding: 8px 10px 2px; color: #a4a9b5; font-size: 11px; cursor: pointer;"><input type="checkbox" checked="{{ iq.sel }}" onChange="{{ iq.onSel }}" style="accent-color: #c19a52; width: 15px; height: 15px; cursor: pointer;">İndirmek için seç</label>
-                      <img src="{{ iq.url }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
+                      <img loading="lazy" src="{{ iq.url }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
                     </sc-if>
                     <sc-if value="{{ iq.pending }}" hint-placeholder-val="{{ true }}">
                       <div style="{{ iq.pendStyle }}">
@@ -308,7 +308,7 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
                   <sc-for list="{{ savedImgList }}" as="sv" hint-placeholder-count="6">
                     <div style="border: 1px solid rgba(129,135,151,.22); background: #070a12;">
-                      <img src="{{ sv.url }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
+                      <img loading="lazy" src="{{ sv.url }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
                       <div style="display: flex; gap: 6px; padding: 6px;">
                         <button onClick="{{ sv.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 9.5px; letter-spacing: .04em; padding: 6px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
                         <button onClick="{{ sv.del }}" title="Sil" style="border: 1px solid rgba(192,57,43,.4); background: transparent; color: #e08a80; font-size: 11px; padding: 6px 9px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12);">🗑</button>
@@ -580,7 +580,7 @@
                       <p style="margin: 10px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">{{ sysTtsError }}</p>
                     </sc-if>
                     <sc-if value="{{ hasSysAudio }}" hint-placeholder-val="{{ false }}">
-                      <audio controls="{{ true }}" src="{{ sysAudioUrl }}" style="width: 100%; margin-top: 12px;"></audio>
+                      <audio controls="{{ true }}" preload="none" src="{{ sysAudioUrl }}" style="width: 100%; margin-top: 12px;"></audio>
                       <a href="{{ sysAudioUrl }}" download="tarih-ajani-seslendirme.mp3" style="display: block; margin-top: 8px; text-align: center; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; color: #e6c478; border: 1px solid rgba(193,154,82,.5); padding: 10px; text-decoration: none;" style-hover="background: rgba(193,154,82,.12);">⬇ MP3 İNDİR</a>
                     </sc-if>
                   </div>
@@ -604,7 +604,7 @@
                       <p style="margin: 10px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">{{ ttsError }}</p>
                     </sc-if>
                     <sc-if value="{{ hasAudio }}" hint-placeholder-val="{{ false }}">
-                      <audio controls="{{ true }}" src="{{ audioUrl }}" style="width: 100%; margin-top: 12px;"></audio>
+                      <audio controls="{{ true }}" preload="none" src="{{ audioUrl }}" style="width: 100%; margin-top: 12px;"></audio>
                     </sc-if>
                   </div>
                 </div>
@@ -778,7 +778,7 @@
                       <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12;">
                         <sc-if value="{{ iq.hasUrl }}" hint-placeholder-val="{{ false }}">
                           <label style="display: flex; align-items: center; gap: 7px; padding: 8px 10px 2px; color: #a4a9b5; font-size: 11px; cursor: pointer;"><input type="checkbox" checked="{{ iq.sel }}" onChange="{{ iq.onSel }}" style="accent-color: #c19a52; width: 15px; height: 15px; cursor: pointer;">İndirmek için seç</label>
-                          <img src="{{ iq.url }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
+                          <img loading="lazy" src="{{ iq.url }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
                         </sc-if>
                         <sc-if value="{{ iq.pending }}" hint-placeholder-val="{{ true }}">
                           <div style="{{ iq.pendStyle }}">
@@ -823,7 +823,7 @@
                   <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
                     <sc-for list="{{ savedImgList }}" as="sv" hint-placeholder-count="6">
                       <div style="border: 1px solid rgba(129,135,151,.22); background: #070a12;">
-                        <img src="{{ sv.url }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
+                        <img loading="lazy" src="{{ sv.url }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
                         <div style="display: flex; gap: 6px; padding: 6px;">
                           <button onClick="{{ sv.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 9.5px; letter-spacing: .04em; padding: 6px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
                           <button onClick="{{ sv.del }}" title="Sil" style="border: 1px solid rgba(192,57,43,.4); background: transparent; color: #e08a80; font-size: 11px; padding: 6px 9px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12);">🗑</button>
@@ -957,7 +957,7 @@
   <!-- GÖRSEL BÜYÜTME (lightbox) -->
   <sc-if value="{{ hasZoom }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ closeZoom }}" style="position: fixed; inset: 0; z-index: 95; display: grid; place-items: center; align-content: center; gap: 14px; background: rgba(2,3,8,.94); padding: 20px; cursor: zoom-out;">
-      <img src="{{ zoomUrl }}" alt="Üretilen görsel" style="max-width: 96vw; max-height: 80vh; object-fit: contain; border: 1px solid rgba(193,154,82,.4); box-shadow: 0 30px 90px rgba(0,0,0,.7);">
+      <img loading="lazy" src="{{ zoomUrl }}" alt="Üretilen görsel" style="max-width: 96vw; max-height: 80vh; object-fit: contain; border: 1px solid rgba(193,154,82,.4); box-shadow: 0 30px 90px rgba(0,0,0,.7);">
       <div style="display: flex; gap: 10px;">
         <button onClick="{{ zoomDl }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 11px; letter-spacing: .1em; padding: 12px 20px;">⬇ İNDİR</button>
         <button onClick="{{ closeZoom }}" style="border: 1px solid rgba(129,135,151,.4); cursor: pointer; background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; padding: 12px 20px;">KAPAT ✕</button>
