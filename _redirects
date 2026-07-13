@@ -18,11 +18,11 @@
 /oyun/satranc-1402 /oyun/satranc-1402/index.html 200
 /oyun/mangala      /oyun/mangala/index.html      200
 /arsiv             /Arsiv.dc.html             200
-/vaka-gunlugu       /vaka-gunlugu/index.html   200
-
-# Vaka Günlüğü taşındı: eski katalog adresi → yeni kanonik adres
-/arsiv/katalog     /vaka-gunlugu              301!
-/arsiv/katalog/    /vaka-gunlugu              301!
+# Vaka Günlüğü arşive taşındı → tek hub /arsiv (hikâyeler /arsiv/<slug>/)
+/vaka-gunlugu      /arsiv                     301!
+/vaka-gunlugu/     /arsiv                     301!
+/arsiv/katalog     /arsiv                     301!
+/arsiv/katalog/    /arsiv                     301!
 
 # Eski .dc.html adresleri → temiz URL (301: tek kanonik adres, çift içerik önlenir)
 /Tarih%20Ajani.dc.html     /                  301!
