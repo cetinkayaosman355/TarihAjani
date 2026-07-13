@@ -47,6 +47,7 @@
     ['ÜYELİK', '/uyelik'],
     ['AKADEMİ', '/egitim'],
     ['HİKÂYE ARŞİVİ', '/arsiv'],
+    ['VAKA GÜNLÜĞÜ · BLOG', '/vaka-gunlugu'],
     ['STUDIO', '/studio'],
     ['OYUN TÜNELİ', '/zaman-tuneli']
   ];
