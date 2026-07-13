@@ -83,7 +83,6 @@
           <span style="display: inline-flex; align-items: center; gap: 8px;"><span style="color: #a8c8a2;">✓</span> İstediğin an iptal</span>
           <span style="display: inline-flex; align-items: center; gap: 8px;"><span style="color: #a8c8a2;">✓</span> Anında erişim</span>
         </div>
-        <a href="#giris" style="display: inline-block; margin: 26px 0 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; text-decoration: none; border-bottom: 1px solid rgba(129,135,151,.4); padding-bottom: 3px;" style-hover="color: #e6c478;">Önce ücretsiz denemek istiyorum →</a>
       </div>
     </sc-if>
 
@@ -145,13 +144,15 @@
     <!-- SEVİYELER — büyük fiyat kartları (herkese görünür, en üstte) -->
     <div id="seviyeler" style="margin-top: 46px; animation: ta-rise .5s ease both;">
       <section>
-        <div style="text-align: center; max-width: 680px; margin: 0 auto;">
-          <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .24em;">{{ tierKicker }}</p>
-          <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(28px, 4.4vw, 40px); font-weight: 800; letter-spacing: -.01em;">{{ tierTitle }}</h2>
-          <p style="margin: 12px 0 0; color: #a4a9b5; font-size: 15px; line-height: 1.65;">{{ tierDesc }}</p>
-        </div>
+        <sc-if value="{{ showAccount }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align: center; max-width: 680px; margin: 0 auto 2px;">
+            <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .24em;">{{ tierKicker }}</p>
+            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(28px, 4.4vw, 40px); font-weight: 800; letter-spacing: -.01em;">{{ tierTitle }}</h2>
+            <p style="margin: 12px 0 0; color: #a4a9b5; font-size: 15px; line-height: 1.65;">{{ tierDesc }}</p>
+          </div>
+        </sc-if>
 
-        <div style="display: flex; justify-content: center; margin: 26px 0 8px;">
+        <div style="display: flex; justify-content: center; margin: 8px 0 8px;">
           <div style="display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(193,154,82,.35); background: #070a12; padding: 4px;">
             <button onClick="{{ setBillAy }}" style="{{ billAyStyle }}">AYLIK</button>
             <button onClick="{{ setBillYil }}" style="{{ billYilStyle }}">YILLIK · 2 AY HEDİYE</button>
