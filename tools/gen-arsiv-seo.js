@@ -165,8 +165,8 @@ ${jsonld ? '<script type="application/ld+json">' + jsonld + '</script>' : ''}
   </a>
   <nav>
     <a href="/">ANA SAYFA</a>
-    <a href="/vaka-gunlugu/">VAKA GÜNLÜĞÜ</a>
-    <a href="/arsiv">ARŞİV</a>
+    <a href="/arsiv">HİKÂYE ARŞİVİ</a>
+    <a href="/studio">STUDIO</a>
     <a href="/uyelik" class="cta">ÜYELİK</a>
   </nav>
 </header>
@@ -189,7 +189,7 @@ let written = 0;
 items.forEach((s, i) => {
   const canon = '/arsiv/' + s.slug + '/';
   const bt = dispTitle(s.baslik.replace(/\s+/g, ' '));
-  const title = bt + ' · Vaka Günlüğü · Tarih Ajanı';
+  const title = bt + ' · Hikâye Arşivi · Tarih Ajanı';
   const desc = clip(s.ozet || s.teaser || s.baslik, 158);
   const excerpt = voiceExcerpt(s);
   const secs = sectionList(s);
@@ -203,7 +203,7 @@ items.forEach((s, i) => {
         mainEntityOfPage: SITE + canon, url: SITE + canon,
         image: SITE + '/assets/dossier-bundle.jpg',
         datePublished: TODAY, dateModified: TODAY,
-        articleSection: 'Vaka Günlüğü', keywords: (s.era || '') + ', tarih, vaka dosyası, belgesel',
+        articleSection: 'Hikâye Arşivi', keywords: (s.era || '') + ', tarih, vaka dosyası, belgesel',
         author: { '@type': 'Organization', name: 'Tarih Ajanı', url: SITE },
         publisher: { '@type': 'Organization', name: 'Tarih Ajanı', url: SITE, logo: { '@type': 'ImageObject', url: SITE + '/assets/logo-mark.png' } },
         isAccessibleForFree: true
@@ -211,7 +211,7 @@ items.forEach((s, i) => {
       {
         '@type': 'BreadcrumbList', itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: SITE + '/' },
-          { '@type': 'ListItem', position: 2, name: 'Vaka Günlüğü', item: SITE + '/vaka-gunlugu/' },
+          { '@type': 'ListItem', position: 2, name: 'Hikâye Arşivi', item: SITE + '/arsiv' },
           { '@type': 'ListItem', position: 3, name: bt, item: SITE + canon }
         ]
       }
@@ -220,8 +220,8 @@ items.forEach((s, i) => {
 
   const body = `
 <main class="wrap" style="padding-top: clamp(28px, 5vw, 56px);">
-  <nav class="mono" style="font-size:11px;color:#818797;margin-bottom:14px;"><a href="/" style="color:#818797;text-decoration:none;">Ana Sayfa</a> › <a href="/vaka-gunlugu/" style="color:#c19a52;text-decoration:none;">Vaka Günlüğü</a></nav>
-  <div class="mono kicker">VAKA GÜNLÜĞÜ · ${esc(s.era)} · ${readMin(s)} DK OKUMA</div>
+  <nav class="mono" style="font-size:11px;color:#818797;margin-bottom:14px;"><a href="/" style="color:#818797;text-decoration:none;">Ana Sayfa</a> › <a href="/arsiv" style="color:#c19a52;text-decoration:none;">Hikâye Arşivi</a></nav>
+  <div class="mono kicker">HİKÂYE ARŞİVİ · ${esc(s.era)} · ${readMin(s)} DK OKUMA</div>
   <h1>${esc(bt)}</h1>
   <p class="lede">${esc(s.ozet || s.teaser || '')}</p>
 
@@ -232,7 +232,7 @@ ${storyHtml(s)}
   <div class="box endcta">
     <p style="margin:0 0 16px;color:#cfc8b4;font-size:15px;">Bu tarihi kendi videon olarak üretmek ister misin? <strong style="color:#e6c478;">Studio</strong>; senaryo, seslendirme ve sahne promptlarını dakikalar içinde hazırlar.</p>
     <a class="cta" href="/studio">STUDIO'DA ÜRET →</a>
-    <a class="ghost" href="/vaka-gunlugu/" style="margin-left:10px;">DAHA FAZLA VAKA →</a>
+    <a class="ghost" href="/arsiv" style="margin-left:10px;">HİKÂYE ARŞİVİ →</a>
   </div>
 
   <div class="pn">
@@ -247,48 +247,29 @@ ${storyHtml(s)}
   written++;
 });
 
-/* ── katalog ── */
-const katJsonld = JSON.stringify({
-  '@context': 'https://schema.org', '@type': 'Blog', name: 'Tarih Ajanı — Vaka Günlüğü',
-  description: items.length + ' tarih vakası; çözülmemiş sırların hikâyeleri.', url: SITE + '/vaka-gunlugu/', inLanguage: 'tr',
-  publisher: { '@type': 'Organization', name: 'Tarih Ajanı', url: SITE },
-  blogPost: items.map(s => ({ '@type': 'BlogPosting', headline: dispTitle(s.baslik), url: SITE + '/arsiv/' + s.slug + '/', datePublished: TODAY }))
-});
-const katBody = `
-<main class="wrap" style="padding-top: clamp(28px, 5vw, 56px);">
-  <nav class="mono" style="font-size:11px;color:#818797;margin-bottom:14px;"><a href="/" style="color:#818797;text-decoration:none;">Ana Sayfa</a> › <span style="color:#c19a52;">Vaka Günlüğü</span></nav>
-  <div class="mono kicker">VAKA GÜNLÜĞÜ · BLOG · ${items.length} HİKÂYE</div>
-  <h1>Vaka Günlüğü</h1>
-  <p style="color:#a9adba;font-size:16px;max-width:66ch;">Asur'dan Roma'ya, Mısır'dan Bizans'a — çözülmemiş tarih sırlarının hikâyeleri. Ücretsiz oku, keşfet; dilersen <a href="/studio">Studio</a>'da kendi videona dönüştür. Bir dijital hikâye arşivi.</p>
-  <div class="grid" style="margin-top:26px;">
-    ${items.map(s => `<a class="card" href="/arsiv/${s.slug}/">
-      <span class="mono kicker">${esc(s.era)}</span>
-      <h3>${esc(dispTitle(s.baslik))}</h3>
-      <p>${esc(clip(s.ozet || s.teaser || '', 110))}</p>
-    </a>`).join('\n    ')}
-  </div>
-</main>`;
-fs.mkdirSync(path.join(ROOT, 'vaka-gunlugu'), { recursive: true });
+/* ── slug köprüsü ── Arşiv sayfası (Arsiv.dc.html) her vakayı DİZİN sırasına
+   göre kendi hikâye makalesine (/arsiv/<slug>/) bağlayabilsin diye slug
+   listesini yayınlar. Böylece "Vaka Günlüğü" ayrı sayfa olmadan hikâyeler
+   doğrudan arşivin içinden okunur. */
 fs.writeFileSync(
-  path.join(ROOT, 'vaka-gunlugu', 'index.html'),
-  shell('Vaka Günlüğü · Tarih Blog · ' + items.length + ' Hikâye · Tarih Ajanı',
-    items.length + ' tarih vakası; çözülmemiş sırların hikâyeleri. Oku, keşfet; istersen Studio\'da videoya dönüştür.',
-    '/vaka-gunlugu/', katBody, katJsonld)
+  path.join(ROOT, 'arsiv-slugs.js'),
+  '// OTOMATİK — tools/gen-arsiv-seo.js üretir. arsiv-data.js ile AYNI sıra.\n' +
+  'window.__ARSIV_SLUGS__ = ' + JSON.stringify(items.map(s => s.slug)) + ';\n'
 );
 
-/* ── sitemap ── */
+/* ── sitemap ── (ayrı /vaka-gunlugu index'i kaldırıldı; hikâyeler /arsiv/<slug>/) */
 const smPath = path.join(ROOT, 'sitemap.xml');
-let sm = fs.readFileSync(smPath, 'utf8');
+const smOrig = fs.readFileSync(smPath, 'utf8');
+let sm = smOrig;
 const today = new Date().toISOString().slice(0, 10);
-const urls = ['/vaka-gunlugu/'].concat(items.map(s => '/arsiv/' + s.slug + '/'));
-let added = 0;
+// eski /vaka-gunlugu/ (ve /arsiv/katalog/) girişlerini sitemap'ten çıkar
+sm = sm.replace(/\s*<url>\s*<loc>https?:\/\/[^<]*\/(vaka-gunlugu|arsiv\/katalog)\/?<\/loc>[\s\S]*?<\/url>/g, '');
+const urls = items.map(s => '/arsiv/' + s.slug + '/');
 const entries = urls.filter(u => sm.indexOf('<loc>' + SITE + u + '</loc>') === -1)
   .map(u => `  <url>\n    <loc>${SITE}${u}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>`);
-if (entries.length) {
-  sm = sm.replace('</urlset>', entries.join('\n') + '\n</urlset>');
-  fs.writeFileSync(smPath, sm);
-  added = entries.length;
-}
+const added = entries.length;
+if (entries.length) sm = sm.replace('</urlset>', entries.join('\n') + '\n</urlset>');
+if (sm !== smOrig) fs.writeFileSync(smPath, sm);   // içerik değiştiyse HER durumda yaz
 
-console.log('✓ ' + written + ' tanıtım sayfası + katalog üretildi; sitemap +' + added + ' URL');
+console.log('✓ ' + written + ' hikâye makalesi + arsiv-slugs.js üretildi; sitemap +' + added + ' URL');
 console.log(items.map(s => s.slug).join('\n'));
