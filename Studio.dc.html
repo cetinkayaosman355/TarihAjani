@@ -1826,6 +1826,8 @@ class Component extends DCLogic {
     const sec = this.durationSec();
     const fmt = this.fmtFor(sec);
     const wmin = Math.round(sec * 2.0), wmax = Math.round(sec * 2.6);   // Türkçe ≈ 2.4 kelime/sn
+    const bolumN = Math.max(3, Math.min(7, Math.round(sec / 90)));      // 2 dk üstü: numaralı bölüm sayısı
+    const chaptered = sec >= 120;
     const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
     // Tarihî Gravür fotogerçekçi değildir; anti-artifact satırı stile göre değişir
     const antiArtifact = s.style === 'gravur'
@@ -1840,9 +1842,11 @@ BU ÜRETİMİN PARAMETRELERİ:
 - Seslendirme tarzı: ${sesStr}
 - Görsel stil çekirdeği (her görsel/video promptunun BAŞINA birebir konur): ${stilStr}
 - Kadraj / en-boy oranı: ${oran}
-- Format: ${fmt.etiket} · ${fmt.bolum} · toplam seslendirme HEDEFİ ${fmt.kelime} kelime
+- Format: ${fmt.etiket} · ${chaptered ? bolumN + ' numaralı bölüm' : fmt.bolum} · toplam seslendirme HEDEFİ ${fmt.kelime} kelime
 - ⏱ SÜRE KİLİDİ (EN ÖNEMLİ KURAL): Bu video ${fmt.etiket} (≈ ${sec} saniye) UZUNLUĞUNDA olacak. Türkçe seslendirme ≈ 2.4 kelime/saniye okunur. Bu yüzden TÜM senaryo[].metin alanlarındaki kelimelerin TOPLAMI ${wmin}-${wmax} kelime olmalı; ÜST SINIR ${wmax} kelimeyi ASLA AŞMA. Daha fazla yazarsan video ${fmt.etiket}'yi aşar — bu KESİN bir HATADIR. Kısa videoda az sözle çok şey anlat, doldurma/tekrar yapma.
-- SAHNE SAYISI (KESİN KURAL): KAPAK HARİÇ tam ${fmt.sahne} sahne. gorsel_promptlar ve video_promptlar dizilerinin HER BİRİ tam ${fmt.sahne} öğe içermeli. Kapak bu sayıya dahil değildir. ÖNEMLİ: Sahneler yalnızca GÖRSEL bölünmedir; sahne sayısı seslendirmeye kelime EKLEMEZ. Aynı ${wmin}-${wmax} kelimelik seslendirmeyi ${fmt.sahne} görsel âna DAĞIT — her sahne için fazladan cümle yazıp süreyi uzatma.
+- SAHNE SAYISI (KESİN KURAL): KAPAK HARİÇ tam ${fmt.sahne} sahne. gorsel_promptlar ve video_promptlar dizilerinin HER BİRİ tam ${fmt.sahne} öğe içermeli. Kapak bu sayıya dahil değildir. ÖNEMLİ: Sahneler yalnızca GÖRSEL bölünmedir; sahne sayısı seslendirmeye kelime EKLEMEZ. Aynı ${wmin}-${wmax} kelimelik seslendirmeyi ${fmt.sahne} görsel âna DAĞIT — her sahne için fazladan cümle yazıp süreyi uzatma.${chaptered ? `
+- 📚 BÖLÜM YAPISI (2 dk üstü — ZORUNLU): senaryo dizisini TAM ${bolumN} BÖLÜME ayır. Her öğenin "bolum" alanı KESİNLİKLE şu biçimde olsun: "1. Bölüm — [kısa, çarpıcı Türkçe başlık]", "2. Bölüm — …" (numara + " — " + başlık). "sure" alanına o bölümün zaman aralığını yaz (ör. "0:00–1:30", "1:30–3:40" — toplam ${fmt.etiket}'yi bölüştür). Bölümler net bir yay izlesin: 1. Bölüm güçlü kanca/kurulum → orta bölümler kanıt ve gerilim tırmanışı → SON bölüm çözüm/hüküm + izleyiciye açık soru. Her bölüm kendi mikro-kancasıyla açılıp bir sonrakine merak bırakarak bitsin.
+- ÖRNEK BÖLÜM BAŞLIKLARI (yalnız BİÇİM ve üslup için — KOPYALAMA, kendi konuna uyarla): "1. Bölüm — Silinen Borç", "2. Bölüm — Toprağın Tanıklığı", "3. Bölüm — Çelişen Tanıklar", "${bolumN}. Bölüm — Ajanın Hükmü".` : ''}
 
 KALİTE BARI (EN KRİTİK — zayıf çıktı geçersizdir):
 - SESLENDİRME (senaryo[].metin): O bölümün TAM, kelimesi kelimesine okunacak metni. Somut isim/tarih/yer/sayı geçir; duyusal ve sinematik dil kur; her bölüm mikro-kanca ile açılıp merak bırakarak bitsin. Toplam kelime ${wmin}-${wmax} aralığında KALMALI: ${wmin} altına düşme, ${wmax} üstüne ÇIKMA (süre kilidi kesindir). Dolgu, klişe, "tarih boyunca insanlar…" tarzı genel cümle YASAK — kısalık kaliteyi düşürmez, netleştirir.
@@ -1875,7 +1879,7 @@ TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan
 {
  "baslik": "çarpıcı Türkçe başlık",
  "logline": "tek cümlelik merak uyandıran özet",
- "senaryo": [{"bolum": "bölüm adı", "sure": "zaman aralığı", "metin": "o bölümün TAM seslendirme metni (kalite barına uygun)"}],
+ "senaryo": [{"bolum": ${chaptered ? '"1. Bölüm — çarpıcı başlık"' : '"bölüm adı"'}, "sure": "zaman aralığı", "metin": "o bölümün TAM seslendirme metni (kalite barına uygun)"}],
  "seslendirme_notu": "ElevenLabs okuma temposu, vurgu ve duraklama yönergeleri + gerçek/efsane ayrımı (3-4 cümle)",
  "youtube": {"baslik": "70 karakteri geçmeyen tıklanabilir başlık", "aciklama": "yukarıdaki yapıda 3+ paragraf + zaman damgaları + anahtar kelimeler", "etiketler": ["TAM 15 etiket"]},
  "instagram": {"aciklama": "hook satırı + 2 paragraf + CTA", "hashtagler": ["TAM 5 güçlü hashtag, # ile"]},
@@ -1885,7 +1889,7 @@ TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan
  "uretim_notu": "kurgu, müzik ve ritim önerisi (3-4 cümle)"
 }
 
-SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].metin toplam kelime = ${wmin}-${wmax} arası (${wmax} AŞILMAMIŞ — aşıldıysa kısalt) · gorsel_promptlar = TAM ${fmt.sahne} öğe · video_promptlar = TAM ${fmt.sahne} öğe · youtube.etiketler = 15 · instagram.hashtagler = 5 · her senaryo[].metin dolu ve akıcı · youtube.aciklama 3+ paragraf ve zaman damgalı. Eksik/fazla varsa düzelt, öyle gönder.`;
+SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].metin toplam kelime = ${wmin}-${wmax} arası (${wmax} AŞILMAMIŞ — aşıldıysa kısalt)${chaptered ? ' · senaryo TAM ' + bolumN + ' bölüm ve her "bolum" alanı "N. Bölüm — başlık" biçiminde' : ''} · gorsel_promptlar = TAM ${fmt.sahne} öğe · video_promptlar = TAM ${fmt.sahne} öğe · youtube.etiketler = 15 · instagram.hashtagler = 5 · her senaryo[].metin dolu ve akıcı · youtube.aciklama 3+ paragraf ve zaman damgalı. Eksik/fazla varsa düzelt, öyle gönder.`;
     return outlineOnly
       ? p + '\n\nEK KURAL (İKİ AŞAMALI ÜRETİM — HIZ İÇİN, zaman aşımını önler): 1) senaryo bölümlerinin "metin" alanına yalnızca 2-3 cümlelik yoğun bölüm özeti yaz (tam metinler 2. aşamada yazılacak). 2) gorsel_promptlar ve video_promptlar dizilerini BOŞ dizi [] olarak bırak — sahne promptları AYRI aşamada üretilecek, bu aşamada ÜRETME. youtube, instagram, kapak, seslendirme_notu, uretim_notu alanlarını eksiksiz üret. SON KONTROL\'daki sahne sayısı kuralını bu aşamada UYGULAMA (prompt dizileri boş kalacak).'
       : p;
@@ -1945,7 +1949,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const secs = result.senaryo || [];
     const m = this.promptMaps();
     const tonStr = m.ton[this.state.tone] || m.ton.merak;
-    const words = wordsHint || '300-420';
+    // Bölüm başına kelime = toplam süre bütçesi / GERÇEK bölüm sayısı (süre kilidi korunur)
+    const sec = this.durationSec();
+    const n = Math.max(1, secs.length);
+    const words = Math.round(sec * 2.0 / n) + '-' + Math.round(sec * 2.6 / n);
     for (let i = 0; i < secs.length; i++) {
       this.setState({ genMsg: 'BÖLÜM ' + (i + 1) + ' / ' + secs.length + ' KALEME ALINIYOR…', genPct: 55 + Math.round((i / Math.max(1, secs.length)) * 42) });
       try {
