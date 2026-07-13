@@ -1642,15 +1642,14 @@ class Component extends DCLogic {
     if (m) return Math.min(600, Math.max(30, parseInt(m[1], 10)));
     return { sn30: 30, dk1: 90, dk4: 270, dk8: 600 }[d] || 270;
   }
-  // Süreden türetilen format: sahne yoğunluğu kısa videoda 6 sn/sahne, uzadıkça seyrekleşir
-  // (60 sahnelik dosya hem üretimde 504 hem görsel maliyetinde patlama demek — tavan 40).
+  // Süreden türetilen format. Sahne yoğunluğu: ~1 sahne / 5–10 sn. Kısa videoda
+  // yoğun (30 sn ≈ 6), uzadıkça sahne başına süre hafifçe artar (8 dk ≈ 53,
+  // 10 dk ≈ 60). Sahne promptları artık bölüm bölüm üretildiği için yüksek sayı
+  // sorun değil; üretim kredisi sahne sayısından bağımsız, kullanıcı yalnız
+  // ürettiği görsele (12 KR) öder — prompt sayısı yalnızca daha çok seçenektir.
   fmtFor(sec) {
-    // Sahne sayısı: uzun videoda tavan düşük tutulur (çok sahne = dev üretim +
-    // görsel maliyeti patlaması + zaman aşımı). En fazla 24 sahne.
-    const sahne = sec <= 90 ? Math.max(6, Math.ceil(sec / 6))
-      : sec <= 180 ? Math.ceil(sec / 10)
-      : sec <= 360 ? Math.ceil(sec / 16)
-      : Math.min(24, Math.ceil(sec / 22));
+    // 120·sec/(600+sec): monoton artan, pürüzsüz. 30→6, 90→16, 270→37, 480→53, 600→60.
+    const sahne = Math.max(6, Math.round(120 * sec / (600 + sec)));
     const kredi = Math.max(30, Math.round((20 + sec / 4) / 5) * 5);
     const dk = Math.floor(sec / 60), sn = sec % 60;
     const etiket = dk ? (sn ? dk + ' dk ' + sn + ' sn' : dk + ' dk') : sec + ' sn';
@@ -2038,7 +2037,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   // TEK bölüm için k sahnelik görsel+video promptu — 2 deneme, sonra
   // deterministik geri dönüş (asla boş dönmez). Çağrılar küçük olduğu için
   // truncation/zaman aşımı olmaz; her biri ücretsiz ('scenes' aksiyonu).
-  async sceneBatch(section, k, idx, totalSecs, cfg) {
+  async sceneBatch(section, k, idx, totalSecs, cfg, labelBase) {
     const bolum = (section && section.bolum) || (idx + '. bölüm');
     const metin = ((section && section.metin) || '').slice(0, 1800);
     const prompt = 'Bir Türkçe tarih belgeselinin "' + bolum + '" (bölüm ' + idx + '/' + totalSecs + ') kısmı için TAM ' + k + ' sahnelik GÖRSEL ve VİDEO promptu üret. Sahneler bu bölümün anlatısını SIRAYLA, sinematik biçimde görselleştirmeli; metindeki somut kişi/mekân/nesne/aksiyonu birebir yansıt (hikâyeyi tanı, jenerik sahne yazma).\n' +
@@ -2056,17 +2055,18 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         if (g.length) return { gorsel: g, video: v.length ? v : g.map(x => ({ sahne: x.sahne, prompt: '' })) };
       } catch (e) { /* dene tekrar → sonra geri dönüş */ }
     }
-    return this.sceneFallback(section, k, idx, cfg);
+    return this.sceneFallback(section, k, idx, cfg, labelBase);
   }
 
   // Sunucu tümden başarısız olsa bile bölümden deterministik promptlar üret —
   // görsel/video promptları HİÇBİR koşulda boş kalmaz.
-  sceneFallback(section, k, idx, cfg) {
+  sceneFallback(section, k, idx, cfg, labelBase) {
     const bolum = (section && section.bolum) || (idx + '. bölüm');
     const topic = this.state.idea || 'tarihî olay';
+    const base = labelBase || 0;
     const gorsel = [], video = [];
     for (let j = 0; j < k; j++) {
-      const label = bolum + ' — sahne ' + (j + 1);
+      const label = bolum + ' — sahne ' + (base + j + 1);
       gorsel.push({
         sahne: label,
         prompt: cfg.stilStr + ', ' + cfg.oran + ', cinematic historical scene from "' + topic + '" (' + bolum + '), period-accurate setting with authentic costumes, architecture and objects, dramatic directional lighting, atmospheric depth, rich color palette, detailed textures, film grain, rule of thirds, shallow depth of field. ' + cfg.anti
@@ -2089,14 +2089,20 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     // Senaryo yoksa tek "bölüm" gibi davran ki yine de N sahne üretilsin
     if (!secs.length) secs = [{ bolum: result.baslik || this.state.idea || 'Bölüm', metin: result.logline || '' }];
     const alloc = this.allocScenes(secs, N);
+    const CHUNK = 8;   // her çağrı en çok 8 sahne → küçük, hızlı, truncation'sız
     const gorsel = [], video = [];
     for (let i = 0; i < secs.length; i++) {
-      const k = alloc[i] || 0;
+      let k = alloc[i] || 0;
       if (k <= 0) continue;
-      this.setState({ genMsg: 'SAHNE PROMPTLARI · BÖLÜM ' + (i + 1) + '/' + secs.length + '…', genPct: Math.min(98, 88 + Math.round((i / Math.max(1, secs.length)) * 9)) });
-      const part = await this.sceneBatch(secs[i], k, i + 1, secs.length, cfg);
-      part.gorsel.forEach(g => gorsel.push(g));
-      part.video.forEach(v => video.push(v));
+      let done = 0;
+      while (done < k) {
+        const chunk = Math.min(CHUNK, k - done);
+        this.setState({ genMsg: 'SAHNE PROMPTLARI · BÖLÜM ' + (i + 1) + '/' + secs.length + '…', genPct: Math.min(98, 88 + Math.round((i / Math.max(1, secs.length)) * 9)) });
+        const part = await this.sceneBatch(secs[i], chunk, i + 1, secs.length, cfg, done);
+        part.gorsel.forEach(g => gorsel.push(g));
+        part.video.forEach(v => video.push(v));
+        done += chunk;
+      }
     }
     if (gorsel.length) result.gorsel_promptlar = gorsel;
     if (video.length) result.video_promptlar = video;
