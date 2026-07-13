@@ -611,7 +611,7 @@
               <div style="display: grid; gap: 10px;">
                 <div style="border: 1px solid rgba(193,154,82,.25); background: rgba(193,154,82,.05); padding: 12px 16px; display: grid; gap: 10px;">
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-                    <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.5; max-width: 62ch;">Aşağıda seçtiğin <strong style="color:#e6c478;">KADRAJ</strong> ve <strong style="color:#e6c478;">STİL</strong> her sahnenin <strong style="color:#e6c478;">GÖRSEL ÜRET</strong>'ine uygulanır (sihirbazda seçtiğin ayar hazır gelir). Üretilenler <strong style="color:#e6c478;">Görsel Stüdyo (Üretilenler)</strong> rafına eklenir; sekme değişmez, hepsini sırayla üretebilirsin.</p>
+                    <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.5; max-width: 62ch;">Aşağıda seçtiğin <strong style="color:#e6c478;">KADRAJ</strong> ve <strong style="color:#e6c478;">STİL</strong> her sahnenin <strong style="color:#e6c478;">GÖRSEL ÜRET</strong>'ine uygulanır (sihirbazda seçtiğin ayar hazır gelir). Üretilenler <strong style="color:#e6c478;">Görsel Stüdyo (Üretilenler)</strong> rafına eklenir; sekme değişmez, hepsini sırayla üretebilirsin. <strong style="color:#e6c478;">İlk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR.</strong></p>
                     <sc-if value="{{ hasAnyOutput }}" hint-placeholder-val="{{ false }}">
                       <button onClick="{{ goImgStudio }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;">ÜRETİLENLER ({{ outputCount }}) →</button>
                     </sc-if>
@@ -679,11 +679,11 @@
                       </div>
                       <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                         <sc-if value="{{ gp.img.notDone }}" hint-placeholder-val="{{ true }}">
-                          <button onClick="{{ gp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">◈ GÖRSEL ÜRET · 12 KR</button>
+                          <button onClick="{{ gp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ gp.imgCostLabel }}</button>
                         </sc-if>
                         <sc-if value="{{ gp.img.done }}" hint-placeholder-val="{{ false }}">
                           <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ ÜRETİLDİ · {{ gp.img.count }}</span>
-                          <button onClick="{{ gp.makeImg }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">↻ TEKRAR ÜRET · 12 KR</button>
+                          <button onClick="{{ gp.makeImg }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.imgRedoLabel }}</button>
                         </sc-if>
                         <button onClick="{{ gp.regen }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ gp.regenLabel }}</button>
                         <button onClick="{{ gp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
@@ -1667,8 +1667,10 @@ class Component extends DCLogic {
   }
 
   // Gerçek görsel üretimi — sunucuda OpenAI ile, her görsel kredi düşer (anti-hile).
-  IMG_COST() { return 12; }
-  async imageServer(prompt, arKey) {
+  // Kademeli fiyat: ilk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR
+  // (uzun videoda çok görsel üretimini ucuzlatır). idx = sahne sırası (0 tabanlı).
+  IMG_COST(idx) { return (typeof idx === 'number' && idx >= 20) ? 8 : 12; }
+  async imageServer(prompt, arKey, idx) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect] || '16:9';
@@ -1676,7 +1678,7 @@ class Component extends DCLogic {
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'image', prompt, size: aspect })
+      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0) })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
@@ -1725,17 +1727,17 @@ class Component extends DCLogic {
     const sty = styleKey ? this.imgStylePhrase(styleKey) : '';
     return (clean ? clean + '. ' : '') + (sty ? sty + '. ' : '') + this.aspectPhrase(arKey) + '.';
   }
-  makeImage(promptRaw) {
+  makeImage(promptRaw, idx) {
     const prompt = (promptRaw || '').trim();
     if (!prompt) return;
-    const cost = this.IMG_COST();
+    const cost = this.IMG_COST(idx);
     if (this.state.credits < cost) { this.setState({ creditModal: true }); return; }
     const ar = this.state.imgAspect || this.state.aspect;   // panelde seçilen kadraj öncelikli
     const sty = this.state.imgStyle || this.state.style;    // stil seçilmediyse sihirbazda seçilen stil
     const sendPrompt = this.withAspect(prompt, ar, sty);    // kadraj + stil prompta yerleşir
     const id = 'img' + Date.now() + Math.floor(Math.random() * 1000);
     this.setState(st => ({ imgQueue: [{ id, prompt, ar, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue].slice(0, 40) }));
-    this.imageServer(sendPrompt, ar).then(url => {
+    this.imageServer(sendPrompt, ar, idx).then(url => {
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url } : x) }));
       this.saveImg({ id, prompt, ar, url, ts: Date.now() });   // kalıcı arşive (Önceki Üretimler)
     }).catch(e => {
@@ -1847,11 +1849,11 @@ class Component extends DCLogic {
   }
   // Prompttan görsel üret → doğrudan "Üretilenler" (Görsel Stüdyo rafı/imgQueue).
   // Sekme DEĞİŞMEZ, görsel altta çıkmaz; prompt yanında "aktarıldı" onayı gösterilir.
-  makeSceneImg(key, promptRaw) {
+  makeSceneImg(key, promptRaw, idx) {
     const prompt = (promptRaw || '').trim();
     if (!prompt) return;
-    if (this.state.credits < this.IMG_COST()) { this.setState({ creditModal: true }); return; }
-    this.makeImage(prompt);                             // imgQueue'ya ekler (kadraj: imgAspect||aspect)
+    if (this.state.credits < this.IMG_COST(idx)) { this.setState({ creditModal: true }); return; }
+    this.makeImage(prompt, idx);                        // imgQueue'ya ekler (kadraj: imgAspect||aspect)
     this.setState({ imgPrompt: prompt });               // Görsel Stüdyo bu sahnenin hikâyesini tutsun
     const si = (this.state.sceneImgs || {})[key] || {};
     this.setSceneImg(key, { done: true, count: (si.count || 0) + 1 });   // kalıcı "üretildi" durumu
@@ -2818,14 +2820,18 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   sceneExtras(x, i, kind) {
     const s = this.state;
     const busy = s.regenKey === kind + i;
+    const idx = kind === 'gp' ? i : null;                 // kademeli fiyat sahne sırasına göre
+    const cost = this.IMG_COST(idx);
     return {
       ...x,
       no: 'SAHNE ' + (i + 1),
       edit: () => this.startEdit(kind, i, (kind === 'gp' ? 'Görsel promptu · Sahne ' : 'Video promptu · Sahne ') + (i + 1)),
       regen: () => this.regenScene(kind, i),
       regenLabel: busy ? '⟳ ÜRETİLİYOR…' : '↻ YENİLE · 5 KR',
+      imgCostLabel: '◈ GÖRSEL ÜRET · ' + cost + ' KR',
+      imgRedoLabel: '↻ TEKRAR ÜRET · ' + cost + ' KR',
       // Görseli SATIR İÇİNDE üret — sekme değişmez, sahnede kalırsın (kind==='gp' için)
-      makeImg: () => this.makeSceneImg(kind + i, x.prompt),
+      makeImg: () => this.makeSceneImg(kind + i, x.prompt, idx),
       img: this.sceneImgView(kind + i)
     };
   }
