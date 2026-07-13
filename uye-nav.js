@@ -33,9 +33,9 @@
   function headerLinks() {
     var out = [];
     var h = document.querySelector('header');
-    if (h) out = out.concat(Array.prototype.slice.call(h.querySelectorAll('a[href^="/uyelik"]')));
+    if (h) out = out.concat(Array.prototype.slice.call(h.querySelectorAll('a[href="/uyelik"], a[href^="/uyelik?"]')));
     // mobil menü paneli gibi işaretli kapsamlar da giriş göstergesine dahildir
-    Array.prototype.slice.call(document.querySelectorAll('[data-uye-scope] a[href^="/uyelik"]')).forEach(function (a) {
+    Array.prototype.slice.call(document.querySelectorAll('[data-uye-scope] a[href="/uyelik"], [data-uye-scope] a[href^="/uyelik?"]')).forEach(function (a) {
       if (out.indexOf(a) === -1) out.push(a);
     });
     return out;
@@ -103,155 +103,10 @@
     document.body.appendChild(menuEl);
   }
 
-  /* ── GİRİŞ / KAYIT açılır penceresi (pop-up) — her sayfada, yerinde ── */
-  var loginEl = null, loginMode = 'giris', loginBusy = false;
-  var lv = { name: '', email: '', pass: '' };
-
-  function authErr(err) {
-    var raw = (err && err.message) || 'Bilinmeyen hata';
-    var m = raw.toLowerCase();
-    if (m.indexOf('invalid login') !== -1) return 'E-posta veya şifre hatalı.';
-    if (m.indexOf('already registered') !== -1 || m.indexOf('already been') !== -1) return 'Bu e-posta zaten kayıtlı. Giriş yap.';
-    if (m.indexOf('password') !== -1) return 'Şifre en az 6 karakter olmalı.';
-    if (m.indexOf('email') !== -1 && m.indexOf('confirm') !== -1) return 'E-postanı doğrulaman gerekiyor.';
-    return 'Hata: ' + raw;
-  }
-  function closeLogin() {
-    if (loginEl && loginEl.parentElement) loginEl.parentElement.removeChild(loginEl);
-    loginEl = null; loginBusy = false;
-  }
-  function loginHTML() {
-    var isK = loginMode === 'kayit';
-    var tab = function (on) { return 'border:0;cursor:pointer;padding:12px;font-family:\'Special Elite\',monospace;font-weight:700;font-size:11px;letter-spacing:.14em;' + (on ? 'background:rgba(193,154,82,.18);color:#e6c478;' : 'background:transparent;color:#818797;'); };
-    var inp = 'border:1px solid rgba(129,135,151,.35);background:#060910;color:#f2ecd9;padding:13px 14px;font-size:15px;width:100%;box-sizing:border-box;';
-    var lbl = 'color:#818797;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.16em;';
-    return ''
-      + '<button data-x title="Kapat" style="position:absolute;top:6px;right:6px;z-index:2;border:0;background:transparent;color:#818797;font-size:22px;line-height:1;cursor:pointer;padding:6px 11px;">✕</button>'
-      + '<div style="padding:34px 28px 26px;">'
-      + '<p style="margin:0;text-align:center;color:#c19a52;font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.2em;">AJAN KİMLİK KONTROLÜ</p>'
-      + '<h2 style="margin:10px 0 6px;text-align:center;font-family:\'Playfair Display\',serif;font-size:27px;font-weight:800;color:#f2ecd9;">' + (isK ? 'Aramıza katıl' : 'Tekrar hoş geldin, Ajan') + '</h2>'
-      + '<p style="margin:0 0 22px;text-align:center;color:#a4a9b5;font-size:13.5px;line-height:1.6;">Giriş yap ya da ücretsiz kayıt ol; hesabına 30 deneme kredisi tanımlanır.</p>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(193,154,82,.3);">'
-      + '<button data-tab="giris" style="' + tab(!isK) + '">GİRİŞ YAP</button>'
-      + '<button data-tab="kayit" style="' + tab(isK) + '">KAYIT OL</button>'
-      + '</div>'
-      + '<div style="border:1px solid rgba(193,154,82,.3);border-top:0;background:#070a12;padding:22px;display:grid;gap:13px;">'
-      + (isK ? '<label style="display:grid;gap:6px;"><span style="' + lbl + '">AJAN ADIN</span><input data-name placeholder="ör. Osman Çetinkaya" style="' + inp + '"></label>' : '')
-      + '<label style="display:grid;gap:6px;"><span style="' + lbl + '">E-POSTA</span><input data-email type="email" placeholder="ajan@ornek.com" style="' + inp + '"></label>'
-      + '<label style="display:grid;gap:6px;"><span style="' + lbl + '">ŞİFRE</span><input data-pass type="password" placeholder="••••••••" style="' + inp + '"></label>'
-      + '<p data-err style="margin:0;color:#e08a80;font-size:13px;display:none;"></p>'
-      + '<button data-submit style="border:0;cursor:pointer;margin-top:4px;background:linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52);color:#171207;font-family:\'Special Elite\',monospace;font-weight:700;font-size:12.5px;letter-spacing:.16em;padding:15px;">' + (isK ? 'KAYIT OL →' : 'GİRİŞ YAP →') + '</button>'
-      + '<p style="margin:2px 0 0;text-align:center;color:#676d7c;font-size:12px;line-height:1.6;">Üyeliğin yoksa ücretsiz kayıt ol; hesabına 30 deneme kredisi tanımlanır.</p>'
-      + '</div></div>';
-  }
-  function captureVals(panel) {
-    var n = panel.querySelector('[data-name]'), e = panel.querySelector('[data-email]'), p = panel.querySelector('[data-pass]');
-    if (n) lv.name = n.value; if (e) lv.email = e.value; if (p) lv.pass = p.value;
-  }
-  function fillVals(panel) {
-    var n = panel.querySelector('[data-name]'), e = panel.querySelector('[data-email]'), p = panel.querySelector('[data-pass]');
-    if (n) n.value = lv.name; if (e) e.value = lv.email; if (p) p.value = lv.pass;
-  }
-  function renderLogin(panel) {
-    panel.innerHTML = loginHTML();
-    fillVals(panel);
-    panel.querySelector('[data-x]').addEventListener('click', closeLogin);
-    Array.prototype.slice.call(panel.querySelectorAll('[data-tab]')).forEach(function (b) {
-      b.addEventListener('click', function () { captureVals(panel); loginMode = b.getAttribute('data-tab'); renderLogin(panel); });
-    });
-    panel.querySelector('[data-submit]').addEventListener('click', function () { submitLogin(panel); });
-    Array.prototype.slice.call(panel.querySelectorAll('input')).forEach(function (i) {
-      i.addEventListener('keydown', function (e) { if (e.key === 'Enter') submitLogin(panel); });
-    });
-    var em = panel.querySelector('[data-email]');
-    if (em) { try { (lv.email && panel.querySelector('[data-pass]') ? panel.querySelector('[data-pass]') : em).focus(); } catch (e) {} }
-  }
-  function withSb(cb) {
-    if (sbClient) return cb();
-    ensureLib(function () { if (!sbClient) sbClient = window.supabase.createClient(SB_URL, SB_KEY); cb(); });
-  }
-  function submitLogin(panel) {
-    if (loginBusy) return;
-    captureVals(panel);
-    var errEl = panel.querySelector('[data-err]'), submit = panel.querySelector('[data-submit]');
-    function showErr(msg) { errEl.textContent = msg; errEl.style.display = 'block'; }
-    var email = (lv.email || '').trim();
-    if (!email || email.indexOf('@') === -1) return showErr('Geçerli bir e-posta yaz.');
-    if (loginMode === 'kayit' && !(lv.name || '').trim()) return showErr('Ajan adını yaz.');
-    if (!(lv.pass || '').trim()) return showErr('Şifreni yaz.');
-    loginBusy = true; errEl.style.display = 'none'; submit.textContent = 'LÜTFEN BEKLE…';
-    function done(ok, msg, toGiris) {
-      loginBusy = false;
-      if (ok) { onLoginSuccess(email); return; }
-      submit.textContent = loginMode === 'kayit' ? 'KAYIT OL →' : 'GİRİŞ YAP →';
-      if (toGiris) { loginMode = 'giris'; renderLogin(panel); }
-      var e2 = panel.querySelector('[data-err]'); if (e2) { e2.textContent = msg; e2.style.display = 'block'; }
-    }
-    withSb(function () {
-      if (loginMode === 'kayit') {
-        sbClient.auth.signUp({ email: email, password: lv.pass, options: { data: { full_name: (lv.name || '').trim() } } }).then(function (r) {
-          if (r.error) return done(false, authErr(r.error));
-          try { fetch(SB_URL + '/functions/v1/posta', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY }, body: JSON.stringify({ action: 'welcome', email: email }) }); } catch (e) {}
-          sbClient.auth.getSession().then(function (s) {
-            if (s && s.data && s.data.session) return done(true);
-            sbClient.auth.signInWithPassword({ email: email, password: lv.pass }).then(function (r2) {
-              if (r2.error) return done(false, 'Kayıt alındı. E-postanı doğrulayıp giriş yapabilirsin.', true);
-              done(true);
-            });
-          });
-        }, function (err) { done(false, authErr(err)); });
-      } else {
-        sbClient.auth.signInWithPassword({ email: email, password: lv.pass }).then(function (r) {
-          if (r.error) return done(false, authErr(r.error));
-          done(true);
-        }, function (err) { done(false, authErr(err)); });
-      }
-    });
-  }
-  function onLoginSuccess(email) {
-    try { var st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}'); st.email = email; localStorage.setItem('ta_studio_v5', JSON.stringify(st)); } catch (e) {}
-    lv = { name: '', email: '', pass: '' };
-    // Sayfayı tazele: hangi sayfada olursak olalım (Studio, Üyelik, Ana sayfa…)
-    // oturum artık açık; sayfa girişli haliyle yeniden kurulur. "Bitti gitti."
-    var panel = loginEl && loginEl.querySelector('[data-submit]');
-    if (panel) panel.textContent = 'GİRİŞ BAŞARILI ✓';
-    setTimeout(function () { location.reload(); }, 350);
-  }
-  function openLogin(mode, prefillEmail) {
-    if (loginEl) { return; }
-    loginMode = mode || 'giris';
-    if (prefillEmail) lv.email = prefillEmail;
-    loginEl = document.createElement('div');
-    loginEl.setAttribute('data-uye-login', '1');
-    loginEl.style.cssText = 'position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var backdrop = document.createElement('div');
-    backdrop.style.cssText = 'position:absolute;inset:0;background:rgba(3,4,9,.82);';
-    backdrop.addEventListener('click', closeLogin);
-    var panel = document.createElement('div');
-    panel.style.cssText = 'position:relative;z-index:1;width:100%;max-width:440px;max-height:92vh;overflow:auto;border:1px solid rgba(193,154,82,.42);background:#070a12;box-shadow:0 30px 90px rgba(0,0,0,.75);';
-    loginEl.appendChild(backdrop); loginEl.appendChild(panel);
-    document.body.appendChild(loginEl);
-    renderLogin(panel);
-  }
-  // Diğer sayfalar (üyelik hero düğmesi vb.) buradan açar
-  window.taOpenLogin = function (mode, email) { if (!currentName) openLogin(mode, email); };
-
   // ── Olay delegasyonu: dinleyiciler DOCUMENT üzerinde (capture) yaşar.
   // Framework butonu yeniden kursa da tıklama/hover çalışmaya devam eder;
   // capture aşaması site içi yönlendirme dinleyicilerinden de önce koşar.
   document.addEventListener('click', function (e) {
-    // Girişsizken "AJAN GİRİŞİ" / giriş CTA'sı → sayfada YERİNDE pop-up (yönlendirme yok)
-    if (!currentName && !loginEl) {
-      var la = closestFrom(e.target, 'a[href]');
-      if (la) {
-        var href = la.getAttribute('href') || '';
-        if (href.indexOf('#giris') !== -1 || (ctaScore(la) >= 5 && /^\/uyelik/.test(href))) {
-          e.preventDefault(); e.stopPropagation();
-          openLogin('giris');
-          return;
-        }
-      }
-    }
     var btn = closestFrom(e.target, 'a[data-uye-nav]');
     if (btn) {
       e.preventDefault(); e.stopPropagation();
@@ -273,7 +128,7 @@
     var to = closestFrom(e.relatedTarget, 'a[data-uye-nav], [data-uye-menu-panel]');
     if (!to) scheduleClose();   // buton↔menü arası geçişe 280ms tolerans
   }, true);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeMenu(); closeLogin(); } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
 
   function apply() {
     if (currentName) {
