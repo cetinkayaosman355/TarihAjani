@@ -5,15 +5,26 @@
    - Aynı köken görsel/font: önbellek öncelikli (stale-while-revalidate, ağır dosyalar)
    - Çapraz köken (Google Fonts, unpkg React): dokunma, doğrudan ağdan
    SÜRÜM değişince eski önbellekler temizlenir. Her deploy'da bump'la. */
-var VERSION = 'ta-v1';
+var VERSION = 'ta-v2';
 var STATIC = VERSION + '-static';
 var PAGES = VERSION + '-pages';
 var MEDIA = VERSION + '-media';
 var OFFLINE = '/offline.html';
-var PRECACHE = ['/offline.html', '/assets/pwa-icon-192.png'];
+// Çevrimdışı çekirdek: uygulama kabuğu + arşiv verisi (dosyalar internetsiz okunur).
+var PRECACHE = [
+  '/offline.html', '/assets/pwa-icon-192.png',
+  '/', '/arsiv',
+  '/pwa.js', '/support.js',
+  '/arsiv-data.js', '/arsiv-slugs.js'
+];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(STATIC).then(function (c) { return c.addAll(PRECACHE); }).then(function () { return self.skipWaiting(); }));
+  // best-effort: tek bir dosyanın hatası (örn. yerel testte /arsiv yok) kurulumu düşürmesin
+  e.waitUntil(
+    caches.open(STATIC).then(function (c) {
+      return Promise.allSettled(PRECACHE.map(function (u) { return c.add(u); }));
+    }).then(function () { return self.skipWaiting(); })
+  );
 });
 
 self.addEventListener('activate', function (e) {

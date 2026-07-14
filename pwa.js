@@ -95,13 +95,15 @@
     { img: '/assets/haber/grek-atesi.jpg',      t: 'Suda bile sönmeyen silah: Grek Ateşi',                s: '672 · BİZANS',            href: '/haber/grek-atesi/' },
     { img: '/assets/haber/kara-olum.jpg',       t: 'Kara Ölüm: Avrupa nüfusunun üçte biri yok oldu',      s: '1347 · AVRUPA',           href: '/haber/kara-olum/' }
   ];
+  // di: arşivdeki dosya sırası (arsiv-slugs.js ile eşleştirildi) — poster
+  // doğrudan o dosyanın uygulama içi detayını açar (/arsiv#dosya-N).
   var POSTERS = [
-    { img: '/assets/haber/sezar-suikasti.jpg',   t: "Sezar'ın Sonu",          s: 'MÖ 44 · ROMA' },
-    { img: '/assets/haber/vezuv-pompeii.jpg',    t: "Pompeii'nin Son Saati",  s: 'MS 79' },
-    { img: '/assets/haber/grek-atesi.jpg',       t: 'Grek Ateşi',             s: '672 · BİZANS' },
-    { img: '/assets/haber/otzi.jpg',             t: 'Buz Adam',               s: 'MÖ 3300' },
-    { img: '/assets/haber/tutankamun-hancer.jpg',t: "Tutankhamun'un Bıçağı",  s: 'MÖ 1323 · MISIR' },
-    { img: '/assets/haber/bagdat-1258.jpg',      t: 'Bağdat Yıkıldı',         s: '1258' }
+    { img: '/assets/haber/sezar-suikasti.jpg',   t: "Sezar'ın Sonu",          s: 'MÖ 44 · ROMA',     di: 16 },
+    { img: '/assets/haber/vezuv-pompeii.jpg',    t: "Pompeii'nin Son Saati",  s: 'MS 79',            di: 0 },
+    { img: '/assets/haber/grek-atesi.jpg',       t: 'Grek Ateşi',             s: '672 · BİZANS',     di: 13 },
+    { img: '/assets/haber/otzi.jpg',             t: 'Buz Adam',               s: 'MÖ 3300',          di: 19 },
+    { img: '/assets/haber/tutankamun-hancer.jpg',t: "Tutankhamun'un Bıçağı",  s: 'MÖ 1323 · MISIR',  di: 14 },
+    { img: '/assets/haber/bagdat-1258.jpg',      t: 'Bağdat Yıkıldı',         s: '1258',             di: null }
   ];
   var NEWS = [
     { y: '1453',   t: 'Konstantinopolis düştü: Bin yıllık Bizans sona erdi',    href: '/haber/istanbul-fethi/' },
@@ -175,6 +177,11 @@
     + '#ta-app-arsiv .ara svg{width:16px;height:16px;stroke:#77705c;fill:none;stroke-width:2;flex:none}'
     + '#ta-app-arsiv .ara input{flex:1;background:none;border:0;outline:0;color:#e9e2d0;font-size:14px;min-width:0}'
     + '#ta-app-arsiv .ara input::placeholder{color:#5d6370}'
+    + '#ta-app-arsiv .cips{display:flex;gap:7px;padding:0 14px 10px;overflow-x:auto;scrollbar-width:none}'
+    + '#ta-app-arsiv .cips::-webkit-scrollbar{display:none}'
+    + '#ta-app-arsiv .cip{flex:none;font-size:10px;letter-spacing:.12em;padding:8px 13px;border-radius:20px;border:1px solid rgba(193,154,82,.26);'
+      + 'color:#8a8f9c;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;font-variant-numeric:tabular-nums}'
+    + '#ta-app-arsiv .cip.on{background:linear-gradient(110deg,#a87f37,#e9c87e 60%,#c19a52);border-color:transparent;color:#171207;font-weight:800}'
     + '#ta-app-arsiv .liste{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}'
     + '#ta-app-arsiv .drow{cursor:pointer;display:flex;gap:13px;align-items:center;padding:11px 18px;border-top:1px solid rgba(230,220,196,.06);'
       + 'text-decoration:none;-webkit-tap-highlight-color:transparent}'
@@ -245,7 +252,13 @@
     + '#ta-app-dosya .blk .k{font-size:9.5px;letter-spacing:.16em;color:#8a8f9c;margin-bottom:5px}'
     + '#ta-app-dosya .blk .t{font-size:13px;line-height:1.65;color:#d5d9e2;white-space:pre-wrap;word-break:break-word}'
     + '#ta-app-dosya .cta{display:flex;align-items:center;justify-content:center;gap:9px;margin:18px 14px 0;padding:16px;border-radius:14px;'
-      + 'background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:13.5px;letter-spacing:.04em;text-decoration:none}';
+      + 'background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:13.5px;letter-spacing:.04em;text-decoration:none}'
+    /* ekran geçişleri — native his */
+    + '@keyframes ta-scr-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}'
+    + '@keyframes ta-scr-push{from{opacity:.35;transform:translateX(26%)}to{opacity:1;transform:none}}'
+    + '#ta-app-home,#ta-app-arsiv,#ta-app-profil{animation:ta-scr-in .26s ease both}'
+    + '#ta-app-dosya{animation:ta-scr-push .3s cubic-bezier(.3,.85,.35,1) both}'
+    + '@media(prefers-reduced-motion:reduce){#ta-app-home,#ta-app-arsiv,#ta-app-profil,#ta-app-dosya{animation:none}}';
 
   var TABS = [
     { k: 'home',   href: '/',        label: 'Masa',   d: 'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5' },
@@ -308,7 +321,8 @@
       + '<div class="sh"><b>GİZLİ ARŞİV</b><a href="/arsiv">42 dosya →</a></div>'
       + '<div class="posters">'
       + POSTERS.map(function (p) {
-          return '<a class="po" href="/arsiv"><img src="' + p.img + '" alt="" loading="lazy"><b>' + esc(p.t) + '</b><span>' + esc(p.s) + '</span></a>';
+          var href = p.di == null ? '/arsiv' : '/arsiv#dosya-' + (p.di + 1);
+          return '<a class="po" href="' + href + '"><img src="' + p.img + '" alt="" loading="lazy"><b>' + esc(p.t) + '</b><span>' + esc(p.s) + '</span></a>';
         }).join('')
       + '</div>'
       + '<div class="sh"><b>SON DAKİKA</b><a href="/haber/">tümü →</a></div>'
@@ -378,12 +392,27 @@
     if (!DATA || !SLUGS || !DATA.length) return; // veri gelene dek bekle (periyodik yoklama dener)
     document.documentElement.classList.add('ta-apphome');
 
+    // dönem kategorisi — era alanından türetilir
+    function katOf(era) {
+      var e = (era || '').toUpperCase();
+      if (e.indexOf('DOSYA') !== -1 || !e) return 'GENEL';
+      if (e.indexOf('MÖ') !== -1) return 'ANTİK';
+      var m = e.match(/(\d{3,4})/);
+      if (m) { var y = +m[1]; return y < 1000 ? 'ANTİK' : y < 1700 ? 'ORTA ÇAĞ' : 'YAKIN ÇAĞ'; }
+      return 'GENEL';
+    }
+    var KATLAR = ['TÜMÜ', 'ANTİK', 'ORTA ÇAĞ', 'YAKIN ÇAĞ', 'GENEL'];
+    var aktifKat = 'TÜMÜ';
+
     var el = document.createElement('div');
     el.id = 'ta-app-arsiv';
     el.innerHTML =
       '<div class="top"><div class="bas"><b>Gizli Arşiv</b><span class="say" id="ta-ar-say"></span></div></div>'
       + '<div class="ara"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/></svg>'
       + '<input id="ta-ar-q" type="search" placeholder="dosyalarda ara — Pompeii, Sezar, lejyon…" autocomplete="off"></div>'
+      + '<div class="cips" id="ta-ar-cips">'
+      + KATLAR.map(function (k) { return '<button class="cip' + (k === 'TÜMÜ' ? ' on' : '') + '" data-k="' + k + '">' + k + '</button>'; }).join('')
+      + '</div>'
       + '<div class="liste" id="ta-ar-liste"></div>';
     document.body.appendChild(el);
 
@@ -393,6 +422,7 @@
       var html = '', n = 0;
       for (var i = 0; i < DATA.length; i++) {
         var d = DATA[i];
+        if (aktifKat !== 'TÜMÜ' && katOf(d.era) !== aktifKat) continue;
         if (f && trLow(d.baslik + ' ' + (d.era || '') + ' ' + (d.ozet || '')).indexOf(f) === -1) continue;
         n++;
         // bilinçli olarak <a> DEĞİL: page-transition.js anchor'ları yakalayıp
@@ -417,6 +447,13 @@
       if (a) openDosya(+a.getAttribute('data-i'), true);
     });
     q.addEventListener('input', function () { draw(q.value); });
+    el.querySelector('#ta-ar-cips').addEventListener('click', function (e) {
+      var c = e.target.closest ? e.target.closest('.cip') : null;
+      if (!c) return;
+      aktifKat = c.getAttribute('data-k');
+      el.querySelectorAll('.cip').forEach(function (x) { x.classList.toggle('on', x === c); });
+      draw(q.value);
+    });
     draw('');
     // derin bağlantı: /arsiv#dosya-7
     var m = (location.hash || '').match(/#dosya-(\d+)/);
