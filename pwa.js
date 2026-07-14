@@ -66,3 +66,76 @@
     });
   }
 })();
+
+/* ── UYGULAMA KABUĞU — sadece kurulu uygulamada (standalone) native alt sekme çubuğu ──
+   Tarayıcıda site aynen kalır; uygulama modunda altta Ana Sayfa/Haber/Studio/Arşiv/Üyelik. */
+(function () {
+  var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (!standalone) return;
+  document.documentElement.classList.add('ta-standalone');
+
+  var TABS = [
+    { k: 'home',   href: '/',        label: 'Ana Sayfa', d: 'M3 10.5 12 3l9 7.5M5 9.5V21h5v-6h4v6h5V9.5' },
+    { k: 'haber',  href: '/haber/',  label: 'Haber',     d: 'M4 4h13v16H5a2 2 0 0 1-2-2V6m14 2h3v10a2 2 0 0 1-2 2M7 8h7M7 12h7M7 16h4' },
+    { k: 'studio', href: '/studio',  label: 'Studio',    d: 'M12 3v3m0 12v3M3 12h3m12 0h3M6.3 6.3l2.1 2.1m7.2 7.2 2.1 2.1m0-11.4-2.1 2.1M8.4 15.6l-2.1 2.1M12 8.5A3.5 3.5 0 1 0 12 15.5 3.5 3.5 0 0 0 12 8.5Z' },
+    { k: 'arsiv',  href: '/arsiv',   label: 'Arşiv',     d: 'M3 7l2-3h14l2 3M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Zm7 4h4' },
+    { k: 'uyelik', href: '/uyelik',  label: 'Üyelik',    d: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0' }
+  ];
+
+  var CSS =
+    ':root.ta-standalone body{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))!important}'
+    + '#ta-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:2147483001;display:flex;'
+      + 'background:rgba(9,11,18,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);'
+      + 'border-top:1px solid rgba(193,154,82,.32);padding-bottom:env(safe-area-inset-bottom,0px);'
+      + 'box-shadow:0 -8px 30px rgba(0,0,0,.5)}'
+    + '#ta-tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;'
+      + 'padding:9px 2px 8px;text-decoration:none;color:#8a8f9c;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;'
+      + 'font-size:10px;letter-spacing:.02em;-webkit-tap-highlight-color:transparent;transition:color .15s}'
+    + '#ta-tabbar a svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:transform .15s}'
+    + '#ta-tabbar a:active svg{transform:scale(.88)}'
+    + '#ta-tabbar a.on{color:#e6c478}'
+    + '#ta-tabbar a.on::before{content:"";position:absolute;top:0;width:26px;height:2.5px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,#a77d35,#e6c478)}'
+    + '#ta-tabbar a{position:relative}'
+    // yüzen butonları sekme çubuğunun üstüne kaldır
+    + ':root.ta-standalone #ta-chat-btn{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}'
+    + ':root.ta-standalone #ta-tema-btn{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}'
+    + ':root.ta-standalone #ta-chat-panel{bottom:calc(148px + env(safe-area-inset-bottom,0px))!important}';
+
+  function activeKey() {
+    var p = decodeURIComponent(location.pathname).toLowerCase();
+    if (p.indexOf('/haber') === 0) return 'haber';
+    if (p.indexOf('/studio') === 0) return 'studio';
+    if (p.indexOf('/arsiv') === 0) return 'arsiv';
+    if (p.indexOf('/uyelik') === 0) return 'uyelik';
+    if (p === '/' || p.indexOf('/tarih ajani') === 0 || p === '/index.html') return 'home';
+    return '';
+  }
+
+  function build() {
+    if (document.getElementById('ta-tabbar')) return;
+    if (!document.getElementById('ta-tabbar-css')) {
+      var st = document.createElement('style'); st.id = 'ta-tabbar-css'; st.textContent = CSS; document.head.appendChild(st);
+    }
+    var act = activeKey();
+    var nav = document.createElement('nav');
+    nav.id = 'ta-tabbar';
+    nav.setAttribute('aria-label', 'Uygulama menüsü');
+    nav.innerHTML = TABS.map(function (t) {
+      return '<a href="' + t.href + '"' + (t.k === act ? ' class="on" aria-current="page"' : '') + '>'
+        + '<svg viewBox="0 0 24 24"><path d="' + t.d + '"/></svg>'
+        + '<span>' + t.label + '</span></a>';
+    }).join('');
+    document.body.appendChild(nav);
+  }
+
+  function ensure() { if (document.body) build(); }
+  ensure();
+  document.addEventListener('DOMContentLoaded', ensure);
+  // dc yeniden render ederse geri koy
+  if (window.MutationObserver) {
+    var t = null;
+    new MutationObserver(function () {
+      if (!document.getElementById('ta-tabbar')) { clearTimeout(t); t = setTimeout(ensure, 120); }
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  }
+})();
