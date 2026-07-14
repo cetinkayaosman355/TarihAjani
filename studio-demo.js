@@ -53,7 +53,7 @@
   var CSS = ''
     + '#studio-demo{position:relative;background:#06070d;border-top:1px solid rgba(193,154,82,.15);border-bottom:1px solid rgba(193,154,82,.15);overflow:hidden}'
     + '#studio-demo .sd-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle 560px at 86% 6%,rgba(230,196,120,.11),transparent 60%),radial-gradient(circle 460px at 6% 96%,rgba(158,43,35,.09),transparent 58%)}'
-    + '#studio-demo .sd-wrap{position:relative;width:min(1720px,95vw);margin:0 auto;padding:clamp(40px,4.4vw,62px) clamp(20px,3vw,40px)}'
+    + '#studio-demo .sd-wrap{position:relative;width:min(1790px,96.5vw);margin:0 auto;padding:clamp(46px,4.8vw,70px) clamp(20px,3vw,40px)}'
     // iki sütun — tepeden hizalı
     + '#studio-demo .sd-work{display:grid;grid-template-columns:.84fr 1.16fr;gap:clamp(24px,2.8vw,44px);align-items:stretch}'
     + '#studio-demo .sd-panel{display:flex;flex-direction:column;justify-content:flex-start;gap:15px;min-width:0;padding-top:0}'
