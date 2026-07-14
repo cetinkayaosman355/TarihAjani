@@ -40,8 +40,8 @@
     + '#studio-demo .sd-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle 560px at 86% 6%,rgba(230,196,120,.11),transparent 60%),radial-gradient(circle 460px at 6% 96%,rgba(158,43,35,.09),transparent 58%)}'
     + '#studio-demo .sd-wrap{position:relative;width:min(1500px,94vw);margin:0 auto;padding:clamp(40px,4.4vw,62px) clamp(20px,3.5vw,48px)}'
     // iki sütun — tepeden hizalı
-    + '#studio-demo .sd-work{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,2.8vw,46px);align-items:start}'
-    + '#studio-demo .sd-panel{display:flex;flex-direction:column;gap:16px;min-width:0}'
+    + '#studio-demo .sd-work{display:grid;grid-template-columns:.72fr 1.28fr;gap:clamp(24px,2.8vw,46px);align-items:stretch}'
+    + '#studio-demo .sd-panel{display:flex;flex-direction:column;justify-content:center;gap:16px;min-width:0}'
     + '#studio-demo .sd-live{display:inline-flex;align-items:center;gap:8px;color:#e08a80;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.22em;margin-bottom:2px}'
     + '#studio-demo .sd-live .d{width:9px;height:9px;border-radius:50%;background:#e11d1d;box-shadow:0 0 0 0 rgba(225,29,29,.6);animation:sd-pulse 1.4s ease-out infinite}'
     + '@keyframes sd-pulse{0%{box-shadow:0 0 0 0 rgba(225,29,29,.55)}70%{box-shadow:0 0 0 9px rgba(225,29,29,0)}100%{box-shadow:0 0 0 0 rgba(225,29,29,0)}}'
@@ -68,7 +68,7 @@
     // yan yana çıktı kutuları
     + '#studio-demo .sd-oh{color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.2em}'
     + '#studio-demo .sd-outrow{display:flex;gap:10px;flex-wrap:wrap}'
-    + '#studio-demo .sd-obox{flex:1 1 150px;min-width:0;border:1px solid rgba(193,154,82,.2);background:#070a12;padding:12px 13px;opacity:0;transform:translateY(8px);transition:opacity .45s,transform .45s}'
+    + '#studio-demo .sd-obox{flex:1 1 124px;min-width:0;border:1px solid rgba(193,154,82,.2);background:#070a12;padding:12px 13px;opacity:0;transform:translateY(8px);transition:opacity .45s,transform .45s}'
     + '#studio-demo .sd-obox.in{opacity:1;transform:none}'
     + '#studio-demo .sd-obox .bh{display:flex;align-items:center;gap:7px;margin-bottom:7px}'
     + '#studio-demo .sd-obox .ck{width:16px;height:16px;border-radius:50%;background:rgba(90,122,62,.16);border:1px solid rgba(90,122,62,.5);display:grid;place-items:center;color:#7ba05a;font-size:9px}'
@@ -77,15 +77,12 @@
     + '#studio-demo .sd-scenes{color:#7a8090;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.05em;line-height:1.7;opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s}'
     + '#studio-demo .sd-scenes.in{opacity:1;transform:none}'
     + '#studio-demo .sd-scenes b{color:#c19a52}'
-    // sağ sahne — storyboard önizleme
-    + '#studio-demo .sd-stage{display:flex}'
-    + '#studio-demo .sd-canvas{position:relative;flex:1;aspect-ratio:16/9;overflow:hidden;border:1px solid rgba(193,154,82,.3);background:#08090e;display:grid;place-items:center;box-shadow:0 40px 90px -52px rgba(0,0,0,.9)}'
-    + '#studio-demo .sd-split{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;background:rgba(193,154,82,.12)}'
-    + '#studio-demo .sd-split i{position:relative;background:linear-gradient(165deg,#15161f,#0a0b11)}'
-    + '#studio-demo .sd-split i:nth-child(2){background:linear-gradient(165deg,#181922,#0c0d15)}'
-    + '#studio-demo .sd-split i:nth-child(3){background:linear-gradient(165deg,#121320,#090a11)}'
-    + '#studio-demo .sd-split i::after{content:attr(data-n);position:absolute;top:9px;left:10px;font-family:\'Special Elite\',monospace;font-size:9px;letter-spacing:.1em;color:rgba(193,154,82,.4)}'
-    + '#studio-demo .sd-phlabel{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#5a6070;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.18em}'
+    // sağ sahne — Tarih Ajanı önizleme (büyük görsel)
+    + '#studio-demo .sd-stage{display:block}'
+    + '#studio-demo .sd-canvas{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border:1px solid rgba(193,154,82,.3);background:radial-gradient(circle at 50% 40%,#111220,#08090e);display:grid;place-items:center;box-shadow:0 40px 90px -52px rgba(0,0,0,.9)}'
+    + '#studio-demo .sd-brand{position:absolute;inset:0;overflow:hidden;display:grid;place-items:center;background:repeating-linear-gradient(-9deg,transparent 0 58px,rgba(193,154,82,.03) 58px 59px)}'
+    + '#studio-demo .sd-brand .bw{font-family:\'Playfair Display\',serif;font-weight:800;font-size:clamp(38px,6vw,78px);line-height:.92;letter-spacing:.01em;transform:rotate(-9deg);text-align:center;background:linear-gradient(102deg,rgba(193,154,82,.26),rgba(230,196,120,.42) 48%,rgba(193,154,82,.2));-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}'
+    + '#studio-demo .sd-brand .bl{position:absolute;bottom:13px;left:0;right:0;text-align:center;color:#57606e;font-family:\'Special Elite\',monospace;font-size:9.5px;letter-spacing:.2em}'
     + '#studio-demo .sd-canvas .sd-btn{position:relative;z-index:2}'
     + '#studio-demo .sd-canvas img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.06);transition:opacity 1s ease,transform 6s ease;z-index:3}'
     + '#studio-demo .sd-canvas img.in{opacity:1;transform:scale(1)}'
@@ -106,8 +103,8 @@
     + '@media(max-width:800px){#studio-demo .sd-work{grid-template-columns:1fr}#studio-demo .sd-stage{order:-1}}';
 
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  function splitHTML(label){
-    return '<div class="sd-split"><i data-n="01"></i><i data-n="02"></i><i data-n="03"></i></div>' + (label ? '<div class="sd-phlabel">' + label + '</div>' : '');
+  function brandHTML(label){
+    return '<div class="sd-brand"><div class="bw">Tarih<br>Ajanı</div>' + (label ? '<div class="bl">' + label + '</div>' : '') + '</div>';
   }
 
   function render(mount) {
@@ -137,7 +134,7 @@
         + '<div class="sd-chips" id="sd-chips">' + chipsHTML() + '</div>'
         + '<div class="sd-tryrow"><button class="sd-btn hero" id="sd-try">STUDIO’YU DENE <span style="font-size:16px">▸</span></button><span class="sd-note">Gerçek örnek · kayıt gerekmez</span></div>'
         + '</div>'
-        + '<div class="sd-stage"><div class="sd-canvas">' + splitHTML('SAHNE ÖNİZLEME') + '</div></div>'
+        + '<div class="sd-stage"><div class="sd-canvas">' + brandHTML('STUDIO · SAHNE ÖNİZLEME') + '</div></div>'
         + '</div>';
       typeInto(mount.querySelector('#sd-type'), p.konu);
       mount.querySelector('#sd-chips').addEventListener('click', function (e) {
@@ -161,7 +158,7 @@
         + '</div>'
         + '<div class="sd-scenes" id="o4">Ayrıca: <b>sahne promptları</b> · ~10 dk sahneye kadar · kapak görseli · başlık &amp; #etiketler · yayın paketi</div>'
         + '</div>'
-        + '<div class="sd-stage"><div class="sd-canvas" id="sd-canvas">' + splitHTML('') + '<button class="sd-btn hero" id="sd-gen">◉ GÖRSEL OLUŞTUR</button></div></div>'
+        + '<div class="sd-stage"><div class="sd-canvas" id="sd-canvas">' + brandHTML('') + '<button class="sd-btn hero" id="sd-gen">◉ GÖRSEL OLUŞTUR</button></div></div>'
         + '</div>'
         + '<div class="sd-foot"><button class="sd-btn ghost" id="sd-reset">↺ Başka konu</button><a class="sd-cta" href="/studio">Studio’da kendin üret →</a></div>';
       ['o1', 'o2', 'o3', 'o4'].forEach(function (id, i) {
@@ -174,7 +171,7 @@
     function generate() {
       var p = PRESETS[cur];
       var canvas = mount.querySelector('#sd-canvas');
-      canvas.innerHTML = splitHTML('') + '<div class="sd-load" id="sd-load"><div class="sd-spin"></div><div class="lt">Sahne oluşturuluyor…</div><div class="sd-prog"><i></i></div></div>';
+      canvas.innerHTML = brandHTML('') + '<div class="sd-load" id="sd-load"><div class="sd-spin"></div><div class="lt">Sahne oluşturuluyor…</div><div class="sd-prog"><i></i></div></div>';
       var pre = new Image(); pre.src = p.img;
       setTimeout(function () {
         canvas.innerHTML = '<img id="sd-img" src="' + esc(p.img) + '" alt="' + esc(p.cap) + '">'
