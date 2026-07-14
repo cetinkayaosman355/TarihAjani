@@ -1,9 +1,10 @@
-/* Tarih Ajanı — PWA kayıt + "Uygulamayı Yükle" akışı.
-   - Service worker'ı kaydeder.
-   - Android/Chrome: beforeinstallprompt yakalanır, zarif bir "Uygulamayı Yükle"
-     çubuğu gösterilir (kullanıcı bir kez kapatırsa 30 gün tekrar çıkmaz).
-   - iOS Safari: kurulum promptu yok; ilk ziyarette "Paylaş → Ana Ekrana Ekle"
-     ipucu gösterilir. */
+/* Tarih Ajanı — PWA kayıt + "Uygulamayı Yükle" akışı + K1 "Dosya Masası" uygulama kabuğu.
+   1) Service worker kaydı.
+   2) Kurulum davetleri (Android beforeinstallprompt / iOS ipucu).
+   3) Uygulama kabuğu (yalnız standalone veya ?app=1 önizleme):
+      - K1 alt menü: Masa · Arşiv · [◉ ÜRET] · Haber · Profil
+      - K1 ana ekran: Günün Dosyası + Gizli Arşiv rafı + Son Dakika rafı.
+   Web sitesi tarayıcıda birebir aynı kalır. */
 (function () {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
@@ -69,10 +70,9 @@
   }
 })();
 
-/* ── UYGULAMA KABUĞU — sadece kurulu uygulamada (standalone) native alt sekme çubuğu ──
-   Tarayıcıda site aynen kalır; uygulama modunda altta Ana Sayfa/Haber/Studio/Arşiv/Üyelik.
-   ÖNİZLEME: ?app=1 ile kurulum yapmadan tarayıcıda app hali görülebilir (?app=0 kapatır);
-   aynı sekme oturumu boyunca sayfalar arasında da kalıcıdır. */
+/* ── K1 · DOSYA MASASI — uygulama kabuğu ──
+   Sadece standalone (kurulu uygulama) veya ?app=1 önizlemede çalışır.
+   Site DOM'una dokunmaz; ana ekran tam ekran katman olarak çizilir. */
 (function () {
   var preview = false;
   try {
@@ -84,124 +84,167 @@
   if (!standalone) return;
   document.documentElement.classList.add('ta-standalone');
 
-  var TABS = [
-    { k: 'home',   href: '/',        label: 'Ana Sayfa', d: 'M3 10.5 12 3l9 7.5M5 9.5V21h5v-6h4v6h5V9.5' },
-    { k: 'haber',  href: '/haber/',  label: 'Haber',     d: 'M4 4h13v16H5a2 2 0 0 1-2-2V6m14 2h3v10a2 2 0 0 1-2 2M7 8h7M7 12h7M7 16h4' },
-    { k: 'studio', href: '/studio',  label: 'Studio',    d: 'M12 3v3m0 12v3M3 12h3m12 0h3M6.3 6.3l2.1 2.1m7.2 7.2 2.1 2.1m0-11.4-2.1 2.1M8.4 15.6l-2.1 2.1M12 8.5A3.5 3.5 0 1 0 12 15.5 3.5 3.5 0 0 0 12 8.5Z' },
-    { k: 'arsiv',  href: '/arsiv',   label: 'Arşiv',     d: 'M3 7l2-3h14l2 3M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Zm7 4h4' },
-    { k: 'uyelik', href: '/uyelik',  label: 'Üyelik',    d: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0' }
+  /* ── içerik verisi ── */
+  // Günün Dosyası — güne göre döner
+  var HEROES = [
+    { img: '/assets/haber/marat-suikasti.jpg',  t: 'Devrimin sesi banyoda öldürüldü',              s: '1793 · PARİS',            href: '/haber/marat-suikasti/' },
+    { img: '/assets/haber/istanbul-fethi.jpg',  t: 'Konstantinopolis düştü: Bin yıllık Bizans sona erdi', s: '1453 · KONSTANTİNOPOLİS', href: '/haber/istanbul-fethi/' },
+    { img: '/assets/haber/sezar-suikasti.jpg',  t: 'Sezar senatoda öldürüldü: Tam 23 hançer darbesi',     s: 'MÖ 44 · ROMA',            href: '/haber/sezar-suikasti/' },
+    { img: '/assets/haber/vezuv-pompeii.jpg',   t: 'Vezüv patladı: Pompeii saatler içinde kül altında',   s: 'MS 79 · POMPEII',         href: '/haber/vezuv-pompeii/' },
+    { img: '/assets/haber/otzi.jpg',            t: '5300 yıllık cinayet: Buz Adam dosyası açıldı',        s: 'MÖ 3300 · ALPLER',        href: '/haber/otzi/' },
+    { img: '/assets/haber/grek-atesi.jpg',      t: 'Suda bile sönmeyen silah: Grek Ateşi',                s: '672 · BİZANS',            href: '/haber/grek-atesi/' },
+    { img: '/assets/haber/kara-olum.jpg',       t: 'Kara Ölüm: Avrupa nüfusunun üçte biri yok oldu',      s: '1347 · AVRUPA',           href: '/haber/kara-olum/' }
+  ];
+  var POSTERS = [
+    { img: '/assets/haber/sezar-suikasti.jpg',   t: "Sezar'ın Sonu",          s: 'MÖ 44 · ROMA' },
+    { img: '/assets/haber/vezuv-pompeii.jpg',    t: "Pompeii'nin Son Saati",  s: 'MS 79' },
+    { img: '/assets/haber/grek-atesi.jpg',       t: 'Grek Ateşi',             s: '672 · BİZANS' },
+    { img: '/assets/haber/otzi.jpg',             t: 'Buz Adam',               s: 'MÖ 3300' },
+    { img: '/assets/haber/tutankamun-hancer.jpg',t: "Tutankhamun'un Bıçağı",  s: 'MÖ 1323 · MISIR' },
+    { img: '/assets/haber/bagdat-1258.jpg',      t: 'Bağdat Yıkıldı',         s: '1258' }
+  ];
+  var NEWS = [
+    { y: '1453',   t: 'Konstantinopolis düştü: Bin yıllık Bizans sona erdi',    href: '/haber/istanbul-fethi/' },
+    { y: '1402',   t: "Yıldırım esir düştü: İki cihangir Çubuk Ovası'nda",      href: '/haber/ankara-savasi/' },
+    { y: 'MÖ 44',  t: 'Sezar senatoda öldürüldü: Tam 23 hançer darbesi',        href: '/haber/sezar-suikasti/' },
+    { y: '1071',   t: "İmparator esir: Anadolu'nun kapısı ardına dek açıldı",   href: '/haber/malazgirt/' }
   ];
 
   var CSS =
-    ':root.ta-standalone body{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))!important}'
-    + '#ta-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:2147483001;display:flex;'
-      + 'background:rgba(9,11,18,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);'
-      + 'border-top:1px solid rgba(193,154,82,.32);padding-bottom:env(safe-area-inset-bottom,0px);'
-      + 'box-shadow:0 -8px 30px rgba(0,0,0,.5)}'
-    + '#ta-tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;'
-      + 'padding:9px 2px 8px;text-decoration:none;color:#8a8f9c;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;'
-      + 'font-size:10px;letter-spacing:.02em;-webkit-tap-highlight-color:transparent;transition:color .15s}'
-    + '#ta-tabbar a svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:transform .15s}'
-    + '#ta-tabbar a:active svg{transform:scale(.88)}'
+    /* alt menü */
+    ':root.ta-standalone body{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))!important}'
+    + '#ta-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:2147483001;display:flex;align-items:stretch;'
+      + 'background:rgba(8,10,16,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);'
+      + 'border-top:1px solid rgba(193,154,82,.28);padding:6px 4px calc(14px + env(safe-area-inset-bottom,0px));'
+      + 'box-shadow:0 -10px 34px rgba(0,0,0,.55);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}'
+    + '#ta-tabbar a{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;'
+      + 'padding-top:8px;text-decoration:none;color:#828795;font-size:10px;-webkit-tap-highlight-color:transparent}'
+    + '#ta-tabbar a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}'
     + '#ta-tabbar a.on{color:#e6c478}'
-    + '#ta-tabbar a.on::before{content:"";position:absolute;top:0;width:26px;height:2.5px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,#a77d35,#e6c478)}'
-    + '#ta-tabbar a{position:relative}'
-    // yüzen butonları sekme çubuğunun üstüne kaldır
-    + ':root.ta-standalone #ta-chat-btn{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}'
-    + ':root.ta-standalone #ta-tema-btn{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}'
-    + ':root.ta-standalone #ta-chat-panel{bottom:calc(148px + env(safe-area-inset-bottom,0px))!important}';
+    + '#ta-tabbar a:active svg{transform:scale(.9)}'
+    + '#ta-tabbar a.fab{overflow:visible}'
+    + '#ta-tabbar a.fab i{position:absolute;left:50%;top:-26px;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;'
+      + 'background:linear-gradient(135deg,#a87f37,#e9c87e 55%,#c19a52);display:flex;flex-direction:column;align-items:center;justify-content:center;'
+      + 'color:#171207;font-style:normal;font-weight:800;font-size:9px;letter-spacing:.06em;'
+      + 'box-shadow:0 12px 30px -8px rgba(233,200,126,.6),0 0 0 5px rgba(8,10,16,.96)}'
+    + '#ta-tabbar a.fab i svg{width:19px;height:19px;stroke:#171207;stroke-width:2.2;margin-bottom:1px}'
+    + '#ta-tabbar a.fab span{visibility:hidden}'
+    /* ana ekran — dosya masası */
+    + '#ta-app-home{position:fixed;inset:0;z-index:2147483000;background:#07080d;overflow-y:auto;-webkit-overflow-scrolling:touch;'
+      + 'padding:calc(14px + env(safe-area-inset-top,0px)) 0 calc(96px + env(safe-area-inset-bottom,0px));'
+      + 'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}'
+    + '#ta-app-home .hel{padding:8px 18px 14px}'
+    + '#ta-app-home .hel b{display:block;font-family:"Playfair Display",Georgia,serif;font-size:23px;font-weight:700;color:#f4ecd8;line-height:1.1}'
+    + '#ta-app-home .hel span{display:block;margin-top:4px;font-size:10px;letter-spacing:.22em;color:#77705c}'
+    + '#ta-app-home .hero{position:relative;display:block;margin:0 14px;border-radius:20px;overflow:hidden;height:min(52vw,236px);'
+      + 'border:1px solid rgba(193,154,82,.3);text-decoration:none;-webkit-tap-highlight-color:transparent;background:#0c0e16}'
+    + '#ta-app-home .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}'
+    + '#ta-app-home .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,6,10,.12) 28%,rgba(5,6,10,.93))}'
+    + '#ta-app-home .hero .bd{position:absolute;top:12px;left:12px;z-index:2;font-size:9px;letter-spacing:.18em;font-weight:800;'
+      + 'color:#171207;background:linear-gradient(110deg,#d8b26a,#e9c87e);padding:5px 10px;border-radius:7px}'
+    + '#ta-app-home .hero .tt{position:absolute;left:16px;right:16px;bottom:14px;z-index:2}'
+    + '#ta-app-home .hero .tt b{display:block;font-family:"Playfair Display",Georgia,serif;font-size:20px;line-height:1.18;font-weight:700;color:#f6efe0}'
+    + '#ta-app-home .hero .tt span{display:block;margin-top:5px;font-size:11px;letter-spacing:.08em;color:#e6c478}'
+    + '#ta-app-home .hero:active{transform:scale(.985)}'
+    + '#ta-app-home .sh{display:flex;justify-content:space-between;align-items:baseline;padding:22px 18px 10px}'
+    + '#ta-app-home .sh b{font-size:11px;letter-spacing:.22em;color:#c19a52}'
+    + '#ta-app-home .sh a{font-size:11px;color:#8a8f9c;text-decoration:none}'
+    + '#ta-app-home .posters{display:flex;gap:11px;padding:0 14px 4px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}'
+    + '#ta-app-home .posters::-webkit-scrollbar{display:none}'
+    + '#ta-app-home .po{flex:none;width:118px;border-radius:14px;overflow:hidden;background:#10121b;border:1px solid rgba(193,154,82,.2);text-decoration:none;-webkit-tap-highlight-color:transparent}'
+    + '#ta-app-home .po img{width:100%;height:88px;object-fit:cover;display:block}'
+    + '#ta-app-home .po b{display:block;font-size:12px;font-weight:600;color:#e9e2d0;padding:8px 10px 3px;line-height:1.28}'
+    + '#ta-app-home .po span{display:block;font-size:9.5px;color:#6b7080;padding:0 10px 10px}'
+    + '#ta-app-home .po:active{transform:scale(.97)}'
+    + '#ta-app-home .nrow{display:flex;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid rgba(230,220,196,.06);text-decoration:none;-webkit-tap-highlight-color:transparent}'
+    + '#ta-app-home .nrow .yil{flex:none;font-family:"Playfair Display",Georgia,serif;font-size:15px;font-weight:700;color:#e6c478;min-width:52px}'
+    + '#ta-app-home .nrow p{margin:0;flex:1;font-size:13px;line-height:1.4;color:#d5d9e2}'
+    + '#ta-app-home .nrow .ok{color:#c19a52;font-size:16px}'
+    + '#ta-app-home .nrow:active{background:rgba(193,154,82,.06)}'
+    + ':root.ta-apphome #ta-chat-btn,:root.ta-apphome #ta-tema-btn{display:none!important}'
+    + ':root.ta-apphome body{overflow:hidden!important}';
+
+  var TABS = [
+    { k: 'home',   href: '/',        label: 'Masa',   d: 'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5' },
+    { k: 'arsiv',  href: '/arsiv',   label: 'Arşiv',  d: 'M3 7l2-3h14l2 3M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Zm7 4h4' },
+    { k: 'uret',   href: '/studio',  label: 'ÜRET',   d: 'M12 5v14M5 12h14', fab: true },
+    { k: 'haber',  href: '/haber/',  label: 'Haber',  d: 'M4 4h13v16H5a2 2 0 0 1-2-2V6m14 2h3v10a2 2 0 0 1-2 2M7 8h7M7 12h7M7 16h4' },
+    { k: 'profil', href: '/uyelik',  label: 'Profil', d: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0' }
+  ];
 
   function activeKey() {
     var p = decodeURIComponent(location.pathname).toLowerCase();
     if (p.indexOf('/haber') === 0) return 'haber';
-    if (p.indexOf('/studio') === 0) return 'studio';
+    if (p.indexOf('/studio') === 0) return 'uret';
     if (p.indexOf('/arsiv') === 0) return 'arsiv';
-    if (p.indexOf('/uyelik') === 0) return 'uyelik';
+    if (p.indexOf('/uyelik') === 0) return 'profil';
     if (p === '/' || p.indexOf('/tarih ajani') === 0 || p === '/index.html') return 'home';
     return '';
   }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
-  function build() {
+  function injectCss() {
+    if (document.getElementById('ta-k1-css')) return;
+    var st = document.createElement('style'); st.id = 'ta-k1-css'; st.textContent = CSS; document.head.appendChild(st);
+  }
+
+  function buildTabbar() {
     if (document.getElementById('ta-tabbar')) return;
-    if (!document.getElementById('ta-tabbar-css')) {
-      var st = document.createElement('style'); st.id = 'ta-tabbar-css'; st.textContent = CSS; document.head.appendChild(st);
-    }
     var act = activeKey();
     var nav = document.createElement('nav');
     nav.id = 'ta-tabbar';
     nav.setAttribute('aria-label', 'Uygulama menüsü');
     nav.innerHTML = TABS.map(function (t) {
-      return '<a href="' + t.href + '"' + (t.k === act ? ' class="on" aria-current="page"' : '') + '>'
-        + '<svg viewBox="0 0 24 24"><path d="' + t.d + '"/></svg>'
-        + '<span>' + t.label + '</span></a>';
+      var ic = '<svg viewBox="0 0 24 24"><path d="' + t.d + '"/></svg>';
+      if (t.fab) return '<a class="fab" href="' + t.href + '"><i>' + ic + t.label + '</i><span>' + t.label + '</span></a>';
+      return '<a href="' + t.href + '"' + (t.k === act ? ' class="on" aria-current="page"' : '') + '>' + ic + '<span>' + t.label + '</span></a>';
     }).join('');
     document.body.appendChild(nav);
   }
 
-  /* ── UYGULAMA ANA EKRANI ──
-     Uygulamada ana sayfa, web'deki uzun tanıtım akışı DEĞİL; net bir panel:
-     Studio / Arşiv / Haber / Akademi / Zaman Tüneli / Teçhizat kartları.
-     Site DOM'una dokunmaz — üzerine tam ekran katman koyar (dc'ye güvenli). */
-  var HOME_CARDS = [
-    { t: 'Studio',        s: 'Konu yaz; senaryo, ses, görsel — tek dosyada', href: '/studio',       img: '/assets/real-studio.jpg',            b: 'ÜRET' },
-    { t: 'Gizli Arşiv',   s: '42 vaka dosyası · oku, videoya dönüştür',     href: '/arsiv',        img: '/assets/real-wall.jpg',              b: '42 DOSYA' },
-    { t: 'Haber',         s: 'Tarihin canlı yayını · Tarih Borsası',        href: '/haber/',       img: '/assets/haber/istanbul-fethi.jpg',   b: 'CANLI' },
-    { t: 'Ajan Akademisi',s: '9 derslik içerik üreticiliği programı',       href: '/egitim',       img: '/assets/real-classroom.jpg',         b: '9 DERS' },
-    { t: 'Zaman Tüneli',  s: 'Zaman çizgisinde dolaş, videosuna git',       href: '/zaman-tuneli', img: '/assets/hero-desk.jpg',              b: '' },
-    { t: 'Ajan Teçhizatı',s: 'E-kitaplar, hazır içerik, Studio kredileri',  href: '/urunler',      img: '/assets/haber/tutankamun-hancer.jpg',b: '' }
-  ];
-
-  var HOME_CSS =
-    '#ta-app-home{position:fixed;inset:0;z-index:2147483000;background:#06070d;overflow-y:auto;-webkit-overflow-scrolling:touch;'
-      + 'padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(88px + env(safe-area-inset-bottom,0px));'
-      + 'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}'
-    + '#ta-app-home .hd{display:flex;align-items:center;gap:12px;margin:2px 2px 18px}'
-    + '#ta-app-home .hd img{width:44px;height:44px;border-radius:12px}'
-    + '#ta-app-home .hd .tt b{display:block;font-family:"Playfair Display",Georgia,serif;font-size:21px;font-weight:800;color:#f4ecd8;line-height:1.1}'
-    + '#ta-app-home .hd .tt span{font-size:10px;letter-spacing:.24em;color:#c19a52}'
-    + '#ta-app-home .card{position:relative;display:block;height:116px;border-radius:16px;overflow:hidden;margin-bottom:12px;'
-      + 'border:1px solid rgba(193,154,82,.26);text-decoration:none;background:#0a0c14;-webkit-tap-highlight-color:transparent}'
-    + '#ta-app-home .card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.52) saturate(.85)}'
-    + '#ta-app-home .card::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,6,10,.86) 18%,rgba(5,6,10,.28) 70%,rgba(5,6,10,.55))}'
-    + '#ta-app-home .card .in{position:absolute;left:16px;right:44px;top:50%;transform:translateY(-50%);z-index:2}'
-    + '#ta-app-home .card b{display:block;font-family:"Playfair Display",Georgia,serif;font-size:21px;font-weight:800;color:#f6efe0;line-height:1.15}'
-    + '#ta-app-home .card span{display:block;margin-top:4px;font-size:12.5px;color:#c3c8d3;line-height:1.4}'
-    + '#ta-app-home .card .bd{position:absolute;top:12px;right:12px;z-index:2;font-size:9px;letter-spacing:.16em;color:#e6c478;'
-      + 'border:1px solid rgba(193,154,82,.5);background:rgba(8,9,14,.55);padding:4px 8px;border-radius:7px}'
-    + '#ta-app-home .card .ar{position:absolute;right:15px;top:50%;transform:translateY(-50%);z-index:2;color:#e6c478;font-size:19px}'
-    + '#ta-app-home .card:active{transform:scale(.985)}'
-    + '#ta-app-home .uye{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:4px;padding:16px;border-radius:14px;'
-      + 'text-decoration:none;background:linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52);color:#171207;font-weight:800;font-size:14px;letter-spacing:.04em}'
-    + ':root.ta-apphome #ta-chat-btn,:root.ta-apphome #ta-tema-btn{display:none!important}'
-    + ':root.ta-apphome body{overflow:hidden!important}';
-
-  function esc2(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
-
   function buildHome() {
     if (activeKey() !== 'home') return;
     if (document.getElementById('ta-app-home')) return;
-    if (!document.getElementById('ta-app-home-css')) {
-      var st = document.createElement('style'); st.id = 'ta-app-home-css'; st.textContent = HOME_CSS; document.head.appendChild(st);
-    }
     document.documentElement.classList.add('ta-apphome');
+
+    var now = new Date();
+    var saat = now.getHours();
+    var selam = saat < 6 ? 'İyi geceler, Ajan' : saat < 12 ? 'Günaydın, Ajan' : saat < 18 ? 'İyi günler, Ajan' : 'İyi akşamlar, Ajan';
+    var gun = ['PAZAR', 'PAZARTESİ', 'SALI', 'ÇARŞAMBA', 'PERŞEMBE', 'CUMA', 'CUMARTESİ'][now.getDay()];
+    var ay = ['OCAK', 'ŞUBAT', 'MART', 'NİSAN', 'MAYIS', 'HAZİRAN', 'TEMMUZ', 'AĞUSTOS', 'EYLÜL', 'EKİM', 'KASIM', 'ARALIK'][now.getMonth()];
+    var doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / DAYMS);
+    var hero = HEROES[doy % HEROES.length];
+
     var el = document.createElement('div');
     el.id = 'ta-app-home';
-    var gun = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'][new Date().getDay()];
     el.innerHTML =
-      '<div class="hd"><img src="/assets/pwa-icon-192.png" alt=""><div class="tt"><b>Tarih Ajanı</b><span>AJAN PANELİ · ' + gun.toUpperCase() + '</span></div></div>'
-      + HOME_CARDS.map(function (c) {
-          return '<a class="card" href="' + c.href + '"><img src="' + c.img + '" alt="" loading="lazy">'
-            + (c.b ? '<span class="bd">' + esc2(c.b) + '</span>' : '')
-            + '<span class="in"><b>' + esc2(c.t) + '</b><span>' + esc2(c.s) + '</span></span>'
-            + '<span class="ar">›</span></a>';
+      '<div class="hel"><b>' + selam + '</b><span>' + gun + ' · ' + now.getDate() + ' ' + ay + ' · İSTANBUL</span></div>'
+      + '<a class="hero" href="' + hero.href + '"><img src="' + hero.img + '" alt="">'
+      + '<span class="bd">GÜNÜN DOSYASI</span>'
+      + '<span class="tt"><b>' + esc(hero.t) + '</b><span>' + esc(hero.s) + ' — Dosyayı aç →</span></span></a>'
+      + '<div class="sh"><b>GİZLİ ARŞİV</b><a href="/arsiv">42 dosya →</a></div>'
+      + '<div class="posters">'
+      + POSTERS.map(function (p) {
+          return '<a class="po" href="/arsiv"><img src="' + p.img + '" alt="" loading="lazy"><b>' + esc(p.t) + '</b><span>' + esc(p.s) + '</span></a>';
         }).join('')
-      + '<a class="uye" href="/uyelik">Ajan Ol — Seviyeni Seç →</a>';
+      + '</div>'
+      + '<div class="sh"><b>SON DAKİKA</b><a href="/haber/">tümü →</a></div>'
+      + NEWS.map(function (n) {
+          return '<a class="nrow" href="' + n.href + '"><span class="yil">' + esc(n.y) + '</span><p>' + esc(n.t) + '</p><span class="ok">›</span></a>';
+        }).join('');
     document.body.appendChild(el);
   }
 
-  function ensure() { if (document.body) { build(); buildHome(); } }
-  // Not: dc'nin render döngüsüne karışmamak için MutationObserver YOK.
-  // Yüzen sohbet/tema butonlarıyla aynı güvenli desen: DOMContentLoaded + periyodik yoklama.
+  var DAYMS = 86400000;
+
+  function ensure() {
+    if (!document.body) return;
+    injectCss();
+    buildTabbar();
+    buildHome();
+  }
+  // dc'nin render döngüsüne karışmamak için MutationObserver YOK —
+  // yüzen butonlarla aynı güvenli desen: DOMContentLoaded + periyodik yoklama.
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensure);
   else ensure();
   setInterval(ensure, 4000);
