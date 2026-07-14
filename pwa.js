@@ -162,7 +162,31 @@
     + '#ta-app-home .nrow .ok{color:#c19a52;font-size:16px}'
     + '#ta-app-home .nrow:active{background:rgba(193,154,82,.06)}'
     + ':root.ta-apphome #ta-chat-btn,:root.ta-apphome #ta-tema-btn{display:none!important}'
-    + ':root.ta-apphome body{overflow:hidden!important}';
+    + ':root.ta-apphome body{overflow:hidden!important}'
+    /* arşiv ekranı — K1 native liste */
+    + '#ta-app-arsiv{position:fixed;inset:0;z-index:2147483000;background:#07080d;display:flex;flex-direction:column;'
+      + 'padding-top:calc(14px + env(safe-area-inset-top,0px));font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}'
+    + '#ta-app-arsiv .top{padding:8px 18px 0}'
+    + '#ta-app-arsiv .top .bas{display:flex;justify-content:space-between;align-items:baseline}'
+    + '#ta-app-arsiv .top b{font-family:"Playfair Display",Georgia,serif;font-size:23px;font-weight:700;color:#f4ecd8}'
+    + '#ta-app-arsiv .top .say{font-size:10px;letter-spacing:.18em;color:#77705c;font-variant-numeric:tabular-nums}'
+    + '#ta-app-arsiv .ara{margin:12px 14px 10px;display:flex;align-items:center;gap:9px;background:#10121b;'
+      + 'border:1px solid rgba(193,154,82,.24);border-radius:13px;padding:11px 13px}'
+    + '#ta-app-arsiv .ara svg{width:16px;height:16px;stroke:#77705c;fill:none;stroke-width:2;flex:none}'
+    + '#ta-app-arsiv .ara input{flex:1;background:none;border:0;outline:0;color:#e9e2d0;font-size:14px;min-width:0}'
+    + '#ta-app-arsiv .ara input::placeholder{color:#5d6370}'
+    + '#ta-app-arsiv .liste{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}'
+    + '#ta-app-arsiv .drow{display:flex;gap:13px;align-items:center;padding:11px 18px;border-top:1px solid rgba(230,220,196,.06);'
+      + 'text-decoration:none;-webkit-tap-highlight-color:transparent}'
+    + '#ta-app-arsiv .drow:active{background:rgba(193,154,82,.06)}'
+    + '#ta-app-arsiv .drow .no{flex:none;width:46px;height:46px;border-radius:12px;background:#10121b;border:1px solid rgba(193,154,82,.26);'
+      + 'display:grid;place-items:center;font-family:"Playfair Display",Georgia,serif;font-size:16px;font-weight:700;color:#e6c478;font-variant-numeric:tabular-nums}'
+    + '#ta-app-arsiv .drow .m{flex:1;min-width:0}'
+    + '#ta-app-arsiv .drow b{display:block;font-family:"Playfair Display",Georgia,serif;font-size:14px;font-weight:700;color:#ede4cf;line-height:1.25;'
+      + 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+    + '#ta-app-arsiv .drow span{display:block;margin-top:3px;font-size:10px;letter-spacing:.1em;color:#6b7080}'
+    + '#ta-app-arsiv .drow .git{flex:none;color:#c19a52;font-size:17px}'
+    + '#ta-app-arsiv .bos{padding:36px 20px;text-align:center;color:#6b7080;font-size:13px}';
 
   var TABS = [
     { k: 'home',   href: '/',        label: 'Masa',   d: 'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5' },
@@ -237,11 +261,55 @@
 
   var DAYMS = 86400000;
 
+  /* K1 Arşiv ekranı — yalnız /arsiv liste rotasında (detay sayfalarında değil) */
+  function isArsivList() {
+    var p = decodeURIComponent(location.pathname).toLowerCase().replace(/\/+$/, '');
+    return p === '/arsiv' || p === '/arsiv.dc.html';
+  }
+  function trLow(s) { return String(s).replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase(); }
+
+  function buildArsiv() {
+    if (!isArsivList()) return;
+    if (document.getElementById('ta-app-arsiv')) return;
+    var DATA = window.__ARSIV__, SLUGS = window.__ARSIV_SLUGS__;
+    if (!DATA || !SLUGS || !DATA.length) return; // veri gelene dek bekle (periyodik yoklama dener)
+    document.documentElement.classList.add('ta-apphome');
+
+    var el = document.createElement('div');
+    el.id = 'ta-app-arsiv';
+    el.innerHTML =
+      '<div class="top"><div class="bas"><b>Gizli Arşiv</b><span class="say" id="ta-ar-say"></span></div></div>'
+      + '<div class="ara"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/></svg>'
+      + '<input id="ta-ar-q" type="search" placeholder="dosyalarda ara — Pompeii, Sezar, lejyon…" autocomplete="off"></div>'
+      + '<div class="liste" id="ta-ar-liste"></div>';
+    document.body.appendChild(el);
+
+    var liste = el.querySelector('#ta-ar-liste'), say = el.querySelector('#ta-ar-say'), q = el.querySelector('#ta-ar-q');
+    function draw(filtre) {
+      var f = trLow(filtre || '').trim();
+      var html = '', n = 0;
+      for (var i = 0; i < DATA.length; i++) {
+        var d = DATA[i];
+        if (f && trLow(d.baslik + ' ' + (d.era || '') + ' ' + (d.ozet || '')).indexOf(f) === -1) continue;
+        n++;
+        html += '<a class="drow" href="/arsiv/' + SLUGS[i] + '/">'
+          + '<span class="no">' + String(i + 1).padStart(2, '0') + '</span>'
+          + '<span class="m"><b>' + esc(d.baslik) + '</b><span>' + esc(d.era || 'TARİH DOSYASI') + ' · ' + esc(d.fileNo || '') + '</span></span>'
+          + '<span class="git">›</span></a>';
+      }
+      liste.innerHTML = n ? html : '<div class="bos">Dosya bulunamadı — başka bir iz sür.</div>';
+      say.textContent = n + ' / ' + DATA.length + ' DOSYA';
+    }
+    q.addEventListener('input', function () { draw(q.value); });
+    draw('');
+  }
+
   function ensure() {
     if (!document.body) return;
     injectCss();
     buildTabbar();
     buildHome();
+    buildArsiv();
   }
   // dc'nin render döngüsüne karışmamak için MutationObserver YOK —
   // yüzen butonlarla aynı güvenli desen: DOMContentLoaded + periyodik yoklama.
