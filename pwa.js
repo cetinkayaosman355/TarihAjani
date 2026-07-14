@@ -68,9 +68,17 @@
 })();
 
 /* ── UYGULAMA KABUĞU — sadece kurulu uygulamada (standalone) native alt sekme çubuğu ──
-   Tarayıcıda site aynen kalır; uygulama modunda altta Ana Sayfa/Haber/Studio/Arşiv/Üyelik. */
+   Tarayıcıda site aynen kalır; uygulama modunda altta Ana Sayfa/Haber/Studio/Arşiv/Üyelik.
+   ÖNİZLEME: ?app=1 ile kurulum yapmadan tarayıcıda app hali görülebilir (?app=0 kapatır);
+   aynı sekme oturumu boyunca sayfalar arasında da kalıcıdır. */
 (function () {
-  var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  var preview = false;
+  try {
+    if (/[?&]app=0/.test(location.search)) sessionStorage.removeItem('ta_app_preview');
+    else if (/[?&]app=1/.test(location.search)) sessionStorage.setItem('ta_app_preview', '1');
+    preview = sessionStorage.getItem('ta_app_preview') === '1';
+  } catch (e) {}
+  var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || preview;
   if (!standalone) return;
   document.documentElement.classList.add('ta-standalone');
 
