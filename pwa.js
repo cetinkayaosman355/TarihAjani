@@ -11,8 +11,10 @@
     });
   }
 
-  // uygulama olarak açıldıysa hiç ipucu/çubuk gösterme
-  var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  // uygulama olarak açıldıysa (veya ?app=1 önizlemedeyse) hiç ipucu/çubuk gösterme
+  var pv = /[?&]app=1/.test(location.search);
+  try { pv = pv || sessionStorage.getItem('ta_app_preview') === '1'; } catch (e) {}
+  var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || pv;
   if (standalone) return;
 
   var DAY = 86400000;
@@ -136,7 +138,68 @@
     document.body.appendChild(nav);
   }
 
-  function ensure() { if (document.body) build(); }
+  /* ── UYGULAMA ANA EKRANI ──
+     Uygulamada ana sayfa, web'deki uzun tanıtım akışı DEĞİL; net bir panel:
+     Studio / Arşiv / Haber / Akademi / Zaman Tüneli / Teçhizat kartları.
+     Site DOM'una dokunmaz — üzerine tam ekran katman koyar (dc'ye güvenli). */
+  var HOME_CARDS = [
+    { t: 'Studio',        s: 'Konu yaz; senaryo, ses, görsel — tek dosyada', href: '/studio',       img: '/assets/real-studio.jpg',            b: 'ÜRET' },
+    { t: 'Gizli Arşiv',   s: '42 vaka dosyası · oku, videoya dönüştür',     href: '/arsiv',        img: '/assets/real-wall.jpg',              b: '42 DOSYA' },
+    { t: 'Haber',         s: 'Tarihin canlı yayını · Tarih Borsası',        href: '/haber/',       img: '/assets/haber/istanbul-fethi.jpg',   b: 'CANLI' },
+    { t: 'Ajan Akademisi',s: '9 derslik içerik üreticiliği programı',       href: '/egitim',       img: '/assets/real-classroom.jpg',         b: '9 DERS' },
+    { t: 'Zaman Tüneli',  s: 'Zaman çizgisinde dolaş, videosuna git',       href: '/zaman-tuneli', img: '/assets/hero-desk.jpg',              b: '' },
+    { t: 'Ajan Teçhizatı',s: 'E-kitaplar, hazır içerik, Studio kredileri',  href: '/urunler',      img: '/assets/haber/tutankamun-hancer.jpg',b: '' }
+  ];
+
+  var HOME_CSS =
+    '#ta-app-home{position:fixed;inset:0;z-index:2147483000;background:#06070d;overflow-y:auto;-webkit-overflow-scrolling:touch;'
+      + 'padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(88px + env(safe-area-inset-bottom,0px));'
+      + 'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}'
+    + '#ta-app-home .hd{display:flex;align-items:center;gap:12px;margin:2px 2px 18px}'
+    + '#ta-app-home .hd img{width:44px;height:44px;border-radius:12px}'
+    + '#ta-app-home .hd .tt b{display:block;font-family:"Playfair Display",Georgia,serif;font-size:21px;font-weight:800;color:#f4ecd8;line-height:1.1}'
+    + '#ta-app-home .hd .tt span{font-size:10px;letter-spacing:.24em;color:#c19a52}'
+    + '#ta-app-home .card{position:relative;display:block;height:116px;border-radius:16px;overflow:hidden;margin-bottom:12px;'
+      + 'border:1px solid rgba(193,154,82,.26);text-decoration:none;background:#0a0c14;-webkit-tap-highlight-color:transparent}'
+    + '#ta-app-home .card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.52) saturate(.85)}'
+    + '#ta-app-home .card::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,6,10,.86) 18%,rgba(5,6,10,.28) 70%,rgba(5,6,10,.55))}'
+    + '#ta-app-home .card .in{position:absolute;left:16px;right:44px;top:50%;transform:translateY(-50%);z-index:2}'
+    + '#ta-app-home .card b{display:block;font-family:"Playfair Display",Georgia,serif;font-size:21px;font-weight:800;color:#f6efe0;line-height:1.15}'
+    + '#ta-app-home .card span{display:block;margin-top:4px;font-size:12.5px;color:#c3c8d3;line-height:1.4}'
+    + '#ta-app-home .card .bd{position:absolute;top:12px;right:12px;z-index:2;font-size:9px;letter-spacing:.16em;color:#e6c478;'
+      + 'border:1px solid rgba(193,154,82,.5);background:rgba(8,9,14,.55);padding:4px 8px;border-radius:7px}'
+    + '#ta-app-home .card .ar{position:absolute;right:15px;top:50%;transform:translateY(-50%);z-index:2;color:#e6c478;font-size:19px}'
+    + '#ta-app-home .card:active{transform:scale(.985)}'
+    + '#ta-app-home .uye{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:4px;padding:16px;border-radius:14px;'
+      + 'text-decoration:none;background:linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52);color:#171207;font-weight:800;font-size:14px;letter-spacing:.04em}'
+    + ':root.ta-apphome #ta-chat-btn,:root.ta-apphome #ta-tema-btn{display:none!important}'
+    + ':root.ta-apphome body{overflow:hidden!important}';
+
+  function esc2(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  function buildHome() {
+    if (activeKey() !== 'home') return;
+    if (document.getElementById('ta-app-home')) return;
+    if (!document.getElementById('ta-app-home-css')) {
+      var st = document.createElement('style'); st.id = 'ta-app-home-css'; st.textContent = HOME_CSS; document.head.appendChild(st);
+    }
+    document.documentElement.classList.add('ta-apphome');
+    var el = document.createElement('div');
+    el.id = 'ta-app-home';
+    var gun = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'][new Date().getDay()];
+    el.innerHTML =
+      '<div class="hd"><img src="/assets/pwa-icon-192.png" alt=""><div class="tt"><b>Tarih Ajanı</b><span>AJAN PANELİ · ' + gun.toUpperCase() + '</span></div></div>'
+      + HOME_CARDS.map(function (c) {
+          return '<a class="card" href="' + c.href + '"><img src="' + c.img + '" alt="" loading="lazy">'
+            + (c.b ? '<span class="bd">' + esc2(c.b) + '</span>' : '')
+            + '<span class="in"><b>' + esc2(c.t) + '</b><span>' + esc2(c.s) + '</span></span>'
+            + '<span class="ar">›</span></a>';
+        }).join('')
+      + '<a class="uye" href="/uyelik">Ajan Ol — Seviyeni Seç →</a>';
+    document.body.appendChild(el);
+  }
+
+  function ensure() { if (document.body) { build(); buildHome(); } }
   // Not: dc'nin render döngüsüne karışmamak için MutationObserver YOK.
   // Yüzen sohbet/tema butonlarıyla aynı güvenli desen: DOMContentLoaded + periyodik yoklama.
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensure);
