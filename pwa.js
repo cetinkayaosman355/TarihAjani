@@ -450,7 +450,9 @@
       + (d.ozet ? '<p class="ozet">' + esc(d.ozet) + '</p>' : '')
       + '</div>'
       + secHtml
-      + '<a class="cta" href="/studio">◉ &nbsp;Studio’da videoya dönüştür</a>';
+      // fileNo ile derin bağlantı: Studio ?uret parametresini tanır — paralı
+      // üyede bu dosyanın üretimini otomatik başlatır.
+      + '<a class="cta" href="/studio' + (d.fileNo ? '?uret=' + encodeURIComponent(d.fileNo) : '') + '">◉ &nbsp;Studio’da videoya dönüştür</a>';
     document.body.appendChild(el);
     el.addEventListener('click', function (e) {
       var sh = e.target.closest ? e.target.closest('.sh') : null;
