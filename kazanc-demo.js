@@ -26,11 +26,11 @@
   var CSS = ''
     + '#kazanc-demo{position:relative;background:#06070d;border-top:1px solid rgba(193,154,82,.14);overflow:hidden}'
     + '#kazanc-demo .kz-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle 640px at 88% 10%,rgba(230,196,120,.09),transparent 60%),radial-gradient(circle 520px at 4% 90%,rgba(158,43,35,.08),transparent 58%)}'
-    + '#kazanc-demo .kz-wrap{position:relative;width:min(1540px,92vw);margin:0 auto;padding:clamp(30px,3.2vw,50px) clamp(22px,3vw,48px)}'
+    + '#kazanc-demo .kz-wrap{position:relative;width:min(1460px,90vw);margin:0 auto;padding:clamp(26px,2.8vw,42px) clamp(22px,3vw,48px)}'
     + '#kazanc-demo .kz-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:clamp(18px,2vw,28px)}'
     + '#kazanc-demo .kz-live{display:inline-flex;align-items:center;gap:9px;color:#e6c478;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.22em;border:1px solid rgba(193,154,82,.38);padding:7px 14px;background:rgba(12,10,6,.5)}'
     + '#kazanc-demo .kz-live i{font-style:normal;color:#7ba05a}'
-    + '#kazanc-demo h2{margin:12px 0 8px;font-family:\'Playfair Display\',serif;font-size:clamp(28px,3.2vw,44px);font-weight:800;line-height:1.04;letter-spacing:-.015em;color:#f6efe0}'
+    + '#kazanc-demo h2{margin:12px 0 8px;font-family:\'Playfair Display\',serif;font-size:clamp(25px,2.8vw,38px);font-weight:800;line-height:1.04;letter-spacing:-.015em;color:#f6efe0}'
     + '#kazanc-demo h2 .g{background:linear-gradient(102deg,#b18742,#e6c478 42%,#fff0b1 52%,#a5762f);-webkit-background-clip:text;background-clip:text;color:transparent}'
     + '#kazanc-demo .kz-sub{margin:0;color:#b3b9c6;font-size:14.5px;line-height:1.6;max-width:60ch}'
     // istatistik sayaçları (başlığın sağında)
@@ -39,7 +39,7 @@
     + '#kazanc-demo .kz-st span{display:block;margin-top:6px;font-family:\'Special Elite\',monospace;font-size:9.5px;letter-spacing:.16em;color:#77705c}'
     // grafik paneli
     + '#kazanc-demo .kz-chart{position:relative;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg,#0a0b13,#080910 60%,#0a0b12);padding:clamp(14px,1.6vw,24px) clamp(14px,1.6vw,24px) 8px;box-shadow:0 36px 80px -44px rgba(0,0,0,.9)}'
-    + '#kazanc-demo .kz-chart .lbl{position:absolute;top:16px;left:20px;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.2em;color:#9aa2b0}'
+    + '#kazanc-demo .kz-chart .lbl{position:absolute;top:16px;left:20px;display:flex;align-items:center;gap:18px;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.2em;color:#9aa2b0}'
     + '#kazanc-demo .kz-chart .end{position:absolute;top:14px;right:20px;text-align:right}'
     + '#kazanc-demo .kz-chart .end small{display:block;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;margin-bottom:5px}'
     + '#kazanc-demo .kz-chart .leg{display:flex;gap:14px;justify-content:flex-end;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.12em}'
@@ -56,14 +56,19 @@
     + '@keyframes kz-draw{to{stroke-dashoffset:0}}'
     + '#kazanc-demo .ar{fill:url(#kz-area);opacity:0;transition:opacity 1.2s .9s}'
     + '#kazanc-demo.kz-on .ar{opacity:1}'
-    + '#kazanc-demo .etxt{font-family:\'Special Elite\',monospace;font-size:11.5px;letter-spacing:.08em;opacity:0;transition:opacity .5s 2s;paint-order:stroke;stroke:#0a0b13;stroke-width:5px;stroke-linejoin:round}'
-    + '#kazanc-demo .etxt.ig{fill:#e6c478}'
-    + '#kazanc-demo .etxt.yt{fill:#e08a80}'
+    + '#kazanc-demo .etxt{opacity:0;transition:opacity .5s 2s;paint-order:stroke;stroke:rgba(8,9,16,.85);stroke-width:3px;stroke-linejoin:round}'
+    + '#kazanc-demo .etxt .pn{font-family:\'Special Elite\',monospace;font-size:9px;letter-spacing:.22em}'
+    + '#kazanc-demo .etxt .nv{font-family:\'Playfair Display\',serif;font-style:italic;font-weight:700;font-size:17px;letter-spacing:.01em}'
+    + '#kazanc-demo .etxt.ig .pn{fill:#c19a52}'
+    + '#kazanc-demo .etxt.ig .nv{fill:#f0d9a0}'
+    + '#kazanc-demo .etxt.yt .pn{fill:#cf6d63}'
+    + '#kazanc-demo .etxt.yt .nv{fill:#efb0a8}'
     + '#kazanc-demo.kz-on .etxt{opacity:1}'
     + '#kazanc-demo .mdot{fill:#e6c478;stroke:#171207;stroke-width:2;opacity:0;transition:opacity .4s}'
     + '#kazanc-demo .mdot.yt{fill:#c0463b}'
-    + '#kazanc-demo .mtxt{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.08em;fill:#c19a52;opacity:0;transition:opacity .4s;paint-order:stroke;stroke:#0a0b13;stroke-width:5px;stroke-linejoin:round}'
-    + '#kazanc-demo .mtxt tspan.d{fill:#8d94a3;font-size:10.5px}'
+    + '#kazanc-demo .mtxt{opacity:0;transition:opacity .4s;paint-order:stroke;stroke:rgba(8,9,16,.85);stroke-width:3px;stroke-linejoin:round}'
+    + '#kazanc-demo .mtxt tspan.k{font-family:\'Special Elite\',monospace;font-size:9px;letter-spacing:.22em;fill:#a5824a}'
+    + '#kazanc-demo .mtxt tspan.d{font-family:\'Playfair Display\',serif;font-style:italic;font-size:14.5px;fill:#d6dbe4;letter-spacing:.01em}'
     + '#kazanc-demo .grid line{stroke:rgba(230,220,196,.06);stroke-width:1}'
     + '#kazanc-demo .gx{font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.12em;fill:#5d6370}'
     // gelir kanalları + CTA
@@ -88,10 +93,10 @@
 
   function svgHTML(){
     var m = MILES.map(function(mi,i){
-      var ty = mi.pos==='down' ? mi.y+34 : mi.y-40;
+      var ty = mi.pos==='down' ? mi.y+32 : mi.y-42;
       return '<circle class="mdot '+mi.ln+'" data-i="'+i+'" cx="'+mi.x+'" cy="'+mi.y+'" r="5"></circle>'
         + '<text class="mtxt" data-i="'+i+'" x="'+mi.x+'" y="'+ty+'" text-anchor="'+(mi.x>860?'end':'middle')+'">'
-        + '<tspan>'+mi.k+'</tspan><tspan class="d" x="'+mi.x+'" dy="15" '+(mi.x>860?'text-anchor="end"':'')+'>'+mi.d+'</tspan></text>';
+        + '<tspan class="k">'+mi.k+'</tspan><tspan class="d" x="'+mi.x+'" dy="19" '+(mi.x>860?'text-anchor="end"':'')+'>'+mi.d+'</tspan></text>';
     }).join('');
     return '<svg viewBox="0 0 1000 320" preserveAspectRatio="xMidYMid meet" aria-label="İlk 30 gün temsilî büyüme: Instagram ve YouTube">'
       + '<defs>'
@@ -104,8 +109,8 @@
       + '<path class="ar" d="'+PATH_IG+' L968,278 L20,278 Z"></path>'
       + '<path class="ln yt" id="kz-line-yt" d="'+PATH_YT+'"></path>'
       + '<path class="ln ig" id="kz-line-ig" d="'+PATH_IG+'"></path>'
-      + '<text class="etxt ig" x="958" y="26" text-anchor="end">INSTAGRAM · 35.000 takipçi</text>'
-      + '<text class="etxt yt" x="958" y="118" text-anchor="end">YOUTUBE · 7.000 abone · 5M izlenme</text>'
+      + '<text class="etxt ig" x="958" y="14" text-anchor="end"><tspan class="pn">INSTAGRAM</tspan><tspan class="nv" x="958" dy="19">35.000 takipçi</tspan></text>'
+      + '<text class="etxt yt" x="958" y="112" text-anchor="end"><tspan class="pn">YOUTUBE</tspan><tspan class="nv" x="958" dy="19">7.000 abone · 5M izlenme</tspan></text>'
       + m + '</svg>';
   }
 
@@ -119,9 +124,9 @@
       + '</div>'
       + '<div class="kz-stats">' + STATS.map(function(s,i){return '<div class="kz-st"><b data-n="'+s.n+'" data-s="'+s.s+'" id="kz-n'+i+'">0'+s.s+'</b><span>'+s.l+'</span></div>';}).join('') + '</div>'
       + '</div>'
-      + '<div class="kz-chart"><div class="lbl">BÜYÜME · İLK 30 GÜN</div>'
-      + '<div class="end"><small>İLK 30 GÜN (temsilî)</small>'
-      + '<div class="leg"><span class="lg ig"><i>◉</i>INSTAGRAM</span><span class="lg yt"><i>▶</i>YOUTUBE</span></div></div>'
+      + '<div class="kz-chart"><div class="lbl"><span>BÜYÜME · İLK 30 GÜN</span>'
+      + '<span class="leg"><span class="lg ig"><i>◉</i>INSTAGRAM</span><span class="lg yt"><i>▶</i>YOUTUBE</span></span></div>'
+      + '<div class="end"><small>İLK 30 GÜN (temsilî)</small></div>'
       + svgHTML() + '</div>'
       + '<div class="kz-low">'
       + GELIR.map(function(g){return '<div class="kz-gel"><span class="ico">'+g.ico+'</span><div><b>'+g.b+'</b><span>'+g.s+'</span></div></div>';}).join('')

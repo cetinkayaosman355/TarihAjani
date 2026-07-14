@@ -38,7 +38,7 @@
     + '#arsiv-demo .ad-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(5,6,9,.96) 30%,rgba(5,6,9,.62) 62%,rgba(5,6,9,.9)),radial-gradient(120% 130% at 50% 0%,transparent 40%,rgba(0,0,0,.78))}'
     + '#arsiv-demo .ad-grain{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.5;mix-blend-mode:overlay;background-image:radial-gradient(rgba(255,255,255,.05) .5px,transparent .5px);background-size:3px 3px}'
     + '#arsiv-demo .ad-glow{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(circle 640px at 8% 8%,rgba(158,43,35,.13),transparent 60%),radial-gradient(circle 620px at 94% 96%,rgba(230,196,120,.10),transparent 58%)}'
-    + '#arsiv-demo .ad-wrap{position:relative;z-index:2;width:min(1760px,96vw);margin:0 auto;padding:clamp(42px,4.6vw,74px) clamp(22px,3vw,48px)}'
+    + '#arsiv-demo .ad-wrap{position:relative;z-index:2;width:min(1740px,96vw);margin:0 auto;padding:clamp(36px,4vw,64px) clamp(22px,3vw,48px)}'
     + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.86fr 1.14fr;gap:clamp(30px,3.4vw,60px);align-items:center}'
     + '#arsiv-demo .ad-panel{display:flex;flex-direction:column;gap:16px;min-width:0}'
     // ayırt edici başlık — sınıflandırma bandı
@@ -55,7 +55,7 @@
     + '#arsiv-demo .ad-btn.ghost:hover{background:rgba(193,154,82,.14);box-shadow:none}'
     + '#arsiv-demo .ad-count{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.16em;color:#9aa2b0}'
     // çekmece — gizli dosyalar (daha büyük)
-    + '#arsiv-demo .ad-drawer{position:relative;height:262px;margin:4px 0}'
+    + '#arsiv-demo .ad-drawer{position:relative;height:252px;margin:2px 0}'
     + '#arsiv-demo .folder{position:absolute;left:50%;bottom:8px;width:182px;height:230px;margin-left:-91px;transform-origin:50% 118%;border:1px solid rgba(193,154,82,.36);border-radius:4px;background:linear-gradient(158deg,#26211544,#14100a 60%,#0d0a06);box-shadow:0 22px 40px -20px rgba(0,0,0,.95),inset 0 1px 0 rgba(230,196,120,.07);transition:transform .3s cubic-bezier(.34,.9,.3,1),opacity .3s;overflow:hidden;will-change:transform;backdrop-filter:blur(3px)}'
     + '#arsiv-demo .folder::before{content:"";position:absolute;top:-13px;left:20px;width:66px;height:15px;background:linear-gradient(158deg,#221d13,#161009);border:1px solid rgba(193,154,82,.34);border-bottom:0;border-radius:6px 6px 0 0}'
     + '#arsiv-demo .folder::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(230,196,120,.06),transparent 40%);pointer-events:none}'
