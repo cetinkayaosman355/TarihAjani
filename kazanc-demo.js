@@ -84,7 +84,18 @@
     + '#kazanc-demo .kz-btn.ghost:hover{background:rgba(193,154,82,.12);box-shadow:none}'
     + '#kazanc-demo .kz-dis{margin:12px 2px 0;color:#5d6370;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.06em}'
     + '@media(max-width:1100px){#kazanc-demo .kz-stats{grid-template-columns:repeat(2,auto)}#kazanc-demo .kz-low{grid-template-columns:1fr 1fr}#kazanc-demo .kz-cta{grid-column:1/-1;flex-direction:row}}'
-    + '@media(max-width:640px){#kazanc-demo .kz-low{grid-template-columns:1fr}#kazanc-demo .mtxt{display:none}}'
+    + '@media(max-width:640px){'
+      + '#kazanc-demo .kz-wrap{width:min(1460px,92vw);padding:clamp(24px,6.5vw,40px) 14px}'
+      + '#kazanc-demo h2{font-size:clamp(24px,7.4vw,34px)}#kazanc-demo .kz-sub{font-size:13.5px}'
+      + '#kazanc-demo .kz-stats{grid-template-columns:repeat(2,1fr);gap:16px 18px}#kazanc-demo .kz-st b{font-size:28px}'
+      + '#kazanc-demo .kz-low{grid-template-columns:1fr}#kazanc-demo .kz-low>*{min-width:0}'
+      + '#kazanc-demo .kz-cta{grid-column:auto;flex-direction:column}#kazanc-demo .kz-btn{width:100%}'
+      + '#kazanc-demo .kz-chart{padding:14px 14px 8px}'
+      + '#kazanc-demo .kz-chart .lbl{position:static;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-bottom:6px}'
+      + '#kazanc-demo .kz-chart .end{position:static;text-align:left;margin-bottom:4px}#kazanc-demo .kz-chart .end small{margin-bottom:0}'
+      + '#kazanc-demo .mtxt,#kazanc-demo .etxt{display:none}'
+      + '#kazanc-demo .kz-gel span{font-size:12px}#kazanc-demo .kz-dis{font-size:9px}'
+      + '}'
     + '@media(prefers-reduced-motion:reduce){#kazanc-demo .ln{stroke-dashoffset:0!important;animation:none}#kazanc-demo .ar,#kazanc-demo .mdot,#kazanc-demo .mtxt,#kazanc-demo .kz-chart .end b{opacity:1!important;transition:none}}';
 
   // iki eğri (viewBox 1000x320): Instagram hızlı yükselir, YouTube daha yavaş ama istikrarlı
