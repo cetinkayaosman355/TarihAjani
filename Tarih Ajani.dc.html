@@ -19,6 +19,27 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://tarihajani.com/#org","name":"Tarih Ajanı","url":"https://tarihajani.com/","logo":"https://tarihajani.com/assets/logo-mark.png","email":"iletisim@tarihajani.com","sameAs":["https://www.youtube.com/@TarihAjani","https://www.instagram.com/tarih.ajani"]},{"@type":"WebSite","name":"Tarih Ajanı","url":"https://tarihajani.com/","publisher":{"@id":"https://tarihajani.com/#org"},"inLanguage":"tr"},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Tarih Ajanı tam olarak nedir?","acceptedAnswer":{"@type":"Answer","text":"Tarihi bir dedektif titizliğiyle araştıran ve bu yöntemi öğreten bir içerik stüdyosudur. Dijital kitaplar, Studio üretim sistemi, eğitim programı ve YouTube içerikleriyle kendi tarih anlatını kurmanı sağlar."}},{"@type":"Question","name":"Ödemeyi nasıl yapıyorum?","acceptedAnswer":{"@type":"Answer","text":"İki yol var: Havale/EFT ile doğrulanmış IBAN hesabımıza ödeme yapıp dekontu iletirsin, ya da kredi kartıyla resmi Shopier mağazamız üzerinden ödersin."}},{"@type":"Question","name":"Studio nasıl çalışıyor?","acceptedAnswer":{"@type":"Answer","text":"Bir fikir ya da olay yazarsın; sistem senaryoyu, ElevenLabs seslendirme ayarlarını, kapak ve sahne promptlarını, YouTube başlık-etiket-açıklamasını ve Instagram metnini tek dosyada üretir. Her dosya 1 kredi harcar."}},{"@type":"Question","name":"Dijital kitaplara nasıl erişirim?","acceptedAnswer":{"@type":"Answer","text":"Ödemen doğrulandıktan sonra erişim bilgileri e-posta adresine gönderilir. Kitaplar tarayıcıdan ve mobilden okunabilir, güncellemeler otomatik olarak arşivine düşer."}},{"@type":"Question","name":"Aboneliğimi istediğim zaman iptal edebilir miyim?","acceptedAnswer":{"@type":"Answer","text":"Evet. Abonelik aylıktır, tek tıkla iptal edilir. Dönem sonuna kadar erişimin açık kalır, dosyaların arşivde seni bekler."}},{"@type":"Question","name":"İçerikler hangi sıklıkla güncelleniyor?","acceptedAnswer":{"@type":"Answer","text":"Her ay yeni bir vaka dosyası açılır. Studio sistemi ve eğitim modülleri ise yöntem geliştikçe sürüm notlarıyla birlikte güncellenir."}}]}]}
 </script>
+<script>
+/* Emniyet şimi — support.js'ten ÖNCE yüklenmeli.
+   dc'nin React'ı açılışta gövdeyi birkaç geçişte işlerken, geç yüklenen
+   widget'lar (demo mount'ları, sosyal kanıt) aynı kutulara innerHTML basar.
+   React bayat düğüm referansını silmeye kalkınca "removeChild ... not a child"
+   fırlatır ve dc TÜM SAYFAYI hata perdesine düşürür. Düğüm zaten koptuysa
+   silme amacına ulaşmıştır: sayfayı düşürmek yerine sessizce geç. */
+(function () {
+  var orig = Node.prototype.removeChild;
+  Node.prototype.removeChild = function (child) {
+    try { return orig.call(this, child); }
+    catch (e) {
+      if (child && !child.parentNode) return child;                    // zaten kopmuş
+      if (child && child.parentNode && child.parentNode !== this) {    // başka yere taşınmış
+        child.parentNode.removeChild(child); return child;
+      }
+      throw e;
+    }
+  };
+})();
+</script>
 <script src="./support.js"></script>
 <script src="/uye-nav.js" defer></script>
 <script src="/canli-sohbet.js" defer></script>

@@ -9,7 +9,7 @@
   var FN = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/sosyal-kanit';
   var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
 
-  var state = { loaded: false, stats: null, reviews: [], rating: 0, sending: false, done: false, err: '' };
+  var state = { loading: false, loaded: false, stats: null, reviews: [], rating: 0, sending: false, done: false, err: '' };
 
   function api(payload) {
     return fetch(FN, {
@@ -168,24 +168,40 @@
   }
 
   function load() {
-    if (state.loaded) { mount(true); return; }
+    if (state.loading) return;
+    state.loading = true;
     Promise.all([api({ action: 'stats' }), api({ action: 'list', limit: 6 })]).then(function (res) {
       state.stats = (res[0] && res[0].ok) ? res[0] : { members: 0, productions: 0, reviews: 0, avgRating: 0 };
       state.reviews = (res[1] && res[1].ok && res[1].reviews) ? res[1].reviews : [];
       state.loaded = true;
-      mount(true);   // veri gelince gerçek sayılarla yeniden çiz
+      ensure();
     });
   }
 
+  /* TEK SEFERLİK çizim kuralı: dc'nin React'ı açılışta gövdeyi birkaç geçişte
+     işler ve bu sırada yabancı düğümlerin referansını tutabilir. Aynı kutuya
+     iki kez innerHTML basmak (önce yer tutucu, sonra veriyle) React'ın elindeki
+     eski kökü koparıp "removeChild ... not a child" çökmesine yol açıyordu.
+     Bu yüzden: veri hazır olana dek HİÇ çizme; hazır olunca bir kez çiz; ancak
+     dc kutuyu boşaltırsa (kök kaybolursa) yeniden çiz. */
+  function ensure() {
+    var host = document.getElementById('ta-sosyal-kanit');
+    if (!host) return;                       // yalnız yer tutucu olan sayfada
+    if (!state.loading) load();              // ilk görüşte veriyi çekmeye başla
+    if (!state.loaded) return;               // veri gelmeden asla innerHTML basma
+    if (host.querySelector('#ta-sk-root')) return; // zaten çizili
+    mount(true);
+  }
+
   function start() {
-    if (!document.getElementById('ta-sosyal-kanit')) return; // yalnız yer tutucu olan sayfada
-    mount();   // HEMEN çiz — "yükleniyor…" asılı kalmasın (veri gelince güncellenir)
-    load();
-    var mo = new MutationObserver(function () {
-      var host = document.getElementById('ta-sosyal-kanit');
-      if (host && !host.querySelector('#ta-sk-root')) mount();  // dc yeniden render ederse geri çiz
-    });
-    mo.observe(document.body, { childList: true, subtree: true });
+    ensure();
+    // dc gövdeyi bizden sonra render edebilir ya da yeniden çizebilir:
+    // sınırlı aralıklarla yeniden dene (senkron MutationObserver dc'yi kırar)
+    var ticks = 0;
+    var iv = setInterval(function () {
+      ensure();
+      if (++ticks > 40) { clearInterval(iv); setInterval(ensure, 4000); } // sonrasında seyrek bekçi
+    }, 500);
   }
 
   if (document.readyState === 'loading') {
