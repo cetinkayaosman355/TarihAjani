@@ -38,10 +38,11 @@
   var CSS = ''
     + '#studio-demo{position:relative;background:#06070d;border-top:1px solid rgba(193,154,82,.15);border-bottom:1px solid rgba(193,154,82,.15);overflow:hidden}'
     + '#studio-demo .sd-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle 560px at 86% 6%,rgba(230,196,120,.11),transparent 60%),radial-gradient(circle 460px at 6% 96%,rgba(158,43,35,.09),transparent 58%)}'
-    + '#studio-demo .sd-wrap{position:relative;width:min(1500px,94vw);margin:0 auto;padding:clamp(40px,4.4vw,62px) clamp(20px,3.5vw,48px)}'
+    + '#studio-demo .sd-wrap{position:relative;width:min(1720px,95vw);margin:0 auto;padding:clamp(40px,4.4vw,62px) clamp(20px,3vw,40px)}'
     // iki sütun — tepeden hizalı
-    + '#studio-demo .sd-work{display:grid;grid-template-columns:.72fr 1.28fr;gap:clamp(24px,2.8vw,46px);align-items:stretch}'
-    + '#studio-demo .sd-panel{display:flex;flex-direction:column;justify-content:center;gap:16px;min-width:0}'
+    + '#studio-demo .sd-work{display:grid;grid-template-columns:.84fr 1.16fr;gap:clamp(24px,2.8vw,44px);align-items:stretch}'
+    + '#studio-demo .sd-panel{display:flex;flex-direction:column;justify-content:flex-start;gap:15px;min-width:0;padding-top:clamp(6px,1.4vw,20px)}'
+    + '#studio-demo .sd-panel.sd-mid{justify-content:center;padding-top:0}'
     + '#studio-demo .sd-live{display:inline-flex;align-items:center;gap:8px;color:#e08a80;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.22em;margin-bottom:2px}'
     + '#studio-demo .sd-live .d{width:9px;height:9px;border-radius:50%;background:#e11d1d;box-shadow:0 0 0 0 rgba(225,29,29,.6);animation:sd-pulse 1.4s ease-out infinite}'
     + '@keyframes sd-pulse{0%{box-shadow:0 0 0 0 rgba(225,29,29,.55)}70%{box-shadow:0 0 0 9px rgba(225,29,29,0)}100%{box-shadow:0 0 0 0 rgba(225,29,29,0)}}'
@@ -54,7 +55,7 @@
     + '#studio-demo .sd-promptbox .caret{display:inline-block;width:2px;height:15px;background:#e6c478;transform:translateY(2px);animation:sd-caret 1s step-end infinite}'
     + '@keyframes sd-caret{50%{opacity:0}}'
     + '#studio-demo .sd-chips{display:flex;flex-wrap:wrap;gap:8px}'
-    + '#studio-demo .sd-chip{cursor:pointer;border:1px solid rgba(193,154,82,.34);background:rgba(193,154,82,.05);color:#cdb98a;font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.04em;padding:8px 13px;transition:all .16s}'
+    + '#studio-demo .sd-chip{cursor:pointer;border:1px solid rgba(193,154,82,.34);background:rgba(193,154,82,.05);color:#cdb98a;font-family:\'Special Elite\',monospace;font-size:13px;letter-spacing:.04em;padding:12px 20px;transition:all .16s}'
     + '#studio-demo .sd-chip:hover{border-color:#c19a52;color:#f2ecd9}'
     + '#studio-demo .sd-chip.on{background:linear-gradient(110deg,#a77d35,#d8b26a 55%,#c19a52);color:#171207;border-color:transparent;font-weight:700}'
     // butonlar
@@ -79,11 +80,12 @@
     + '#studio-demo .sd-scenes b{color:#c19a52}'
     // sağ sahne — Tarih Ajanı önizleme (büyük görsel)
     + '#studio-demo .sd-stage{display:block}'
-    + '#studio-demo .sd-canvas{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border:1px solid rgba(193,154,82,.3);background:radial-gradient(circle at 50% 40%,#111220,#08090e);display:grid;place-items:center;box-shadow:0 40px 90px -52px rgba(0,0,0,.9)}'
-    + '#studio-demo .sd-brand{position:absolute;inset:0;overflow:hidden;display:grid;place-items:center;background:repeating-linear-gradient(-9deg,transparent 0 58px,rgba(193,154,82,.03) 58px 59px)}'
-    + '#studio-demo .sd-brand .bw{font-family:\'Playfair Display\',serif;font-weight:800;font-size:clamp(38px,6vw,78px);line-height:.92;letter-spacing:.01em;transform:rotate(-9deg);text-align:center;background:linear-gradient(102deg,rgba(193,154,82,.26),rgba(230,196,120,.42) 48%,rgba(193,154,82,.2));-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}'
-    + '#studio-demo .sd-brand .bl{position:absolute;bottom:13px;left:0;right:0;text-align:center;color:#57606e;font-family:\'Special Elite\',monospace;font-size:9.5px;letter-spacing:.2em}'
-    + '#studio-demo .sd-canvas .sd-btn{position:relative;z-index:2}'
+    + '#studio-demo .sd-canvas{position:relative;width:100%;aspect-ratio:2/1;overflow:hidden;border:1px solid rgba(193,154,82,.3);background:radial-gradient(circle at 50% 40%,#101120,#08090e);box-shadow:0 40px 90px -52px rgba(0,0,0,.9)}'
+    + '#studio-demo .sd-brand{position:absolute;inset:0;overflow:hidden;display:grid;place-items:center;background:repeating-linear-gradient(-9deg,transparent 0 58px,rgba(193,154,82,.025) 58px 59px)}'
+    + '#studio-demo .sd-brand .bw{font-family:\'Playfair Display\',serif;font-weight:800;font-size:clamp(34px,5.4vw,72px);line-height:.92;letter-spacing:.01em;transform:rotate(-9deg) translateY(-8%);text-align:center;background:linear-gradient(102deg,rgba(193,154,82,.13),rgba(230,196,120,.22) 48%,rgba(193,154,82,.1));-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}'
+    + '#studio-demo .sd-brand .bl{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#4e5763;font-family:\'Special Elite\',monospace;font-size:9.5px;letter-spacing:.2em}'
+    + '#studio-demo .sd-canvas>.sd-btn{position:absolute;left:50%;bottom:11%;transform:translateX(-50%);z-index:2}'
+    + '#studio-demo .sd-canvas>.sd-btn:hover{transform:translateX(-50%) translateY(-2px)}'
     + '#studio-demo .sd-canvas img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.06);transition:opacity 1s ease,transform 6s ease;z-index:3}'
     + '#studio-demo .sd-canvas img.in{opacity:1;transform:scale(1)}'
     + '#studio-demo .sd-cap{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:14px 16px;background:linear-gradient(to top,rgba(4,5,10,.94),transparent);color:#f2ecd9;font-family:\'Special Elite\',monospace;font-size:11.5px;letter-spacing:.05em;opacity:0;transition:opacity .6s .35s;display:flex;align-items:center;justify-content:space-between;gap:10px}'
@@ -148,7 +150,7 @@
       var p = PRESETS[cur];
       mount.querySelector('.sd-body').innerHTML =
         '<div class="sd-work">'
-        + '<div class="sd-panel">'
+        + '<div class="sd-panel sd-mid">'
         + topbar()
         + '<div class="sd-oh">◈ STUDIO ÇIKTISI</div>'
         + '<div class="sd-outrow">'
