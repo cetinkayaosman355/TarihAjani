@@ -95,7 +95,7 @@
     + '#studio-demo .sd-canvas{position:relative;width:100%;aspect-ratio:2/1;overflow:hidden;border:1px solid rgba(193,154,82,.3);background:radial-gradient(circle at 50% 40%,#101120,#08090e);box-shadow:0 40px 90px -52px rgba(0,0,0,.9)}'
     // boş ekran yerine: 4 preset görselinden çapraz (X) mozaik
     + '#studio-demo .sd-mosaic{position:absolute;inset:0;z-index:0}'
-    + '#studio-demo .sd-mosaic i{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.42) saturate(.7)}'
+    + '#studio-demo .sd-mosaic i{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.34) saturate(.62)}'
     + '#studio-demo .sd-mosaic i:nth-child(1){clip-path:polygon(0 0,100% 0,50% 50%)}'
     + '#studio-demo .sd-mosaic i:nth-child(2){clip-path:polygon(100% 0,100% 100%,50% 50%)}'
     + '#studio-demo .sd-mosaic i:nth-child(3){clip-path:polygon(0 100%,100% 100%,50% 50%)}'
