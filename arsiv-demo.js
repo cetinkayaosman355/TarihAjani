@@ -1,5 +1,6 @@
-/* Tarih Ajanı — Ana sayfa "Arşiv Canlı Demo" (Dosya Çek + Aç).
-   Sol: DOSYA ÇEK + karışan deste. Sağ: seçilen dosya karartma efektiyle açılır.
+/* Tarih Ajanı — Ana sayfa "Arşiv Canlı Demo".
+   Sol: gizli dosya çekmecesi — düğmeye basınca dosyalar karışır, biri çekilir.
+   Sağ: çekilen dosya karartma efektiyle açılır (künye + alıntı + senaryoya hazır).
    #arsiv-demo-mount içine kendi kendine yerleşir (dc bağımsız). */
 (function () {
   if (window.__adInit) return;
@@ -26,42 +27,39 @@
     {slug:'kartaca',cat:'SAVAŞ',c:'#9E2B23',yr:'MÖ 146',yer:'KARTACA',kisi:'Scipio Aemilianus',
      t:'Kartaca yerle bir edildi',hook:'Üç Pön Savaşı’nın sonunda bir dünya kenti haritadan silindi.',q:'Akdeniz’in en zengin limanı, günlerce yandı.'}
   ];
+  var NF = 6; // çekmecedeki görünür dosya sayısı
 
   var CSS = ''
     + '#arsiv-demo{position:relative;background:#080910;border-top:1px solid rgba(193,154,82,.15);border-bottom:1px solid rgba(193,154,82,.15);overflow:hidden}'
     + '#arsiv-demo .ad-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle 560px at 10% 6%,rgba(158,43,35,.10),transparent 60%),radial-gradient(circle 520px at 92% 96%,rgba(230,196,120,.09),transparent 58%)}'
     + '#arsiv-demo .ad-wrap{position:relative;width:min(1720px,95vw);margin:0 auto;padding:clamp(40px,4.4vw,64px) clamp(20px,3vw,40px)}'
     + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.82fr 1.18fr;gap:clamp(24px,2.8vw,44px);align-items:stretch}'
-    + '#arsiv-demo .ad-panel{display:flex;flex-direction:column;gap:16px;min-width:0;padding-top:clamp(6px,1.4vw,18px)}'
-    + '#arsiv-demo .ad-live{display:inline-flex;align-items:center;gap:8px;color:#e08a80;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.22em}'
+    + '#arsiv-demo .ad-panel{display:flex;flex-direction:column;gap:15px;min-width:0;padding-top:clamp(6px,1.4vw,18px)}'
+    + '#arsiv-demo .ad-live{display:inline-flex;align-items:center;gap:8px;color:#e08a80;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.2em}'
     + '#arsiv-demo .ad-live .d{width:9px;height:9px;border-radius:50%;background:#e11d1d;box-shadow:0 0 0 0 rgba(225,29,29,.6);animation:ad-pulse 1.4s ease-out infinite}'
     + '@keyframes ad-pulse{0%{box-shadow:0 0 0 0 rgba(225,29,29,.55)}70%{box-shadow:0 0 0 9px rgba(225,29,29,0)}100%{box-shadow:0 0 0 0 rgba(225,29,29,0)}}'
     + '#arsiv-demo h2{margin:6px 0 4px;font-family:\'Playfair Display\',serif;font-size:clamp(27px,3.1vw,42px);font-weight:800;line-height:1.03;letter-spacing:-.01em;color:#f6efe0}'
     + '#arsiv-demo h2 .g{background:linear-gradient(102deg,#b18742,#e6c478 42%,#fff0b1 52%,#a5762f);-webkit-background-clip:text;background-clip:text;color:transparent}'
-    + '#arsiv-demo .ad-sub{margin:0;color:#a7adba;font-size:13.5px;line-height:1.55;max-width:44ch}'
-    + '#arsiv-demo .ad-btn{cursor:pointer;border:0;display:inline-flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52);color:#171207;font-family:\'Special Elite\',monospace;font-weight:700;font-size:14px;letter-spacing:.15em;padding:17px 30px;transition:transform .18s,box-shadow .18s;margin-top:2px}'
+    + '#arsiv-demo .ad-sub{margin:0;color:#a7adba;font-size:13.5px;line-height:1.55;max-width:46ch}'
+    + '#arsiv-demo .ad-btn{cursor:pointer;border:0;display:inline-flex;align-items:center;justify-content:center;gap:11px;background:linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52);color:#171207;font-family:\'Special Elite\',monospace;font-weight:700;font-size:14px;letter-spacing:.15em;padding:17px 30px;transition:transform .18s,box-shadow .18s}'
     + '#arsiv-demo .ad-btn:hover{transform:translateY(-2px);box-shadow:0 14px 44px -14px rgba(230,196,120,.55)}'
+    + '#arsiv-demo .ad-btn:disabled{opacity:.75;cursor:default;transform:none;box-shadow:none}'
     + '#arsiv-demo .ad-btn.ghost{background:transparent;border:1px solid rgba(193,154,82,.5);color:#e6c478;font-size:12px;padding:13px 22px}'
     + '#arsiv-demo .ad-btn.ghost:hover{background:rgba(193,154,82,.12);box-shadow:none}'
     + '#arsiv-demo .ad-count{font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.14em;color:#8b93a1}'
-    // deste
-    + '#arsiv-demo .ad-deck{position:relative;height:210px;margin-top:2px}'
-    + '#arsiv-demo .ad-deck .stub{position:absolute;top:0;left:0;width:150px;height:200px;border:1px solid rgba(193,154,82,.34);background:linear-gradient(160deg,#141019,#0a0710);box-shadow:0 24px 40px -28px #000;transition:transform .35s}'
-    + '#arsiv-demo .ad-deck .s1{transform:translate(14px,12px) rotate(4deg);opacity:.45}'
-    + '#arsiv-demo .ad-deck .s2{transform:translate(7px,6px) rotate(2deg);opacity:.72}'
-    + '#arsiv-demo .ad-deck.shuf .s1{transform:translate(24px,8px) rotate(9deg)}'
-    + '#arsiv-demo .ad-deck.shuf .s2{transform:translate(-6px,10px) rotate(-5deg)}'
-    + '#arsiv-demo .ad-card{position:absolute;top:0;left:0;width:150px;height:200px;border:1px solid rgba(193,154,82,.5);overflow:hidden;background:#0b0c14}'
-    + '#arsiv-demo .ad-card.deal{animation:ad-deal .5s cubic-bezier(.3,.8,.3,1)}'
-    + '@keyframes ad-deal{0%{transform:translateY(20px) rotate(-4deg) scale(.94);opacity:.2}100%{transform:none;opacity:1}}'
-    + '#arsiv-demo .ad-card .cov{position:absolute;inset:0}'
-    + '#arsiv-demo .ad-card .cov img{width:100%;height:100%;object-fit:cover;opacity:.85}'
-    + '#arsiv-demo .ad-card .cat{position:absolute;top:9px;left:9px;font-family:\'Special Elite\',monospace;font-size:8px;letter-spacing:.12em;color:#fff;padding:4px 7px}'
-    + '#arsiv-demo .ad-card .seal{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 40% 32%,#d24b38,#a62f22 46%,#7c1f16 82%);display:grid;place-items:center;font-family:\'Playfair Display\',serif;font-weight:800;font-size:14px;color:#f4d9c9;box-shadow:inset 0 -2px 4px rgba(0,0,0,.4)}'
-    + '#arsiv-demo .ad-card .lbl{position:absolute;left:0;right:0;bottom:0;padding:24px 11px 11px;background:linear-gradient(to top,rgba(4,5,10,.96),transparent);font-family:\'Playfair Display\',serif;font-weight:700;font-size:13px;line-height:1.15;color:#f2ecd9}'
+    // çekmece — gizli dosyalar
+    + '#arsiv-demo .ad-drawer{position:relative;height:250px}'
+    + '#arsiv-demo .folder{position:absolute;left:50%;bottom:0;width:168px;height:214px;margin-left:-84px;transform-origin:bottom center;border:1px solid rgba(193,154,82,.34);background:linear-gradient(165deg,#1c1811,#100c08);box-shadow:0 18px 30px -20px #000;transition:transform .28s cubic-bezier(.3,.7,.3,1),opacity .3s;overflow:hidden;will-change:transform}'
+    + '#arsiv-demo .folder::before{content:"";position:absolute;top:-12px;left:18px;width:58px;height:14px;background:linear-gradient(165deg,#1c1811,#140f0a);border:1px solid rgba(193,154,82,.34);border-bottom:0;border-radius:4px 4px 0 0}'
+    + '#arsiv-demo .folder .cg{position:absolute;top:13px;right:11px;font-family:\'Special Elite\',monospace;font-size:7.5px;letter-spacing:.12em;color:#c0463b;border:1px solid rgba(192,70,59,.5);padding:3px 5px;transform:rotate(5deg)}'
+    + '#arsiv-demo .folder .no{position:absolute;top:15px;left:14px;font-family:\'Special Elite\',monospace;font-size:8.5px;letter-spacing:.08em;color:#8a7a55}'
+    + '#arsiv-demo .folder .seal{position:absolute;top:44px;left:50%;margin-left:-19px;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 40% 32%,#d24b38,#a62f22 46%,#7c1f16 82%);display:grid;place-items:center;font-family:\'Playfair Display\',serif;font-weight:800;font-size:17px;color:#f4d9c9;box-shadow:inset 0 -2px 4px rgba(0,0,0,.4)}'
+    + '#arsiv-demo .folder .bars{position:absolute;left:16px;right:16px;bottom:16px;height:74px;background:repeating-linear-gradient(0deg,rgba(193,154,82,.16) 0 5px,transparent 5px 12px)}'
+    + '#arsiv-demo .folder .bars::after{content:"GİZLİ";position:absolute;left:0;top:-16px;font-family:\'Special Elite\',monospace;font-size:8px;letter-spacing:.16em;color:#6b6146}'
+    + '#arsiv-demo .folder.pull{transition:transform .42s cubic-bezier(.4,.8,.3,1),opacity .42s}'
     // dosya (dossier)
-    + '#arsiv-demo .ad-doss{position:relative;border:1px solid rgba(193,154,82,.34);background:#0a0b12;overflow:hidden;display:flex}'
-    + '#arsiv-demo .ad-doss .art{position:relative;flex:0 0 40%;min-height:100%;overflow:hidden;border-right:1px solid rgba(193,154,82,.2)}'
+    + '#arsiv-demo .ad-doss{position:relative;border:1px solid rgba(193,154,82,.34);background:#0a0b12;overflow:hidden;display:flex;min-height:300px}'
+    + '#arsiv-demo .ad-doss .art{position:relative;flex:0 0 40%;overflow:hidden;border-right:1px solid rgba(193,154,82,.2)}'
     + '#arsiv-demo .ad-doss .art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.06);transition:opacity .9s,transform 7s}'
     + '#arsiv-demo .ad-doss.open .art img{opacity:.9;transform:scale(1)}'
     + '#arsiv-demo .ad-doss .art::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 60%,#0a0b12)}'
@@ -82,9 +80,11 @@
     + '#arsiv-demo .ad-doss.open .ad-ready{opacity:1}'
     + '#arsiv-demo .ad-ready .tag{font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.05em;color:#7ba05a}'
     + '#arsiv-demo .ad-ready a{margin-left:auto}'
-    + '@media(max-width:820px){#arsiv-demo .ad-work{grid-template-columns:1fr}#arsiv-demo .ad-doss{flex-direction:column}#arsiv-demo .ad-doss .art{flex:0 0 150px;border-right:0;border-bottom:1px solid rgba(193,154,82,.2)}#arsiv-demo .ad-doss .art::after{background:linear-gradient(0deg,#0a0b12,transparent 60%)}}';
+    + '@media(max-width:820px){#arsiv-demo .ad-work{grid-template-columns:1fr}#arsiv-demo .ad-doss{flex-direction:column}#arsiv-demo .ad-doss .art{flex:0 0 150px;border-right:0;border-bottom:1px solid rgba(193,154,82,.2)}#arsiv-demo .ad-doss .art::after{background:linear-gradient(0deg,#0a0b12,transparent 60%)}}'
+    + '@media(prefers-reduced-motion:reduce){#arsiv-demo .folder{transition:none}}';
 
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function rnd(a,b){return a+Math.random()*(b-a);}
 
   function render(mount) {
     var RM = matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -93,27 +93,42 @@
     mount.innerHTML =
       '<div class="ad-glow"></div><div class="ad-wrap"><div class="ad-work">'
       + '<div class="ad-panel">'
-      + '<div class="ad-live"><span class="d"></span>ARŞİV · CANLI DEMO</div>'
-      + '<h2>Bir dosya çek, <span class="g">kilidini aç.</span></h2>'
-      + '<p class="ad-sub">42 hazır vaka dosyası. Birini çek; künyesi, alıntısı ve senaryosuyla anında açılsın.</p>'
-      + '<button class="ad-btn" id="ad-draw">⚁ DOSYA ÇEK</button>'
+      + '<div class="ad-live"><span class="d"></span>ARŞİV · 42 GİZLİ DOSYA</div>'
+      + '<h2>Arşivi karıştır, <span class="g">bir dosya seç.</span></h2>'
+      + '<p class="ad-sub">Düğmeye bas; dosyalar karışsın, rastgele biri çekilsin — künyesi, alıntısı ve senaryosuyla yanda açılsın.</p>'
+      + '<div class="ad-drawer" id="ad-drawer"></div>'
+      + '<button class="ad-btn" id="ad-draw">⚁ ARŞİVİ KARIŞTIR</button>'
       + '<div class="ad-count" id="ad-count"></div>'
-      + '<div class="ad-deck" id="ad-deck"><div class="stub s1"></div><div class="stub s2"></div><div class="ad-card" id="ad-card"></div></div>'
-      + '<a class="ad-btn ghost" href="/arsiv" style="align-self:flex-start">Tüm Arşiv · 42 Dosya →</a>'
+      + '<a class="ad-btn ghost" href="/arsiv" style="align-self:flex-start">Tüm Arşivi İncele · 42 Dosya →</a>'
       + '</div>'
       + '<div class="ad-doss" id="ad-doss"><div class="art" id="ad-art"></div><div class="body" id="ad-body"></div></div>'
       + '</div></div>';
 
-    var deck=mount.querySelector('#ad-deck'), card=mount.querySelector('#ad-card'),
-        doss=mount.querySelector('#ad-doss'), art=mount.querySelector('#ad-art'),
-        body=mount.querySelector('#ad-body'), count=mount.querySelector('#ad-count');
+    var drawer=mount.querySelector('#ad-drawer'), doss=mount.querySelector('#ad-doss'),
+        art=mount.querySelector('#ad-art'), body=mount.querySelector('#ad-body'),
+        count=mount.querySelector('#ad-count'), btn=mount.querySelector('#ad-draw');
 
-    function paintCard(x){
-      card.innerHTML='<div class="cov"><img src="/assets/haber/'+x.slug+'.jpg" alt="" loading="lazy"></div>'
-        +'<span class="cat" style="background:'+x.c+'">'+esc(x.cat)+'</span><span class="seal">A</span>'
-        +'<span class="lbl">'+esc(x.t)+'</span>';
-      if(!RM){card.classList.remove('deal');void card.offsetWidth;card.classList.add('deal');}
+    // gizli dosyaları kur (yelpaze)
+    var folders=[];
+    for(var i=0;i<NF;i++){
+      var f=document.createElement('div'); f.className='folder';
+      var code=String(100+Math.floor(Math.random()*899));
+      f.innerHTML='<span class="cg">ÇOK GİZLİ</span><span class="no">DOSYA · '+code+'</span><span class="seal">A</span><div class="bars"></div>';
+      drawer.appendChild(f); folders.push(f);
     }
+    function base(i){var mid=(NF-1)/2; return 'rotate('+((i-mid)*7)+'deg) translateX('+((i-mid)*12)+'px) translateY('+(-Math.abs(i-mid)*3)+'px)';}
+    function fan(){folders.forEach(function(f,i){f.style.zIndex=i;f.style.opacity='';f.style.transform=base(i);});}
+    fan();
+
+    function riffle(times,cb){
+      if(RM){cb();return;}
+      var t=0;
+      (function spread(){
+        folders.forEach(function(f){f.style.transform='rotate('+rnd(-28,28)+'deg) translateX('+rnd(-46,46)+'px) translateY('+rnd(-14,8)+'px)';});
+        setTimeout(function(){ fan(); if(++t<times) setTimeout(spread,150); else setTimeout(cb,190); },170);
+      })();
+    }
+
     function paintDoss(x){
       doss.classList.remove('open');
       art.innerHTML='<img src="/assets/haber/'+x.slug+'.jpg" alt="'+esc(x.t)+'">';
@@ -127,17 +142,24 @@
         +'<div class="ad-ready"><span class="tag">✓ Senaryoya hazır</span><span class="tag">✓ 3 dk okunur</span><a class="ad-btn ghost" href="/arsiv">Dosyayı Aç →</a></div>';
       requestAnimationFrame(function(){requestAnimationFrame(function(){doss.classList.add('open');});});
     }
+
+    var busy=false;
     function draw(){
+      if(busy)return; busy=true; btn.disabled=true;
       var i; do{i=Math.floor(Math.random()*CASES.length);}while(i===last&&CASES.length>1); last=i;
       var x=CASES[i]; n++;
       count.textContent='ÇEKİLEN · '+String(n).padStart(2,'0')+' / 42 DOSYA';
-      if(!RM){deck.classList.add('shuf');setTimeout(function(){deck.classList.remove('shuf');paintCard(x);},240);}
-      else paintCard(x);
-      paintDoss(x);
+      riffle(2,function(){
+        // en öndeki dosyayı çek (sağa doğru)
+        var top=folders[NF-1]; top.classList.add('pull'); top.style.zIndex=99;
+        top.style.transform='translateX(150%) rotate(11deg)'; top.style.opacity='0';
+        paintDoss(x);
+        setTimeout(function(){ top.classList.remove('pull'); fan(); busy=false; btn.disabled=false; }, 460);
+      });
     }
-    mount.querySelector('#ad-draw').addEventListener('click',draw);
+    btn.addEventListener('click',draw);
     // ilk dosya açık gelsin
-    last=0; n=1; var x0=CASES[0]; count.textContent='ÇEKİLEN · 01 / 42 DOSYA'; paintCard(x0); paintDoss(x0);
+    last=0; n=1; count.textContent='ÇEKİLEN · 01 / 42 DOSYA'; paintDoss(CASES[0]);
   }
 
   function injectStyle(){ if(document.getElementById('ad-style'))return; var s=document.createElement('style'); s.id='ad-style'; s.textContent=CSS; document.head.appendChild(s); }
