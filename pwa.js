@@ -176,7 +176,7 @@
     + '#ta-app-arsiv .ara input{flex:1;background:none;border:0;outline:0;color:#e9e2d0;font-size:14px;min-width:0}'
     + '#ta-app-arsiv .ara input::placeholder{color:#5d6370}'
     + '#ta-app-arsiv .liste{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}'
-    + '#ta-app-arsiv .drow{display:flex;gap:13px;align-items:center;padding:11px 18px;border-top:1px solid rgba(230,220,196,.06);'
+    + '#ta-app-arsiv .drow{cursor:pointer;display:flex;gap:13px;align-items:center;padding:11px 18px;border-top:1px solid rgba(230,220,196,.06);'
       + 'text-decoration:none;-webkit-tap-highlight-color:transparent}'
     + '#ta-app-arsiv .drow:active{background:rgba(193,154,82,.06)}'
     + '#ta-app-arsiv .drow .no{flex:none;width:46px;height:46px;border-radius:12px;background:#10121b;border:1px solid rgba(193,154,82,.26);'
@@ -208,7 +208,44 @@
     + '#ta-app-profil .mrow span{flex:1;font-size:14px;color:#d5d9e2}'
     + '#ta-app-profil .mrow i{font-style:normal;color:#77705c;font-size:15px}'
     + '#ta-app-profil .mrow:active{background:rgba(193,154,82,.06)}'
-    + '#ta-app-profil .alt{margin-top:20px;text-align:center;font-size:10px;letter-spacing:.14em;color:#4c515e}';
+    + '#ta-app-profil .alt{margin-top:20px;text-align:center;font-size:10px;letter-spacing:.14em;color:#4c515e}'
+    /* uygulamada site kabuğu gizli + app üst çubuğu (haber sayfaları hariç) */
+    + ':root.ta-hidechrome header{display:none!important}'
+    + ':root.ta-hidechrome footer{display:none!important}'
+    + ':root.ta-topbar body{padding-top:calc(52px + env(safe-area-inset-top,0px))!important}'
+    + '#ta-topbar{position:fixed;top:0;left:0;right:0;z-index:2147483001;display:flex;align-items:center;gap:4px;'
+      + 'height:calc(52px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 10px 0;'
+      + 'background:rgba(8,10,16,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);'
+      + 'border-bottom:1px solid rgba(193,154,82,.22);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}'
+    + '#ta-topbar .geri{flex:none;width:40px;height:40px;display:grid;place-items:center;color:#e6c478;font-size:24px;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}'
+    + '#ta-topbar .bl{display:flex;align-items:center;gap:9px;min-width:0}'
+    + '#ta-topbar img{width:27px;height:27px;border-radius:8px}'
+    + '#ta-topbar b{font-family:"Playfair Display",Georgia,serif;font-size:16.5px;font-weight:700;color:#f4ecd8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+    /* dosya detayı — uygulama içi native ekran */
+    + '#ta-app-dosya{position:fixed;inset:0;z-index:2147483002;background:#07080d;overflow-y:auto;-webkit-overflow-scrolling:touch;'
+      + 'padding:calc(10px + env(safe-area-inset-top,0px)) 0 calc(96px + env(safe-area-inset-bottom,0px));'
+      + 'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}'
+    + '#ta-app-dosya .ust{display:flex;align-items:center;gap:6px;padding:4px 10px 8px}'
+    + '#ta-app-dosya .ust .geri{flex:none;width:40px;height:40px;display:grid;place-items:center;color:#e6c478;font-size:24px;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}'
+    + '#ta-app-dosya .ust span{font-size:10px;letter-spacing:.2em;color:#77705c}'
+    + '#ta-app-dosya .kafa{padding:2px 20px 14px}'
+    + '#ta-app-dosya .kafa .era{display:inline-block;font-size:9.5px;letter-spacing:.18em;color:#e6c478;border:1px solid rgba(193,154,82,.4);'
+      + 'border-radius:8px;padding:4px 9px;margin-bottom:10px}'
+    + '#ta-app-dosya h2{margin:0;font-family:"Playfair Display",Georgia,serif;font-size:22px;line-height:1.2;font-weight:800;color:#f4ecd8}'
+    + '#ta-app-dosya .ozet{margin:10px 0 0;font-size:14px;line-height:1.65;color:#b9bec9}'
+    + '#ta-app-dosya .sec{margin:10px 14px 0;border:1px solid rgba(193,154,82,.22);border-radius:15px;background:#0d0f17;overflow:hidden}'
+    + '#ta-app-dosya .sec .sh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;cursor:pointer;'
+      + '-webkit-tap-highlight-color:transparent;user-select:none}'
+    + '#ta-app-dosya .sec .sh b{font-size:11px;letter-spacing:.18em;color:#c19a52}'
+    + '#ta-app-dosya .sec .sh i{font-style:normal;color:#77705c;font-size:13px;transition:transform .2s}'
+    + '#ta-app-dosya .sec .icgv{display:none;padding:0 15px 14px}'
+    + '#ta-app-dosya .sec.ac .icgv{display:block}'
+    + '#ta-app-dosya .sec.ac .sh i{transform:rotate(90deg)}'
+    + '#ta-app-dosya .blk + .blk{margin-top:12px}'
+    + '#ta-app-dosya .blk .k{font-size:9.5px;letter-spacing:.16em;color:#8a8f9c;margin-bottom:5px}'
+    + '#ta-app-dosya .blk .t{font-size:13px;line-height:1.65;color:#d5d9e2;white-space:pre-wrap;word-break:break-word}'
+    + '#ta-app-dosya .cta{display:flex;align-items:center;justify-content:center;gap:9px;margin:18px 14px 0;padding:16px;border-radius:14px;'
+      + 'background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:13.5px;letter-spacing:.04em;text-decoration:none}';
 
   var TABS = [
     { k: 'home',   href: '/',        label: 'Masa',   d: 'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5' },
@@ -283,12 +320,56 @@
 
   var DAYMS = 86400000;
 
-  /* K1 Arşiv ekranı — yalnız /arsiv liste rotasında (detay sayfalarında değil) */
-  function isArsivList() {
-    var p = decodeURIComponent(location.pathname).toLowerCase().replace(/\/+$/, '');
-    return p === '/arsiv' || p === '/arsiv.dc.html';
+  /* rota yardımcıları */
+  function normPath() {
+    var p = decodeURIComponent(location.pathname).toLowerCase();
+    p = p.replace(/\.dc\.html$/, '').replace(/\/index\.html$/, '');
+    p = p.replace('/tarih ajani', '');
+    p = p.replace(/\/+$/, '');
+    return p; // '' | '/arsiv' | '/studio' | '/arsiv/<slug>' ...
   }
+  function isHaber() { return normPath().indexOf('/haber') === 0; }
+  function isArsivList() { return normPath() === '/arsiv'; }
   function trLow(s) { return String(s).replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase(); }
+
+  /* ── uygulamada site kabuğunu gizle + app üst çubuğu (haber hariç) ── */
+  var ROOTS = { '': 1, '/arsiv': 1, '/studio': 1, '/haber': 1, '/uyelik': 1 };
+  var TITLES = [
+    ['/studio', 'Studio'], ['/egitim', 'Ajan Akademisi'], ['/urunler', 'Ajan Teçhizatı'],
+    ['/ekitap', 'E-Kitap'], ['/vaka-dosyalari', 'Vaka Dosyaları'], ['/zaman-tuneli', 'Zaman Tüneli'],
+    ['/uyelik', 'Üyelik'], ['/gizlilik', 'Gizlilik'], ['/kvkk', 'KVKK'], ['/mesafeli-satis', 'Mesafeli Satış'],
+    ['/arsiv/', 'Dosya'], ['/urun/', 'Ürün'], ['/ornek', 'Örnek Dosya']
+  ];
+  function routeTitle(p) {
+    for (var i = 0; i < TITLES.length; i++) if (p.indexOf(TITLES[i][0]) === 0) return TITLES[i][1];
+    return 'Tarih Ajanı';
+  }
+  function overlayVar() {
+    return document.getElementById('ta-app-home') || document.getElementById('ta-app-arsiv')
+      || document.getElementById('ta-app-profil') || document.getElementById('ta-app-dosya');
+  }
+  function buildChrome() {
+    if (isHaber()) return; // gazete kendi kabuğunu korur
+    document.documentElement.classList.add('ta-hidechrome');
+    var bar = document.getElementById('ta-topbar');
+    if (overlayVar()) { // tam ekran native ekran varken üst çubuk gereksiz
+      if (bar) { bar.remove(); document.documentElement.classList.remove('ta-topbar'); }
+      return;
+    }
+    if (bar) return;
+    var p = normPath();
+    bar = document.createElement('div');
+    bar.id = 'ta-topbar';
+    bar.innerHTML =
+      (ROOTS[p] || p === '' ? '' : '<button class="geri" aria-label="Geri">‹</button>')
+      + '<div class="bl"><img src="/assets/pwa-icon-192.png" alt=""><b>' + esc(routeTitle(p)) + '</b></div>';
+    document.body.appendChild(bar);
+    document.documentElement.classList.add('ta-topbar');
+    var g = bar.querySelector('.geri');
+    if (g) g.addEventListener('click', function () {
+      if (history.length > 1) history.back(); else location.href = '/';
+    });
+  }
 
   function buildArsiv() {
     if (!isArsivList()) return;
@@ -314,16 +395,71 @@
         var d = DATA[i];
         if (f && trLow(d.baslik + ' ' + (d.era || '') + ' ' + (d.ozet || '')).indexOf(f) === -1) continue;
         n++;
-        html += '<a class="drow" href="/arsiv/' + SLUGS[i] + '/">'
+        // bilinçli olarak <a> DEĞİL: page-transition.js anchor'ları yakalayıp
+        // sayfaya götürüyor; dosya uygulama içinde açılmalı.
+        html += '<div class="drow" role="link" tabindex="0" data-i="' + i + '">'
           + '<span class="no">' + String(i + 1).padStart(2, '0') + '</span>'
           + '<span class="m"><b>' + esc(d.baslik) + '</b><span>' + esc(d.era || 'TARİH DOSYASI') + ' · ' + esc(d.fileNo || '') + '</span></span>'
-          + '<span class="git">›</span></a>';
+          + '<span class="git">›</span></div>';
       }
       liste.innerHTML = n ? html : '<div class="bos">Dosya bulunamadı — başka bir iz sür.</div>';
       say.textContent = n + ' / ' + DATA.length + ' DOSYA';
     }
+    // satıra dokununca sayfaya GİTME — dosya uygulama içinde açılır
+    liste.addEventListener('click', function (e) {
+      var a = e.target.closest ? e.target.closest('.drow') : null;
+      if (!a) return;
+      openDosya(+a.getAttribute('data-i'), true);
+    });
+    liste.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      var a = e.target.closest ? e.target.closest('.drow') : null;
+      if (a) openDosya(+a.getAttribute('data-i'), true);
+    });
     q.addEventListener('input', function () { draw(q.value); });
     draw('');
+    // derin bağlantı: /arsiv#dosya-7
+    var m = (location.hash || '').match(/#dosya-(\d+)/);
+    if (m) { var di = +m[1] - 1; if (di >= 0 && di < DATA.length) openDosya(di, false); }
+  }
+
+  /* ── dosya detayı: uygulama içi native ekran (sayfa değişmez) ── */
+  function closeDosya() {
+    var d = document.getElementById('ta-app-dosya');
+    if (d) d.remove();
+  }
+  window.addEventListener('popstate', closeDosya);
+  function openDosya(i, push) {
+    var DATA = window.__ARSIV__;
+    if (!DATA || !DATA[i]) return;
+    closeDosya();
+    var d = DATA[i];
+    var el = document.createElement('div');
+    el.id = 'ta-app-dosya';
+    var secHtml = (d.sections || []).map(function (s, si) {
+      var bloklar = (s.bloklar || []).map(function (b) {
+        return '<div class="blk"><div class="k">' + esc(b.k || '') + '</div><div class="t">' + esc(b.t || '') + '</div></div>';
+      }).join('');
+      return '<div class="sec' + (si === 0 ? ' ac' : '') + '"><div class="sh"><b>' + esc(s.ad) + '</b><i>›</i></div>'
+        + '<div class="icgv">' + bloklar + '</div></div>';
+    }).join('');
+    el.innerHTML =
+      '<div class="ust"><button class="geri" aria-label="Geri">‹</button><span>' + esc(d.fileNo || d.no || '') + '</span></div>'
+      + '<div class="kafa"><span class="era">' + esc(d.era || 'TARİH DOSYASI') + '</span>'
+      + '<h2>' + esc(d.baslik) + '</h2>'
+      + (d.ozet ? '<p class="ozet">' + esc(d.ozet) + '</p>' : '')
+      + '</div>'
+      + secHtml
+      + '<a class="cta" href="/studio">◉ &nbsp;Studio’da videoya dönüştür</a>';
+    document.body.appendChild(el);
+    el.addEventListener('click', function (e) {
+      var sh = e.target.closest ? e.target.closest('.sh') : null;
+      if (sh) sh.parentElement.classList.toggle('ac');
+    });
+    el.querySelector('.geri').addEventListener('click', function () {
+      if (push) history.back(); else { closeDosya(); if (location.hash) history.replaceState(null, '', location.pathname); }
+    });
+    if (push) history.pushState({ taDosya: i }, '', '#dosya-' + (i + 1));
   }
 
   /* K1 Profil ekranı — /uyelik rotasında; "Seviyeleri Gör" overlay'i kapatıp
@@ -384,6 +520,7 @@
     buildHome();
     buildArsiv();
     buildProfil();
+    buildChrome();
   }
   // dc'nin render döngüsüne karışmamak için MutationObserver YOK —
   // yüzen butonlarla aynı güvenli desen: DOMContentLoaded + periyodik yoklama.
