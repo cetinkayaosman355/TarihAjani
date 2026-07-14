@@ -18,6 +18,11 @@
     { "src": "/assets/pwa-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/assets/pwa-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
+  "screenshots": [
+    { "src": "/assets/ekran-1-anasayfa.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Ana sayfa — tarih videolarını dakikalar içinde üret" },
+    { "src": "/assets/ekran-2-haber.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Tarih Ajanı Haber — tarihin canlı yayını" },
+    { "src": "/assets/ekran-3-arsiv.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Hikâye Arşivi — 42 vaka dosyası" }
+  ],
   "shortcuts": [
     { "name": "Haber", "short_name": "Haber", "url": "/haber/", "icons": [{ "src": "/assets/pwa-icon-192.png", "sizes": "192x192" }] },
     { "name": "Studio", "short_name": "Studio", "url": "/studio", "icons": [{ "src": "/assets/pwa-icon-192.png", "sizes": "192x192" }] },
