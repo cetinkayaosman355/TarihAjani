@@ -186,7 +186,29 @@
       + 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
     + '#ta-app-arsiv .drow span{display:block;margin-top:3px;font-size:10px;letter-spacing:.1em;color:#6b7080}'
     + '#ta-app-arsiv .drow .git{flex:none;color:#c19a52;font-size:17px}'
-    + '#ta-app-arsiv .bos{padding:36px 20px;text-align:center;color:#6b7080;font-size:13px}';
+    + '#ta-app-arsiv .bos{padding:36px 20px;text-align:center;color:#6b7080;font-size:13px}'
+    /* profil ekranı — K1 */
+    + '#ta-app-profil{position:fixed;inset:0;z-index:2147483000;background:#07080d;overflow-y:auto;-webkit-overflow-scrolling:touch;'
+      + 'padding:calc(14px + env(safe-area-inset-top,0px)) 16px calc(96px + env(safe-area-inset-bottom,0px));'
+      + 'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}'
+    + '#ta-app-profil .bas{font-family:"Playfair Display",Georgia,serif;font-size:23px;font-weight:700;color:#f4ecd8;padding:8px 2px 16px}'
+    + '#ta-app-profil .kim{display:flex;align-items:center;gap:14px;border:1px solid rgba(193,154,82,.28);background:#10121b;'
+      + 'border-radius:18px;padding:16px}'
+    + '#ta-app-profil .kim .av{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;'
+      + 'background:linear-gradient(135deg,#a87f37,#e9c87e 60%,#c19a52);color:#171207;font-family:"Playfair Display",Georgia,serif;font-size:23px;font-weight:800}'
+    + '#ta-app-profil .kim b{display:block;font-size:16px;color:#ede4cf}'
+    + '#ta-app-profil .kim span{display:block;margin-top:3px;font-size:11.5px;color:#8a8f9c;word-break:break-all}'
+    + '#ta-app-profil .seviye{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:14px;padding:16px;border-radius:14px;'
+      + 'background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:13.5px;letter-spacing:.04em;'
+      + 'border:0;width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}'
+    + '#ta-app-profil .grup{margin-top:18px;border:1px solid rgba(193,154,82,.2);border-radius:16px;overflow:hidden;background:#0d0f17}'
+    + '#ta-app-profil .mrow{display:flex;align-items:center;gap:12px;padding:14px 15px;text-decoration:none;-webkit-tap-highlight-color:transparent}'
+    + '#ta-app-profil .mrow + .mrow{border-top:1px solid rgba(230,220,196,.06)}'
+    + '#ta-app-profil .mrow svg{flex:none;width:19px;height:19px;stroke:#c19a52;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}'
+    + '#ta-app-profil .mrow span{flex:1;font-size:14px;color:#d5d9e2}'
+    + '#ta-app-profil .mrow i{font-style:normal;color:#77705c;font-size:15px}'
+    + '#ta-app-profil .mrow:active{background:rgba(193,154,82,.06)}'
+    + '#ta-app-profil .alt{margin-top:20px;text-align:center;font-size:10px;letter-spacing:.14em;color:#4c515e}';
 
   var TABS = [
     { k: 'home',   href: '/',        label: 'Masa',   d: 'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5' },
@@ -304,12 +326,64 @@
     draw('');
   }
 
+  /* K1 Profil ekranı — /uyelik rotasında; "Seviyeleri Gör" overlay'i kapatıp
+     gerçek üyelik sayfasını (satın alma) gösterir. */
+  var profilKapali = false;
+  function okuKullanici() {
+    var u = null;
+    try {
+      Object.keys(localStorage).forEach(function (k) {
+        if (u) return;
+        if (k.indexOf('sb-') === 0 && k.indexOf('auth-token') !== -1) {
+          var v = JSON.parse(localStorage.getItem(k) || 'null');
+          var usr = v && (v.user || (v.currentSession && v.currentSession.user));
+          if (usr && usr.email) u = { ad: (usr.user_metadata && usr.user_metadata.full_name) || usr.email.split('@')[0], email: usr.email };
+        }
+      });
+    } catch (e) {}
+    return u;
+  }
+  function mIco(d) { return '<svg viewBox="0 0 24 24"><path d="' + d + '"/></svg>'; }
+  function buildProfil() {
+    if (activeKey() !== 'profil' || profilKapali) return;
+    if (document.getElementById('ta-app-profil')) return;
+    document.documentElement.classList.add('ta-apphome');
+    var u = okuKullanici();
+    var el = document.createElement('div');
+    el.id = 'ta-app-profil';
+    el.innerHTML =
+      '<div class="bas">Profil</div>'
+      + '<div class="kim"><span class="av">' + esc((u ? u.ad : 'A').charAt(0).toUpperCase()) + '</span>'
+      + '<div><b>' + esc(u ? u.ad : 'Ajan') + '</b>'
+      + '<span>' + (u ? esc(u.email) : 'Giriş yapılmadı — üyelik sayfasından giriş yap') + '</span></div></div>'
+      + '<button class="seviye" id="ta-pr-seviye">Üyelik &amp; Seviyeleri Gör →</button>'
+      + '<div class="grup">'
+      + '<a class="mrow" href="/urunler">' + mIco('M3 7l2-3h14l2 3M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Zm7 4h4') + '<span>Ajan Teçhizatı — ürünler</span><i>›</i></a>'
+      + '<a class="mrow" href="/ekitap">' + mIco('M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h13') + '<span>E-Kitaplarım</span><i>›</i></a>'
+      + '<a class="mrow" href="/egitim">' + mIco('M12 3 2 8l10 5 10-5-10-5Zm-6 7v4c0 1.7 2.7 3 6 3s6-1.3 6-3v-4') + '<span>Ajan Akademisi</span><i>›</i></a>'
+      + '<a class="mrow" href="/zaman-tuneli">' + mIco('M12 8v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z') + '<span>Zaman Tüneli</span><i>›</i></a>'
+      + '</div>'
+      + '<div class="grup">'
+      + '<a class="mrow" href="mailto:iletisim@tarihajani.com">' + mIco('M4 6h16v12H4zM4 7l8 6 8-6') + '<span>İletişim</span><i>›</i></a>'
+      + '<a class="mrow" href="/gizlilik">' + mIco('M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3Z') + '<span>Gizlilik &amp; KVKK</span><i>›</i></a>'
+      + '</div>'
+      + '<div class="alt">TARİH AJANI UYGULAMASI · 1.0</div>';
+    document.body.appendChild(el);
+    el.querySelector('#ta-pr-seviye').addEventListener('click', function () {
+      profilKapali = true;
+      el.remove();
+      document.documentElement.classList.remove('ta-apphome');
+      window.scrollTo(0, 0);
+    });
+  }
+
   function ensure() {
     if (!document.body) return;
     injectCss();
     buildTabbar();
     buildHome();
     buildArsiv();
+    buildProfil();
   }
   // dc'nin render döngüsüne karışmamak için MutationObserver YOK —
   // yüzen butonlarla aynı güvenli desen: DOMContentLoaded + periyodik yoklama.
