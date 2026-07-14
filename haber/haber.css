@@ -222,5 +222,12 @@ footer .cc{border-top:1px solid #3a3226;margin-top:30px;padding-top:20px;font-fa
   .mast .inner{grid-template-columns:1fr}.mast .side{display:none}
   .lmrow{grid-template-columns:110px 1fr;gap:13px}
   .lmrow h4{font-size:17px}
+  .catnav .wrap{justify-content:flex-start;padding:0 4px}
+}
+@media(max-width:520px){
+  .lmrow{grid-template-columns:88px 1fr;gap:11px}
+  .lmrow h4{font-size:16px}
+  .catnav a{padding:14px 12px;font-size:11px;letter-spacing:.1em}
+  .catnav .sep{display:none}
 }
 @media(prefers-reduced-motion:reduce){.rise{opacity:1;transform:none}.flash .track{animation:none}.util .dot,.flash .tag .dot,.catnav .live .dot,.phead .mini .dot{animation:none}}
