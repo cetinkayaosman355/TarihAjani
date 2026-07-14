@@ -129,13 +129,9 @@
   }
 
   function ensure() { if (document.body) build(); }
-  ensure();
-  document.addEventListener('DOMContentLoaded', ensure);
-  // dc yeniden render ederse geri koy
-  if (window.MutationObserver) {
-    var t = null;
-    new MutationObserver(function () {
-      if (!document.getElementById('ta-tabbar')) { clearTimeout(t); t = setTimeout(ensure, 120); }
-    }).observe(document.documentElement, { childList: true, subtree: true });
-  }
+  // Not: dc'nin render döngüsüne karışmamak için MutationObserver YOK.
+  // Yüzen sohbet/tema butonlarıyla aynı güvenli desen: DOMContentLoaded + periyodik yoklama.
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensure);
+  else ensure();
+  setInterval(ensure, 4000);
 })();
