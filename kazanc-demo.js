@@ -7,15 +7,14 @@
   if (window.__kzInit) return;
 
   var MILES = [
-    {x:110, k:'GÜN 7',  d:'İlk video yayında'},
-    {x:400, k:'GÜN 30', d:'1.000 abone · para kazanma açıldı'},
-    {x:690, k:'GÜN 60', d:'İlk reklam geliri'},
-    {x:962, k:'GÜN 90', d:'6.900 abone'}
+    {x:100, y:277, ln:'yt', pos:'up',   k:'GÜN 3',  d:'İlk video + ilk Reels'},
+    {x:500, y:221, ln:'ig', pos:'up',   k:'GÜN 15', d:'İlk viral kesit · 1M izlenme'},
+    {x:760, y:190, ln:'yt', pos:'down', k:'GÜN 22', d:'YouTube para kazanma açıldı'}
   ];
   var STATS = [
-    {n:6900,  s:'',  l:'ABONE · 90 GÜN'},
-    {n:410,   s:'K', l:'TOPLAM İZLENME'},
-    {n:12,    s:'',  l:'YAYINLANAN VİDEO'},
+    {n:35000, s:'',  l:'INSTAGRAM TAKİPÇİ'},
+    {n:7000,  s:'',  l:'YOUTUBE ABONE'},
+    {n:5,     s:'M', l:'YOUTUBE İZLENME'},
     {n:3,     s:'',  l:'GELİR KANALI'}
   ];
   var GELIR = [
@@ -42,17 +41,28 @@
     + '#kazanc-demo .kz-chart{position:relative;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg,#0a0b13,#080910 60%,#0a0b12);padding:clamp(14px,1.6vw,24px) clamp(14px,1.6vw,24px) 8px;box-shadow:0 36px 80px -44px rgba(0,0,0,.9)}'
     + '#kazanc-demo .kz-chart .lbl{position:absolute;top:16px;left:20px;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.2em;color:#9aa2b0}'
     + '#kazanc-demo .kz-chart .end{position:absolute;top:14px;right:20px;text-align:right}'
-    + '#kazanc-demo .kz-chart .end small{display:block;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52}'
-    + '#kazanc-demo .kz-chart .end b{font-family:\'Playfair Display\',serif;font-size:clamp(24px,2.4vw,36px);font-weight:800;color:#e6c478;opacity:0;transform:translateY(6px);transition:opacity .6s 1.9s,transform .6s 1.9s}'
-    + '#kazanc-demo.kz-on .kz-chart .end b{opacity:1;transform:none}'
+    + '#kazanc-demo .kz-chart .end small{display:block;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;margin-bottom:5px}'
+    + '#kazanc-demo .kz-chart .leg{display:flex;gap:14px;justify-content:flex-end;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.12em}'
+    + '#kazanc-demo .kz-chart .leg .lg{display:inline-flex;align-items:center;gap:6px}'
+    + '#kazanc-demo .kz-chart .leg .lg i{font-style:normal;font-size:12px}'
+    + '#kazanc-demo .kz-chart .leg .ig{color:#e6c478}'
+    + '#kazanc-demo .kz-chart .leg .yt{color:#e08a80}'
     + '#kazanc-demo svg{display:block;width:100%;height:auto}'
-    + '#kazanc-demo .ln{fill:none;stroke:url(#kz-gold);stroke-width:3;stroke-linecap:round}'
-    + '#kazanc-demo.kz-on .ln{animation:kz-draw 2.2s ease forwards}'
+    + '#kazanc-demo .ln{fill:none;stroke-linecap:round}'
+    + '#kazanc-demo .ln.ig{stroke:url(#kz-gold);stroke-width:3}'
+    + '#kazanc-demo .ln.yt{stroke:url(#kz-red);stroke-width:2.5}'
+    + '#kazanc-demo.kz-on .ln.ig{animation:kz-draw 2.2s ease forwards}'
+    + '#kazanc-demo.kz-on .ln.yt{animation:kz-draw 2.2s ease .25s forwards}'
     + '@keyframes kz-draw{to{stroke-dashoffset:0}}'
     + '#kazanc-demo .ar{fill:url(#kz-area);opacity:0;transition:opacity 1.2s .9s}'
     + '#kazanc-demo.kz-on .ar{opacity:1}'
+    + '#kazanc-demo .etxt{font-family:\'Special Elite\',monospace;font-size:11.5px;letter-spacing:.08em;opacity:0;transition:opacity .5s 2s;paint-order:stroke;stroke:#0a0b13;stroke-width:5px;stroke-linejoin:round}'
+    + '#kazanc-demo .etxt.ig{fill:#e6c478}'
+    + '#kazanc-demo .etxt.yt{fill:#e08a80}'
+    + '#kazanc-demo.kz-on .etxt{opacity:1}'
     + '#kazanc-demo .mdot{fill:#e6c478;stroke:#171207;stroke-width:2;opacity:0;transition:opacity .4s}'
-    + '#kazanc-demo .mtxt{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.08em;fill:#c19a52;opacity:0;transition:opacity .4s}'
+    + '#kazanc-demo .mdot.yt{fill:#c0463b}'
+    + '#kazanc-demo .mtxt{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.08em;fill:#c19a52;opacity:0;transition:opacity .4s;paint-order:stroke;stroke:#0a0b13;stroke-width:5px;stroke-linejoin:round}'
     + '#kazanc-demo .mtxt tspan.d{fill:#8d94a3;font-size:10.5px}'
     + '#kazanc-demo .grid line{stroke:rgba(230,220,196,.06);stroke-width:1}'
     + '#kazanc-demo .gx{font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.12em;fill:#5d6370}'
@@ -72,28 +82,30 @@
     + '@media(max-width:640px){#kazanc-demo .kz-low{grid-template-columns:1fr}#kazanc-demo .mtxt{display:none}}'
     + '@media(prefers-reduced-motion:reduce){#kazanc-demo .ln{stroke-dashoffset:0!important;animation:none}#kazanc-demo .ar,#kazanc-demo .mdot,#kazanc-demo .mtxt,#kazanc-demo .kz-chart .end b{opacity:1!important;transition:none}}';
 
-  // eğri: yavaş başlar, 30. günden sonra kırılır, sona doğru dikleşir (viewBox 1000x300)
-  var PATH = 'M20,278 C150,276 260,272 400,252 C520,235 600,196 700,150 C800,104 890,66 968,44';
+  // iki eğri (viewBox 1000x320): Instagram hızlı yükselir, YouTube daha yavaş ama istikrarlı
+  var PATH_IG = 'M20,278 C150,274 260,264 400,238 C520,214 620,160 720,110 C820,66 900,48 968,40';
+  var PATH_YT = 'M20,278 C160,277 300,272 440,258 C560,246 680,215 780,185 C870,162 930,148 968,140';
 
   function svgHTML(){
     var m = MILES.map(function(mi,i){
-      // eğri üzerindeki y değerleri (yaklaşık, elle hizalı)
-      var ys = {110:275, 400:252, 690:155, 962:45};
-      var y = ys[mi.x] || 150, above = i>=2;
-      var ty = above ? y+34 : y-40;
-      return '<circle class="mdot" data-i="'+i+'" cx="'+mi.x+'" cy="'+y+'" r="5"></circle>'
+      var ty = mi.pos==='down' ? mi.y+34 : mi.y-40;
+      return '<circle class="mdot '+mi.ln+'" data-i="'+i+'" cx="'+mi.x+'" cy="'+mi.y+'" r="5"></circle>'
         + '<text class="mtxt" data-i="'+i+'" x="'+mi.x+'" y="'+ty+'" text-anchor="'+(mi.x>860?'end':'middle')+'">'
         + '<tspan>'+mi.k+'</tspan><tspan class="d" x="'+mi.x+'" dy="15" '+(mi.x>860?'text-anchor="end"':'')+'>'+mi.d+'</tspan></text>';
     }).join('');
-    return '<svg viewBox="0 0 1000 320" preserveAspectRatio="xMidYMid meet" aria-label="İlk 90 gün temsilî abone büyümesi">'
+    return '<svg viewBox="0 0 1000 320" preserveAspectRatio="xMidYMid meet" aria-label="İlk 30 gün temsilî büyüme: Instagram ve YouTube">'
       + '<defs>'
       + '<linearGradient id="kz-gold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a77d35"/><stop offset=".55" stop-color="#e6c478"/><stop offset="1" stop-color="#fff0b1"/></linearGradient>'
-      + '<linearGradient id="kz-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(230,196,120,.22)"/><stop offset="1" stop-color="rgba(230,196,120,0)"/></linearGradient>'
+      + '<linearGradient id="kz-red" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7c261d"/><stop offset=".6" stop-color="#c0463b"/><stop offset="1" stop-color="#e08a80"/></linearGradient>'
+      + '<linearGradient id="kz-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(230,196,120,.2)"/><stop offset="1" stop-color="rgba(230,196,120,0)"/></linearGradient>'
       + '</defs>'
       + '<g class="grid"><line x1="20" y1="278" x2="980" y2="278"/><line x1="20" y1="200" x2="980" y2="200"/><line x1="20" y1="122" x2="980" y2="122"/></g>'
-      + '<text class="gx" x="20" y="304">GÜN 0</text><text class="gx" x="500" y="304" text-anchor="middle">GÜN 45</text><text class="gx" x="980" y="304" text-anchor="end">GÜN 90</text>'
-      + '<path class="ar" d="'+PATH+' L968,278 L20,278 Z"></path>'
-      + '<path class="ln" id="kz-line" d="'+PATH+'"></path>'
+      + '<text class="gx" x="20" y="304">GÜN 0</text><text class="gx" x="500" y="304" text-anchor="middle">GÜN 15</text><text class="gx" x="980" y="304" text-anchor="end">GÜN 30</text>'
+      + '<path class="ar" d="'+PATH_IG+' L968,278 L20,278 Z"></path>'
+      + '<path class="ln yt" id="kz-line-yt" d="'+PATH_YT+'"></path>'
+      + '<path class="ln ig" id="kz-line-ig" d="'+PATH_IG+'"></path>'
+      + '<text class="etxt ig" x="958" y="26" text-anchor="end">INSTAGRAM · 35.000 takipçi</text>'
+      + '<text class="etxt yt" x="958" y="118" text-anchor="end">YOUTUBE · 7.000 abone · 5M izlenme</text>'
       + m + '</svg>';
   }
 
@@ -103,26 +115,27 @@
       + '<div class="kz-head"><div>'
       + '<div class="kz-live"><i>₺</i>SENİ NE BEKLİYOR · TEMSİLÎ PROJEKSİYON</div>'
       + '<h2>Sistemi kur, <span class="g">kazanca çevir.</span></h2>'
-      + '<p class="kz-sub">Akademi’de öğren, Arşiv’den konu çek, Studio’da üret. Düzenli yayınlayan bir tarih kanalının ilk 90 günü böyle görünür.</p>'
+      + '<p class="kz-sub">Akademi’de öğren, Arşiv’den konu çek, Studio’da üret. Video + kesit yayınlayan bir tarih kanalının ilk 30 günü böyle görünür.</p>'
       + '</div>'
       + '<div class="kz-stats">' + STATS.map(function(s,i){return '<div class="kz-st"><b data-n="'+s.n+'" data-s="'+s.s+'" id="kz-n'+i+'">0'+s.s+'</b><span>'+s.l+'</span></div>';}).join('') + '</div>'
       + '</div>'
-      + '<div class="kz-chart"><div class="lbl">ABONE BÜYÜMESİ · İLK 90 GÜN</div>'
-      + '<div class="end"><small>İLK 90 GÜN (temsilî)</small><b>6.900 abone</b></div>'
+      + '<div class="kz-chart"><div class="lbl">BÜYÜME · İLK 30 GÜN</div>'
+      + '<div class="end"><small>İLK 30 GÜN (temsilî)</small>'
+      + '<div class="leg"><span class="lg ig"><i>◉</i>INSTAGRAM</span><span class="lg yt"><i>▶</i>YOUTUBE</span></div></div>'
       + svgHTML() + '</div>'
       + '<div class="kz-low">'
       + GELIR.map(function(g){return '<div class="kz-gel"><span class="ico">'+g.ico+'</span><div><b>'+g.b+'</b><span>'+g.s+'</span></div></div>';}).join('')
       + '<div class="kz-cta"><a class="kz-btn" href="/uyelik">SİSTEME KATIL →</a><a class="kz-btn ghost" href="/egitim">Akademi’yi Gör</a></div>'
       + '</div>'
-      + '<p class="kz-dis">* Temsilî senaryo: Tarih Ajanı yöntemleriyle, haftada 1 video düzenli üretim varsayımıyla hazırlanmış örnek projeksiyondur; kazanç garantisi değildir.</p>'
+      + '<p class="kz-dis">* Temsilî senaryo: Tarih Ajanı yöntemleriyle, düzenli video + kesit (Reels/Shorts) üretimi varsayımıyla hazırlanmış örnek projeksiyondur; kazanç garantisi değildir.</p>'
       + '</div>';
 
     var sec = document.getElementById('kazanc-demo') || mount;
-    var line = mount.querySelector('#kz-line');
-    if (line && line.getTotalLength) {
+    mount.querySelectorAll('.ln').forEach(function(line){
+      if (!line.getTotalLength) return;
       var L = line.getTotalLength();
       line.style.strokeDasharray = L; line.style.strokeDashoffset = L;
-    }
+    });
 
     var played = false;
     function playAnim(){
