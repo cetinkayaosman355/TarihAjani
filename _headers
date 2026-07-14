@@ -11,3 +11,11 @@
 
 /zaman-tuneli/assets/*
   Cache-Control: public, max-age=604800
+
+# PWA — service worker ve manifest hep taze kalsın (güncellemeler anında yayılsın)
+/sw.js
+  Cache-Control: no-cache
+/manifest.json
+  Cache-Control: no-cache
+/pwa.js
+  Cache-Control: no-cache

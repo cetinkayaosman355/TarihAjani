@@ -255,6 +255,15 @@ function head(title, desc, extra){
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="stylesheet" href="/haber/haber.css">
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png?v=3">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0b0b0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tarih Ajanı">
+<script src="/pwa.js" defer></script>
 ${extra||''}</head>
 <body>`;
 }
