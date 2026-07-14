@@ -27,14 +27,14 @@
     {slug:'kartaca',cat:'SAVAŞ',c:'#9E2B23',yr:'MÖ 146',yer:'KARTACA',kisi:'Scipio Aemilianus',
      t:'Kartaca yerle bir edildi',hook:'Üç Pön Savaşı’nın sonunda bir dünya kenti haritadan silindi.',q:'Akdeniz’in en zengin limanı, günlerce yandı.'}
   ];
-  var NF = 6; // çekmecedeki görünür dosya sayısı
+  var NF = 5; // çekmecedeki görünür dosya sayısı
 
   var CSS = ''
     + '#arsiv-demo{position:relative;background:#080910;border-top:1px solid rgba(193,154,82,.15);border-bottom:1px solid rgba(193,154,82,.15);overflow:hidden}'
     + '#arsiv-demo .ad-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle 560px at 10% 6%,rgba(158,43,35,.10),transparent 60%),radial-gradient(circle 520px at 92% 96%,rgba(230,196,120,.09),transparent 58%)}'
-    + '#arsiv-demo .ad-wrap{position:relative;width:min(1720px,95vw);margin:0 auto;padding:clamp(40px,4.4vw,64px) clamp(20px,3vw,40px)}'
-    + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.82fr 1.18fr;gap:clamp(24px,2.8vw,44px);align-items:stretch}'
-    + '#arsiv-demo .ad-panel{display:flex;flex-direction:column;gap:15px;min-width:0;padding-top:clamp(6px,1.4vw,18px)}'
+    + '#arsiv-demo .ad-wrap{position:relative;width:min(1660px,94vw);margin:0 auto;padding:clamp(28px,3vw,44px) clamp(20px,3vw,40px)}'
+    + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.82fr 1.18fr;gap:clamp(24px,2.8vw,44px);align-items:center}'
+    + '#arsiv-demo .ad-panel{display:flex;flex-direction:column;gap:13px;min-width:0}'
     + '#arsiv-demo .ad-live{display:inline-flex;align-items:center;gap:8px;color:#e08a80;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.2em}'
     + '#arsiv-demo .ad-live .d{width:9px;height:9px;border-radius:50%;background:#e11d1d;box-shadow:0 0 0 0 rgba(225,29,29,.6);animation:ad-pulse 1.4s ease-out infinite}'
     + '@keyframes ad-pulse{0%{box-shadow:0 0 0 0 rgba(225,29,29,.55)}70%{box-shadow:0 0 0 9px rgba(225,29,29,0)}100%{box-shadow:0 0 0 0 rgba(225,29,29,0)}}'
@@ -48,17 +48,18 @@
     + '#arsiv-demo .ad-btn.ghost:hover{background:rgba(193,154,82,.12);box-shadow:none}'
     + '#arsiv-demo .ad-count{font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.14em;color:#8b93a1}'
     // çekmece — gizli dosyalar
-    + '#arsiv-demo .ad-drawer{position:relative;height:250px}'
-    + '#arsiv-demo .folder{position:absolute;left:50%;bottom:0;width:168px;height:214px;margin-left:-84px;transform-origin:bottom center;border:1px solid rgba(193,154,82,.34);background:linear-gradient(165deg,#1c1811,#100c08);box-shadow:0 18px 30px -20px #000;transition:transform .28s cubic-bezier(.3,.7,.3,1),opacity .3s;overflow:hidden;will-change:transform}'
-    + '#arsiv-demo .folder::before{content:"";position:absolute;top:-12px;left:18px;width:58px;height:14px;background:linear-gradient(165deg,#1c1811,#140f0a);border:1px solid rgba(193,154,82,.34);border-bottom:0;border-radius:4px 4px 0 0}'
-    + '#arsiv-demo .folder .cg{position:absolute;top:13px;right:11px;font-family:\'Special Elite\',monospace;font-size:7.5px;letter-spacing:.12em;color:#c0463b;border:1px solid rgba(192,70,59,.5);padding:3px 5px;transform:rotate(5deg)}'
-    + '#arsiv-demo .folder .no{position:absolute;top:15px;left:14px;font-family:\'Special Elite\',monospace;font-size:8.5px;letter-spacing:.08em;color:#8a7a55}'
-    + '#arsiv-demo .folder .seal{position:absolute;top:44px;left:50%;margin-left:-19px;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 40% 32%,#d24b38,#a62f22 46%,#7c1f16 82%);display:grid;place-items:center;font-family:\'Playfair Display\',serif;font-weight:800;font-size:17px;color:#f4d9c9;box-shadow:inset 0 -2px 4px rgba(0,0,0,.4)}'
-    + '#arsiv-demo .folder .bars{position:absolute;left:16px;right:16px;bottom:16px;height:74px;background:repeating-linear-gradient(0deg,rgba(193,154,82,.16) 0 5px,transparent 5px 12px)}'
-    + '#arsiv-demo .folder .bars::after{content:"GİZLİ";position:absolute;left:0;top:-16px;font-family:\'Special Elite\',monospace;font-size:8px;letter-spacing:.16em;color:#6b6146}'
+    + '#arsiv-demo .ad-drawer{position:relative;height:216px;margin:2px 0}'
+    + '#arsiv-demo .folder{position:absolute;left:50%;bottom:6px;width:150px;height:190px;margin-left:-75px;transform-origin:50% 118%;border:1px solid rgba(193,154,82,.34);border-radius:3px;background:linear-gradient(158deg,#221d13,#14100a 60%,#0d0a06);box-shadow:0 16px 26px -18px rgba(0,0,0,.9),inset 0 1px 0 rgba(230,196,120,.06);transition:transform .3s cubic-bezier(.34,.9,.3,1),opacity .3s;overflow:hidden;will-change:transform}'
+    + '#arsiv-demo .folder::before{content:"";position:absolute;top:-11px;left:16px;width:56px;height:13px;background:linear-gradient(158deg,#221d13,#161009);border:1px solid rgba(193,154,82,.34);border-bottom:0;border-radius:5px 5px 0 0}'
+    + '#arsiv-demo .folder::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(230,196,120,.05),transparent 40%);pointer-events:none}'
+    + '#arsiv-demo .folder .cg{position:absolute;top:12px;right:10px;font-family:\'Special Elite\',monospace;font-size:7px;letter-spacing:.12em;color:#c0463b;border:1px solid rgba(192,70,59,.5);padding:3px 5px;transform:rotate(5deg)}'
+    + '#arsiv-demo .folder .no{position:absolute;top:14px;left:13px;font-family:\'Special Elite\',monospace;font-size:8px;letter-spacing:.08em;color:#8a7a55}'
+    + '#arsiv-demo .folder .seal{position:absolute;top:40px;left:50%;margin-left:-17px;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 32%,#d24b38,#a62f22 46%,#7c1f16 82%);display:grid;place-items:center;font-family:\'Playfair Display\',serif;font-weight:800;font-size:15px;color:#f4d9c9;box-shadow:inset 0 -2px 4px rgba(0,0,0,.4),0 3px 8px -3px rgba(166,47,34,.6)}'
+    + '#arsiv-demo .folder .bars{position:absolute;left:15px;right:15px;bottom:15px;height:60px;background:repeating-linear-gradient(0deg,rgba(193,154,82,.15) 0 5px,transparent 5px 12px)}'
+    + '#arsiv-demo .folder .bars::after{content:"GİZLİ";position:absolute;left:0;top:-15px;font-family:\'Special Elite\',monospace;font-size:7.5px;letter-spacing:.16em;color:#6b6146}'
     + '#arsiv-demo .folder.pull{transition:transform .42s cubic-bezier(.4,.8,.3,1),opacity .42s}'
     // dosya (dossier)
-    + '#arsiv-demo .ad-doss{position:relative;border:1px solid rgba(193,154,82,.34);background:#0a0b12;overflow:hidden;display:flex;min-height:300px}'
+    + '#arsiv-demo .ad-doss{position:relative;border:1px solid rgba(193,154,82,.34);background:#0a0b12;overflow:hidden;display:flex;min-height:256px}'
     + '#arsiv-demo .ad-doss .art{position:relative;flex:0 0 40%;overflow:hidden;border-right:1px solid rgba(193,154,82,.2)}'
     + '#arsiv-demo .ad-doss .art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.06);transition:opacity .9s,transform 7s}'
     + '#arsiv-demo .ad-doss.open .art img{opacity:.9;transform:scale(1)}'
@@ -116,7 +117,7 @@
       f.innerHTML='<span class="cg">ÇOK GİZLİ</span><span class="no">DOSYA · '+code+'</span><span class="seal">A</span><div class="bars"></div>';
       drawer.appendChild(f); folders.push(f);
     }
-    function base(i){var mid=(NF-1)/2; return 'rotate('+((i-mid)*7)+'deg) translateX('+((i-mid)*12)+'px) translateY('+(-Math.abs(i-mid)*3)+'px)';}
+    function base(i){var mid=(NF-1)/2; return 'rotate('+((i-mid)*9)+'deg)';}
     function fan(){folders.forEach(function(f,i){f.style.zIndex=i;f.style.opacity='';f.style.transform=base(i);});}
     fan();
 
@@ -124,7 +125,7 @@
       if(RM){cb();return;}
       var t=0;
       (function spread(){
-        folders.forEach(function(f){f.style.transform='rotate('+rnd(-28,28)+'deg) translateX('+rnd(-46,46)+'px) translateY('+rnd(-14,8)+'px)';});
+        folders.forEach(function(f){f.style.transform='rotate('+rnd(-22,22)+'deg) translateX('+rnd(-30,30)+'px) translateY('+rnd(-12,4)+'px)';});
         setTimeout(function(){ fan(); if(++t<times) setTimeout(spread,150); else setTimeout(cb,190); },170);
       })();
     }
