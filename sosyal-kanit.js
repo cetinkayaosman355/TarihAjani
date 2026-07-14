@@ -62,14 +62,15 @@
         '<span style="color:#a4a9b5;font-size:12.5px;margin-left:8px;">' + st.avgRating + ' / 5 · ' + fmt(st.reviews) + ' değerlendirme</span>'
       : '<span style="color:#818797;font-size:12.5px;">İlk değerlendirmeyi sen bırak — deneyimini paylaş.</span>';
 
+    // minimal vitrin: en fazla 3 yorum, kısa kesilmiş metin (premium sade görünüm)
     var reviewsHtml = '';
     if (state.reviews.length) {
       reviewsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:20px;">' +
-        state.reviews.map(function (r) {
+        state.reviews.slice(0, 3).map(function (r) {
           var who = esc(r.name || 'Ajan') + (r.tier ? ' · ' + esc(r.tier) : '');
-          return '<div style="border:1px solid rgba(193,154,82,.22);background:#070a12;padding:16px 18px;">' +
-            '<div style="color:#e6c478;font-size:13px;letter-spacing:2px;">' + stars(r.rating) + '</div>' +
-            '<p style="margin:9px 0 10px;color:#cfd3e0;font-size:13.5px;line-height:1.6;">' + esc(r.body) + '</p>' +
+          return '<div style="border:1px solid rgba(193,154,82,.22);background:#070a12;padding:12px 14px;">' +
+            '<div style="color:#e6c478;font-size:11px;letter-spacing:2px;">' + stars(r.rating) + '</div>' +
+            '<p style="margin:7px 0 8px;color:#cfd3e0;font-size:13px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">' + esc(r.body) + '</p>' +
             '<div style="font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.08em;color:#818797;">— ' + who + '</div>' +
           '</div>';
         }).join('') +
@@ -168,7 +169,7 @@
 
   function load() {
     if (state.loaded) { mount(true); return; }
-    Promise.all([api({ action: 'stats' }), api({ action: 'list', limit: 24 })]).then(function (res) {
+    Promise.all([api({ action: 'stats' }), api({ action: 'list', limit: 6 })]).then(function (res) {
       state.stats = (res[0] && res[0].ok) ? res[0] : { members: 0, productions: 0, reviews: 0, avgRating: 0 };
       state.reviews = (res[1] && res[1].ok && res[1].reviews) ? res[1].reviews : [];
       state.loaded = true;
