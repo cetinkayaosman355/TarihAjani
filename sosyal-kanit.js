@@ -9,7 +9,7 @@
   var FN = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/sosyal-kanit';
   var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
 
-  var state = { loaded: false, stats: null, reviews: [], rating: 0, sending: false, done: false, err: '' };
+  var state = { loading: false, loaded: false, stats: null, reviews: [], rating: 0, sending: false, done: false, err: '' };
 
   function api(payload) {
     return fetch(FN, {
@@ -62,14 +62,15 @@
         '<span style="color:#a4a9b5;font-size:12.5px;margin-left:8px;">' + st.avgRating + ' / 5 · ' + fmt(st.reviews) + ' değerlendirme</span>'
       : '<span style="color:#818797;font-size:12.5px;">İlk değerlendirmeyi sen bırak — deneyimini paylaş.</span>';
 
+    // minimal vitrin: en fazla 3 yorum, kısa kesilmiş metin (premium sade görünüm)
     var reviewsHtml = '';
     if (state.reviews.length) {
       reviewsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:20px;">' +
-        state.reviews.map(function (r) {
+        state.reviews.slice(0, 3).map(function (r) {
           var who = esc(r.name || 'Ajan') + (r.tier ? ' · ' + esc(r.tier) : '');
-          return '<div style="border:1px solid rgba(193,154,82,.22);background:#070a12;padding:16px 18px;">' +
-            '<div style="color:#e6c478;font-size:13px;letter-spacing:2px;">' + stars(r.rating) + '</div>' +
-            '<p style="margin:9px 0 10px;color:#cfd3e0;font-size:13.5px;line-height:1.6;">' + esc(r.body) + '</p>' +
+          return '<div style="border:1px solid rgba(193,154,82,.22);background:#070a12;padding:12px 14px;">' +
+            '<div style="color:#e6c478;font-size:11px;letter-spacing:2px;">' + stars(r.rating) + '</div>' +
+            '<p style="margin:7px 0 8px;color:#cfd3e0;font-size:13px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">' + esc(r.body) + '</p>' +
             '<div style="font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.08em;color:#818797;">— ' + who + '</div>' +
           '</div>';
         }).join('') +
@@ -167,24 +168,40 @@
   }
 
   function load() {
-    if (state.loaded) { mount(true); return; }
-    Promise.all([api({ action: 'stats' }), api({ action: 'list', limit: 24 })]).then(function (res) {
+    if (state.loading) return;
+    state.loading = true;
+    Promise.all([api({ action: 'stats' }), api({ action: 'list', limit: 6 })]).then(function (res) {
       state.stats = (res[0] && res[0].ok) ? res[0] : { members: 0, productions: 0, reviews: 0, avgRating: 0 };
       state.reviews = (res[1] && res[1].ok && res[1].reviews) ? res[1].reviews : [];
       state.loaded = true;
-      mount(true);   // veri gelince gerçek sayılarla yeniden çiz
+      ensure();
     });
   }
 
+  /* TEK SEFERLİK çizim kuralı: dc'nin React'ı açılışta gövdeyi birkaç geçişte
+     işler ve bu sırada yabancı düğümlerin referansını tutabilir. Aynı kutuya
+     iki kez innerHTML basmak (önce yer tutucu, sonra veriyle) React'ın elindeki
+     eski kökü koparıp "removeChild ... not a child" çökmesine yol açıyordu.
+     Bu yüzden: veri hazır olana dek HİÇ çizme; hazır olunca bir kez çiz; ancak
+     dc kutuyu boşaltırsa (kök kaybolursa) yeniden çiz. */
+  function ensure() {
+    var host = document.getElementById('ta-sosyal-kanit');
+    if (!host) return;                       // yalnız yer tutucu olan sayfada
+    if (!state.loading) load();              // ilk görüşte veriyi çekmeye başla
+    if (!state.loaded) return;               // veri gelmeden asla innerHTML basma
+    if (host.querySelector('#ta-sk-root')) return; // zaten çizili
+    mount(true);
+  }
+
   function start() {
-    if (!document.getElementById('ta-sosyal-kanit')) return; // yalnız yer tutucu olan sayfada
-    mount();   // HEMEN çiz — "yükleniyor…" asılı kalmasın (veri gelince güncellenir)
-    load();
-    var mo = new MutationObserver(function () {
-      var host = document.getElementById('ta-sosyal-kanit');
-      if (host && !host.querySelector('#ta-sk-root')) mount();  // dc yeniden render ederse geri çiz
-    });
-    mo.observe(document.body, { childList: true, subtree: true });
+    ensure();
+    // dc gövdeyi bizden sonra render edebilir ya da yeniden çizebilir:
+    // sınırlı aralıklarla yeniden dene (senkron MutationObserver dc'yi kırar)
+    var ticks = 0;
+    var iv = setInterval(function () {
+      ensure();
+      if (++ticks > 40) { clearInterval(iv); setInterval(ensure, 4000); } // sonrasında seyrek bekçi
+    }, 500);
   }
 
   if (document.readyState === 'loading') {

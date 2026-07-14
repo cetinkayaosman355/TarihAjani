@@ -85,15 +85,14 @@
   document.documentElement.classList.add('ta-standalone');
 
   /* ── içerik verisi ── */
-  // Günün Dosyası — güne göre döner
+  // Günün Dosyası — ARŞİVDEN gelir (uygulama içi detay açılır; habere değil).
+  // di = arsiv-slugs.js sırası.
   var HEROES = [
-    { img: '/assets/haber/marat-suikasti.jpg',  t: 'Devrimin sesi banyoda öldürüldü',              s: '1793 · PARİS',            href: '/haber/marat-suikasti/' },
-    { img: '/assets/haber/istanbul-fethi.jpg',  t: 'Konstantinopolis düştü: Bin yıllık Bizans sona erdi', s: '1453 · KONSTANTİNOPOLİS', href: '/haber/istanbul-fethi/' },
-    { img: '/assets/haber/sezar-suikasti.jpg',  t: 'Sezar senatoda öldürüldü: Tam 23 hançer darbesi',     s: 'MÖ 44 · ROMA',            href: '/haber/sezar-suikasti/' },
-    { img: '/assets/haber/vezuv-pompeii.jpg',   t: 'Vezüv patladı: Pompeii saatler içinde kül altında',   s: 'MS 79 · POMPEII',         href: '/haber/vezuv-pompeii/' },
-    { img: '/assets/haber/otzi.jpg',            t: '5300 yıllık cinayet: Buz Adam dosyası açıldı',        s: 'MÖ 3300 · ALPLER',        href: '/haber/otzi/' },
-    { img: '/assets/haber/grek-atesi.jpg',      t: 'Suda bile sönmeyen silah: Grek Ateşi',                s: '672 · BİZANS',            href: '/haber/grek-atesi/' },
-    { img: '/assets/haber/kara-olum.jpg',       t: 'Kara Ölüm: Avrupa nüfusunun üçte biri yok oldu',      s: '1347 · AVRUPA',           href: '/haber/kara-olum/' }
+    { di: 16, img: '/assets/haber/sezar-suikasti.jpg',   t: "Sezar'ın Sonu — Tarihin En Ünlü İhaneti", s: 'MÖ 44 · ROMA' },
+    { di: 0,  img: '/assets/haber/vezuv-pompeii.jpg',    t: 'Pompeii — Son Saat',                      s: 'MS 79 · VEZÜV' },
+    { di: 13, img: '/assets/haber/grek-atesi.jpg',       t: 'Grek Ateşi — Suda Sönmeyen Sır Silah',    s: '672 · BİZANS' },
+    { di: 19, img: '/assets/haber/otzi.jpg',             t: 'Ötzi — Tarihin En Eski Cinayeti',         s: 'MÖ 3300 · ALPLER' },
+    { di: 14, img: '/assets/haber/tutankamun-hancer.jpg',t: 'Tutankhamun — Uzaydan Gelen Bıçak',       s: 'MÖ 1323 · MISIR' }
   ];
   // di: arşivdeki dosya sırası (arsiv-slugs.js ile eşleştirildi) — poster
   // doğrudan o dosyanın uygulama içi detayını açar (/arsiv#dosya-N).
@@ -163,6 +162,23 @@
     + '#ta-app-home .nrow p{margin:0;flex:1;font-size:13px;line-height:1.4;color:#d5d9e2}'
     + '#ta-app-home .nrow .ok{color:#c19a52;font-size:16px}'
     + '#ta-app-home .nrow:active{background:rgba(193,154,82,.06)}'
+    /* studio hızlı bant + akademi kartı */
+    + '#ta-app-home .stub,#ta-app-home .akkart{display:flex;align-items:center;gap:13px;margin:14px 14px 0;padding:13px 15px;border-radius:15px;'
+      + 'text-decoration:none;-webkit-tap-highlight-color:transparent}'
+    + '#ta-app-home .stub{background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52)}'
+    + '#ta-app-home .stub .ico{flex:none;width:36px;height:36px;border-radius:50%;background:rgba(23,18,7,.16);display:grid;place-items:center;color:#171207;font-size:16px;font-weight:800}'
+    + '#ta-app-home .stub b{display:block;color:#171207;font-size:14.5px;font-weight:800}'
+    + '#ta-app-home .stub .m span{display:block;margin-top:2px;color:rgba(23,18,7,.72);font-size:11px}'
+    + '#ta-app-home .stub .git{margin-left:auto;color:#171207;font-size:18px}'
+    + '#ta-app-home .stub:active,#ta-app-home .akkart:active{transform:scale(.985)}'
+    + '#ta-app-home .akkart{border:1px solid rgba(193,154,82,.26);background:#0d0f17}'
+    + '#ta-app-home .akkart .rz{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid rgba(193,154,82,.5);display:grid;place-items:center;'
+      + 'color:#e6c478;font-family:"Playfair Display",Georgia,serif;font-size:13px;font-weight:800}'
+    + '#ta-app-home .akkart b{display:block;color:#ede4cf;font-size:14px;font-weight:700}'
+    + '#ta-app-home .akkart .m span{display:block;margin-top:2px;color:#8a8f9c;font-size:11px}'
+    + '#ta-app-home .akkart .m{min-width:0}'
+    + '#ta-app-home .akkart .m span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+    + '#ta-app-home .akkart .git{margin-left:auto;color:#c19a52;font-size:18px}'
     + ':root.ta-apphome #ta-chat-btn,:root.ta-apphome #ta-tema-btn{display:none!important}'
     + ':root.ta-apphome body{overflow:hidden!important}'
     /* arşiv ekranı — K1 native liste */
@@ -315,9 +331,14 @@
     el.id = 'ta-app-home';
     el.innerHTML =
       '<div class="hel"><b>' + selam + '</b><span>' + gun + ' · ' + now.getDate() + ' ' + ay + ' · İSTANBUL</span></div>'
-      + '<a class="hero" href="' + hero.href + '"><img src="' + hero.img + '" alt="">'
+      // günün dosyası: arşivden, uygulama içi detaya
+      + '<a class="hero" href="/arsiv#dosya-' + (hero.di + 1) + '"><img src="' + hero.img + '" alt="">'
       + '<span class="bd">GÜNÜN DOSYASI</span>'
       + '<span class="tt"><b>' + esc(hero.t) + '</b><span>' + esc(hero.s) + ' — Dosyayı aç →</span></span></a>'
+      // studio hızlı üretim bandı
+      + '<a class="stub" href="/studio"><span class="ico">◉</span>'
+      + '<span class="m"><b>Yeni Dosya Üret</b><span>Konu yaz; senaryo, ses, görsel — Studio</span></span>'
+      + '<span class="git">›</span></a>'
       + '<div class="sh"><b>GİZLİ ARŞİV</b><a href="/arsiv">42 dosya →</a></div>'
       + '<div class="posters">'
       + POSTERS.map(function (p) {
@@ -325,8 +346,12 @@
           return '<a class="po" href="' + href + '"><img src="' + p.img + '" alt="" loading="lazy"><b>' + esc(p.t) + '</b><span>' + esc(p.s) + '</span></a>';
         }).join('')
       + '</div>'
+      // akademi kartı
+      + '<a class="akkart" href="/egitim"><span class="rz">IX</span>'
+      + '<span class="m"><b>Ajan Akademisi</b><span>Ders 1 · Söylenti ile kaydı ayırmak — 9 derslik program</span></span>'
+      + '<span class="git">›</span></a>'
       + '<div class="sh"><b>SON DAKİKA</b><a href="/haber/">tümü →</a></div>'
-      + NEWS.map(function (n) {
+      + NEWS.slice(0, 3).map(function (n) {
           return '<a class="nrow" href="' + n.href + '"><span class="yil">' + esc(n.y) + '</span><p>' + esc(n.t) + '</p><span class="ok">›</span></a>';
         }).join('');
     document.body.appendChild(el);
