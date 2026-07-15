@@ -39,11 +39,10 @@
     + '#arsiv-demo .ad-grain{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.5;mix-blend-mode:overlay;background-image:radial-gradient(rgba(255,255,255,.05) .5px,transparent .5px);background-size:3px 3px}'
     + '#arsiv-demo .ad-glow{display:none}'
     + '#arsiv-demo .ad-wrap{position:relative;z-index:2;width:min(1740px,94vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
-    + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.86fr 1.14fr;gap:clamp(30px,3.4vw,60px);align-items:stretch}'
+    + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.86fr 1.14fr;gap:clamp(30px,3.4vw,60px);align-items:start}'
     + '#arsiv-demo .ad-panel{display:flex;flex-direction:column;gap:16px;min-width:0}'
-    + '#arsiv-demo #ad-draw{margin-top:auto}'
-    + '#arsiv-demo .ad-right{display:flex;flex-direction:column;min-width:0}'
-    + '#arsiv-demo .ad-all{width:100%;justify-content:center;margin-top:14px}'
+    + '#arsiv-demo .ad-foot{display:flex;justify-content:center;margin-top:clamp(20px,2.4vw,32px)}'
+    + '#arsiv-demo .ad-all{width:min(520px,100%);justify-content:center}'
     // ayırt edici başlık — sınıflandırma bandı
     + '#arsiv-demo .ad-live{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;color:#e6c478;font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.24em;border:1px solid rgba(193,154,82,.4);padding:8px 15px;background:rgba(12,10,6,.5);backdrop-filter:blur(2px)}'
     + '#arsiv-demo .ad-live .d{width:9px;height:9px;border-radius:50%;background:#e11d1d;box-shadow:0 0 0 0 rgba(225,29,29,.6);animation:ad-pulse 1.4s ease-out infinite}'
@@ -113,11 +112,10 @@
       + '<button class="ad-btn" id="ad-draw">⚁ ARŞİVİ KARIŞTIR</button>'
       + '<div class="ad-count" id="ad-count"></div>'
       + '</div>'
-      + '<div class="ad-right">'
       + '<div class="ad-doss" id="ad-doss"><div class="art" id="ad-art"></div><div class="body" id="ad-body"></div></div>'
-      + '<a class="ad-btn ghost ad-all" href="/arsiv">Tüm Arşivi İncele · 42 Dosya →</a>'
       + '</div>'
-      + '</div></div>';
+      + '<div class="ad-foot"><a class="ad-btn ghost ad-all" href="/arsiv">Tüm Arşivi İncele · 42 Dosya →</a></div>'
+      + '</div>';
 
     var drawer=mount.querySelector('#ad-drawer'), doss=mount.querySelector('#ad-doss'),
         art=mount.querySelector('#ad-art'), body=mount.querySelector('#ad-body'),
