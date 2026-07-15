@@ -43,36 +43,33 @@
 
   function render() {
     var st = state.stats || {};
-    // Canlı sayaçlar + doğrulanabilir ürün gerçekleri (hepsi gerçek)
-    var stats = [
-      { val: st.members || 0, label: 'KAYITLI AJAN', live: true },
-      { val: st.productions || 0, label: 'STUDIO ÜRETİMİ', live: true },
-      { val: 42, label: 'HAZIR VAKA DOSYASI', live: false },
-      { val: 9, label: 'DERSLİK AKADEMİ', live: false }
-    ];
-    var statHtml = stats.map(function (s) {
-      return '<div style="text-align:center;padding:2px 6px;">' +
-        '<div class="ta-sk-num" data-to="' + s.val + '" style="font-family:\'Playfair Display\',serif;font-weight:800;font-size:23px;color:#e6c478;line-height:1;">0</div>' +
-        '<div style="margin-top:5px;font-family:\'Special Elite\',monospace;font-size:8.5px;letter-spacing:.14em;color:#818797;">' + s.label + '</div>' +
-      '</div>';
-    }).join('');
+    var members = st.members || 0;
 
     var ratingLine = (st.reviews > 0)
-      ? '<span style="color:#e6c478;font-size:15px;letter-spacing:2px;">' + stars(st.avgRating) + '</span>' +
-        '<span style="color:#a4a9b5;font-size:12.5px;margin-left:8px;">' + st.avgRating + ' / 5 · ' + fmt(st.reviews) + ' değerlendirme</span>'
-      : '<span style="color:#818797;font-size:12.5px;">İlk değerlendirmeyi sen bırak — deneyimini paylaş.</span>';
+      ? '<span style="color:#e6c478;font-size:15px;letter-spacing:2px;vertical-align:middle;">' + stars(st.avgRating) + '</span>' +
+        '<span style="color:#b7bcc7;font-size:12.5px;margin-left:8px;">' + st.avgRating + ' / 5 · ' + fmt(st.reviews) + ' değerlendirme' + (members ? ' · ' + fmt(members) + ' kayıtlı ajan' : '') + '</span>'
+      : '<span style="color:#9aa0ad;font-size:12.5px;">İlk değerlendirmeyi sen bırak — deneyimini paylaş.</span>';
 
-    // minimal vitrin: en fazla 3 yorum, kısa kesilmiş metin (premium sade görünüm)
+    // Editoryal yorum kartları: tırnak motifi + serif italik alıntı + doğrulanmış ajan
     var reviewsHtml = '';
     if (state.reviews.length) {
-      reviewsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:20px;">' +
+      reviewsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:14px;margin-top:26px;">' +
         state.reviews.slice(0, 3).map(function (r) {
-          var who = esc(r.name || 'Ajan') + (r.tier ? ' · ' + esc(r.tier) : '');
-          return '<div style="border:1px solid rgba(193,154,82,.22);background:#070a12;padding:12px 14px;">' +
-            '<div style="color:#e6c478;font-size:11px;letter-spacing:2px;">' + stars(r.rating) + '</div>' +
-            '<p style="margin:7px 0 8px;color:#cfd3e0;font-size:13px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">' + esc(r.body) + '</p>' +
-            '<div style="font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.08em;color:#818797;">— ' + who + '</div>' +
-          '</div>';
+          var name = esc(r.name || 'Ajan');
+          var initial = ((r.name || 'A').trim().charAt(0) || 'A').toUpperCase();
+          var tier = r.tier ? esc(r.tier) + ' · ' : '';
+          return '<figure style="position:relative;margin:0;border:1px solid rgba(193,154,82,.22);background:linear-gradient(160deg,#0b0e16,#070a11);padding:20px 20px 18px;display:flex;flex-direction:column;gap:13px;overflow:hidden;">' +
+            '<span aria-hidden="true" style="position:absolute;top:0;right:14px;font-family:\'Playfair Display\',serif;font-size:64px;line-height:1;color:rgba(193,154,82,.14);pointer-events:none;">”</span>' +
+            '<div style="color:#e6c478;font-size:12px;letter-spacing:2px;">' + stars(r.rating) + '</div>' +
+            '<blockquote style="margin:0;font-family:\'Playfair Display\',serif;font-style:italic;font-size:15px;line-height:1.62;color:#e6e1d3;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">“' + esc(r.body) + '”</blockquote>' +
+            '<figcaption style="display:flex;align-items:center;gap:10px;margin-top:auto;">' +
+              '<span style="flex:0 0 auto;width:33px;height:33px;border-radius:50%;display:grid;place-items:center;font-family:\'Playfair Display\',serif;font-weight:700;font-size:14px;color:#e6c478;border:1px solid rgba(193,154,82,.5);background:rgba(193,154,82,.08);">' + initial + '</span>' +
+              '<span style="min-width:0;line-height:1.3;">' +
+                '<b style="display:block;color:#f2ecd9;font-size:13px;font-weight:600;">' + name + '</b>' +
+                '<span style="color:#8f96a4;font-family:\'Special Elite\',monospace;font-size:9px;letter-spacing:.05em;">' + tier + '<span style="color:#7ba05a;">✓</span> doğrulanmış</span>' +
+              '</span>' +
+            '</figcaption>' +
+          '</figure>';
         }).join('') +
       '</div>';
     }
@@ -113,7 +110,6 @@
         '<div style="width:58px;height:2px;margin:13px auto 0;background:linear-gradient(90deg,transparent,#c19a52,transparent);"></div>' +
         '<div style="margin-top:12px;">' + ratingLine + '</div>' +
       '</div>' +
-      '<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px 34px;margin-top:16px;">' + statHtml + '</div>' +
       reviewsHtml +
       formHtml +
     '</div>';

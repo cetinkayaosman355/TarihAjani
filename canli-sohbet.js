@@ -28,7 +28,7 @@
     return r.json().catch(function () { return { ok: false }; });
   }
 
-  var panel = null, msgBox = null, pollTimer = null, open = false;
+  var panel = null, msgBox = null, pollTimer = null, open = false, chatReady = false;
 
   // Metni güvenle linke çevir: URL, www. ve site-içi /yol'ları tıklanabilir yapar.
   // textContent ile parça parça yazılır (XSS yok); yalnız link kısmı <a> olur.
@@ -181,6 +181,7 @@
     s.id = 'ta-chat-css';
     s.textContent =
       '@keyframes ta-chat-pulse{0%{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 0 rgba(216,178,106,.5)}70%{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 14px rgba(216,178,106,0)}100%{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 0 rgba(216,178,106,0)}}' +
+      '@keyframes ta-chat-in{from{opacity:0;transform:translateY(10px) scale(.9)}to{opacity:1;transform:none}}' +
       '#ta-chat-btn{transition:transform .2s ease}' +
       '#ta-chat-btn:hover{transform:translateY(-2px) scale(1.04)}' +
       '#ta-chat-btn .lbl{max-width:0;opacity:0;overflow:hidden;transition:max-width .3s ease,opacity .3s ease,margin .3s ease;white-space:nowrap;margin:0}' +
@@ -193,6 +194,7 @@
 
   function ensureButton() {
     if (onStudio()) return;
+    if (!chatReady) return;               // ilk izlenimi kapatmasın — gecikmeli çıkar
     ensureCss();
     if (document.getElementById('ta-chat-btn')) return;
     var b = document.createElement('button');
@@ -200,13 +202,13 @@
     b.title = 'Ajan Asistan — sana yardımcı olayım';
     b.setAttribute('aria-label', 'Ajan Asistan sohbeti');
     b.innerHTML =
-      '<span style="width:30px;height:30px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:rgba(9,7,3,.14);font-size:17px;position:relative;">🕵️' +
-        '<span style="position:absolute;right:-1px;top:-1px;width:9px;height:9px;border-radius:50%;background:#4fd67e;border:2px solid #d8b26a;"></span>' +
+      '<span style="width:26px;height:26px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:rgba(9,7,3,.14);font-size:15px;position:relative;">🕵️' +
+        '<span style="position:absolute;right:-1px;top:-1px;width:8px;height:8px;border-radius:50%;background:#4fd67e;border:2px solid #d8b26a;"></span>' +
       '</span>' +
-      '<span class="lbl" style="font-family:\'Special Elite\',monospace;font-weight:800;font-size:12px;letter-spacing:.12em;">AJAN ASİSTAN</span>';
-    b.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:998;display:flex;align-items:center;height:56px;padding:0 13px;border-radius:30px;' +
+      '<span class="lbl" style="font-family:\'Special Elite\',monospace;font-weight:800;font-size:11px;letter-spacing:.12em;">AJAN ASİSTAN</span>';
+    b.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:998;display:flex;align-items:center;height:46px;padding:0 11px;border-radius:24px;' +
       'border:1px solid rgba(23,18,7,.45);cursor:pointer;line-height:1;color:#171207;' +
-      'background:linear-gradient(135deg,#a77d35,#d8b26a 55%,#c19a52);animation:ta-chat-pulse 2.6s infinite;';
+      'background:linear-gradient(135deg,#a77d35,#d8b26a 55%,#c19a52);animation:ta-chat-in .4s ease both;';
     b.onclick = function () { open ? closePanel() : openPanel(); };
     document.body.appendChild(b);
     // panel DOM'dan düşmüşse (framework gövdeyi yeniden kurduysa) durumu sıfırla
@@ -214,7 +216,8 @@
   }
 
   function init() {
-    ensureButton();
+    // ilk 4 sn görünmesin: hero'yu ve giriş izlenimini kapatmasın
+    setTimeout(function () { chatReady = true; ensureButton(); }, 4000);
     // dc framework gövdeyi geç/yeniden kurabilir → düğmeyi periyodik garanti et
     setInterval(ensureButton, 4000);
   }
