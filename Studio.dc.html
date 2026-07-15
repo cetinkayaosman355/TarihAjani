@@ -1183,6 +1183,7 @@ class Component extends DCLogic {
         { id: 'belgesel', name: 'Belgesel · Ciddi', desc: 'Kaynak odaklı, ölçülü ve otoriter ton' }
       ],
       voice: [
+        { id: 'kadir', name: 'Kadir Kayışcı · Anlatıcı', desc: 'Derin, olgun, yumuşak — profesyonel Türkçe anlatıcı', engine: 'eleven', elId: 'j82ax9yhzfYwq9lDvRWL', oa: 'onyx', el: { name: 'Kadir Kayışcı', id: 'j82ax9yhzfYwq9lDvRWL', stability: 0.5, style: 0.15 } },
         { id: 'erkek', name: 'Erkek · Anlatıcı', desc: 'Derin, güven veren klasik anlatıcı', oa: 'onyx', el: { name: 'Adam', id: 'pNInz6obpgDQGcFmaJgB', stability: 0.5, style: 0.35 } },
         { id: 'erkek-gizemli', name: 'Erkek · Gizemli', desc: 'Alçak tonlu, sır verir gibi', oa: 'echo', el: { name: 'Antoni', id: 'ErXwobaYiN019PkySvjV', stability: 0.42, style: 0.5 } },
         { id: 'erkek-net', name: 'Erkek · Net', desc: 'Berrak, güçlü, tempolu sunum', oa: 'ash', el: { name: 'Josh', id: 'TxGEqnHWrfWFTfGW9XjX', stability: 0.5, style: 0.3 } },
@@ -1918,22 +1919,27 @@ class Component extends DCLogic {
     return Math.max(10, Math.ceil(t.length / 1000) * 5);
   }
   sysVoiceId() { const o = this.find('voice', this.state.voice); return (o && o.oa) || 'onyx'; }
+  // Seçili ses ElevenLabs motoruysa sunucuya engine+voiceId geçir (yoksa boş → OpenAI)
+  voiceEngine(o) { const v = o || this.find('voice', this.state.voice); return (v && v.engine === 'eleven' && v.elId) ? { engine: 'eleven', voiceId: v.elId } : {}; }
   // ── Ses önizleme ── ücretsiz (kredi düşmez); üretilen kısa örnek cihazda
   // localStorage'da saklanır → ikinci dinlemede tekrar üretilmez, maliyet olmaz.
-  async previewServer(oaVoice) {
+  async previewServer(v) {
+    v = v || {};
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (this._token() || SB_KEY) },
-      body: JSON.stringify({ action: 'tts', preview: true, voice: oaVoice })
+      body: JSON.stringify(Object.assign({ action: 'tts', preview: true, voice: v.oa || 'onyx' }, this.voiceEngine(v)))
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Önizleme üretilemedi');
     return data.url;
   }
-  previewVoice(id, oaVoice) {
-    const oa = oaVoice || 'onyx';
+  previewVoice(v) {
+    v = v || {};
+    const id = v.id;
+    const key = (v.engine === 'eleven' && v.elId) ? ('el_' + v.elId) : (v.oa || 'onyx');
     // Çalıyorsa durdur (aynı sese tekrar basınca)
     if (this._vpAudio) { try { this._vpAudio.pause(); } catch (e) {} this._vpAudio = null; }
     if (this.state.vpPlaying === id) { this.setState({ vpPlaying: '' }); return; }
@@ -1947,12 +1953,12 @@ class Component extends DCLogic {
       } catch (e) { this.setState({ vpPlaying: '', vpBusy: '' }); }
     };
     let cached = null;
-    try { cached = localStorage.getItem('ta_vp_' + oa); } catch (e) {}
+    try { cached = localStorage.getItem('ta_vp_' + key); } catch (e) {}
     if (cached) { play(cached); return; }
     if (this.state.vpBusy) return;
     this.setState({ vpBusy: id });
-    this.previewServer(oa).then(url => {
-      try { if (String(url).indexOf('data:') === 0) localStorage.setItem('ta_vp_' + oa, url); } catch (e) {}
+    this.previewServer(v).then(url => {
+      try { if (String(url).indexOf('data:') === 0) localStorage.setItem('ta_vp_' + key, url); } catch (e) {}
       play(url);
     }).catch(e => {
       this.setState({ vpBusy: '' });
@@ -1966,7 +1972,7 @@ class Component extends DCLogic {
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'tts', text, voice: this.sysVoiceId() })
+      body: JSON.stringify(Object.assign({ action: 'tts', text, voice: this.sysVoiceId() }, this.voiceEngine()))
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
@@ -2370,7 +2376,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           pick: () => this.setState({ [g.key]: o.id }),
           canPreview,
           previewLabel: vb ? '⏳ ÜRETİLİYOR…' : vp ? '⏸ DURDUR' : '▶ DİNLE',
-          preview: () => this.previewVoice(o.id, o.oa),
+          preview: () => this.previewVoice(o),
           previewStyle: {
             marginTop: '8px', justifySelf: 'start', cursor: 'pointer',
             border: '1px solid ' + (vp ? 'rgba(193,154,82,.7)' : 'rgba(129,135,151,.4)'),
@@ -2794,7 +2800,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       sysTtsLabel: s.sysTtsBusy ? '🎙 ÜRETİLİYOR… (~20 sn)' : ('🎙 SESLENDİRME ÜRET · ' + this.ttsCost() + ' KR'),
       sysTtsError: s.sysTtsError,
       hasSysAudio: !!s.sysAudioUrl, sysAudioUrl: s.sysAudioUrl,
-      sysVoiceName: (() => { const o = this.find('voice', s.voice); return o ? o.name + ' (' + (o.oa || 'onyx') + ')' : 'Erkek · Anlatıcı (onyx)'; })(),
+      sysVoiceName: (() => { const o = this.find('voice', s.voice); return o ? o.name + ' (' + (o.engine === 'eleven' ? 'ElevenLabs' : (o.oa || 'onyx')) + ')' : 'Erkek · Anlatıcı (onyx)'; })(),
 
       resKapak: mkCopy(r.kapak, 'kp').map((x, i) => ({
         ...x,

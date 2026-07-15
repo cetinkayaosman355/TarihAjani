@@ -252,6 +252,52 @@ async function generateSpeech(text: string, voice: string): Promise<Uint8Array |
   for (const p of parts) { out.set(p, off); off += p.length; }
   return out;
 }
+// ElevenLabs seslendirme — yalnızca izinli ses kimlikleri (istismarı önler; site
+// ELEVENLABS_API_KEY'ini kullanır). Türkçeyi doğru okuyan eleven_multilingual_v2.
+const ELEVEN_ALLOWED = new Set(["j82ax9yhzfYwq9lDvRWL"]); // Kadir Kayışcı
+async function generateSpeechEleven(text: string, voiceId: string): Promise<Uint8Array | null> {
+  const key = Deno.env.get("ELEVENLABS_API_KEY");
+  if (!key || !text.trim() || !ELEVEN_ALLOWED.has(voiceId)) return null;
+  const chunks: string[] = [];
+  let rest = text.trim();
+  while (rest.length && chunks.length < 5) {
+    if (rest.length <= 2500) { chunks.push(rest); break; }
+    let cut = rest.lastIndexOf(". ", 2500);
+    if (cut < 1200) cut = 2500;
+    chunks.push(rest.slice(0, cut + 1));
+    rest = rest.slice(cut + 1).trim();
+  }
+  const parts: Uint8Array[] = [];
+  for (const c of chunks) {
+    try {
+      const r = await fetch("https://api.elevenlabs.io/v1/text-to-speech/" + voiceId + "?output_format=mp3_44100_128", {
+        method: "POST",
+        headers: { "xi-api-key": key, "Content-Type": "application/json", "Accept": "audio/mpeg" },
+        body: JSON.stringify({
+          text: c,
+          model_id: "eleven_multilingual_v2",
+          voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.15, use_speaker_boost: true },
+        }),
+      });
+      if (!r.ok) return null;
+      parts.push(new Uint8Array(await r.arrayBuffer()));
+    } catch (_e) { return null; }
+  }
+  if (!parts.length) return null;
+  const total = parts.reduce((a, p) => a + p.length, 0);
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const p of parts) { out.set(p, off); off += p.length; }
+  return out;
+}
+// Motor yönlendirici: engine='eleven' + izinli voiceId → ElevenLabs; yoksa/başarısızsa → OpenAI.
+async function synthSpeech(text: string, b: Record<string, unknown>): Promise<Uint8Array | null> {
+  if (String(b.engine || "") === "eleven" && ELEVEN_ALLOWED.has(String(b.voiceId || ""))) {
+    const out = await generateSpeechEleven(text, String(b.voiceId));
+    if (out) return out;
+  }
+  return generateSpeech(text, String(b.voice || ""));
+}
 // Ses ÖNİZLEME metni (kısa ~5 sn) — ücretsiz, kredi düşmez, kullanıcı sesi seçmeden dinler
 const PREVIEW_TEXT = "Tarih Ajanı dosyayı açıyor. Bu ses, senin anlatıcın olabilir.";
 function bytesToB64(bytes: Uint8Array): string {
@@ -426,8 +472,7 @@ Deno.serve(async (req) => {
 
     // SES ÖNİZLEME — ücretsiz, kredi düşmez, giriş gerekmez; kısa örnek data URI döner
     if (isPreview) {
-      const pv = TTS_VOICES.has(String(b.voice || "")) ? String(b.voice) : "onyx";
-      const bytes = await generateSpeech(PREVIEW_TEXT, pv);
+      const bytes = await synthSpeech(PREVIEW_TEXT, b);
       if (!bytes) return json({ ok: false, error: "Önizleme üretilemedi." }, 502);
       return json({ ok: true, url: "data:audio/mpeg;base64," + bytesToB64(bytes), charged: false });
     }
@@ -435,7 +480,7 @@ Deno.serve(async (req) => {
     // SESLENDİRME ÜRETİMİ — mp3 üret, Storage'a yükle, başarılıysa kredi düş
     if (String(b.action || "") === "tts") {
       if (!ttsText) return json({ ok: false, error: "Seslendirme metni boş." }, 400);
-      const bytes = await generateSpeech(ttsText, String(b.voice || ""));
+      const bytes = await synthSpeech(ttsText, b);
       if (!bytes) return json({ ok: false, error: "Ses üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       let url = "";
       if (admin) {
