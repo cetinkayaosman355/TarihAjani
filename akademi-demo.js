@@ -76,7 +76,7 @@
     + '#akademi-demo .ak-btn:hover{transform:translateY(-2px);box-shadow:0 16px 46px -14px rgba(230,196,120,.55)}'
     + '#akademi-demo .ak-cta .tag{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.05em;color:#7ba05a}'
     // SAĞ — video karesi
-    + '#akademi-demo .ak-frame{position:relative;border:1px solid rgba(193,154,82,.34);background:linear-gradient(165deg,#12100a,#0a0806 60%,#0c0a07);aspect-ratio:16/9;min-height:320px;overflow:hidden;box-shadow:0 40px 90px -40px rgba(0,0,0,.9)}'
+    + '#akademi-demo .ak-frame{position:relative;flex:1;border:1px solid rgba(193,154,82,.34);background:linear-gradient(165deg,#12100a,#0a0806 60%,#0c0a07);min-height:340px;overflow:hidden;box-shadow:0 40px 90px -40px rgba(0,0,0,.9)}'
     // gerçek tarihî görsel — video önizlemesi boş durmasın
     + '#akademi-demo .ak-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:brightness(.4) saturate(.85) sepia(.12);transition:filter .6s}'
     + '#akademi-demo .ak-frame.ak-playing .ak-thumb{filter:brightness(.16) saturate(.7)}'

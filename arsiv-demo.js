@@ -39,8 +39,9 @@
     + '#arsiv-demo .ad-grain{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.5;mix-blend-mode:overlay;background-image:radial-gradient(rgba(255,255,255,.05) .5px,transparent .5px);background-size:3px 3px}'
     + '#arsiv-demo .ad-glow{display:none}'
     + '#arsiv-demo .ad-wrap{position:relative;z-index:2;width:min(1740px,94vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
-    + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.86fr 1.14fr;gap:clamp(30px,3.4vw,60px);align-items:start}'
+    + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.86fr 1.14fr;gap:clamp(30px,3.4vw,60px);align-items:stretch}'
     + '#arsiv-demo .ad-panel{display:flex;flex-direction:column;gap:16px;min-width:0}'
+    + '#arsiv-demo #ad-draw{margin-top:auto}'
     + '#arsiv-demo .ad-right{display:flex;flex-direction:column;min-width:0}'
     + '#arsiv-demo .ad-all{width:100%;justify-content:center;margin-top:14px}'
     // ayırt edici başlık — sınıflandırma bandı
@@ -68,7 +69,7 @@
     + '#arsiv-demo .folder .bars::after{content:"GİZLİ";position:absolute;left:0;top:-16px;font-family:\'Special Elite\',monospace;font-size:8px;letter-spacing:.16em;color:#6b6146}'
     + '#arsiv-demo .folder.pull{transition:transform .42s cubic-bezier(.4,.8,.3,1),opacity .42s}'
     // dosya (dossier) — daha büyük
-    + '#arsiv-demo .ad-doss{position:relative;border:1px solid rgba(193,154,82,.4);background:rgba(9,10,17,.82);backdrop-filter:blur(6px);overflow:hidden;display:flex;min-height:340px;box-shadow:0 40px 90px -40px rgba(0,0,0,.9)}'
+    + '#arsiv-demo .ad-doss{position:relative;flex:1;border:1px solid rgba(193,154,82,.4);background:rgba(9,10,17,.82);backdrop-filter:blur(6px);overflow:hidden;display:flex;min-height:340px;box-shadow:0 40px 90px -40px rgba(0,0,0,.9)}'
     + '#arsiv-demo .ad-doss .art{position:relative;flex:0 0 42%;overflow:hidden;border-right:1px solid rgba(193,154,82,.22)}'
     + '#arsiv-demo .ad-doss .art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.06);transition:opacity .9s,transform 7s}'
     + '#arsiv-demo .ad-doss.open .art img{opacity:.94;transform:scale(1)}'
