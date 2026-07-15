@@ -77,7 +77,7 @@
     + '#studio-demo .sd-btn{cursor:pointer;border:0;display:inline-flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52);color:#171207;font-family:\'Special Elite\',monospace;font-weight:700;font-size:13px;letter-spacing:.14em;padding:15px 28px;transition:transform .18s,box-shadow .18s}'
     + '#studio-demo .sd-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(230,196,120,.35)}'
     + '#studio-demo .sd-btn.hero{padding:17px 34px;font-size:14px;letter-spacing:.16em;box-shadow:0 16px 48px -18px rgba(230,196,120,.55)}'
-    + '#studio-demo .sd-btn.ghost{background:transparent;border:1px solid rgba(193,154,82,.5);color:#e6c478}'
+    + '#studio-demo .sd-btn.ghost{background:transparent;border:1px solid rgba(193,154,82,.5);color:#e6c478;font-family:\'Hanken Grotesk\',system-ui,sans-serif;font-weight:700;font-size:13px;letter-spacing:.03em}'
     + '#studio-demo .sd-btn.ghost:hover{background:rgba(193,154,82,.12);box-shadow:none}'
     + '#studio-demo .sd-tryrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}'
     + '#studio-demo .sd-note{color:#6d7380;font-size:11px}'
@@ -120,7 +120,7 @@
     + '#studio-demo .sd-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#a77d35,#e6c478);animation:sd-prog 1.8s ease forwards}'
     + '@keyframes sd-prog{to{width:100%}}'
     + '#studio-demo .sd-foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:4px}'
-    + '#studio-demo .sd-cta{display:inline-flex;align-items:center;gap:8px;color:#e6c478;font-family:\'Special Elite\',monospace;font-weight:700;font-size:12px;letter-spacing:.12em;text-decoration:none;border-bottom:1px solid rgba(193,154,82,.4);padding-bottom:2px}'
+    + '#studio-demo .sd-cta{display:inline-flex;align-items:center;gap:8px;color:#e6c478;font-family:\'Hanken Grotesk\',system-ui,sans-serif;font-weight:700;font-size:13.5px;letter-spacing:.02em;text-decoration:none;border-bottom:1px solid rgba(193,154,82,.4);padding-bottom:2px}'
     + '#studio-demo .sd-cta:hover{color:#fff0b1}'
     + '@media(max-width:800px){#studio-demo .sd-work{grid-template-columns:1fr}#studio-demo .sd-stage{order:-1}}';
 

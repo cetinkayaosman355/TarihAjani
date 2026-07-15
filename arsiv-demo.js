@@ -51,7 +51,7 @@
     + '#arsiv-demo .ad-btn{cursor:pointer;border:0;display:inline-flex;align-items:center;justify-content:center;gap:12px;background:linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52);color:#171207;font-family:\'Special Elite\',monospace;font-weight:700;font-size:15px;letter-spacing:.16em;padding:19px 34px;transition:transform .18s,box-shadow .18s}'
     + '#arsiv-demo .ad-btn:hover{transform:translateY(-2px);box-shadow:0 16px 50px -14px rgba(230,196,120,.6)}'
     + '#arsiv-demo .ad-btn:disabled{opacity:.75;cursor:default;transform:none;box-shadow:none}'
-    + '#arsiv-demo .ad-btn.ghost{background:rgba(12,10,6,.4);border:1px solid rgba(193,154,82,.5);color:#e6c478;font-size:12.5px;padding:14px 24px;backdrop-filter:blur(2px)}'
+    + '#arsiv-demo .ad-btn.ghost{background:rgba(12,10,6,.4);border:1px solid rgba(193,154,82,.5);color:#e6c478;font-family:\'Hanken Grotesk\',system-ui,sans-serif;font-weight:700;font-size:13.5px;letter-spacing:.03em;padding:14px 24px;backdrop-filter:blur(2px)}'
     + '#arsiv-demo .ad-btn.ghost:hover{background:rgba(193,154,82,.14);box-shadow:none}'
     + '#arsiv-demo .ad-count{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.16em;color:#9aa2b0}'
     // çekmece — gizli dosyalar (daha büyük)
