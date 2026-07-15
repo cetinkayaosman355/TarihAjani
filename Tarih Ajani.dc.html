@@ -343,15 +343,15 @@
       #nasil-calisir .op-sub{margin:16px 0 0;color:#b3b9c6;font-size:14.5px;line-height:1.62;max-width:36ch}
       #nasil-calisir .op-btn{margin-top:22px;display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(193,154,82,.5);color:#e6c478;font-family:'Special Elite',monospace;font-size:12.5px;letter-spacing:.14em;padding:15px 26px;text-decoration:none;transition:background .2s,box-shadow .2s}
       #nasil-calisir .op-btn:hover{background:rgba(193,154,82,.12);box-shadow:0 14px 42px -16px rgba(230,196,120,.5)}
-      #nasil-calisir .op-steps{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(18px,2.4vw,40px)}
-      #nasil-calisir .op-step{position:relative;display:flex;flex-direction:column;gap:13px}
-      #nasil-calisir .op-num{width:44px;height:44px;border-radius:50%;border:1px solid rgba(193,154,82,.5);display:grid;place-items:center;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#e6c478;background:rgba(6,7,10,.6);box-shadow:0 0 0 4px rgba(193,154,82,.045)}
-      #nasil-calisir .op-step:not(:last-child) .op-num::after{content:"";position:absolute;top:22px;left:56px;right:6px;border-top:1px dashed rgba(193,154,82,.42)}
-      #nasil-calisir .op-step:not(:last-child) .op-num::before{content:"▸";position:absolute;top:14px;right:0;color:rgba(193,154,82,.7);font-size:11px;line-height:1}
-      #nasil-calisir .op-ico{color:#e6c478;margin-top:4px}
-      #nasil-calisir .op-ico svg{width:28px;height:28px}
-      #nasil-calisir .op-k{margin:0;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#f2ecd9}
-      #nasil-calisir .op-d{margin:0;color:#8b909d;font-size:12px;line-height:1.5;max-width:24ch}
+      #nasil-calisir .op-steps{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(16px,2.4vw,36px)}
+      #nasil-calisir .op-step{position:relative;display:flex;align-items:flex-start;gap:11px}
+      #nasil-calisir .op-ico{flex:0 0 auto;color:#e6c478;margin-top:1px}
+      #nasil-calisir .op-ico svg{width:26px;height:26px}
+      #nasil-calisir .op-tx{min-width:0}
+      #nasil-calisir .op-k{margin:0;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#f2ecd9;line-height:1.2}
+      #nasil-calisir .op-n{color:#c19a52;font-family:'Playfair Display',serif;font-weight:700;margin-right:6px}
+      #nasil-calisir .op-d{margin:4px 0 0;color:#8b909d;font-size:11.5px;line-height:1.45;max-width:26ch}
+      #nasil-calisir .op-step:not(:last-child)::after{content:"";position:absolute;top:12px;right:-16px;width:14px;border-top:1px dashed rgba(193,154,82,.4)}
       #nasil-calisir .op-foot{position:relative;z-index:1;margin-top:clamp(28px,3vw,44px);display:flex;align-items:center;justify-content:center;gap:16px;color:#8a8271;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.24em;text-align:center}
       #nasil-calisir .op-foot .ln{height:1px;flex:1;max-width:140px;background:linear-gradient(90deg,transparent,rgba(193,154,82,.4))}
       #nasil-calisir .op-foot .ln.r{background:linear-gradient(90deg,rgba(193,154,82,.4),transparent)}
@@ -361,30 +361,10 @@
     <div class="op-wrap">
       <p class="op-eyebrow op-center">OPERASYON AKIŞI · NASIL ÇALIŞIR</p>
       <div class="op-steps">
-            <div class="op-step">
-              <span class="op-num">01</span>
-              <span class="op-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.4c0-.8.6-1.4 1.4-1.4h3.8c.4 0 .8.2 1.1.5L11 7h6.6c.8 0 1.4.6 1.4 1.4"/><path d="M3 8.8h17.2c.6 0 1 .5.9 1.1l-1.3 7.2c-.1.6-.6 1-1.2 1H4.6c-.6 0-1.1-.4-1.2-1L2 8.8"/></svg></span>
-              <p class="op-k">Materyali İncele</p>
-              <p class="op-d">Senaryo, ses ve prompt dosyalarını aç.</p>
-            </div>
-            <div class="op-step">
-              <span class="op-num">02</span>
-              <span class="op-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6.5C5.7 3 5 3.7 5 4.5v15c0 .8.7 1.5 1.5 1.5H12"/><path d="M14 3l4 4M14 3v4h4"/><path d="M8.5 9h5M8.5 12.5h3.5"/><path d="M20.4 13.6l1.9 1.9-5.1 5.1-2.4.5.5-2.4 5.1-5.1Z"/></svg></span>
-              <p class="op-k">Üretime Başla</p>
-              <p class="op-d">Görseli, videoyu ve sesi oluştur.</p>
-            </div>
-            <div class="op-step">
-              <span class="op-num">03</span>
-              <span class="op-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5V4.2"/><path d="M7.5 8.2 12 3.7l4.5 4.5"/><path d="M5 13.5v4.8c0 .7.6 1.2 1.2 1.2h11.6c.6 0 1.2-.5 1.2-1.2v-4.8"/></svg></span>
-              <p class="op-k">Hikâyeni Yayınla</p>
-              <p class="op-d">Kanallarda paylaş, arşivini büyüt.</p>
-            </div>
-            <div class="op-step">
-              <span class="op-num">04</span>
-              <span class="op-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V6"/><path d="M4 20h16"/><path d="M7.5 20v-5M12 20v-8M16.5 20v-4"/><path d="M5.5 12.5 10 8.5l3.5 2.5L20 6"/><path d="M16.6 6H20v3.4"/></svg></span>
-              <p class="op-k">Sonuçları İzle</p>
-              <p class="op-d">Etkini ölç, geri bildirimi analiz et.</p>
-            </div>
+            <div class="op-step"><span class="op-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.4c0-.8.6-1.4 1.4-1.4h3.8c.4 0 .8.2 1.1.5L11 7h6.6c.8 0 1.4.6 1.4 1.4"/><path d="M3 8.8h17.2c.6 0 1 .5.9 1.1l-1.3 7.2c-.1.6-.6 1-1.2 1H4.6c-.6 0-1.1-.4-1.2-1L2 8.8"/></svg></span><div class="op-tx"><p class="op-k"><span class="op-n">01</span>Materyali İncele</p><p class="op-d">Senaryo, ses ve prompt dosyalarını aç.</p></div></div>
+            <div class="op-step"><span class="op-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6.5C5.7 3 5 3.7 5 4.5v15c0 .8.7 1.5 1.5 1.5H12"/><path d="M14 3l4 4M14 3v4h4"/><path d="M8.5 9h5M8.5 12.5h3.5"/><path d="M20.4 13.6l1.9 1.9-5.1 5.1-2.4.5.5-2.4 5.1-5.1Z"/></svg></span><div class="op-tx"><p class="op-k"><span class="op-n">02</span>Üretime Başla</p><p class="op-d">Görseli, videoyu ve sesi oluştur.</p></div></div>
+            <div class="op-step"><span class="op-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5V4.2"/><path d="M7.5 8.2 12 3.7l4.5 4.5"/><path d="M5 13.5v4.8c0 .7.6 1.2 1.2 1.2h11.6c.6 0 1.2-.5 1.2-1.2v-4.8"/></svg></span><div class="op-tx"><p class="op-k"><span class="op-n">03</span>Hikâyeni Yayınla</p><p class="op-d">Kanallarda paylaş, arşivini büyüt.</p></div></div>
+            <div class="op-step"><span class="op-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V6"/><path d="M4 20h16"/><path d="M7.5 20v-5M12 20v-8M16.5 20v-4"/><path d="M5.5 12.5 10 8.5l3.5 2.5L20 6"/><path d="M16.6 6H20v3.4"/></svg></span><div class="op-tx"><p class="op-k"><span class="op-n">04</span>Sonuçları İzle</p><p class="op-d">Etkini ölç, geri bildirimi analiz et.</p></div></div>
       </div>
       <div class="op-foot"><span class="ln"></span>TARİHSEL BİLGİ · SİSTEMLİ ÜRETİM · KALICI ETKİ<span class="ln r"></span></div>
     </div>
