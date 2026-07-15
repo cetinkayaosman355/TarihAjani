@@ -79,8 +79,11 @@
     + '#akademi-demo .ak-btn:hover{transform:translateY(-2px);box-shadow:0 16px 46px -14px rgba(230,196,120,.55)}'
     + '#akademi-demo .ak-cta .tag{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.05em;color:#7ba05a}'
     // SAĞ — video karesi
-    + '#akademi-demo .ak-frame{position:relative;border:1px solid rgba(193,154,82,.34);background:linear-gradient(165deg,#0c0d14,#080910 60%,#0a0b12);aspect-ratio:16/9;min-height:320px;overflow:hidden;box-shadow:0 40px 90px -40px rgba(0,0,0,.9)}'
-    + '#akademi-demo .ak-frame::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.12) 3px 4px);opacity:.5}'
+    + '#akademi-demo .ak-frame{position:relative;border:1px solid rgba(193,154,82,.34);background:linear-gradient(165deg,#12100a,#0a0806 60%,#0c0a07);aspect-ratio:16/9;min-height:320px;overflow:hidden;box-shadow:0 40px 90px -40px rgba(0,0,0,.9)}'
+    // gerçek tarihî görsel — video önizlemesi boş durmasın
+    + '#akademi-demo .ak-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:brightness(.4) saturate(.85) sepia(.12);transition:filter .6s}'
+    + '#akademi-demo .ak-frame.ak-playing .ak-thumb{filter:brightness(.16) saturate(.7)}'
+    + '#akademi-demo .ak-frame::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,7,10,.35),rgba(6,7,10,.15) 40%,rgba(6,7,10,.6)),repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.12) 3px 4px);z-index:1;opacity:.85}'
     // köşe süsleri (elit "gizli gösterim" çerçevesi)
     + '#akademi-demo .ak-frame .cnr{position:absolute;width:16px;height:16px;z-index:3;pointer-events:none;border-color:rgba(230,196,120,.7)}'
     + '#akademi-demo .ak-frame .cnr.tl{top:9px;left:9px;border-top:1px solid;border-left:1px solid}'
@@ -166,6 +169,7 @@
       + '</div>'
       + '<div>'
       + '<div class="ak-frame">'
+      + '<img class="ak-thumb" src="/assets/books.jpg" alt="" loading="lazy">'
       + '<span class="cnr tl"></span><span class="cnr tr"></span><span class="cnr bl"></span><span class="cnr br"></span>'
       + '<div class="ak-ch" id="ak-ch">'+chHtml+'</div>'
       + '<div class="ak-meta"><span id="ak-rec">EĞİTİM KAYDI · DERS 01</span><span id="ak-tc">00:00 / 00:40</span></div>'
@@ -181,6 +185,7 @@
     var $=function(id){return mount.querySelector('#'+id);};
     var chs=[].slice.call(mount.querySelectorAll('#ak-ch b')),
         cap=$('ak-cap'), play=$('ak-play'), end=$('ak-end'), tc=$('ak-tc'),
+        frame=mount.querySelector('.ak-frame'),
         note=$('ak-note'), score=$('ak-score'), lesBtns=[].slice.call(mount.querySelectorAll('.ak-les'));
 
     var done=0, playing=false, timers=[];
@@ -205,6 +210,7 @@
     function playLesson(i){
       if(playing)return; playing=true; clearT();
       end.classList.remove('on'); play.style.display='none';
+      if(frame)frame.classList.add('ak-playing');
       $('ak-rec').textContent='EĞİTİM KAYDI · DERS '+pad(i+1);
       $('ak-cur').textContent='DERS '+pad(i+1)+' · '+LESSONS[i].t.toUpperCase();
       lesBtns.forEach(function(b,k){ if(k===i)b.classList.add('act'); else b.classList.remove('act'); });
@@ -224,6 +230,7 @@
 
     function finish(i){
       playing=false; chs.forEach(function(b){b.classList.add('full');});
+      if(frame)frame.classList.remove('ak-playing');
       tc.textContent='00:40 / 00:40'; cap.textContent='';
       done=Math.max(done,i+1); score.textContent=done+' / 9 DERS';
       setLesson(i,'done');
@@ -253,8 +260,11 @@
   }
 
   function injectStyle(){ if(document.getElementById('ak-style'))return; var s=document.createElement('style'); s.id='ak-style'; s.textContent=CSS; document.head.appendChild(s); }
-  function ensure(){ var m=document.getElementById('akademi-demo-mount'); if(!m)return; if(m.__akDone&&m.querySelector('.ak-wrap'))return; injectStyle(); m.__akDone=true; render(m); }
-  window.__akInit=true; ensure(); document.addEventListener('DOMContentLoaded',ensure);
-  var t=0,iv=setInterval(function(){ensure();if(++t>40)clearInterval(iv);},500);
-  if(window.MutationObserver){var mt=null;new MutationObserver(function(){clearTimeout(mt);mt=setTimeout(ensure,150);}).observe(document.documentElement,{childList:true,subtree:true});}
+  function ensure(){ var m=document.getElementById('akademi-demo-mount'); if(!m)return; if(m.querySelector('.ak-wrap'))return; injectStyle(); render(m); }
+  // GÜVENLİ MONTAJ: dc'yi kıran senkron document-level MutationObserver YOK.
+  // Yalnız DOMContentLoaded + sınırlı aralık; dc kutuyu boşaltırsa (.ak-wrap yoksa)
+  // yeniden çiz, aksi halde no-op. Sonrasında seyrek bekçi.
+  window.__akInit=true;
+  function start(){ ensure(); var t=0,iv=setInterval(function(){ ensure(); if(++t>40){ clearInterval(iv); setInterval(ensure,4000); } },500); }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',start); } else { start(); }
 })();
