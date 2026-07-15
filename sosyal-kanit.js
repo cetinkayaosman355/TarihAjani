@@ -33,7 +33,7 @@
   }
 
   var CSS = ''
-    + '#ta-sosyal-kanit .sk-grid{display:grid;grid-template-columns:.84fr 1.16fr;gap:clamp(28px,3.4vw,56px);align-items:center;max-width:1240px;margin:0 auto}'
+    + '#ta-sosyal-kanit .sk-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:clamp(28px,3.4vw,56px);align-items:start;max-width:1240px;margin:0 auto}'
     + '#ta-sosyal-kanit .sk-left{min-width:0}'
     + '#ta-sosyal-kanit .sk-right{display:grid;gap:12px}'
     + '#ta-sosyal-kanit .sk-card{position:relative;border:1px solid rgba(193,154,82,.22);background:linear-gradient(160deg,#0b0e16,#070a11);padding:15px 18px;overflow:hidden}'
