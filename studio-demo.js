@@ -53,9 +53,9 @@
   var CSS = ''
     + '#studio-demo{position:relative;background:#040509;overflow:hidden}'
     + '#studio-demo .sd-glow{display:none}'
-    + '#studio-demo .sd-wrap{position:relative;width:min(1820px,96.5vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(20px,3vw,40px)}'
+    + '#studio-demo .sd-wrap{position:relative;width:min(1740px,94vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
     // iki sütun — tepeden hizalı
-    + '#studio-demo .sd-work{display:grid;grid-template-columns:.84fr 1.16fr;gap:clamp(24px,2.8vw,44px);align-items:stretch}'
+    + '#studio-demo .sd-work{display:grid;grid-template-columns:.86fr 1.14fr;gap:clamp(30px,3.4vw,60px);align-items:center}'
     + '#studio-demo .sd-panel{display:flex;flex-direction:column;justify-content:flex-start;gap:15px;min-width:0;padding-top:0}'
     + '#studio-demo .sd-panel.sd-mid{justify-content:flex-start;padding-top:0}'
     + '#studio-demo .sd-live{display:inline-flex;align-items:center;gap:8px;color:#e08a80;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.22em;margin-bottom:2px}'
@@ -92,7 +92,7 @@
     + '#studio-demo .sd-obox span{display:block;color:#8b93a1;font-size:12px;line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}'
     // sağ sahne — Tarih Ajanı önizleme (büyük görsel)
     + '#studio-demo .sd-stage{display:block}'
-    + '#studio-demo .sd-canvas{position:relative;width:100%;aspect-ratio:2/1;overflow:hidden;border:1px solid rgba(193,154,82,.3);background:radial-gradient(circle at 50% 40%,#101120,#08090e);box-shadow:0 40px 90px -52px rgba(0,0,0,.9)}'
+    + '#studio-demo .sd-canvas{position:relative;width:100%;aspect-ratio:7/5;overflow:hidden;border:1px solid rgba(193,154,82,.3);background:radial-gradient(circle at 50% 40%,#0c0a07,#080705);box-shadow:0 40px 90px -52px rgba(0,0,0,.9)}'
     // boş ekran yerine: 4 preset görselinden çapraz (X) mozaik
     + '#studio-demo .sd-mosaic{position:absolute;inset:0;z-index:0}'
     + '#studio-demo .sd-mosaic i{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.34) saturate(.62)}'
