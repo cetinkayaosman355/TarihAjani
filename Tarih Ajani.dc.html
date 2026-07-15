@@ -90,7 +90,9 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3"><link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png?v=3"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
   <style>
     html, body { margin: 0; padding: 0; background: #06070d; }
-    body { background-image: radial-gradient(circle 900px at 15% 8%, rgba(20,24,40,.4), transparent 55%), radial-gradient(circle 1100px at 92% 30%, rgba(18,22,38,.4), transparent 60%), radial-gradient(circle 800px at 50% 100%, rgba(16,20,34,.35), transparent 60%); background-attachment: fixed; }
+    /* Tek, yumuşak ve simetrik zemin — yön yön renk lekesi (lacivert/kırmızı) yok;
+       tüm akış boyunca aynı sıcak-nötr karanlık kalır, bölümler kaynaşarak akar. */
+    body { background-image: radial-gradient(circle 1200px at 50% 0%, rgba(32,28,26,.20), transparent 60%); background-attachment: fixed; }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     header nav > a, header nav > div > a { font-family: 'Special Elite', monospace !important; font-weight: 700 !important; letter-spacing: .08em !important; font-size: 12px !important; }
@@ -288,7 +290,7 @@
   </section>
 
   <!-- BİR AJAN OLURSAN · kazanım şeridi -->
-  <section data-screen-label="Kazanımlar" style="position: relative; background: linear-gradient(180deg, rgba(10,12,20,.55), rgba(8,9,13,.15)); padding: clamp(32px, 4vw, 46px) 0;">
+  <section data-screen-label="Kazanımlar" style="position: relative; background: linear-gradient(180deg, rgba(16,14,12,.45), transparent); padding: clamp(32px, 4vw, 46px) 0;">
     <div style="width: min(1340px, 92vw); margin: 0 auto; padding: 0 clamp(20px, 4vw, 40px);">
       <div style="display: flex; align-items: center; gap: 16px; justify-content: center; margin-bottom: 30px;">
         <span style="flex: 1; max-width: 130px; height: 1px; background: linear-gradient(to left, rgba(193,154,82,.5), transparent);"></span>
@@ -562,7 +564,7 @@
   </section>
 
   <!-- SSS · Sorgu Tutanağı -->
-  <section id="sss" data-screen-label="SSS" style="position: relative; overflow: hidden; background: linear-gradient(180deg, rgba(7,9,15,.2), #07090f 22%);">
+  <section id="sss" data-screen-label="SSS" style="position: relative; overflow: hidden; background: linear-gradient(180deg, transparent, rgba(10,9,8,.5) 30%);">
     <img src="assets/real-wall.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .12; filter: saturate(.6) brightness(.7);">
     <div style="position: absolute; inset: 0; background: radial-gradient(circle 760px at 50% 12%, rgba(7,9,15,.5), #07090f 84%);"></div>
     <div style="position: relative; z-index: 2; width: min(920px, 92vw); margin: 0 auto; padding: clamp(56px, 6vw, 92px) clamp(20px, 4vw, 40px);">

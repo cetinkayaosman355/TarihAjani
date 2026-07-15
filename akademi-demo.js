@@ -33,7 +33,7 @@
 
   var CSS = ''
     + '#akademi-demo{position:relative;background:#06070d;overflow:hidden;isolation:isolate}'
-    + '#akademi-demo .ak-bgfx{position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle 620px at 10% 0%,rgba(158,43,35,.08),transparent 60%),radial-gradient(circle 640px at 92% 100%,rgba(230,196,120,.07),transparent 58%)}'
+    + '#akademi-demo .ak-bgfx{display:none}'
     + '#akademi-demo .ak-vin{position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 130% at 50% 20%,transparent 46%,rgba(0,0,0,.55))}'
     + '#akademi-demo .ak-wrap{position:relative;z-index:1;width:min(1580px,92vw);margin:0 auto;padding:clamp(24px,2.6vw,40px) clamp(22px,3vw,48px)}'
     + '#akademi-demo .ak-head{max-width:920px;margin-bottom:clamp(18px,2vw,28px);padding-bottom:14px;border-bottom:1px solid rgba(193,154,82,.18)}'

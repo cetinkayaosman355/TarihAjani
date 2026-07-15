@@ -52,7 +52,7 @@
 
   var CSS = ''
     + '#studio-demo{position:relative;background:#06070d;overflow:hidden}'
-    + '#studio-demo .sd-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle 560px at 86% 6%,rgba(230,196,120,.11),transparent 60%),radial-gradient(circle 460px at 6% 96%,rgba(158,43,35,.09),transparent 58%)}'
+    + '#studio-demo .sd-glow{display:none}'
     + '#studio-demo .sd-wrap{position:relative;width:min(1790px,96.5vw);margin:0 auto;padding:clamp(46px,4.8vw,70px) clamp(20px,3vw,40px)}'
     // iki sütun — tepeden hizalı
     + '#studio-demo .sd-work{display:grid;grid-template-columns:.84fr 1.16fr;gap:clamp(24px,2.8vw,44px);align-items:stretch}'
@@ -100,7 +100,7 @@
     + '#studio-demo .sd-mosaic i:nth-child(2){clip-path:polygon(100% 0,100% 100%,50% 50%)}'
     + '#studio-demo .sd-mosaic i:nth-child(3){clip-path:polygon(0 100%,100% 100%,50% 50%)}'
     + '#studio-demo .sd-mosaic i:nth-child(4){clip-path:polygon(0 0,0 100%,50% 50%)}'
-    + '#studio-demo .sd-mosaic::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom right,transparent calc(50% - 1px),rgba(193,154,82,.4) calc(50% - 1px),rgba(193,154,82,.4) calc(50% + 1px),transparent calc(50% + 1px)),linear-gradient(to bottom left,transparent calc(50% - 1px),rgba(193,154,82,.4) calc(50% - 1px),rgba(193,154,82,.4) calc(50% + 1px),transparent calc(50% + 1px))}'
+    + '#studio-demo .sd-mosaic::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom right,transparent calc(50% - 1px),rgba(193,154,82,.16) calc(50% - 1px),rgba(193,154,82,.16) calc(50% + 1px),transparent calc(50% + 1px)),linear-gradient(to bottom left,transparent calc(50% - 1px),rgba(193,154,82,.16) calc(50% - 1px),rgba(193,154,82,.16) calc(50% + 1px),transparent calc(50% + 1px))}'
     + '#studio-demo .sd-brand{position:absolute;inset:0;z-index:1;overflow:hidden;display:grid;place-items:center;pointer-events:none}'
     + '#studio-demo .sd-brand .bw{font-family:\'Playfair Display\',serif;font-weight:800;font-size:clamp(30px,4.2vw,56px);line-height:.92;letter-spacing:.01em;transform:rotate(-9deg) translateY(-8%);text-align:center;background:linear-gradient(102deg,rgba(230,196,120,.4),rgba(255,240,177,.55) 48%,rgba(230,196,120,.36));-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap;filter:drop-shadow(0 2px 12px rgba(0,0,0,.8))}'
     + '#studio-demo .sd-brand .bl{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#b9ab86;font-family:\'Special Elite\',monospace;font-size:9.5px;letter-spacing:.2em;text-shadow:0 1px 8px rgba(0,0,0,.9)}'
