@@ -585,7 +585,7 @@
     <img src="assets/real-wall.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .12; filter: saturate(.6) brightness(.7);">
     <div style="position: absolute; inset: 0; background: radial-gradient(circle 760px at 50% 12%, rgba(7,9,15,.5), #07090f 84%);"></div>
     <div style="position: relative; z-index: 2; width: min(1240px, 94vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 40px); display: grid; grid-template-columns: .82fr 1.18fr; gap: clamp(32px, 5vw, 64px); align-items: start;" class="sss-grid">
-      <div style="align-self: start;">
+      <div style="align-self: center;">
         <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .26em;">SORGU ODASI · DOSYA 47-A/2026</p>
         <h2 style="margin: 12px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(26px, 3vw, 38px); font-weight: 800; line-height: 1.05;">Sorgu <span style="color: #e6c478;">Tutanağı</span></h2>
         <div style="width: 58px; height: 2px; margin: 16px 0 0; background: linear-gradient(90deg, #c19a52, transparent);"></div>
@@ -594,13 +594,13 @@
       <div style="display: grid; gap: 10px;">
         <sc-for list="{{ faqs }}" as="q" hint-placeholder-count="5">
           <div style="border-bottom: 1px solid rgba(193,154,82,.18);">
-            <button onClick="{{ q.toggle }}" style="width: 100%; display: flex; align-items: center; gap: 16px; background: transparent; border: 0; color: #e9dfc8; text-align: left; padding: 20px 6px; font-size: 16px; font-weight: 600; cursor: pointer;" style-hover="color: #e6c478;">
-              <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 13px; flex-shrink: 0;">{{ q.no }}</span>
+            <button onClick="{{ q.toggle }}" style="width: 100%; display: flex; align-items: center; gap: 16px; background: transparent; border: 0; color: #e9dfc8; text-align: left; padding: 15px 6px; font-size: 14.5px; font-weight: 600; cursor: pointer;" style-hover="color: #e6c478;">
+              <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11.5px; flex-shrink: 0;">{{ q.no }}</span>
               <span style="flex: 1;">{{ q.q }}</span>
-              <span style="color: #c19a52; font-family: 'Playfair Display', serif; font-size: 22px; line-height: 1;">{{ q.mark }}</span>
+              <span style="color: #c19a52; font-family: 'Playfair Display', serif; font-size: 18px; line-height: 1;">{{ q.mark }}</span>
             </button>
             <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}">
-              <p style="margin: 0; padding: 0 6px 22px 44px; color: #a4a9b5; line-height: 1.75; font-size: 14.5px;">{{ q.a }}</p>
+              <p style="margin: 0; padding: 0 6px 18px 38px; color: #a4a9b5; line-height: 1.7; font-size: 13.5px;">{{ q.a }}</p>
             </sc-if>
           </div>
         </sc-for>
@@ -615,7 +615,7 @@
     <div style="position: relative; z-index: 2; width: min(1340px, 94vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 48px); display: grid; grid-template-columns: 1fr 1fr; gap: clamp(36px, 5vw, 72px); align-items: center;" class="sss-grid">
       <div style="display: grid; gap: 18px; align-content: center;">
         <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .28em;">GÖREV ÇAĞRISI</p>
-        <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.8vw, 48px); font-weight: 800; line-height: 1.05;">Ajan kadrosuna<br><span style="color: #e6c478;">katıl</span></h2>
+        <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(26px, 3vw, 38px); font-weight: 800; line-height: 1.05;">Ajan kadrosuna<br><span style="color: #e6c478;">katıl</span></h2>
         <p style="margin: 0; color: #cbd0da; max-width: 44ch; line-height: 1.72; font-size: 15.5px;">İlk dosyanı bu gece aç; senaryo, seslendirme ve yayın paketi dakikalar içinde masanda. Soruların, projelerin ve iş birlikleri için de aynı yerden yaz — aynı gün dönüş yapılır.</p>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
           <a href="/uyelik" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .12em; padding: 16px 28px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.4); transform: translateY(-2px);">AJAN OL →</a>

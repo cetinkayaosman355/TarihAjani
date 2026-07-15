@@ -92,7 +92,7 @@
     + '#studio-demo .sd-obox span{display:block;color:#8b93a1;font-size:12px;line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}'
     // sağ sahne — Tarih Ajanı önizleme (büyük görsel)
     + '#studio-demo .sd-stage{display:block}'
-    + '#studio-demo .sd-canvas{position:relative;width:100%;aspect-ratio:7/5;overflow:hidden;border:1px solid rgba(193,154,82,.3);background:radial-gradient(circle at 50% 40%,#0c0a07,#080705);box-shadow:0 40px 90px -52px rgba(0,0,0,.9)}'
+    + '#studio-demo .sd-canvas{position:relative;width:100%;aspect-ratio:16/10;overflow:hidden;border:1px solid rgba(193,154,82,.3);background:radial-gradient(circle at 50% 40%,#0c0a07,#080705);box-shadow:0 40px 90px -52px rgba(0,0,0,.9)}'
     // boş ekran yerine: 4 preset görselinden çapraz (X) mozaik
     + '#studio-demo .sd-mosaic{position:absolute;inset:0;z-index:0}'
     + '#studio-demo .sd-mosaic i{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.34) saturate(.62)}'
