@@ -51,7 +51,7 @@
   ];
 
   var CSS = ''
-    + '#studio-demo{position:relative;background:#06070d;border-top:1px solid rgba(193,154,82,.15);border-bottom:1px solid rgba(193,154,82,.15);overflow:hidden}'
+    + '#studio-demo{position:relative;background:#06070d;overflow:hidden}'
     + '#studio-demo .sd-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle 560px at 86% 6%,rgba(230,196,120,.11),transparent 60%),radial-gradient(circle 460px at 6% 96%,rgba(158,43,35,.09),transparent 58%)}'
     + '#studio-demo .sd-wrap{position:relative;width:min(1790px,96.5vw);margin:0 auto;padding:clamp(46px,4.8vw,70px) clamp(20px,3vw,40px)}'
     // iki sütun — tepeden hizalı
