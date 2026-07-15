@@ -9,7 +9,7 @@
   var FN = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/sosyal-kanit';
   var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
 
-  var state = { loading: false, loaded: false, stats: null, reviews: [], rating: 0, sending: false, done: false, err: '' };
+  var state = { loading: false, loaded: false, stats: null, reviews: [], rating: 0, sending: false, done: false, err: '', showForm: false };
 
   function api(payload) {
     return fetch(FN, {
@@ -51,9 +51,9 @@
       { val: 9, label: 'DERSLİK AKADEMİ', live: false }
     ];
     var statHtml = stats.map(function (s) {
-      return '<div style="text-align:center;padding:6px 10px;">' +
-        '<div class="ta-sk-num" data-to="' + s.val + '" style="font-family:\'Playfair Display\',serif;font-weight:800;font-size:34px;color:#e6c478;line-height:1;">0</div>' +
-        '<div style="margin-top:7px;font-family:\'Special Elite\',monospace;font-size:9.5px;letter-spacing:.14em;color:#818797;">' + s.label + '</div>' +
+      return '<div style="text-align:center;padding:2px 6px;">' +
+        '<div class="ta-sk-num" data-to="' + s.val + '" style="font-family:\'Playfair Display\',serif;font-weight:800;font-size:23px;color:#e6c478;line-height:1;">0</div>' +
+        '<div style="margin-top:5px;font-family:\'Special Elite\',monospace;font-size:8.5px;letter-spacing:.14em;color:#818797;">' + s.label + '</div>' +
       '</div>';
     }).join('');
 
@@ -79,8 +79,13 @@
 
     var formHtml;
     if (state.done) {
-      formHtml = '<div style="margin-top:20px;border:1px solid rgba(122,168,116,.4);background:rgba(122,168,116,.08);color:#a8c8a2;padding:16px 18px;font-size:13.5px;line-height:1.6;">' +
+      formHtml = '<div style="margin-top:18px;border:1px solid rgba(122,168,116,.4);background:rgba(122,168,116,.08);color:#a8c8a2;padding:14px 16px;font-size:13px;line-height:1.6;text-align:center;">' +
         'Teşekkürler! Değerlendirmen alındı. Onaylandıktan sonra burada yayınlanacak.</div>';
+    } else if (!state.showForm) {
+      // varsayılan görünüm sade kalsın — form talep üzerine açılır
+      formHtml = '<div style="text-align:center;margin-top:18px;">' +
+        '<button id="ta-sk-open" type="button" style="cursor:pointer;background:none;border:0;color:#c19a52;font-family:\'Hanken Grotesk\',system-ui,sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.02em;text-decoration:underline;text-underline-offset:3px;padding:6px;">Sen de deneyimini paylaş →</button>' +
+      '</div>';
     } else {
       var starPick = '';
       for (var i = 1; i <= 5; i++) {
@@ -108,7 +113,7 @@
         '<div style="width:58px;height:2px;margin:13px auto 0;background:linear-gradient(90deg,transparent,#c19a52,transparent);"></div>' +
         '<div style="margin-top:12px;">' + ratingLine + '</div>' +
       '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:22px;border:1px solid rgba(193,154,82,.18);background:#05070d;padding:20px 10px;">' + statHtml + '</div>' +
+      '<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px 34px;margin-top:16px;">' + statHtml + '</div>' +
       reviewsHtml +
       formHtml +
     '</div>';
@@ -125,6 +130,8 @@
     });
     var send = host.querySelector('#ta-sk-send');
     if (send) send.addEventListener('click', function () { submit(host); });
+    var open = host.querySelector('#ta-sk-open');
+    if (open) open.addEventListener('click', function () { state.showForm = true; redraw(host); });
   }
 
   function submit(host) {

@@ -31,7 +31,7 @@
   var NF = 5; // çekmecedeki görünür dosya sayısı
 
   var CSS = ''
-    + '#arsiv-demo{position:relative;background:#06070d;overflow:hidden;isolation:isolate}'
+    + '#arsiv-demo{position:relative;background:#040509;overflow:hidden;isolation:isolate}'
     // sinematik arka plan — çekilen dosyanın görseli (çift katman, çapraz geçiş)
     + '#arsiv-demo .ad-bg{position:absolute;inset:0;z-index:0;opacity:0;transform:scale(1.12);transition:opacity 1.1s ease,transform 12s linear;background-size:cover;background-position:center;filter:saturate(.62) contrast(1.02)}'
     + '#arsiv-demo .ad-bg.on{opacity:.3;transform:scale(1.0)}'
