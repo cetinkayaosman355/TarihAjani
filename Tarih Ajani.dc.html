@@ -90,6 +90,8 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3"><link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png?v=3"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
   <style>
     html, body { margin: 0; padding: 0; background: #040509; }
+    /* Ortak dikey ritim skalası — her bölüm aynı nabza oturur */
+    :root { --sp: clamp(48px, 5vw, 64px); --sp-sm: clamp(32px, 3.5vw, 46px); }
     /* Tek, yumuşak ve simetrik zemin — siyaha dönük koyu ton; yön yön renk lekesi yok.
        Tüm akış boyunca aynı derin karanlık kalır, bölümler kaynaşarak akar. */
     body { background-image: radial-gradient(circle 1200px at 50% 0%, rgba(15,17,26,.28), transparent 62%); background-attachment: fixed; }
@@ -290,7 +292,7 @@
   </section>
 
   <!-- BİR AJAN OLURSAN · kazanım şeridi -->
-  <section data-screen-label="Kazanımlar" style="position: relative; background: linear-gradient(180deg, rgba(16,14,12,.45), transparent); padding: clamp(32px, 4vw, 46px) 0;">
+  <section data-screen-label="Kazanımlar" style="position: relative; background: linear-gradient(180deg, rgba(16,14,12,.45), transparent); padding: var(--sp) 0;">
     <div style="width: min(1340px, 92vw); margin: 0 auto; padding: 0 clamp(20px, 4vw, 40px);">
       <div style="display: flex; align-items: center; gap: 16px; justify-content: center; margin-bottom: 30px;">
         <span style="flex: 1; max-width: 130px; height: 1px; background: linear-gradient(to left, rgba(193,154,82,.5), transparent);"></span>
@@ -335,7 +337,7 @@
 
   <!-- NASIL ÇALIŞIR · ince operasyon şeridi (kısa, sade; sayfayla kaynaşan geçiş) -->
   <section id="nasil-calisir" data-screen-label="Nasıl Çalışır" style="width: 100%;">
-    <div style="width: min(1120px, 92vw); margin: 0 auto; padding: clamp(22px, 2.6vw, 36px) clamp(20px, 4vw, 40px); text-align: center;">
+    <div style="width: min(1120px, 92vw); margin: 0 auto; padding: var(--sp-sm) clamp(20px, 4vw, 40px); text-align: center;">
       <p style="margin: 0 0 20px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .3em;">OPERASYON AKIŞI · NASIL ÇALIŞIR</p>
       <div class="yol-track" style="position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
         <div class="yol-line" style="position: absolute; top: 19px; left: 13%; right: 13%; height: 1px; background: rgba(193,154,82,.32); z-index: 0;"></div>
@@ -373,7 +375,7 @@
   <section id="kazanc-demo" data-screen-label="Seni Ne Bekliyor"><div id="kazanc-demo-mount"></div></section>
 
   <!-- SEVİYELER -->
-  <section id="seviyeler" data-screen-label="Seviyeler" style="position: relative; overflow: hidden; width: 100%; margin: 0 auto; padding: 72px max(calc((100% - 1300px) / 2), clamp(20px, 4vw, 40px)) 30px;">
+  <section id="seviyeler" data-screen-label="Seviyeler" style="position: relative; overflow: hidden; width: 100%; margin: 0 auto; padding: var(--sp) max(calc((100% - 1300px) / 2), clamp(20px, 4vw, 40px)) var(--sp);">
     <img src="assets/real-studio.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.22) saturate(.35); z-index: -1;">
     <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4,5,9,.92) 0%, rgba(4,5,9,.8) 45%, rgba(4,5,9,.95) 100%); z-index: -1;"></div>
     <div style="position: absolute; inset: 0; background: radial-gradient(circle 900px at 50% 12%, rgba(230,196,120,.06), transparent 60%); z-index: -1;"></div>
@@ -407,7 +409,7 @@
   </section>
 
   <!-- ÜRÜNLER -->
-  <section id="urunler" data-screen-label="Ürünler" style="width: min(1340px, 92vw); margin: 0 auto; padding: 76px clamp(20px, 4vw, 40px) 30px;">
+  <section id="urunler" data-screen-label="Ürünler" style="width: min(1340px, 92vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 40px) var(--sp);">
     <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">ÜRÜNLER · 002</p>
     <h2 style="margin: 20px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.6vw, 44px); font-weight: 700;">Ajan teçhizatı</h2>
     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 20px; margin: 24px 0 28px;">
@@ -443,7 +445,7 @@
   </section>
 
   <!-- ZAMAN HATLARI · YouTube arşivi -->
-  <section id="zaman-hatlari" data-screen-label="Zaman Hatları" style="position: relative; overflow: hidden; width: 100%; margin: 0 auto; padding: 80px clamp(20px, 5vw, 70px) 30px;">
+  <section id="zaman-hatlari" data-screen-label="Zaman Hatları" style="position: relative; overflow: hidden; width: 100%; margin: 0 auto; padding: var(--sp) clamp(20px, 5vw, 70px) var(--sp);">
     <img src="assets/chalkboard-map.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .13; filter: brightness(.6) saturate(.7); pointer-events: none; z-index: -1;">
     <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,7,13,.86), rgba(7,8,16,.9)); pointer-events: none; z-index: -1;"></div>
     <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">ZAMAN HATLARI · 004</p>
@@ -451,7 +453,7 @@
     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin: 0 0 34px;">
       <p style="margin: 0; color: #a4a9b5; max-width: 560px; line-height: 1.65;">Zaman çizgisinde dolaş; bir durağı seç, vakanın videosuna YouTube'da devam et.</p>
       <a href="/zaman-tuneli" style="text-decoration: none; border: 1px solid rgba(193,154,82,.55); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 20px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">◈ 3B TÜNELE GİR</a>
-      <a href="/oyun/sayi-tahmin/" style="text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 20px; white-space: nowrap;" style-hover="box-shadow: 0 8px 28px rgba(230,196,120,.35);">▶ ZAMAN GÖREVİ · OYNA</a>
+      <a href="/oyun/sayi-tahmin/" style="text-decoration: none; border: 1px solid rgba(193,154,82,.55); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 20px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">▶ ZAMAN GÖREVİ · OYNA</a>
     </div>
 
     <div style="display: flex; align-items: flex-start; gap: 12px;">
@@ -493,7 +495,7 @@
   </section>
 
   <!-- NELER YAPTIK · YAYIN ARŞİVİ (kapak kartları; otomatik kaydırma: bant.js) -->
-  <section id="yayin-arsivi" data-screen-label="Yayın Arşivi" style="width: min(1340px, 92vw); margin: 0 auto; padding: clamp(46px, 5vw, 64px) 0 clamp(28px, 3.5vw, 42px);">
+  <section id="yayin-arsivi" data-screen-label="Yayın Arşivi" style="width: min(1340px, 92vw); margin: 0 auto; padding: var(--sp) 0 var(--sp);">
     <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-bottom: 20px;">
       <div>
         <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">SAHADAN GÖRÜNTÜLER · YAYIN ARŞİVİ</p>
@@ -554,11 +556,11 @@
   </section>
 
   <!-- AJANLAR NE DİYOR · yorumlar -->
-  <section data-screen-label="Yorumlar" style="position: relative; overflow: hidden; width: min(1040px, 92vw); margin: 0 auto; padding: clamp(36px, 4vw, 50px) clamp(22px, 4vw, 40px) clamp(28px, 3.5vw, 40px);">
+  <section data-screen-label="Yorumlar" style="position: relative; overflow: hidden; width: min(1040px, 92vw); margin: 0 auto; padding: var(--sp) clamp(22px, 4vw, 40px) var(--sp);">
     <img src="assets/evidence-board.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .1; filter: brightness(.55) saturate(.7); pointer-events: none; z-index: -1;">
     <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,7,13,.88), rgba(6,7,13,.92)); pointer-events: none; z-index: -1;"></div>
     <!-- Gerçek sosyal kanıt: canlı sayaçlar + onaylı kullanıcı yorumları (sosyal-kanit.js doldurur) -->
-    <div id="ta-sosyal-kanit" style="min-height: 220px;">
+    <div id="ta-sosyal-kanit" style="min-height: 120px;">
       <p style="margin: 0; text-align: center; color: #818797; font-size: 13.5px;">Değerlendirmeler yükleniyor…</p>
     </div>
   </section>
@@ -567,7 +569,7 @@
   <section id="sss" data-screen-label="SSS" style="position: relative; overflow: hidden; background: linear-gradient(180deg, transparent, rgba(10,9,8,.5) 30%);">
     <img src="assets/real-wall.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .12; filter: saturate(.6) brightness(.7);">
     <div style="position: absolute; inset: 0; background: radial-gradient(circle 760px at 50% 12%, rgba(7,9,15,.5), #07090f 84%);"></div>
-    <div style="position: relative; z-index: 2; width: min(920px, 92vw); margin: 0 auto; padding: clamp(56px, 6vw, 92px) clamp(20px, 4vw, 40px);">
+    <div style="position: relative; z-index: 2; width: min(920px, 92vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 40px);">
       <div style="text-align: center; margin-bottom: 40px;">
         <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .26em;">SORGU ODASI · DOSYA 47-A/2026</p>
         <h2 style="margin: 14px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.8vw, 48px); font-weight: 800;">Sorgu Tutanağı</h2>
@@ -590,10 +592,10 @@
   </section>
 
   <!-- AJAN KADROSUNA KATIL · tek bütün, enine -->
-  <section data-screen-label="Ajan Kadrosu" style="position: relative; margin-top: 40px; overflow: hidden;">
+  <section data-screen-label="Ajan Kadrosu" style="position: relative; overflow: hidden;">
     <img src="assets/real-banner-seal.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.5) saturate(.95);">
     <div style="position: absolute; inset: 0; background: linear-gradient(105deg, rgba(3,5,11,.94) 0%, rgba(3,5,11,.82) 44%, rgba(3,5,11,.42) 100%), linear-gradient(to bottom, #03050b, transparent 18%, transparent 82%, #06070c);"></div>
-    <div style="position: relative; z-index: 2; width: min(1340px, 94vw); margin: 0 auto; padding: clamp(60px, 7vw, 104px) clamp(20px, 4vw, 48px); display: grid; grid-template-columns: 1fr 1fr; gap: clamp(36px, 5vw, 72px); align-items: center;" class="sss-grid">
+    <div style="position: relative; z-index: 2; width: min(1340px, 94vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 48px); display: grid; grid-template-columns: 1fr 1fr; gap: clamp(36px, 5vw, 72px); align-items: center;" class="sss-grid">
       <div style="display: grid; gap: 18px; align-content: center;">
         <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .28em;">GÖREV ÇAĞRISI</p>
         <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(32px, 4.4vw, 56px); font-weight: 800; line-height: 1.05;">Ajan kadrosuna<br>katıl</h2>

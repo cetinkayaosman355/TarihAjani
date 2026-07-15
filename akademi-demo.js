@@ -35,7 +35,7 @@
     + '#akademi-demo{position:relative;background:#040509;overflow:hidden;isolation:isolate}'
     + '#akademi-demo .ak-bgfx{display:none}'
     + '#akademi-demo .ak-vin{position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 130% at 50% 20%,transparent 46%,rgba(0,0,0,.55))}'
-    + '#akademi-demo .ak-wrap{position:relative;z-index:1;width:min(1580px,92vw);margin:0 auto;padding:clamp(24px,2.6vw,40px) clamp(22px,3vw,48px)}'
+    + '#akademi-demo .ak-wrap{position:relative;z-index:1;width:min(1580px,92vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
     + '#akademi-demo .ak-head{max-width:960px;margin-bottom:clamp(18px,2vw,28px);padding-bottom:16px;border-bottom:1px solid rgba(193,154,82,.18);display:flex;gap:20px;align-items:center}'
     + '#akademi-demo .ak-head-tx{min-width:0}'
     // akademi arması (elit okul mührü)
@@ -113,7 +113,7 @@
     + '#akademi-demo .ak-under{display:flex;justify-content:space-between;gap:14px;margin-top:10px;font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.12em;color:#77705c}'
     + '@media(max-width:900px){#akademi-demo .ak-work{grid-template-columns:1fr}#akademi-demo .ak-work>div{min-width:0}#akademi-demo .ak-frame{min-height:300px}}'
     + '@media(max-width:640px){'
-      + '#akademi-demo .ak-wrap{width:min(1660px,92vw);padding:clamp(26px,7vw,42px) 14px}'
+      + '#akademi-demo .ak-wrap{width:min(1660px,92vw);padding:clamp(40px,9vw,52px) 14px}'
       + '#akademi-demo h2{font-size:clamp(24px,7.4vw,34px)}'
       + '#akademi-demo .ak-sub{font-size:13.5px}'
       + '#akademi-demo .ak-ptop{padding:10px 13px}#akademi-demo .ak-ptop b,#akademi-demo .ak-ptop span{font-size:9.5px;letter-spacing:.12em}'
