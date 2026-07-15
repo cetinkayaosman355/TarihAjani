@@ -24,7 +24,7 @@ import { dirname, join } from 'node:path';
 
 const API_KEY = process.env.ELEVEN_API_KEY || process.env.XI_API_KEY || '';
 // İyi, derin bir çok-dilli erkek ses (istersen --list ile kendi sesini seç):
-const DEFAULT_VOICE_ID = 'onwK4e9ZLuTAKqWW03F9'; // "Daniel" — derin, otoriter
+const DEFAULT_VOICE_ID = 'j82ax9yhzfYwq9lDvRWL'; // "Kadir Kayışcı" — derin, olgun, yumuşak anlatıcı
 const VOICE_ID = process.env.VOICE_ID || DEFAULT_VOICE_ID;
 const MODEL_ID = process.env.MODEL_ID || 'eleven_multilingual_v2';
 
