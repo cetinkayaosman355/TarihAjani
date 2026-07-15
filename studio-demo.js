@@ -80,7 +80,7 @@
     + '#studio-demo .sd-btn.ghost{background:transparent;border:1px solid rgba(193,154,82,.5);color:#e6c478;font-family:\'Hanken Grotesk\',system-ui,sans-serif;font-weight:700;font-size:13px;letter-spacing:.03em}'
     + '#studio-demo .sd-btn.ghost:hover{background:rgba(193,154,82,.12);box-shadow:none}'
     + '#studio-demo .sd-tryrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}'
-    + '#studio-demo .sd-note{color:#6d7380;font-size:11px}'
+    + '#studio-demo .sd-note{color:#868c9c;font-size:11px}'
     // yan yana çıktı kutuları
     + '#studio-demo .sd-oh{color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.2em}'
     + '#studio-demo .sd-outrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}'

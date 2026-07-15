@@ -108,7 +108,7 @@
 
     return '<div id="ta-sk-root">' +
       '<div style="text-align:center;margin-bottom:6px;">' +
-        '<p style="margin:0 0 6px;color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.24em;">SAHADAN · GERÇEK AJANLAR</p>' +
+        '<p style="margin:0 0 6px;color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.24em;">AJAN DEFTERİ · GERÇEK GÖRÜŞLER</p>' +
         '<h2 style="margin:0;font-family:\'Playfair Display\',serif;font-size:clamp(26px,3vw,33px);font-weight:800;color:#f2ecd9;">Ajanlar ne <span style="color:#e6c478;">diyor?</span></h2>' +
         '<div style="width:58px;height:2px;margin:13px auto 0;background:linear-gradient(90deg,transparent,#c19a52,transparent);"></div>' +
         '<div style="margin-top:12px;">' + ratingLine + '</div>' +
