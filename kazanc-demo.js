@@ -18,9 +18,9 @@
     {n:3,     s:'',  l:'GELİR KANALI'}
   ];
   var GELIR = [
-    {ico:'▶', b:'REKLAM GELİRİ', s:'1.000 abone ve izlenme eşiği sonrası kanal reklam kazancına açılır.'},
-    {ico:'◈', b:'SPONSORLUK',    s:'Niş tarih kanalları, marka iş birlikleri için küçükken bile değerlidir.'},
-    {ico:'⌘', b:'ÜRÜN & ÜYELİK', s:'Kendi e-kitabını, içeriğini ve üyeliğini kitlene doğrudan sat.'}
+    {ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4a1 1 0 0 0 1 1h2l9 4V5l-9 4H5a1 1 0 0 0-1 1Z"/><path d="M8 15v3.4"/><path d="M18.5 9.5a3.2 3.2 0 0 1 0 5"/></svg>', b:'REKLAM GELİRİ', s:'1.000 abone ve izlenme eşiği sonrası kanal reklam kazancına açılır.'},
+    {ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="4.8"/><path d="M9.2 13 7.7 20l4.3-2.4L16.3 20l-1.5-7"/></svg>', b:'SPONSORLUK',    s:'Niş tarih kanalları, marka iş birlikleri için küçükken bile değerlidir.'},
+    {ico:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 4.8h6.8c.5 0 1 .2 1.3.6l6 6a1.9 1.9 0 0 1 0 2.7l-4.4 4.4a1.9 1.9 0 0 1-2.7 0l-6-6a1.9 1.9 0 0 1-.6-1.3V4.8Z"/><circle cx="8.6" cy="8.6" r="1.2"/></svg>', b:'ÜRÜN & ÜYELİK', s:'Kendi e-kitabını, içeriğini ve üyeliğini kitlene doğrudan sat.'}
   ];
 
   var CSS = ''
@@ -74,7 +74,8 @@
     // gelir kanalları + CTA
     + '#kazanc-demo .kz-low{display:grid;grid-template-columns:repeat(3,1fr) auto;gap:12px;align-items:stretch;margin-top:14px}'
     + '#kazanc-demo .kz-gel{border:1px solid rgba(193,154,82,.2);background:#070a12;padding:13px 15px;display:flex;gap:11px;align-items:flex-start}'
-    + '#kazanc-demo .kz-gel .ico{flex:0 0 30px;height:30px;border:1px solid rgba(193,154,82,.4);color:#e6c478;display:grid;place-items:center;font-size:13px}'
+    + '#kazanc-demo .kz-gel .ico{flex:0 0 30px;height:30px;border:1px solid rgba(193,154,82,.4);color:#e6c478;display:grid;place-items:center}'
+    + '#kazanc-demo .kz-gel .ico svg{width:15px;height:15px}'
     + '#kazanc-demo .kz-gel b{display:block;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.14em;color:#eadfc6;margin-bottom:4px}'
     + '#kazanc-demo .kz-gel span{color:#8b93a1;font-size:12px;line-height:1.5}'
     + '#kazanc-demo .kz-cta{display:flex;flex-direction:column;gap:8px;justify-content:center}'
