@@ -484,6 +484,9 @@
     }
   ];
 
+  // Hazır stüdyo anlatımı (varsa) — /assets/ses/<id>.mp3 veya .wav; yoksa tarayıcı sesine düşer
+  DOSSIERS.forEach(function(d){ d.audio = ['/assets/ses/'+d.id+'.mp3', '/assets/ses/'+d.id+'.wav']; });
+
   var current = null;
 
   /* ── dosya kartlarını bas ── */
@@ -589,23 +592,44 @@
     var cloud = tr.filter(function(v){ return v.localService===false; });
     return pref[0] || cloud[0] || tr[0];
   }
+  var _audio=null;
   function stopVoice(){
     try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+    if(_audio){ try{ _audio.pause(); }catch(e){} }
     speaking=false; if(voiceTimer){ clearTimeout(voiceTimer); voiceTimer=null; }
     var w=$('#wave'); if(w) w.classList.remove('playing');
     var pb=$('#play-btn'); if(pb) pb.textContent='▶';
   }
+  // Öncelik: hazır stüdyo anlatımı (MP3). Yoksa/olmazsa → tarayıcı sesi.
   $('#play-btn').addEventListener('click', function(){
     if(speaking){ stopVoice(); return; }
-    var text = current ? current.ses : '';
-    if(!text) return;
-    var supported = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+    var d=current; if(!d) return;
     speaking=true; $('#wave').classList.add('playing'); $('#play-btn').textContent='❚❚';
+    var srcs = (d.audio && d.audio.length) ? d.audio.slice() : [];
+    playChain(srcs, d.ses);
+  });
+  // Kaynak listesini sırayla dene (mp3 → wav); hiçbiri açılmazsa tarayıcı sesi.
+  function playChain(srcs, text){
+    if(!speaking) return;
+    if(!srcs || !srcs.length){ playTTS(text); return; }
+    var src = srcs.shift();
+    try{
+      if(!_audio){ _audio=new Audio(); }
+      _audio.onended=function(){ stopVoice(); };
+      _audio.onerror=function(){ playChain(srcs, text); };
+      _audio.src=src; try{ _audio.currentTime=0; }catch(e){}
+      $('#voice-meta').textContent='▶ Seslendiriliyor · stüdyo anlatımı';
+      var p=_audio.play();
+      if(p && p.catch) p.catch(function(){ playChain(srcs, text); });
+    }catch(e){ playChain(srcs, text); }
+  }
+  function playTTS(text){
+    if(!text){ stopVoice(); return; }
+    var supported = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
     if(supported){
       try{
         window.speechSynthesis.cancel();
         var v = pickTrVoice();
-        // cümlelere böl → daha doğal duraklama, uzun metinlerde kesilme yok
         var parts = text.match(/[^.!?…]+[.!?…]*/g) || [text];
         var idx=0;
         var speakNext=function(){
@@ -626,12 +650,9 @@
         return;
       }catch(e){}
     }
-    fallbackTimer(text);
-  });
-  function fallbackTimer(text){
     $('#voice-meta').textContent='▶ Önizleme oynatılıyor · (bu cihazda sesli okuma kapalı)';
-    var secs = Math.min(18, Math.max(10, (text||'').length/12));
-    voiceTimer = setTimeout(function(){ stopVoice(); }, secs*1000);
+    var s2 = Math.min(18, Math.max(10, (text||'').length/12));
+    voiceTimer = setTimeout(function(){ stopVoice(); }, s2*1000);
   }
 
   /* ── görsel oluştur · render animasyonu → net bir an (peek) → kilitli blur ── */
