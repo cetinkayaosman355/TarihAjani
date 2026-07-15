@@ -38,7 +38,7 @@
     + '#kazanc-demo .kz-st b{display:block;font-family:\'Playfair Display\',serif;font-size:clamp(26px,2.6vw,40px);font-weight:800;color:#e6c478;line-height:1;font-variant-numeric:tabular-nums}'
     + '#kazanc-demo .kz-st span{display:block;margin-top:6px;font-family:\'Special Elite\',monospace;font-size:9.5px;letter-spacing:.16em;color:#948c72}'
     // grafik paneli
-    + '#kazanc-demo .kz-chart{position:relative;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg,#0a0b13,#080910 60%,#0a0b12);padding:clamp(14px,1.6vw,24px) clamp(14px,1.6vw,24px) 8px;box-shadow:0 36px 80px -44px rgba(0,0,0,.9)}'
+    + '#kazanc-demo .kz-chart{position:relative;border:1px solid rgba(193,154,82,.28);background:radial-gradient(120% 130% at 86% 6%, #14100a 0%, #0c0906 42%, #090705 100%);padding:clamp(14px,1.6vw,24px) clamp(14px,1.6vw,24px) 8px;box-shadow:0 36px 80px -44px rgba(0,0,0,.9)}'
     + '#kazanc-demo .kz-chart .lbl{position:absolute;top:16px;left:20px;display:flex;align-items:center;gap:18px;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.2em;color:#9aa2b0}'
     + '#kazanc-demo .kz-chart .end{position:absolute;top:14px;right:20px;text-align:right}'
     + '#kazanc-demo .kz-chart .end small{display:block;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;margin-bottom:5px}'
@@ -50,10 +50,20 @@
     + '#kazanc-demo svg{display:block;width:100%;height:auto}'
     + '#kazanc-demo .ln{fill:none;stroke-linecap:round}'
     + '#kazanc-demo .ln.ig{stroke:url(#kz-gold);stroke-width:3}'
-    + '#kazanc-demo .ln.yt{stroke:url(#kz-red);stroke-width:2.5}'
+    + '#kazanc-demo .ln.glow{filter:url(#kz-glow)}'
+    + '#kazanc-demo .ln.yt{stroke:url(#kz-red);stroke-width:2.2;opacity:.85}'
     + '#kazanc-demo.kz-on .ln.ig{animation:kz-draw 2.2s ease forwards}'
     + '#kazanc-demo.kz-on .ln.yt{animation:kz-draw 2.2s ease .25s forwards}'
     + '@keyframes kz-draw{to{stroke-dashoffset:0}}'
+    // altın eğri düğümleri + parlayan uç
+    + '#kazanc-demo .ignode{fill:#0b0805;stroke:#e6c478;stroke-width:2;opacity:0;transition:opacity .4s}'
+    + '#kazanc-demo.kz-on .ignode{opacity:.9;animation:kz-node 2.4s ease-in-out infinite}'
+    + '#kazanc-demo .igtip{fill:#fff0b1;filter:url(#kz-glow);opacity:0;transition:opacity .5s 1.9s}'
+    + '#kazanc-demo .igtip-core{fill:#fffaf0;opacity:0;transition:opacity .5s 1.9s}'
+    + '#kazanc-demo.kz-on .igtip{opacity:.95;animation:kz-tip 2.2s ease-in-out infinite}'
+    + '#kazanc-demo.kz-on .igtip-core{opacity:1}'
+    + '@keyframes kz-node{0%,100%{opacity:.55}50%{opacity:1}}'
+    + '@keyframes kz-tip{0%,100%{opacity:.75}50%{opacity:1}}'
     + '#kazanc-demo .ar{fill:url(#kz-area);opacity:0;transition:opacity 1.2s .9s}'
     + '#kazanc-demo.kz-on .ar{opacity:1}'
     + '#kazanc-demo .etxt{opacity:0;transition:opacity .5s 2s;paint-order:stroke;stroke:rgba(8,9,16,.85);stroke-width:3px;stroke-linejoin:round}'
@@ -99,11 +109,14 @@
       + '#kazanc-demo .mtxt,#kazanc-demo .etxt{display:none}'
       + '#kazanc-demo .kz-gel span{font-size:12px}#kazanc-demo .kz-dis{font-size:9px}'
       + '}'
-    + '@media(prefers-reduced-motion:reduce){#kazanc-demo .ln{stroke-dashoffset:0!important;animation:none}#kazanc-demo .ar,#kazanc-demo .mdot,#kazanc-demo .mtxt,#kazanc-demo .kz-chart .end b{opacity:1!important;transition:none}}';
+    + '@media(prefers-reduced-motion:reduce){#kazanc-demo .ln{stroke-dashoffset:0!important;animation:none}#kazanc-demo .ar,#kazanc-demo .mdot,#kazanc-demo .mtxt,#kazanc-demo .kz-chart .end b,#kazanc-demo .ignode,#kazanc-demo .igtip,#kazanc-demo .igtip-core{opacity:1!important;transition:none;animation:none!important}}';
 
-  // iki eğri (viewBox 1000x320): Instagram hızlı yükselir, YouTube daha yavaş ama istikrarlı
-  var PATH_IG = 'M20,278 C150,274 260,264 400,238 C520,214 620,160 720,110 C820,66 900,48 968,40';
-  var PATH_YT = 'M20,278 C160,277 300,272 440,258 C560,246 680,215 780,185 C870,162 930,148 968,140';
+  // iki eğri (viewBox 0 62 1000 258): tepe noktası çerçeve içinde kalsın (y>=88), yukarı taşma yok.
+  // Instagram: yumuşak ivmeli S-eğrisi, sağ üstte parlak uç. YouTube: daha yavaş, istikrarlı.
+  var PATH_IG = 'M20,282 C180,279 320,270 450,244 C560,222 650,182 740,150 C830,120 905,104 968,92';
+  var PATH_YT = 'M20,282 C170,280 300,274 440,260 C560,248 680,218 780,188 C868,162 930,150 968,144';
+  // altın eğri üzerinde parlayan halka-düğümler (referanstaki tırmanan noktalar)
+  var IG_NODES = [[140,278],[300,268],[450,244],[600,206],[740,150],[860,112]];
 
   function svgHTML(){
     var m = MILES.map(function(mi,i){
@@ -112,19 +125,27 @@
         + '<text class="mtxt" data-i="'+i+'" x="'+mi.x+'" y="'+ty+'" text-anchor="'+(mi.x>860?'end':'middle')+'">'
         + '<tspan class="k">'+mi.k+'</tspan><tspan class="d" x="'+mi.x+'" dy="19" '+(mi.x>860?'text-anchor="end"':'')+'>'+mi.d+'</tspan></text>';
     }).join('');
+    var nodes = IG_NODES.map(function(p){
+      return '<circle class="ignode" cx="'+p[0]+'" cy="'+p[1]+'" r="4.5"></circle>';
+    }).join('');
     return '<svg viewBox="0 62 1000 258" preserveAspectRatio="xMidYMid meet" aria-label="İlk 30 gün temsilî büyüme: Instagram ve YouTube">'
       + '<defs>'
       + '<linearGradient id="kz-gold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a77d35"/><stop offset=".55" stop-color="#e6c478"/><stop offset="1" stop-color="#fff0b1"/></linearGradient>'
       + '<linearGradient id="kz-red" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7c261d"/><stop offset=".6" stop-color="#c0463b"/><stop offset="1" stop-color="#e08a80"/></linearGradient>'
-      + '<linearGradient id="kz-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(230,196,120,.2)"/><stop offset="1" stop-color="rgba(230,196,120,0)"/></linearGradient>'
+      + '<linearGradient id="kz-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(230,196,120,.16)"/><stop offset="1" stop-color="rgba(230,196,120,0)"/></linearGradient>'
+      + '<radialGradient id="kz-atmo" cx="0.86" cy="0.12" r="0.62"><stop offset="0" stop-color="rgba(230,180,90,.16)"/><stop offset=".4" stop-color="rgba(150,96,40,.06)"/><stop offset="1" stop-color="rgba(0,0,0,0)"/></radialGradient>'
+      + '<filter id="kz-glow" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
       + '</defs>'
+      + '<rect x="0" y="62" width="1000" height="258" fill="url(#kz-atmo)"></rect>'
       + '<g class="grid"><line x1="20" y1="278" x2="980" y2="278"/><line x1="20" y1="200" x2="980" y2="200"/><line x1="20" y1="122" x2="980" y2="122"/></g>'
       + '<text class="gx" x="20" y="304">GÜN 0</text><text class="gx" x="500" y="304" text-anchor="middle">GÜN 15</text><text class="gx" x="980" y="304" text-anchor="end">GÜN 30</text>'
       + '<path class="ar" d="'+PATH_IG+' L968,278 L20,278 Z"></path>'
       + '<path class="ln yt" id="kz-line-yt" d="'+PATH_YT+'"></path>'
-      + '<path class="ln ig" id="kz-line-ig" d="'+PATH_IG+'"></path>'
-      + '<text class="etxt ig" x="958" y="14" text-anchor="end"><tspan class="pn">INSTAGRAM</tspan><tspan class="nv" x="958" dy="19">35.000 takipçi</tspan></text>'
-      + '<text class="etxt yt" x="958" y="112" text-anchor="end"><tspan class="pn">YOUTUBE</tspan><tspan class="nv" x="958" dy="19">7.000 abone · 5M izlenme</tspan></text>'
+      + '<path class="ln ig glow" id="kz-line-ig" d="'+PATH_IG+'"></path>'
+      + '<g class="ignodes">'+nodes+'</g>'
+      + '<circle class="igtip" cx="968" cy="92" r="6"></circle><circle class="igtip-core" cx="968" cy="92" r="2.6"></circle>'
+      + '<text class="etxt ig" x="958" y="70" text-anchor="end"><tspan class="pn">INSTAGRAM</tspan><tspan class="nv" x="958" dy="19">35.000 takipçi</tspan></text>'
+      + '<text class="etxt yt" x="958" y="122" text-anchor="end"><tspan class="pn">YOUTUBE</tspan><tspan class="nv" x="958" dy="19">7.000 abone · 5M izlenme</tspan></text>'
       + m + '</svg>';
   }
 
