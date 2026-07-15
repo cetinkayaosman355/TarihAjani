@@ -39,7 +39,7 @@
     + '#arsiv-demo .ad-grain{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.5;mix-blend-mode:overlay;background-image:radial-gradient(rgba(255,255,255,.05) .5px,transparent .5px);background-size:3px 3px}'
     + '#arsiv-demo .ad-glow{display:none}'
     + '#arsiv-demo .ad-wrap{position:relative;z-index:2;width:min(1740px,94vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
-    + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.86fr 1.14fr;gap:clamp(30px,3.4vw,60px);align-items:center}'
+    + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(30px,3.4vw,60px);align-items:center}'
     + '#arsiv-demo .ad-panel{display:flex;flex-direction:column;gap:16px;min-width:0}'
     + '#arsiv-demo .ad-btnrow{display:flex;gap:12px;flex-wrap:wrap}'
     + '#arsiv-demo .ad-btnrow .ad-btn{flex:1 1 220px;justify-content:center}'

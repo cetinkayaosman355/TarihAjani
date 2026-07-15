@@ -55,7 +55,7 @@
     + '#studio-demo .sd-glow{display:none}'
     + '#studio-demo .sd-wrap{position:relative;width:min(1740px,94vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
     // iki sütun — tepeden hizalı
-    + '#studio-demo .sd-work{display:grid;grid-template-columns:.86fr 1.14fr;gap:clamp(30px,3.4vw,60px);align-items:center}'
+    + '#studio-demo .sd-work{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(30px,3.4vw,60px);align-items:center}'
     + '#studio-demo .sd-panel{display:flex;flex-direction:column;justify-content:flex-start;gap:15px;min-width:0;padding-top:0}'
     + '#studio-demo .sd-panel.sd-mid{justify-content:flex-start;padding-top:0}'
     + '#studio-demo .sd-live{display:inline-flex;align-items:center;gap:8px;color:#e08a80;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.22em;margin-bottom:2px}'
