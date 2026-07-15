@@ -83,6 +83,8 @@
     + '#kazanc-demo .kz-btn:hover{transform:translateY(-2px);box-shadow:0 14px 44px -14px rgba(230,196,120,.55)}'
     + '#kazanc-demo .kz-btn.ghost{background:transparent;border:1px solid rgba(193,154,82,.5);color:#e6c478}'
     + '#kazanc-demo .kz-btn.ghost:hover{background:rgba(193,154,82,.12);box-shadow:none}'
+    + '#kazanc-demo .kz-link{align-self:center;text-align:center;color:#c19a52;font-family:\'Hanken Grotesk\',system-ui,sans-serif;font-weight:600;font-size:13px;text-decoration:underline;text-underline-offset:3px;padding:6px}'
+    + '#kazanc-demo .kz-link:hover{color:#e6c478}'
     + '#kazanc-demo .kz-dis{margin:12px 2px 0;color:#7e8598;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.06em}'
     + '@media(max-width:1100px){#kazanc-demo .kz-stats{grid-template-columns:repeat(2,auto)}#kazanc-demo .kz-low{grid-template-columns:1fr 1fr}#kazanc-demo .kz-cta{grid-column:1/-1;flex-direction:row}}'
     + '@media(max-width:640px){'
@@ -110,7 +112,7 @@
         + '<text class="mtxt" data-i="'+i+'" x="'+mi.x+'" y="'+ty+'" text-anchor="'+(mi.x>860?'end':'middle')+'">'
         + '<tspan class="k">'+mi.k+'</tspan><tspan class="d" x="'+mi.x+'" dy="19" '+(mi.x>860?'text-anchor="end"':'')+'>'+mi.d+'</tspan></text>';
     }).join('');
-    return '<svg viewBox="0 0 1000 320" preserveAspectRatio="xMidYMid meet" aria-label="İlk 30 gün temsilî büyüme: Instagram ve YouTube">'
+    return '<svg viewBox="0 62 1000 258" preserveAspectRatio="xMidYMid meet" aria-label="İlk 30 gün temsilî büyüme: Instagram ve YouTube">'
       + '<defs>'
       + '<linearGradient id="kz-gold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a77d35"/><stop offset=".55" stop-color="#e6c478"/><stop offset="1" stop-color="#fff0b1"/></linearGradient>'
       + '<linearGradient id="kz-red" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7c261d"/><stop offset=".6" stop-color="#c0463b"/><stop offset="1" stop-color="#e08a80"/></linearGradient>'
@@ -142,7 +144,7 @@
       + svgHTML() + '</div>'
       + '<div class="kz-low">'
       + GELIR.map(function(g){return '<div class="kz-gel"><span class="ico">'+g.ico+'</span><div><b>'+g.b+'</b><span>'+g.s+'</span></div></div>';}).join('')
-      + '<div class="kz-cta"><a class="kz-btn" href="/uyelik">SİSTEME KATIL →</a><a class="kz-btn ghost" href="/egitim">Akademi’yi Gör</a></div>'
+      + '<div class="kz-cta"><a class="kz-btn" href="/uyelik">SİSTEME KATIL →</a><a class="kz-link" href="/egitim">Akademi’yi Gör →</a></div>'
       + '</div>'
       + '<p class="kz-dis">* Temsilî senaryo: Tarih Ajanı yöntemleriyle, düzenli video + kesit (Reels/Shorts) üretimi varsayımıyla hazırlanmış örnek projeksiyondur; kazanç garantisi değildir.</p>'
       + '</div>';

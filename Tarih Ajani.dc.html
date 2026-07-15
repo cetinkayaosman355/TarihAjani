@@ -92,6 +92,11 @@
     html, body { margin: 0; padding: 0; background: #040509; }
     /* Ortak dikey ritim skalası — her bölüm aynı nabza oturur */
     :root { --sp: clamp(48px, 5vw, 64px); --sp-sm: clamp(32px, 3.5vw, 46px); }
+    /* Bölümler arası anlam köprüsü — aşama hissi (renk değişimi değil, ince bağlantı) */
+    .ta-kopru { width: min(680px, 90vw); margin: 0 auto; padding: 4px 20px; text-align: center; }
+    .ta-kopru .ln { display: block; width: 1px; height: 30px; margin: 0 auto 14px; background: linear-gradient(rgba(193,154,82,.55), rgba(193,154,82,0)); }
+    .ta-kopru p { margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(15.5px, 1.9vw, 20px); line-height: 1.45; color: #c7ccd6; }
+    .ta-kopru em { font-style: italic; color: #e6c478; }
     /* Tek, yumuşak ve simetrik zemin — siyaha dönük koyu ton; yön yön renk lekesi yok.
        Tüm akış boyunca aynı derin karanlık kalır, bölümler kaynaşarak akar. */
     body { background-image: radial-gradient(circle 1200px at 50% 0%, rgba(15,17,26,.28), transparent 62%); background-attachment: fixed; }
@@ -365,11 +370,23 @@
     </div>
   </section>
 
+
+  <!-- köprü -->
+  <div class="ta-kopru"><span class="ln"></span><p>Akışı gördün. İlk adım: hazır bir <em>dosya seç.</em></p></div>
+
   <!-- ARŞİV CANLI DEMO -->
   <section id="arsiv-demo" data-screen-label="Arşiv Demo"><div id="arsiv-demo-mount"></div></section>
 
+
+  <!-- köprü -->
+  <div class="ta-kopru"><span class="ln"></span><p>Hazır dosyayı denedin. Şimdi <em>kendi konunu üret.</em></p></div>
+
   <!-- STUDIO CANLI DEMO -->
   <section id="studio-demo" data-screen-label="Canlı Demo"><div id="studio-demo-mount"></div></section>
+
+
+  <!-- köprü -->
+  <div class="ta-kopru"><span class="ln"></span><p>Üretmek ilk adım. Bunu bir <em>gelir sistemine dönüştür.</em></p></div>
 
   <!-- SENİ NE BEKLİYOR · KAZANÇ PROJEKSİYONU -->
   <section id="kazanc-demo" data-screen-label="Seni Ne Bekliyor"><div id="kazanc-demo-mount"></div></section>
