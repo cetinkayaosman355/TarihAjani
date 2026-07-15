@@ -36,17 +36,14 @@
     + '#akademi-demo .ak-bgfx{display:none}'
     + '#akademi-demo .ak-vin{position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 130% at 50% 20%,transparent 46%,rgba(0,0,0,.55))}'
     + '#akademi-demo .ak-wrap{position:relative;z-index:1;width:min(1580px,92vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
-    // 3 sütun elit düzen: intro | ders sicili | video
-    + '#akademi-demo .ak-work{display:grid;grid-template-columns:.92fr 1fr 1.32fr;gap:clamp(22px,2.6vw,46px);align-items:stretch}'
-    + '#akademi-demo .ak-intro{display:flex;flex-direction:column;gap:15px;align-self:center;padding-right:clamp(0px,1vw,16px)}'
-    + '#akademi-demo .ak-eyebrow{margin:0;color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.26em}'
-    + '#akademi-demo h2{margin:0;font-family:\'Playfair Display\',serif;font-size:clamp(28px,3vw,44px);font-weight:800;line-height:1.03;letter-spacing:-.018em;color:#f6efe0}'
-    + '#akademi-demo h2 .g{background:linear-gradient(102deg,#b18742,#e6c478 42%,#fff0b1 52%,#a5762f);-webkit-background-clip:text;background-clip:text;color:transparent}'
-    + '#akademi-demo .ak-sub{margin:0;color:#b3b9c6;font-size:14.5px;line-height:1.62;max-width:38ch}'
-    + '#akademi-demo .ak-intro .ak-btn{align-self:flex-start;margin-top:4px}'
-    + '#akademi-demo .ak-tags{display:flex;flex-wrap:wrap;gap:7px 18px;margin-top:2px}'
-    + '#akademi-demo .ak-tags span{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.05em;color:#7ba05a}'
+    // 2 sütun düzen (yan yazı yok): ders sicili | video · full-width
+    + '#akademi-demo .ak-eyebrow{margin:0 0 clamp(24px,2.6vw,36px);color:#c19a52;font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.28em}'
+    + '#akademi-demo .ak-eyebrow.ak-center{display:flex;align-items:center;justify-content:center;text-align:center;gap:9px}'
+    + '#akademi-demo .ak-work{display:grid;grid-template-columns:1fr 1.34fr;gap:clamp(22px,2.6vw,46px);align-items:stretch}'
     + '#akademi-demo .ak-video{display:flex;flex-direction:column}'
+    + '#akademi-demo .ak-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px 22px;margin-top:clamp(24px,2.6vw,38px)}'
+    + '#akademi-demo .ak-tags{display:flex;flex-wrap:wrap;gap:7px 18px}'
+    + '#akademi-demo .ak-tags span{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.05em;color:#7ba05a}'
     // SOL — eğitim sicili
     + '#akademi-demo .ak-prog{position:relative;border:1px solid rgba(193,154,82,.3);background:rgba(10,10,15,.68);backdrop-filter:blur(4px)}'
     + '#akademi-demo .ak-prog::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(193,154,82,.7) 20%,rgba(230,196,120,.9) 50%,rgba(193,154,82,.7) 80%,transparent)}'
@@ -150,14 +147,8 @@
     mount.innerHTML =
       '<div class="ak-vin"></div>'
       + '<div class="ak-wrap">'
+      + '<p class="ak-eyebrow ak-center">◆ AJAN AKADEMİSİ · KAPALI PROGRAM · 9 DERS · SERTİFİKALI</p>'
       + '<div class="ak-work">'
-      + '<div class="ak-intro">'
-      + '<p class="ak-eyebrow">◆ AJAN AKADEMİSİ · KAPALI PROGRAM</p>'
-      + '<h2>Tarihi anlamak,<br><span class="g">doğru anlatmak.</span></h2>'
-      + '<p class="ak-sub">Kaynak doğrulama, anlatı kurgusu, stüdyo ve yayın — dedektif disipliniyle. İlk ders açık; gerisi eğitim sicilinle birlikte açılır.</p>'
-      + '<a class="ak-btn" href="/egitim">Akademi’ye Katıl →</a>'
-      + '<div class="ak-tags"><span>✓ 9 ders</span><span>✓ Sertifikalı</span><span>✓ Kendi hızında</span></div>'
-      + '</div>'
       + '<div class="ak-lessons"><div class="ak-prog"><div class="ak-ptop"><b>EĞİTİM SİCİLİ</b><span id="ak-score">0 / 9 DERS</span></div>'
       + lesHtml
       + '<div class="ak-note" id="ak-note">İlk ders izlenmeye hazır.</div></div></div>'
@@ -174,7 +165,9 @@
       + '</div>'
       + '<div class="ak-under"><span id="ak-cur">DERS 01 · SÖYLENTİ İLE KAYDI AYIRMAK</span><span>◉ ÖN İZLEME</span></div>'
       + '</div>'
-      + '</div></div>';
+      + '</div>'
+      + '<div class="ak-foot"><a class="ak-btn" href="/egitim">Akademi’ye Katıl · 9 Ders →</a><div class="ak-tags"><span>✓ 9 ders</span><span>✓ Sertifikalı</span><span>✓ Kendi hızında</span></div></div>'
+      + '</div>';
 
     var $=function(id){return mount.querySelector('#'+id);};
     var chs=[].slice.call(mount.querySelectorAll('#ak-ch b')),
