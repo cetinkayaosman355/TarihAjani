@@ -181,11 +181,34 @@
   .visual-wrap .ch b{font-family:'Special Elite',monospace; font-weight:400; font-size:10.5px; letter-spacing:.16em; color:var(--gold)}
   .stage-img{position:relative; aspect-ratio:16/9; overflow:hidden; background:#0a0806;
     display:grid; place-items:center}
-  .stage-img img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 1.1s}
-  .stage-img.revealed img{opacity:1; filter:blur(20px) brightness(.7) saturate(1.05); transform:scale(1.08)}
+  .stage-img img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0;
+    filter:blur(22px) brightness(.68) saturate(1.06); transform:scale(1.09);
+    transition:opacity .7s ease, filter 1s ease, transform 1s ease}
+  .stage-img.revealed img{opacity:1}
+  .stage-img.peek img{filter:blur(0px) brightness(.96) saturate(1.03); transform:scale(1.02)}
   .stage-img .placeholder{color:#5a606e; font-family:'Special Elite',monospace; font-size:11px; letter-spacing:.14em; text-align:center; padding:20px; z-index:1}
+  /* render animasyonu — gerçekten üretiliyormuş hissi */
+  .render-fx{position:absolute; inset:0; z-index:2; display:none; overflow:hidden; background:rgba(4,5,9,.5)}
+  .render-fx.on{display:block}
+  .render-fx .rscan{position:absolute; left:0; right:0; height:32%; top:-40%;
+    background:linear-gradient(180deg,transparent,rgba(230,196,120,.14) 55%,rgba(230,196,120,.42));
+    box-shadow:0 0 26px rgba(230,196,120,.32); animation:scan 1.1s linear infinite}
+  @keyframes scan{to{top:112%}}
+  .render-fx .rtxt{position:absolute; bottom:14px; left:0; right:0; text-align:center;
+    color:var(--gold-bright); font-family:'Special Elite',monospace; font-size:11px; letter-spacing:.14em}
+  .vmeta{position:absolute; top:10px; right:10px; z-index:2; display:none;
+    background:rgba(3,5,11,.82); border:1px solid rgba(193,154,82,.4); color:#cdb98a;
+    font-family:'Special Elite',monospace; font-size:9px; letter-spacing:.1em; padding:5px 9px}
+  .stage-img.revealed .vmeta{display:block}
   .visual-btnrow{padding:16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center}
   .visual-note{color:var(--muted); font-size:12px; flex:1 1 200px; line-height:1.5}
+  /* kopyalandı bildirimi */
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(18px); z-index:200;
+    background:#0c0a06; border:1px solid rgba(193,154,82,.55); color:var(--gold-bright);
+    font-family:'Special Elite',monospace; font-size:12px; letter-spacing:.08em; padding:12px 20px;
+    opacity:0; pointer-events:none; transition:opacity .25s, transform .25s}
+  .toast.on{opacity:1; transform:translateX(-50%) translateY(0)}
+  .dl.ok{border-color:rgba(123,160,90,.6); color:#9cc47a}
 
   .img-gate{position:absolute; inset:0; z-index:3; display:none; place-items:center; text-align:center;
     background:linear-gradient(180deg,rgba(4,5,9,.55),rgba(4,5,9,.82)); padding:18px}
@@ -249,7 +272,7 @@
   <section class="stage on" id="stage-pick">
     <p class="eyebrow">◆ ÜCRETSİZ AJAN DENEMESİ · KAYIT GEREKMEZ</p>
     <h1>Sistemin küçük bir örneğini <span class="g">ücretsiz üret.</span></h1>
-    <p class="lead">Arşivden bir vaka seç ya da kendi konunu öner. Ajan senin için kısa bir <strong style="color:#e6c478">örnek dosya</strong> hazırlasın: 10 saniyelik seslendirme, açılış senaryosu ve görsel promptu. Gerisi tam sistemde seni bekliyor.</p>
+    <p class="lead">Arşivden bir vaka seç ya da kendi konunu öner. Ajan senin için kısa bir <strong style="color:#e6c478">örnek dosya</strong> hazırlasın: seslendirilen açılış hikâyesi, senaryo ve görsel promptu — birkaç saniyede. Gerisi tam sistemde seni bekliyor.</p>
     <div class="stamp">🔒 SINIRLI DEMO · TAM DOSYA AJAN GİRİŞİYLE AÇILIR</div>
 
     <div class="doss-grid" id="doss-grid"></div>
@@ -303,11 +326,11 @@
               <button class="play" id="play-btn" aria-label="Seslendirmeyi dinle">▶</button>
               <div class="wave" id="wave"></div>
             </div>
-            <p class="voice-meta" id="voice-meta">▶ 10 saniyelik seslendirmeyi dinle · tarayıcı sesi</p>
+            <p class="voice-meta" id="voice-meta">▶ ~15 saniyelik seslendirmeyi dinle</p>
           </div>
 
           <div class="dl-row">
-            <a class="dl gate" data-what="senaryo">⬇ SENARYO METNİ (.txt)</a>
+            <a class="dl" id="dl-senaryo">⬇ SENARYO METNİ (.txt)</a>
             <a class="dl gate" data-what="ses">⬇ SESLENDİRME (.mp3)</a>
           </div>
         </div>
@@ -319,7 +342,7 @@
           <div class="ch"><b>GÖRSEL PROMPTU</b><span class="free">ÜCRETSİZ</span></div>
           <div class="cb">
             <div class="prompt-box" id="res-prompt">…</div>
-            <div class="dl-row"><a class="dl gate" data-what="prompt">⧉ PROMPTU KOPYALA</a></div>
+            <div class="dl-row"><a class="dl" id="dl-prompt">⧉ PROMPTU KOPYALA</a></div>
           </div>
         </div>
 
@@ -349,19 +372,21 @@
     <div class="visual-wrap">
       <div class="ch"><b>SİNEMATİK GÖRSEL</b><span style="color:#8a846a; font-family:'Special Elite',monospace; font-size:9px; letter-spacing:.12em">SON ADIM</span></div>
       <div class="stage-img" id="stage-img">
-        <div class="placeholder" id="img-ph">Görsel promptundan sahne üretilecek.<br>“Görsel Oluştur”a bas.</div>
+        <div class="placeholder" id="img-ph">Görsel promptundan sinematik sahne üretilecek.<br>“Görsel Oluştur”a bas.</div>
         <img id="visual-img" alt="" src="">
+        <div class="render-fx" id="render-fx"><span class="rscan"></span><span class="rtxt" id="rtxt">Sahne kuruluyor…</span></div>
+        <span class="vmeta" id="vmeta">1920 × 1080 · 35MM · SEED #4173</span>
         <div class="img-gate" id="img-gate">
           <div class="in">
             <div class="lockbig">🔒</div>
-            <h3>Görselin hazır — ama bulanık.</h3>
-            <p>Net sinematik görseli görmek ve indirmek için Ajan Girişi yap. Girişte hesabına <strong style="color:#e6c478">30 deneme kredisi</strong> tanımlanır.</p>
+            <h3>Görselin hazır — kilitli.</h3>
+            <p>Sinematik kareyi bir an gördün. Net hâlini görmek ve indirmek için Ajan Girişi yap; hesabına <strong style="color:#e6c478">30 deneme kredisi</strong> tanımlanır.</p>
           </div>
         </div>
       </div>
       <div class="visual-btnrow">
         <button class="btn-gold" id="make-visual">✦ GÖRSEL OLUŞTUR</button>
-        <span class="visual-note" id="visual-note">Görsel üretimi ücretsiz denemede bulanık gelir; netleştirmek Ajan girişi ister.</span>
+        <span class="visual-note" id="visual-note">Görsel gerçekten üretilir; ücretsiz denemede net hâli ve indirme Ajan girişiyle açılır.</span>
       </div>
     </div>
 
@@ -395,14 +420,14 @@
   var $ = function(s,r){ return (r||document).querySelector(s); };
   var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
 
-  /* ── veri: 3 örnek dosya ── */
+  /* ── veri: 6 örnek dosya · her biri gerçek bir açılış hikâyesi ── */
   var DOSSIERS = [
     {
       id:'fetih', ad:'İstanbul’un Fethi', yil:'1453', etiket:'OSMANLI · KUŞATMA',
       img:'/assets/haber/istanbul-fethi.jpg',
       konu:'İstanbul’un Fethi — surların yarıldığı an',
-      scenelbl:'AÇILIŞ SAHNESİ · 00:00–00:12',
-      ses:'29 Mayıs 1453. Elli üç gün süren kuşatmanın şafağında, Topkapı surlarında ilk gedik açılır. Bin yıllık Bizans’ın kalbine, tarihin akışını değiştiren o an adım atılır.',
+      scenelbl:'AÇILIŞ ANLATIMI · 00:00–00:16',
+      ses:'Yıl, 1453. Elli üç gündür surların dibinde bekleyen ordunun sabrı tükenmek üzere. Şafak sökerken devasa topun gürleyişiyle Topkapı surlarında ilk gedik açılır. İçeride bin yıllık bir imparatorluk, dışarıda yirmi bir yaşında bir sultan. O sabah bir şehir değil, koca bir çağ el değiştirir.',
       prompt:'Cinematic dawn over Constantinople walls, breached rampart, Ottoman banners rising through cannon smoke, volumetric light, 35mm, hyperreal',
       sahneler:['Dev topun namlusundan sancaklara kayan kamera','Surdaki ilk gedik · toz ve kıvılcım yağmuru','Haliç’te karadan yürütülen gemiler silueti','Şafakta inen çift başlı kartal sancağı','Ayasofya’ya ilk giriş · toz içinde ışık huzmeleri'],
       kapak:'“Surlar Bin Yıl Dayandı, Elli Üç Günde Düştü”'
@@ -411,9 +436,9 @@
       id:'vezuv', ad:'Vezüv Patladı', yil:'MS 79', etiket:'POMPEİİ · FELAKET',
       img:'/assets/haber/vezuv-pompeii.jpg',
       konu:'Vezüv’ün patladığı öğle — Pompeii’nin son saati',
-      scenelbl:'AÇILIŞ SAHNESİ · 00:00–00:11',
-      ses:'MS 79, bir sonbahar öğleni. Gökyüzü ikiye yarılır; otuz kilometrelik kül sütunu Pompeii’nin üstüne çöker. Şehir, bir günde zamanın içinde donup kalır.',
-      prompt:'Vesuvius erupting at noon, thirty-kilometer ash column over golden Pompeii, terrified crowd, cinematic, 35mm, dramatic light',
+      scenelbl:'AÇILIŞ ANLATIMI · 00:00–00:16',
+      ses:'MS 79, sıradan bir sonbahar öğleni. Pompeii’nin çarşısı her günkü gibi kalabalık. Derken Vezüv uyanır; gökyüzünü otuz kilometrelik bir kül sütunu yarar ve öğle vakti geceye döner. Kaçmaya çalışanların üstüne kül yağar. Şehir, tam da o an, on yedi yüzyıl boyunca zamanın içinde donup kalır.',
+      prompt:'Vesuvius erupting at noon, thirty-kilometer ash column over golden Pompeii, terrified crowd fleeing, cinematic, 35mm, dramatic light',
       sahneler:['Forumdan yükselen kül sütununa bakan kamera','Sokakta kaçışan kalabalık · düşen küller','Tanrı heykelleri titrerken çatlayan mermer','Limanda dumana karışan kızıl gökyüzü','Küle gömülen bir evin son ışığı'],
       kapak:'“Bir Öğle Vakti Duran Şehir: Pompeii”'
     },
@@ -421,11 +446,41 @@
       id:'sezar', ad:'Sezar Suikastı', yil:'MÖ 44', etiket:'ROMA · İHANET',
       img:'/assets/haber/sezar-suikasti.jpg',
       konu:'Sezar’ın senatoda öldürüldüğü an — Mart’ın 15’i',
-      scenelbl:'AÇILIŞ SAHNESİ · 00:00–00:10',
-      ses:'Mart’ın on beşi, MÖ 44. Senato salonunda togayı kavrayan bir el, parlayan ilk hançer. Yirmi üç darbe ve Roma Cumhuriyeti’nin kaderi, o mermer zeminde değişir.',
-      prompt:'Roman senate marble hall, senators closing in, daggers glinting in chiaroscuro light, Caesar’s toga, cinematic tension, 35mm',
-      sahneler:['Togayı kavrayan el · parlayan ilk hançer','Senatörlerin kapanan çemberi','Mermer zemine düşen gölgeler','Sezar’ın donan bakışı · yankılanan salon','Dağılan kalabalık · devrilen sütun ışığı'],
+      scenelbl:'AÇILIŞ ANLATIMI · 00:00–00:15',
+      ses:'Mart’ın on beşi, MÖ 44. Roma’nın en güçlü adamı, kâhinin uyarısına aldırmadan senatoya girer. Önce togasını kavrayan bir el, ardından parlayan ilk hançer. Yirmi üç darbe iner. En güvendiği dostunu karşısında görünce fısıldar: “Sen de mi?” O mermer zeminde yalnızca Sezar değil, bir cumhuriyet can verir.',
+      prompt:'Roman senate marble hall, senators closing in, daggers glinting in chiaroscuro light, Caesar in toga, cinematic tension, 35mm',
+      sahneler:['Togayı kavrayan el · parlayan ilk hançer','Senatörlerin kapanan çemberi','Mermer zemine düşen uzun gölgeler','Sezar’ın donan bakışı · yankılanan salon','Dağılan kalabalık · devrilen sütun ışığı'],
       kapak:'“23 Hançer: Bir Cumhuriyetin Sonu”'
+    },
+    {
+      id:'termopil', ad:'300 Spartalı', yil:'MÖ 480', etiket:'TERMOPYLAİ · DİRENİŞ',
+      img:'/assets/haber/termopylae.jpg',
+      konu:'Termopylai geçidi — üç yüz kişinin imkânsız direnişi',
+      scenelbl:'AÇILIŞ ANLATIMI · 00:00–00:16',
+      ses:'MÖ 480, Termopylai’nin dar geçidi. Bir yanda tarihin gördüğü en büyük ordu, diğer yanda yalnızca üç yüz Spartalı. Persler haber yollar: “Silahlarınızı bırakın.” Kral Leonidas gülümser ve yanıtı efsane olur: “Gelin, alın.” Üç gün boyunca imkânsızı savunurlar; hepsi ölür ama bıraktıkları söz tarihe kazınır.',
+      prompt:'Narrow mountain pass at dawn, three hundred Spartan warriors holding the line against a vast army, bronze shields, dust and spears, cinematic, 35mm',
+      sahneler:['Geçide dolan sonsuz ordu · kuş bakışı','Kalkan duvarının kenetlenmesi','Leonidas’ın gözlerine yakın çekim','Mızrakların ilk çarpışması · toz','Son direniş · geçide düşen güneş'],
+      kapak:'“Gelin, Alın: Üç Yüz Kişinin Sözü”'
+    },
+    {
+      id:'bagdat', ad:'Bağdat’ın Yağması', yil:'1258', etiket:'MOĞOL · YIKIM',
+      img:'/assets/haber/bagdat-1258.jpg',
+      konu:'1258 — bilginin başkentinin düştüğü gün',
+      scenelbl:'AÇILIŞ ANLATIMI · 00:00–00:16',
+      ses:'1258. Dünyanın bilgi başkenti Bağdat, Moğol ordusunun önünde diz çöker. Şehir yanarken Bilgelik Evi’nin binlerce el yazması Dicle’ye atılır. Anlatılır ki nehir günlerce mürekkepten simsiyah, kandan kızıl akar. Bir gecede yalnızca bir şehir değil, yüzyılların biriktirdiği akıl sulara karışır.',
+      prompt:'Medieval Baghdad burning at night, thousands of manuscripts thrown into the Tigris river turning it black with ink, Mongol siege, cinematic, 35mm',
+      sahneler:['Yanan şehre bakan geniş kamera','Dicle’ye savrulan el yazmaları','Mürekkeple kararan nehir suyu','Bilgelik Evi’nin boşalan rafları','Küller içinde son bir sayfa · ışık'],
+      kapak:'“Nehrin Mürekkeple Aktığı Gece”'
+    },
+    {
+      id:'otzi', ad:'Buz Adam Ötzi', yil:'MÖ 3300', etiket:'ALPLER · CİNAYET',
+      img:'/assets/haber/otzi.jpg',
+      konu:'Ötzi — 5300 yıllık çözülmemiş cinayet dosyası',
+      scenelbl:'AÇILIŞ ANLATIMI · 00:00–00:16',
+      ses:'Alp Dağları, beş bin üç yüz yıl önce. Bir adam karların arasında sırtından okla vurulur ve buzun içinde kaybolur. 1991’de eriyen bir buzulda yeniden ortaya çıkar; midesindeki son yemek, damarındaki kan hâlâ oradadır. Tarihin en eski cinayet dosyası, elli üç yüzyıl sonra yeniden açılır.',
+      prompt:'Frozen alpine glacier, a Copper Age man preserved in ice, arrow wound, misty peaks, forensic cinematic lighting, 35mm, hyperreal',
+      sahneler:['Karlı zirvelere açılan geniş kamera','Buzun içindeki silüet · yakın plan','Sırttaki ok yarası · adli detay','Laboratuvarda çözülen buz','5300 yıl öncesine dönen kurgu planı'],
+      kapak:'“Buzdaki Tanık: 5300 Yıllık Cinayet”'
     }
   ];
 
@@ -458,9 +513,9 @@
       id:'ozel', ad:t, yil:'ÖZEL KONU', etiket:'SENİN KONUN',
       img:'/assets/hero-desk.jpg',
       konu:t,
-      scenelbl:'AÇILIŞ SAHNESİ · 00:00–00:12',
-      ses:'Şimdi sıra sende: “'+t+'”. Ajan bu konuyu bir açılış sahnesine dönüştürür; kamera ilk detayda gezinir, gerilim yavaşça yükselir ve izleyici daha ilk saniyede olayın içine çekilir.',
-      prompt:'Cinematic historical scene about "'+t+'", dramatic lighting, atmospheric dust, 35mm film look, hyperreal detail',
+      scenelbl:'AÇILIŞ ANLATIMI · 00:00–00:15',
+      ses:'Bir sır perde aralanıyor. “'+t+'” — kimilerinin unuttuğu, kimilerinin hiç duymadığı bir hikâye. Kamera tozlu bir detayda geziniyor, gerilim usulca yükseliyor ve izleyici daha ilk saniyede olayın tam ortasında buluyor kendini. İşte tam burada, ajan devreye giriyor ve bu konuyu bir dakikalık sinematik bir anlatıya dönüştürüyor.',
+      prompt:'Cinematic historical scene about "'+t+'", dramatic chiaroscuro lighting, atmospheric dust, 35mm film look, hyperreal detail',
       sahneler:['Konunun geçtiği mekâna açılan geniş kamera','Ana karakterin ilk yakın çekimi','Gerilimi yükselten detay planı','Dönüm anının sinematik çekimi','Kapanışa hazırlayan atmosfer planı'],
       kapak:'“'+t+'” için tık odaklı kapak + başlık'
     };
@@ -503,12 +558,13 @@
       ul.appendChild(li);
     });
     // görsel alanını sıfırla
-    var si = $('#stage-img'); si.classList.remove('revealed');
+    var si = $('#stage-img'); si.classList.remove('revealed','peek');
+    $('#render-fx').classList.remove('on');
     $('#img-gate').classList.remove('on');
     $('#img-ph').style.display='';
-    var vi = $('#visual-img'); vi.src='';
+    var vi = $('#visual-img'); vi.onload=null; vi.onerror=null; vi.src='';
     $('#make-visual').disabled=false; $('#make-visual').textContent='✦ GÖRSEL OLUŞTUR';
-    $('#visual-note').textContent='Görsel üretimi ücretsiz denemede bulanık gelir; netleştirmek Ajan girişi ister.';
+    $('#visual-note').textContent='Görsel gerçekten üretilir; ücretsiz denemede net hâli ve indirme Ajan girişiyle açılır.';
     buildWave();
     show('#stage-result');
   }
@@ -520,18 +576,24 @@
     heights.forEach(function(h){ var i=document.createElement('i'); i.style.height=(h*100)+'%'; w.appendChild(i); });
   }
 
-  /* ── seslendirme (tarayıcı Web Speech) ── */
-  var speaking=false, voiceTimer=null;
+  /* ── seslendirme (tarayıcı Web Speech · kaliteli ses seçimi) ── */
+  var speaking=false, voiceTimer=null, _voices=[];
+  function loadVoices(){ try{ _voices = window.speechSynthesis.getVoices()||[]; }catch(e){ _voices=[]; } }
+  if('speechSynthesis' in window){ loadVoices(); try{ window.speechSynthesis.onvoiceschanged=loadVoices; }catch(e){} }
+  function pickTrVoice(){
+    if(!_voices.length) loadVoices();
+    var tr = _voices.filter(function(v){ return /^tr(\b|[-_])/i.test(v.lang)||/turk|türk/i.test(v.name); });
+    if(!tr.length) return null;
+    // kaliteli motor önceliği: nöral/bulut sesler robotik yerel seslerden iyidir
+    var pref = tr.filter(function(v){ return /natural|neural|google|microsoft|premium|online|yelda|emel|ahmet|filiz|seda/i.test(v.name); });
+    var cloud = tr.filter(function(v){ return v.localService===false; });
+    return pref[0] || cloud[0] || tr[0];
+  }
   function stopVoice(){
     try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
     speaking=false; if(voiceTimer){ clearTimeout(voiceTimer); voiceTimer=null; }
-    $('#wave').classList.remove('playing'); $('#play-btn').textContent='▶';
-  }
-  function pickTrVoice(){
-    try{
-      var vs = window.speechSynthesis.getVoices()||[];
-      return vs.filter(function(v){ return /^tr(\b|[-_])/i.test(v.lang)||/turk/i.test(v.name); })[0]||null;
-    }catch(e){ return null; }
+    var w=$('#wave'); if(w) w.classList.remove('playing');
+    var pb=$('#play-btn'); if(pb) pb.textContent='▶';
   }
   $('#play-btn').addEventListener('click', function(){
     if(speaking){ stopVoice(); return; }
@@ -542,51 +604,123 @@
     if(supported){
       try{
         window.speechSynthesis.cancel();
-        var u = new SpeechSynthesisUtterance(text);
-        u.lang='tr-TR'; u.rate=.98; u.pitch=.92; u.volume=1;
-        var v = pickTrVoice(); if(v) u.voice=v;
-        u.onend = function(){ stopVoice(); };
-        u.onerror = function(){ fallbackTimer(text); };
-        window.speechSynthesis.speak(u);
-        $('#voice-meta').textContent = v ? ('▶ Seslendiriliyor · '+v.name) : '▶ Seslendiriliyor · tarayıcı sesi';
-        // güvenlik: bazı tarayıcılarda onend gelmezse
-        var secs = Math.min(16, Math.max(9, text.length/15));
-        voiceTimer = setTimeout(function(){ if(speaking) stopVoice(); }, secs*1000+1500);
+        var v = pickTrVoice();
+        // cümlelere böl → daha doğal duraklama, uzun metinlerde kesilme yok
+        var parts = text.match(/[^.!?…]+[.!?…]*/g) || [text];
+        var idx=0;
+        var speakNext=function(){
+          if(!speaking) return;
+          if(idx>=parts.length){ stopVoice(); return; }
+          var seg=parts[idx].trim(); idx++;
+          if(!seg){ speakNext(); return; }
+          var u=new SpeechSynthesisUtterance(seg);
+          u.lang='tr-TR'; u.rate=.9; u.pitch=.96; u.volume=1;
+          if(v) u.voice=v;
+          u.onend=speakNext; u.onerror=speakNext;
+          window.speechSynthesis.speak(u);
+        };
+        speakNext();
+        $('#voice-meta').textContent = v ? ('▶ Seslendiriliyor · '+v.name.replace(/\s*\(.*\)\s*$/,'')) : '▶ Seslendiriliyor · tarayıcı sesi';
+        var secs = Math.min(26, Math.max(11, text.length/12));
+        voiceTimer = setTimeout(function(){ if(speaking) stopVoice(); }, secs*1000+2500);
         return;
       }catch(e){}
     }
     fallbackTimer(text);
   });
   function fallbackTimer(text){
-    // TTS yoksa: dalgayı ~11 sn oynat, kullanıcıya bilgi ver
     $('#voice-meta').textContent='▶ Önizleme oynatılıyor · (bu cihazda sesli okuma kapalı)';
-    var secs = Math.min(15, Math.max(9, (text||'').length/15));
+    var secs = Math.min(18, Math.max(10, (text||'').length/12));
     voiceTimer = setTimeout(function(){ stopVoice(); }, secs*1000);
   }
-  // sesler asenkron yüklenebilir
-  if('speechSynthesis' in window){ try{ window.speechSynthesis.onvoiceschanged=function(){}; }catch(e){} }
 
-  /* ── görsel oluştur ── */
+  /* ── görsel oluştur · render animasyonu → net bir an (peek) → kilitli blur ── */
   $('#make-visual').addEventListener('click', function(){
-    var btn=this; if(btn.disabled) return;
+    var btn=this; if(btn.disabled || !current) return;
     btn.disabled=true; btn.textContent='✦ ÜRETİLİYOR…';
-    $('#img-ph').textContent='Sinematik sahne render ediliyor…';
-    $('#visual-note').textContent='Sahne oluşturuluyor…';
-    setTimeout(function(){
-      var vi=$('#visual-img'); vi.src=current.img;
-      var reveal=function(){
-        $('#img-ph').style.display='none';
-        $('#stage-img').classList.add('revealed');
-        setTimeout(function(){ $('#img-gate').classList.add('on'); }, 900);
-        $('#visual-note').textContent='Görsel bulanık geldi — net hâli ve indirme Ajan girişiyle açılır.';
-        btn.textContent='✦ GÖRSEL HAZIR (BULANIK)';
-        track('ornek_gorsel_bulanik', current.id);
-      };
-      if(vi.complete) reveal(); else { vi.onload=reveal; vi.onerror=reveal; }
-    }, 1400);
+    var si=$('#stage-img'), fx=$('#render-fx'), rtxt=$('#rtxt'), vi=$('#visual-img');
+    $('#img-ph').style.display='none';
+    si.classList.remove('revealed','peek');
+    fx.classList.add('on');
+    $('#visual-note').textContent='Sinematik sahne render ediliyor…';
+    var msgs=['Sahne kuruluyor','Kompozisyon çiziliyor','Işık ve gölge hesaplanıyor','Dokular işleniyor','Kare tamamlanıyor'];
+    var pct=8;
+    rtxt.textContent=msgs[0]+' · %'+pct;
+    var prog=setInterval(function(){
+      pct=Math.min(98, pct+Math.round(7+Math.random()*13));
+      var mi=Math.min(msgs.length-1, Math.floor(pct/20));
+      rtxt.textContent=msgs[mi]+' · %'+pct;
+    }, 360);
+
+    vi.onload=null; vi.onerror=null; vi.src=current.img;
+
+    var done=false;
+    var finish=function(){
+      if(done) return; done=true;
+      clearInterval(prog); rtxt.textContent='Kare tamamlandı · %100';
+      setTimeout(function(){
+        fx.classList.remove('on');
+        si.classList.add('revealed');                                  // bulanık belirir
+        setTimeout(function(){ si.classList.add('peek'); }, 280);      // net bir an — "gördün"
+        setTimeout(function(){ si.classList.remove('peek'); }, 1200);  // yeniden bulanıklaşır
+        setTimeout(function(){ $('#img-gate').classList.add('on'); }, 1600);
+        btn.textContent='✦ GÖRSEL HAZIR';
+        $('#visual-note').textContent='Sinematik kareyi bir an gördün — net hâli ve indirme Ajan girişiyle açılır.';
+        track('ornek_gorsel', current.id);
+      }, 480);
+    };
+    var minWait=2000;
+    if(vi.complete && vi.naturalWidth){ setTimeout(finish, minWait); }
+    else { vi.onload=function(){ setTimeout(finish, 700); }; vi.onerror=function(){ setTimeout(finish, 400); }; }
+    setTimeout(finish, 4200); // güvenlik
   });
 
-  /* ── kilitli / indirme / kapı → kayıt ── */
+  /* ── kopyala / indir · ücretsiz içerik gerçekten çalışır ── */
+  function toast(msg){
+    var t=$('#toast');
+    if(!t){ t=document.createElement('div'); t.id='toast'; t.className='toast'; document.body.appendChild(t); }
+    t.textContent=msg; t.classList.add('on');
+    clearTimeout(t._t); t._t=setTimeout(function(){ t.classList.remove('on'); }, 1900);
+  }
+  function fallbackCopy(txt){
+    try{ var ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.top='-9999px'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      var ok=document.execCommand('copy'); document.body.removeChild(ta); return ok;
+    }catch(e){ return false; }
+  }
+  function copyText(txt, cb){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ cb(true); }, function(){ cb(fallbackCopy(txt)); });
+    } else cb(fallbackCopy(txt));
+  }
+  function flashOk(el, label){ if(!el) return; var old=el.getAttribute('data-lbl')||el.textContent;
+    el.setAttribute('data-lbl',old); el.classList.add('ok'); el.textContent=label;
+    clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove('ok'); el.textContent=old; }, 1600); }
+  function downloadTxt(name, txt){
+    try{ var blob=new Blob([txt],{type:'text/plain;charset=utf-8'}); var url=URL.createObjectURL(blob);
+      var a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click();
+      setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 600); return true;
+    }catch(e){ return false; }
+  }
+  var dlP=$('#dl-prompt');
+  dlP.addEventListener('click', function(e){ e.preventDefault(); if(!current) return;
+    copyText(current.prompt, function(ok){
+      if(ok){ flashOk(dlP,'✓ KOPYALANDI'); toast('Görsel promptu panoya kopyalandı ✓'); track('ornek_copy_prompt', current.id); }
+      else toast('Kopyalanamadı — metni elle seçebilirsin');
+    });
+  });
+  var dlS=$('#dl-senaryo');
+  dlS.addEventListener('click', function(e){ e.preventDefault(); if(!current) return;
+    var txt='TARİH AJANI · ÖRNEK DOSYA\n'+current.ad+(current.yil&&current.yil!=='ÖZEL KONU'?' · '+current.yil:'')+
+      '\n\n['+current.scenelbl+']\n'+current.ses+
+      '\n\nGörsel promptu:\n'+current.prompt+
+      '\n\n— Sahne 2–6, kapak ve tam yayın paketi Ajan girişiyle: tarihajani.com/uyelik';
+    var ok=downloadTxt('tarih-ajani-ornek-'+(current.id||'dosya')+'.txt', txt);
+    if(ok){ flashOk(dlS,'✓ İNDİRİLDİ'); toast('Senaryo metni indirildi ✓'); track('ornek_dl_senaryo', current.id); }
+    else toast('İndirilemedi');
+  });
+
+  /* ── kilitli / mp3 / kapı → kayıt ── */
   function gotoRegister(reason){
     track('ornek_gate_click', reason||'');
     try{ sessionStorage.setItem('ta_ornek_from', reason||'ornek'); }catch(e){}
