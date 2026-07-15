@@ -93,8 +93,8 @@
     /* Ortak dikey ritim skalası — her bölüm aynı nabza oturur */
     :root { --sp: clamp(48px, 5vw, 64px); --sp-sm: clamp(32px, 3.5vw, 46px); }
     /* Bölümler arası anlam köprüsü — aşama hissi (renk değişimi değil, ince bağlantı) */
-    .ta-kopru { width: min(680px, 90vw); margin: 0 auto; padding: 4px 20px; text-align: center; }
-    .ta-kopru .ln { display: block; width: 1px; height: 30px; margin: 0 auto 14px; background: linear-gradient(rgba(193,154,82,.55), rgba(193,154,82,0)); }
+    .ta-kopru { width: min(680px, 90vw); margin: -26px auto -18px; padding: 0 20px; text-align: center; position: relative; z-index: 3; }
+    .ta-kopru .ln { display: block; width: 1px; height: 16px; margin: 0 auto 8px; background: linear-gradient(rgba(193,154,82,.55), rgba(193,154,82,0)); }
     .ta-kopru p { margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(15.5px, 1.9vw, 20px); line-height: 1.45; color: #c7ccd6; }
     .ta-kopru em { font-style: italic; color: #e6c478; }
     /* Tek, yumuşak ve simetrik zemin — siyaha dönük koyu ton; yön yön renk lekesi yok.
@@ -305,83 +305,28 @@
         <h2 style="margin: 12px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(24px, 3vw, 36px); font-weight: 800; color: #f4ecd8;">Sana uygun <span style="color: #e6c478;">kapıyı seç</span></h2>
         <p style="margin: 12px 0 0; color: #9aa0ad; font-size: 13.5px; line-height: 1.6;">İster sıfırdan üret, ister hazır bir dosyayla başla, ister sistemi baştan öğren — her yol aynı yayına çıkar.</p>
       </div>
-      <style>
-        .yol3-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:18px}
-        .yol3-card{position:relative;overflow:hidden;display:block;text-decoration:none;border:1px solid rgba(193,154,82,.32);padding:26px 24px 22px;min-height:300px;transition:transform .22s,border-color .22s,box-shadow .22s}
-        .yol3-card:hover{transform:translateY(-4px);border-color:rgba(230,196,120,.6);box-shadow:0 28px 62px -32px rgba(0,0,0,.92)}
-        .yol3-card .tx{position:absolute;inset:0;z-index:0;pointer-events:none}
-        .yol3-card .cnr{position:absolute;width:14px;height:14px;z-index:2;pointer-events:none;border-color:rgba(230,196,120,.6)}
-        .yol3-card .cnr.tl{top:9px;left:9px;border-top:1px solid;border-left:1px solid}
-        .yol3-card .cnr.tr{top:9px;right:9px;border-top:1px solid;border-right:1px solid}
-        .yol3-card .cnr.bl{bottom:9px;left:9px;border-bottom:1px solid;border-left:1px solid}
-        .yol3-card .cnr.br{bottom:9px;right:9px;border-bottom:1px solid;border-right:1px solid}
-        .yol3-card .in{position:relative;z-index:1;display:flex;flex-direction:column;gap:11px;height:100%;min-height:252px}
-        .yol3-badge{width:46px;height:46px;display:grid;place-items:center;border:1px solid rgba(193,154,82,.45);background:rgba(8,7,5,.4);color:#e6c478}
-        .yol3-badge svg{width:24px;height:24px}
-        .yol3-lbl{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c9a765}
-        .yol3-card h3{margin:0;font-family:'Playfair Display',serif;font-size:21px;font-weight:800;color:#f2ecd9}
-        .yol3-card p.d{margin:0;color:#a2a8b4;font-size:13px;line-height:1.56}
-        .yol3-feat{margin-top:2px;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.03em;color:#7ba05a}
-        .yol3-cta{margin-top:auto;padding-top:13px;border-top:1px solid rgba(193,154,82,.2);color:#e6c478;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;display:flex;align-items:center;justify-content:space-between}
-        .yol3-cta em{font-style:normal;transition:transform .2s}
-        .yol3-card:hover .yol3-cta em{transform:translateX(5px)}
-        .yol3-studio{background:linear-gradient(160deg,#0e131f,#080b13)}
-        .yol3-arsiv{background:linear-gradient(160deg,#161009,#0b0805)}
-        .yol3-akademi{background:linear-gradient(160deg,#160a0e,#0c0608)}
-        .yol3-studio .tx{background:repeating-linear-gradient(0deg,transparent 0 27px,rgba(120,150,205,.06) 27px 28px),repeating-linear-gradient(90deg,transparent 0 27px,rgba(120,150,205,.06) 27px 28px);opacity:.7}
-        .yol3-arsiv .tx{background-image:url(/assets/dossier-bundle.jpg);background-size:cover;background-position:right center;opacity:.14;filter:sepia(.4) saturate(.9)}
-        .yol3-arsiv .tx::after,.yol3-akademi .tx::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,8,5,.6),rgba(11,8,5,.15) 60%,rgba(11,8,5,.5))}
-        .yol3-seal{position:absolute;top:16px;right:14px;z-index:1;width:104px;height:104px;opacity:.16;pointer-events:none;color:#e6c478}
-        .yol3-sys{margin-top:30px;text-align:center}
-        .yol3-sys .cap{margin:0 0 14px;color:#b3b9c6;font-size:14px}
-        .yol3-sys .rail{display:flex;align-items:center;justify-content:center;gap:0;max-width:720px;margin:0 auto}
-        .yol3-sys .rail .seg{flex:1;height:1px;background:linear-gradient(90deg,rgba(193,154,82,.15),rgba(193,154,82,.55),rgba(193,154,82,.15))}
-        .yol3-sys .rail .nd{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;padding:0 14px;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.2em;color:#d0a75f}
-        .yol3-sys .rail .nd b{width:7px;height:7px;border-radius:50%;background:#e6c478;box-shadow:0 0 10px rgba(230,196,120,.6)}
-        .yol3-sys .sys-lbl{margin:14px 0 0;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.28em;color:#8a8271}
-        @media(max-width:640px){.yol3-sys .rail{flex-wrap:wrap;gap:6px}.yol3-sys .rail .seg{min-width:30px}}
-      </style>
-      <div class="yol3-grid">
-        <a href="/studio" class="yol3-card yol3-studio">
-          <span class="tx"></span><span class="cnr tl"></span><span class="cnr tr"></span><span class="cnr bl"></span><span class="cnr br"></span>
-          <span class="in">
-            <span class="yol3-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8" width="17" height="11.5" rx="1.5"/><path d="M3.7 8l3-3.6h4l-3 3.6M11 8l3-3.6h4l-3 3.6"/><path d="M10.4 11.8v4.6l4-2.3z" fill="currentColor" stroke="none"/></svg></span>
-            <span class="yol3-lbl">01 · KENDİN ÜRET</span>
-            <h3>Studio ile üret</h3>
-            <p class="d">Konunu yaz; senaryo, seslendirme ve sahne planın oluşsun.</p>
-            <span class="yol3-feat">✓ Kayıt gerekmez · 1 ücretsiz üretim</span>
-            <span class="yol3-cta">STUDIO'YU ÜCRETSİZ DENE <em>&rarr;</em></span>
-          </span>
+      <div class="yol3-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+        <a href="/studio" style="display:flex;flex-direction:column;gap:12px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg, rgba(13,15,22,.7), rgba(7,9,14,.55));padding:24px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-4px);border-color:rgba(230,196,120,.55);box-shadow:0 20px 50px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;color:#e6c478;"><rect x="3.5" y="8" width="17" height="11.5" rx="1.5"/><path d="M3.7 8l3-3.6h4l-3 3.6M11 8l3-3.6h4l-3 3.6"/><path d="M10.4 11.8v4.6l4-2.3z" fill="currentColor" stroke="none"/></svg>
+          <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">01 · KENDİN ÜRET</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:19px;font-weight:800;color:#f2ecd9;">Studio ile üret</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:13px;line-height:1.55;">Konunu yaz; senaryo, seslendirme, sahne promptu ve yayın paketi tek dosyada çıksın.</p>
+          <span style="margin-top:auto;padding-top:8px;color:#e6c478;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;">STUDIO'YU DENE &rarr;</span>
         </a>
-        <a href="/arsiv" class="yol3-card yol3-arsiv">
-          <span class="tx"></span><span class="cnr tl"></span><span class="cnr tr"></span><span class="cnr bl"></span><span class="cnr br"></span>
-          <span class="in">
-            <span class="yol3-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.8" width="17" height="4.8" rx="1"/><path d="M5 9.6v8.6c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V9.6"/><path d="M9.6 13.4h4.8"/></svg></span>
-            <span class="yol3-lbl">02 · HAZIR İÇERİKLE BAŞLA</span>
-            <h3>Arşivden başla</h3>
-            <p class="d">Araştırılmış 42 vaka dosyasından birini seç, üretime hemen geç.</p>
-            <span class="yol3-feat">✓ 42 hazır dosya</span>
-            <span class="yol3-cta">ARŞİVİ KARIŞTIR <em>&rarr;</em></span>
-          </span>
+        <a href="/arsiv" style="display:flex;flex-direction:column;gap:12px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg, rgba(13,15,22,.7), rgba(7,9,14,.55));padding:24px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-4px);border-color:rgba(230,196,120,.55);box-shadow:0 20px 50px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;color:#e6c478;"><rect x="3.5" y="4.8" width="17" height="4.8" rx="1"/><path d="M5 9.6v8.6c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V9.6"/><path d="M9.6 13.4h4.8"/></svg>
+          <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">02 · HAZIR İÇERİKLE BAŞLA</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:19px;font-weight:800;color:#f2ecd9;">Arşivden başla</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:13px;line-height:1.55;">Araştırılmış, üretime hazır 42 vaka dosyasından birini seç; senaryosu ve kaynağı hazır.</p>
+          <span style="margin-top:auto;padding-top:8px;color:#e6c478;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;">ARŞİVİ AÇ &rarr;</span>
         </a>
-        <a href="/egitim" class="yol3-card yol3-akademi">
-          <span class="tx"></span>
-          <svg class="yol3-seal" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="50" cy="50" r="46"/><circle cx="50" cy="50" r="41"/><path d="M50 6 52 12 50 11 48 12Z" fill="currentColor" stroke="none"/><path d="M27 44h46l-23-13Z" stroke-linejoin="round"/><path d="M30 44v22M40 44v22M50 44v22M60 44v22M70 44v22"/><path d="M25 66h50M27 70h46M29 74h42"/><path d="M22 54c-5 4-6 10-4 15M78 54c5 4 6 10 4 15"/></svg>
-          <span class="cnr tl"></span><span class="cnr tr"></span><span class="cnr bl"></span><span class="cnr br"></span>
-          <span class="in">
-            <span class="yol3-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5 21.5 9 12 13 2.5 9 12 5Z"/><path d="M6 11v4.4c0 1.3 2.7 2.5 6 2.5s6-1.2 6-2.5V11"/><path d="M21.5 9v4.4"/></svg></span>
-            <span class="yol3-lbl">03 · SİSTEMİ ÖĞREN</span>
-            <h3>Akademide öğren</h3>
-            <p class="d">Kanalını ve üretim düzenini 9 derslik programla kur.</p>
-            <span class="yol3-feat">✓ 9 ders · Sertifikalı</span>
-            <span class="yol3-cta">AKADEMİYİ İNCELE <em>&rarr;</em></span>
-          </span>
+        <a href="/egitim" style="display:flex;flex-direction:column;gap:12px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg, rgba(13,15,22,.7), rgba(7,9,14,.55));padding:24px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-4px);border-color:rgba(230,196,120,.55);box-shadow:0 20px 50px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;color:#e6c478;"><path d="M12 5 21.5 9 12 13 2.5 9 12 5Z"/><path d="M6 11v4.4c0 1.3 2.7 2.5 6 2.5s6-1.2 6-2.5V11"/><path d="M21.5 9v4.4"/></svg>
+          <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">03 · SİSTEMİ ÖĞREN</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:19px;font-weight:800;color:#f2ecd9;">Akademide öğren</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:13px;line-height:1.55;">Kanalını ve üretim düzenini adım adım kur; 9 derslik kapalı program seni bekliyor.</p>
+          <span style="margin-top:auto;padding-top:8px;color:#e6c478;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;">AKADEMİYE GİR &rarr;</span>
         </a>
-      </div>
-      <div class="yol3-sys">
-        <p class="cap">Hangi yolu seçersen seç, üretim sistemi aynı merkezde birleşir.</p>
-        <div class="rail"><span class="nd">STUDIO</span><span class="seg"></span><span class="nd"><b></b>ARŞİV<b></b></span><span class="seg"></span><span class="nd">AKADEMİ</span></div>
-        <p class="sys-lbl">TARİH AJANI ÜRETİM SİSTEMİ</p>
       </div>
     </div>
   </section>
@@ -392,7 +337,7 @@
   <!-- NASIL ÇALIŞIR · ince operasyon şeridi (kısa, sade; sayfayla kaynaşan geçiş) -->
   <section id="nasil-calisir" data-screen-label="Nasıl Çalışır" style="width: 100%; background: linear-gradient(180deg, #040509, #070809 45%, #070809 55%, #040509);">
     <style>
-      #nasil-calisir .op-wrap{position:relative;width:min(1480px,95vw);margin:0 auto;padding:var(--sp) clamp(20px,4vw,48px)}
+      #nasil-calisir .op-wrap{position:relative;width:min(1180px,92vw);margin:0 auto;padding:var(--sp) clamp(20px,4vw,40px)}
       #nasil-calisir .op-wrap::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.5;background:repeating-linear-gradient(0deg,transparent 0 33px,rgba(193,154,82,.045) 33px 34px),repeating-linear-gradient(90deg,transparent 0 33px,rgba(193,154,82,.045) 33px 34px);-webkit-mask-image:radial-gradient(120% 120% at 70% 40%,#000 30%,transparent 80%);mask-image:radial-gradient(120% 120% at 70% 40%,#000 30%,transparent 80%)}
       #nasil-calisir .op-grid{position:relative;z-index:1;display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(28px,4vw,60px);align-items:center}
       #nasil-calisir .op-eyebrow{margin:0 0 14px;color:#c19a52;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.28em;display:flex;align-items:center;gap:9px}
