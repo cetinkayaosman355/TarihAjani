@@ -1,0 +1,57 @@
+name: Seslendirme Üret (ElevenLabs)
+
+# /ornek deneme sayfası için 6 Türkçe anlatımı üretir ve assets/ses/ altına
+# commit'ler. ElevenLabs API anahtarı repo secret'ında (ELEVENLABS_API_KEY)
+# durur — koda girmez. GitHub çalıştırıcısı ElevenLabs'e erişebildiği için
+# ses dosyaları burada sorunsuz üretilir.
+#
+# ÇALIŞTIRMA:
+#   1) GitHub → repo → Settings → Secrets and variables → Actions →
+#      "New repository secret": Name = ELEVENLABS_API_KEY, Value = esk_...
+#   2) GitHub → Actions → "Seslendirme Üret (ElevenLabs)" → "Run workflow".
+#      İstersen voice_id gir (boş bırakırsan varsayılan derin erkek ses).
+
+on:
+  workflow_dispatch:
+    inputs:
+      voice_id:
+        description: "ElevenLabs voice_id (boş = varsayılan derin erkek ses)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  uret:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sesleri üret
+        env:
+          ELEVEN_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          VOICE_ID: ${{ github.event.inputs.voice_id }}
+        run: |
+          if [ -z "$ELEVEN_API_KEY" ]; then
+            echo "::error::ELEVENLABS_API_KEY secret'ı tanımlı değil. Settings → Secrets → Actions'tan ekle."
+            exit 1
+          fi
+          node tools/gen-ses.mjs
+
+      - name: Değişiklikleri commit'le
+        run: |
+          git config user.name "tarih-ajani-bot"
+          git config user.email "bot@users.noreply.github.com"
+          if [ -n "$(git status --porcelain assets/ses)" ]; then
+            git add assets/ses/*.mp3
+            git commit -m "Seslendirme: 6 Türkçe anlatım (ElevenLabs) üretildi"
+            git push
+            echo "✓ Ses dosyaları eklendi ve push'landı."
+          else
+            echo "Değişiklik yok — dosyalar zaten güncel olabilir."
+          fi

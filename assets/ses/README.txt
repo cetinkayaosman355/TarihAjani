@@ -16,9 +16,14 @@ Beklenen dosya adları (her vaka için, .mp3 tercih edilir, .wav de olur):
   otzi.mp3       → Buz Adam Ötzi (MÖ 3300)
 
 Seslendirme metinleri ornek.html içindeki DOSSIERS[].ses alanlarındadır
-(her biri ~15-20 sn'lik açılış anlatımı). Aynı metinleri iyi bir Türkçe
-TTS ile (ör. ElevenLabs, Higgsfield seed_audio, Azure "Emel/Ahmet")
-seslendirip buraya bu adlarla koymak yeterlidir.
+(her biri ~15-20 sn'lik açılış anlatımı).
+
+EN KOLAY YOL — tek komutla üret (kendi makinende, Node 18+):
+  export ELEVEN_API_KEY="esk_..."            # ElevenLabs API anahtarın
+  node tools/gen-ses.mjs --list              # sesleri listele, birini seç
+  VOICE_ID="<voice_id>" node tools/gen-ses.mjs
+Script 6 dosyayı da bu klasöre bu adlarla üretir. Sonra commit + yayınla.
+(Aynı metinleri elle ElevenLabs/Azure "Emel/Ahmet" ile üretip koymak da olur.)
 
 Not: Bu ortamın ağ politikası harici ses CDN'lerinden indirmeye izin
 vermediği için dosyalar buraya otomatik konulamadı; bu yüzden sayfa

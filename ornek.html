@@ -234,6 +234,17 @@
   .perk small{color:var(--muted); font-family:'Special Elite',monospace; font-size:9.5px; letter-spacing:.1em; display:block}
   .convert-btns{display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
   .convert .fine{margin:16px 0 0; color:#6b7180; font-size:11.5px}
+  .coupon-note{display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px 14px;
+    margin:2px auto 22px; max-width:560px; border:1px dashed rgba(193,154,82,.45);
+    background:rgba(12,10,6,.5); padding:12px 16px}
+  .coupon-note .ct{font-family:'Special Elite',monospace; font-size:10px; letter-spacing:.16em; color:var(--gold)}
+  .coupon-note .code{font-family:'Special Elite',monospace; font-weight:700; font-size:15px; letter-spacing:.2em;
+    color:#171207; background:linear-gradient(110deg,#d8b26a,#e6c478); border:0; cursor:pointer;
+    padding:8px 16px; transition:transform .15s,box-shadow .2s}
+  .coupon-note .code:hover{transform:translateY(-1px); box-shadow:0 8px 24px -8px rgba(230,196,120,.6)}
+  .coupon-note .code.ok{background:linear-gradient(110deg,#7ba05a,#9cc47a)}
+  .coupon-note .cd{color:#cbd0da; font-size:12.5px; line-height:1.5}
+  .coupon-note .cd strong{color:var(--gold-bright)}
 
   .restart{display:block; margin:26px auto 0; background:none; border:0; color:var(--muted);
     font-family:'Special Elite',monospace; font-size:11px; letter-spacing:.12em; cursor:pointer; text-decoration:underline}
@@ -396,8 +407,13 @@
       <h2>Ücretsiz kayıt ol, <span class="g">tam dosyayı</span> aç.</h2>
       <div class="perks">
         <div class="perk"><span class="pn">30</span><span>deneme kredisi<small>KAYITTA HEDİYE</small></span></div>
-        <div class="perk"><span class="pn">%</span><span>hoş geldin indirim kodu<small>ÜYELİK SEVİYELERİNDE</small></span></div>
+        <div class="perk"><span class="pn">%10</span><span>ilk üyelik indirimi<small>AJAN10 · TEK SEFERLİK</small></span></div>
         <div class="perk"><span class="pn">✦</span><span>net görsel + tam paket<small>SENARYO · SES · PROMPT</small></span></div>
+      </div>
+      <div class="coupon-note">
+        <span class="ct">🎟️ HOŞ GELDİN KODU</span>
+        <button class="code" id="coupon-code" title="Kopyala" type="button">AJAN10</button>
+        <span class="cd">İlk üyeliğinde <strong>%10</strong> indirim · tek seferlik. Ödeme adımında kodu gir.</span>
       </div>
       <div class="convert-btns">
         <a class="btn-gold" id="cta-register" href="/uyelik">AJAN OL · ÜCRETSİZ KAYIT →</a>
@@ -751,6 +767,14 @@
   $$('.lock-ov').forEach(function(el){ el.addEventListener('click', function(){ gotoRegister('kilitli-bolum'); }); });
   $('#img-gate').addEventListener('click', function(){ gotoRegister('gorsel'); });
   $('#cta-register').addEventListener('click', function(){ track('ornek_register', current?current.id:''); });
+  var cc=$('#coupon-code');
+  if(cc) cc.addEventListener('click', function(){
+    copyText('AJAN10', function(ok){
+      if(ok){ var o=cc.textContent; cc.classList.add('ok'); cc.textContent='✓ KOPYALANDI'; toast('İndirim kodu kopyalandı: AJAN10');
+        clearTimeout(cc._t); cc._t=setTimeout(function(){ cc.classList.remove('ok'); cc.textContent=o; }, 1600); track('ornek_copy_coupon','AJAN10'); }
+      else toast('Kopyalanamadı — kod: AJAN10');
+    });
+  });
 
   $('#restart').addEventListener('click', function(){ stopVoice(); current=null; $('#st-input').value=''; show('#stage-pick'); });
 
