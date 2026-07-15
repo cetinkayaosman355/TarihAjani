@@ -229,9 +229,10 @@
       <a href="/arsiv" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ARŞİV</a>
       <a href="/haber" style="display: inline-flex; align-items: center; gap: 7px; color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #9E2B23; box-shadow: 0 0 6px rgba(158,43,35,.8); animation: ta-pulse 1.6s ease-in-out infinite;"></span>HABER</a>
       <a href="/studio" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">STUDIO</a>
+      <a href="/zaman-tuneli" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">OYUN</a>
       <a href="/urunler?q=1" title="Ara" aria-label="Ara" style="display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; border: 1px solid rgba(193,154,82,.45); color: #d6d0c2; text-decoration: none; font-size: 11.5px; letter-spacing: .12em; padding: 8px 15px 8px 12px;" style-hover="color: #f2ecd9; background: rgba(193,154,82,.12);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>ARA</a>
-      <a href="/zaman-tuneli" style="color: #171207; font-weight: 700; letter-spacing: .1em; text-decoration: none; padding: 10px 16px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 30px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">OYUN TÜNELİ</a>
-      <a href="/uyelik" style="color: #e6c478; font-weight: 700; letter-spacing: .12em; text-decoration: none; padding: 10px 18px; border: 1px solid rgba(193,154,82,.55); margin-left: 8px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">AJAN GİRİŞİ</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12.5px; letter-spacing: .12em; text-decoration: none; padding: 10px 16px; border: 1px solid rgba(193,154,82,.55); margin-left: 22px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">AJAN GİRİŞİ</a>
+      <a href="/studio" style="color: #171207; font-weight: 800; letter-spacing: .1em; text-decoration: none; padding: 10px 18px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 8px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">ÜCRETSİZ DENE</a>
     </nav>
   </header>
 
@@ -296,43 +297,36 @@
     <div style="position: absolute; z-index: 2; bottom: 26px; left: 50%; transform: translateX(-50%); color: #868da0; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .28em; animation: ta-pulse 2.4s infinite;">DOSYAYI AÇMAK İÇİN KAYDIR ↓</div>
   </section>
 
-  <!-- BİR AJAN OLURSAN · kazanım şeridi -->
-  <section data-screen-label="Kazanımlar" style="position: relative; background: linear-gradient(180deg, rgba(16,14,12,.45), transparent); padding: var(--sp) 0;">
-    <div style="width: min(1340px, 92vw); margin: 0 auto; padding: 0 clamp(20px, 4vw, 40px);">
-      <div style="display: flex; align-items: center; gap: 16px; justify-content: center; margin-bottom: 30px;">
-        <span style="flex: 1; max-width: 130px; height: 1px; background: linear-gradient(to left, rgba(193,154,82,.5), transparent);"></span>
-        <span style="color: #c9a765; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .34em; white-space: nowrap;">AJAN OLMANIN AYRICALIKLARI</span>
-        <span style="flex: 1; max-width: 130px; height: 1px; background: linear-gradient(to right, rgba(193,154,82,.5), transparent);"></span>
+  <!-- ÜÇ YOL · nereden başlarsın (Studio / Arşiv / Akademi seçimi) -->
+  <section data-screen-label="Üç Yol" style="position: relative; background: linear-gradient(180deg, rgba(14,12,10,.5), transparent); padding: var(--sp) 0;">
+    <div style="width: min(1240px, 92vw); margin: 0 auto; padding: 0 clamp(20px, 4vw, 40px);">
+      <div style="text-align: center; max-width: 620px; margin: 0 auto 32px;">
+        <p style="margin: 0; color: #c9a765; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .3em;">NEREDEN BAŞLARSIN · ÜÇ YOL</p>
+        <h2 style="margin: 12px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(24px, 3vw, 36px); font-weight: 800; color: #f4ecd8;">Sana uygun <span style="color: #e6c478;">kapıyı seç</span></h2>
+        <p style="margin: 12px 0 0; color: #9aa0ad; font-size: 13.5px; line-height: 1.6;">İster sıfırdan üret, ister hazır bir dosyayla başla, ister sistemi baştan öğren — her yol aynı yayına çıkar.</p>
       </div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px 40px;">
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:44px;height:44px;flex-shrink:0;color:#cda869;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5));"><path d="M12 6.4C10.4 5.2 8.2 5 5.6 5.2 4.7 5.3 4 6 4 6.9v10.9c0 .8.7 1.4 1.5 1.3 2.5-.2 4.8.1 6.5 1.3 1.7-1.2 4-1.5 6.5-1.3.8.1 1.5-.5 1.5-1.3V6.9c0-.9-.7-1.6-1.6-1.7-2.6-.2-4.8 0-6.4 1.2Z"/><path d="M12 6.4v12.3"/></svg>
-          <div>
-            <h3 style="margin: 0 0 4px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; color: #eadfc6;">DİJİTAL KİTAPLAR</h3>
-            <p style="margin: 0; color: #9aa0ad; font-size: 12.5px; line-height: 1.5;">Zamana meydan okuyan eserler; dilediğin an eriş.</p>
-          </div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:44px;height:44px;flex-shrink:0;color:#cda869;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5));"><rect x="3.5" y="8" width="17" height="11.5" rx="1.5"/><path d="M3.7 8l3-3.6h4l-3 3.6M11 8l3-3.6h4l-3 3.6"/><path d="M10.4 11.8v4.6l4-2.3z" fill="currentColor" stroke="none"/></svg>
-          <div>
-            <h3 style="margin: 0 0 4px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; color: #eadfc6;">STUDIO SİSTEMİ</h3>
-            <p style="margin: 0; color: #9aa0ad; font-size: 12.5px; line-height: 1.5;">Kendi yayınını üret, markanı profesyonelce yönet.</p>
-          </div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:44px;height:44px;flex-shrink:0;color:#cda869;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5));"><path d="M12 5 21.5 9 12 13 2.5 9 12 5Z"/><path d="M6 11v4.4c0 1.3 2.7 2.5 6 2.5s6-1.2 6-2.5V11"/><path d="M21.5 9v4.4"/></svg>
-          <div>
-            <h3 style="margin: 0 0 4px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; color: #eadfc6;">EĞİTİM PROGRAMI</h3>
-            <p style="margin: 0; color: #9aa0ad; font-size: 12.5px; line-height: 1.5;">Adım adım derinleşen, uygulamalı öğrenme yolu.</p>
-          </div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:44px;height:44px;flex-shrink:0;color:#cda869;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5));"><rect x="3.5" y="4.8" width="17" height="4.8" rx="1"/><path d="M5 9.6v8.6c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V9.6"/><path d="M9.6 13.4h4.8"/></svg>
-          <div>
-            <h3 style="margin: 0 0 4px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .1em; color: #eadfc6;">ARŞİV İLE ÜRET</h3>
-            <p style="margin: 0; color: #9aa0ad; font-size: 12.5px; line-height: 1.5;">Arşivden konu al, kendi içeriğini üret.</p>
-          </div>
-        </div>
+      <div class="yol3-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+        <a href="/studio" style="display:flex;flex-direction:column;gap:12px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg, rgba(13,15,22,.7), rgba(7,9,14,.55));padding:24px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-4px);border-color:rgba(230,196,120,.55);box-shadow:0 20px 50px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;color:#e6c478;"><rect x="3.5" y="8" width="17" height="11.5" rx="1.5"/><path d="M3.7 8l3-3.6h4l-3 3.6M11 8l3-3.6h4l-3 3.6"/><path d="M10.4 11.8v4.6l4-2.3z" fill="currentColor" stroke="none"/></svg>
+          <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">01 · KENDİN ÜRET</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:19px;font-weight:800;color:#f2ecd9;">Studio ile üret</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:13px;line-height:1.55;">Konunu yaz; senaryo, seslendirme, sahne promptu ve yayın paketi tek dosyada çıksın.</p>
+          <span style="margin-top:auto;padding-top:8px;color:#e6c478;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;">STUDIO'YU DENE &rarr;</span>
+        </a>
+        <a href="/arsiv" style="display:flex;flex-direction:column;gap:12px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg, rgba(13,15,22,.7), rgba(7,9,14,.55));padding:24px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-4px);border-color:rgba(230,196,120,.55);box-shadow:0 20px 50px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;color:#e6c478;"><rect x="3.5" y="4.8" width="17" height="4.8" rx="1"/><path d="M5 9.6v8.6c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V9.6"/><path d="M9.6 13.4h4.8"/></svg>
+          <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">02 · HAZIR İÇERİKLE BAŞLA</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:19px;font-weight:800;color:#f2ecd9;">Arşivden başla</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:13px;line-height:1.55;">Araştırılmış, üretime hazır 42 vaka dosyasından birini seç; senaryosu ve kaynağı hazır.</p>
+          <span style="margin-top:auto;padding-top:8px;color:#e6c478;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;">ARŞİVİ AÇ &rarr;</span>
+        </a>
+        <a href="/egitim" style="display:flex;flex-direction:column;gap:12px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg, rgba(13,15,22,.7), rgba(7,9,14,.55));padding:24px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-4px);border-color:rgba(230,196,120,.55);box-shadow:0 20px 50px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;color:#e6c478;"><path d="M12 5 21.5 9 12 13 2.5 9 12 5Z"/><path d="M6 11v4.4c0 1.3 2.7 2.5 6 2.5s6-1.2 6-2.5V11"/><path d="M21.5 9v4.4"/></svg>
+          <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">03 · SİSTEMİ ÖĞREN</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:19px;font-weight:800;color:#f2ecd9;">Akademide öğren</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:13px;line-height:1.55;">Kanalını ve üretim düzenini adım adım kur; 9 derslik kapalı program seni bekliyor.</p>
+          <span style="margin-top:auto;padding-top:8px;color:#e6c478;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;">AKADEMİYE GİR &rarr;</span>
+        </a>
       </div>
     </div>
   </section>
@@ -341,7 +335,7 @@
   <section id="akademi-demo" data-screen-label="Ajan Akademisi"><div id="akademi-demo-mount"></div></section>
 
   <!-- NASIL ÇALIŞIR · ince operasyon şeridi (kısa, sade; sayfayla kaynaşan geçiş) -->
-  <section id="nasil-calisir" data-screen-label="Nasıl Çalışır" style="width: 100%;">
+  <section id="nasil-calisir" data-screen-label="Nasıl Çalışır" style="width: 100%; background: linear-gradient(180deg, #040509, #070809 45%, #070809 55%, #040509);">
     <div style="width: min(1120px, 92vw); margin: 0 auto; padding: var(--sp-sm) clamp(20px, 4vw, 40px); text-align: center;">
       <p style="margin: 0 0 20px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .3em;">OPERASYON AKIŞI · NASIL ÇALIŞIR</p>
       <div class="yol-track" style="position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
