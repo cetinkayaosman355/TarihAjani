@@ -36,13 +36,16 @@
     + '#akademi-demo .ak-bgfx{display:none}'
     + '#akademi-demo .ak-vin{position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 130% at 50% 20%,transparent 46%,rgba(0,0,0,.55))}'
     + '#akademi-demo .ak-wrap{position:relative;z-index:1;width:min(1580px,92vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
-    // 2 sütun düzen (yan yazı yok): ders sicili | video · full-width
-    + '#akademi-demo .ak-eyebrow{margin:0 0 clamp(24px,2.6vw,36px);color:#c19a52;font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.28em}'
-    + '#akademi-demo .ak-eyebrow.ak-center{display:flex;align-items:center;justify-content:center;text-align:center;gap:9px}'
+    // 2 sütun düzen: başlık sol üstte · ders sicili | video (altında katıl butonu)
+    + '#akademi-demo .ak-head-min{margin:0 0 clamp(18px,2vw,26px)}'
+    + '#akademi-demo .ak-eyebrow{margin:0 0 8px;color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.26em}'
+    + '#akademi-demo h2{margin:0;font-family:\'Playfair Display\',serif;font-size:clamp(26px,2.8vw,38px);font-weight:800;line-height:1.03;letter-spacing:-.015em;color:#f6efe0}'
+    + '#akademi-demo h2 .g{background:linear-gradient(102deg,#b18742,#e6c478 42%,#fff0b1 52%,#a5762f);-webkit-background-clip:text;background-clip:text;color:transparent}'
     + '#akademi-demo .ak-work{display:grid;grid-template-columns:1fr 1.34fr;gap:clamp(22px,2.6vw,46px);align-items:stretch}'
     + '#akademi-demo .ak-video{display:flex;flex-direction:column}'
-    + '#akademi-demo .ak-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px 22px;margin-top:clamp(24px,2.6vw,38px)}'
-    + '#akademi-demo .ak-tags{display:flex;flex-wrap:wrap;gap:7px 18px}'
+    + '#akademi-demo .ak-join{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:12px;background:transparent;border:1px solid rgba(193,154,82,.5);color:#e6c478;font-family:\'Special Elite\',monospace;font-weight:700;font-size:13px;letter-spacing:.14em;padding:15px 20px;text-decoration:none;transition:background .2s,box-shadow .2s}'
+    + '#akademi-demo .ak-join:hover{background:rgba(193,154,82,.12);box-shadow:0 12px 40px -16px rgba(230,196,120,.4)}'
+    + '#akademi-demo .ak-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:7px 18px;margin-top:11px}'
     + '#akademi-demo .ak-tags span{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.05em;color:#7ba05a}'
     // SOL — eğitim sicili
     + '#akademi-demo .ak-prog{position:relative;border:1px solid rgba(193,154,82,.3);background:rgba(10,10,15,.68);backdrop-filter:blur(4px)}'
@@ -147,7 +150,7 @@
     mount.innerHTML =
       '<div class="ak-vin"></div>'
       + '<div class="ak-wrap">'
-      + '<p class="ak-eyebrow ak-center">◆ AJAN AKADEMİSİ · KAPALI PROGRAM · 9 DERS · SERTİFİKALI</p>'
+      + '<div class="ak-head-min"><p class="ak-eyebrow">◆ KAPALI PROGRAM · 9 DERS · SERTİFİKALI</p><h2>Ajan <span class="g">Akademisi</span></h2></div>'
       + '<div class="ak-work">'
       + '<div class="ak-lessons"><div class="ak-prog"><div class="ak-ptop"><b>EĞİTİM SİCİLİ</b><span id="ak-score">0 / 9 DERS</span></div>'
       + lesHtml
@@ -164,9 +167,10 @@
       + '<div class="ak-end" id="ak-end"><div class="in"><div class="ok">✓</div><h4 id="ak-eh"></h4><p id="ak-ep"></p><div class="row" id="ak-er"></div></div></div>'
       + '</div>'
       + '<div class="ak-under"><span id="ak-cur">DERS 01 · SÖYLENTİ İLE KAYDI AYIRMAK</span><span>◉ ÖN İZLEME</span></div>'
+      + '<a class="ak-join" href="/egitim">Akademi’ye Katıl · 9 Ders &rarr;</a>'
+      + '<div class="ak-tags"><span>✓ 9 ders</span><span>✓ Sertifikalı</span><span>✓ Kendi hızında</span></div>'
       + '</div>'
       + '</div>'
-      + '<div class="ak-foot"><a class="ak-btn" href="/egitim">Akademi’ye Katıl · 9 Ders →</a><div class="ak-tags"><span>✓ 9 ders</span><span>✓ Sertifikalı</span><span>✓ Kendi hızında</span></div></div>'
       + '</div>';
 
     var $=function(id){return mount.querySelector('#'+id);};

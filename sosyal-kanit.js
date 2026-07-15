@@ -157,7 +157,7 @@
     return '<div id="ta-sk-root" class="sk-grid">' +
       '<div class="sk-left">' +
         '<p style="margin:0 0 6px;color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.24em;">AJAN DEFTERİ · GERÇEK GÖRÜŞLER</p>' +
-        '<h2 style="margin:0;font-family:\'Playfair Display\',serif;font-size:clamp(28px,3.2vw,40px);font-weight:800;line-height:1.05;color:#f2ecd9;">Ajanlar ne <span style="color:#e6c478;">diyor?</span></h2>' +
+        '<h2 style="margin:0;font-family:\'Playfair Display\',serif;font-size:clamp(30px,3.8vw,48px);font-weight:800;line-height:1.05;color:#f2ecd9;">Ajanlar ne <span style="color:#e6c478;">diyor?</span></h2>' +
         '<div style="width:58px;height:2px;margin:14px 0 0;background:linear-gradient(90deg,#c19a52,transparent);"></div>' +
         '<p style="margin:16px 0 0;color:#aeb4c1;font-size:14.5px;line-height:1.62;max-width:40ch;">Gerçek ziyaretçilerden gelen, admin onaylı görüşler burada birikiyor. Sen de deneyimini bırak; onaylandığında yanda yayınlanır.</p>' +
         '<div style="margin-top:14px;">' + ratingLine + '</div>' +

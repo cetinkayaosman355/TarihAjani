@@ -79,7 +79,7 @@
     + '#studio-demo .sd-btn.hero{padding:17px 34px;font-size:14px;letter-spacing:.16em;box-shadow:0 16px 48px -18px rgba(230,196,120,.55)}'
     + '#studio-demo .sd-btn.ghost{background:transparent;border:1px solid rgba(193,154,82,.5);color:#e6c478;font-family:\'Hanken Grotesk\',system-ui,sans-serif;font-weight:700;font-size:13px;letter-spacing:.03em}'
     + '#studio-demo .sd-btn.ghost:hover{background:rgba(193,154,82,.12);box-shadow:none}'
-    + '#studio-demo .sd-tryrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}'
+    + '#studio-demo .sd-tryrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}'
     + '#studio-demo .sd-note{color:#868c9c;font-size:11px}'
     // yan yana çıktı kutuları
     + '#studio-demo .sd-oh{color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.2em}'
