@@ -150,10 +150,10 @@
       #nasil-calisir .yol-track { grid-template-columns: 1fr !important; gap: 0 !important; }
       #nasil-calisir .yol-line { display: none !important; }
       #nasil-calisir .yol-adim + .yol-adim::before { content: ''; display: block; width: 2px; height: 24px; margin: 2px auto 12px; background: linear-gradient(180deg, rgba(193,154,82,.25), #c19a52); }
-      header { height: auto !important; min-height: 58px; flex-wrap: wrap !important; padding: 10px 14px !important; row-gap: 2px; }
+      header { height: auto !important; min-height: 58px; flex-wrap: wrap !important; padding: 10px 16px !important; row-gap: 2px; background: rgba(3,5,11,.9) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(193,154,82,.16); }
       header nav { flex-wrap: wrap !important; gap: 2px !important; justify-content: flex-end; }
       header nav a { padding: 7px 8px !important; font-size: 10.5px !important; }
-      header img { height: 44px !important; }
+      header img { height: 39px !important; }
       aside { position: static !important; top: auto !important; }
       [style*="grid-template-columns: 250px"], [style*="grid-template-columns: 230px"] { grid-template-columns: 1fr !important; }
       [style*="grid-template-columns: 1.5fr 1fr"] { grid-template-columns: 1fr !important; }
@@ -202,6 +202,12 @@
       .shop-cats { flex-wrap: nowrap !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
       .shop-cats::-webkit-scrollbar { display: none; }
       .shop-cats > button { flex: 0 0 auto !important; white-space: nowrap !important; }
+      /* Bölümlere biraz daha nefes — premium ritim */
+      :root { --sp: clamp(52px, 13vw, 62px) !important; --sp-sm: clamp(38px, 9vw, 46px) !important; }
+      /* Ürün kartları: sıcak altın kenar + yumuşak derinlik (lüks his) */
+      #urunler .vitrin-grid > div { border-color: rgba(193,154,82,.34) !important; box-shadow: 0 22px 48px -30px rgba(0,0,0,.95) !important; }
+      /* Seviye kartlarına yumuşak yükseklik gölgesi */
+      #seviyeler [style*="minmax(280px"] > div { box-shadow: 0 24px 55px -34px rgba(0,0,0,.9) !important; }
     }
 
     /* ── BUTON & BAŞLIK DÜZELTMELERİ ── */

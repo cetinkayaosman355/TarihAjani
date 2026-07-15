@@ -140,9 +140,9 @@
     b.id = 'ta-burger';
     b.setAttribute('aria-label', 'Menü');
     b.textContent = '☰';
-    b.style.cssText = 'position:fixed;top:12px;right:12px;z-index:1100;width:46px;height:46px;place-items:center;' +
-      'border:1px solid rgba(193,154,82,.55);background:rgba(5,7,13,.92);color:#e6c478;font-size:19px;line-height:1;' +
-      'cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.5);font-family:' + FONT + ';';
+    b.style.cssText = 'position:fixed;top:11px;right:14px;z-index:1100;width:44px;height:44px;place-items:center;' +
+      'border:1px solid rgba(193,154,82,.5);border-radius:4px;background:linear-gradient(150deg,rgba(10,12,19,.96),rgba(4,6,12,.96));color:#e6c478;font-size:17px;line-height:1;' +
+      'cursor:pointer;box-shadow:0 10px 30px -8px rgba(0,0,0,.6),inset 0 1px 0 rgba(230,196,120,.14);font-family:' + FONT + ';';
     b.onclick = function () { open ? closeMenu() : openMenu(); };
     document.body.appendChild(b);
   }
