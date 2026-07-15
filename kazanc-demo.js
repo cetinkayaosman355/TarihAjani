@@ -24,7 +24,7 @@
   ];
 
   var CSS = ''
-    + '#kazanc-demo{position:relative;background:linear-gradient(180deg,#040509,#080705 42%,#080705 58%,#040509);overflow:hidden}'
+    + '#kazanc-demo{position:relative;background:#040509;overflow:hidden}'
     + '#kazanc-demo .kz-glow{display:none}'
     + '#kazanc-demo .kz-wrap{position:relative;width:min(1460px,90vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
     + '#kazanc-demo .kz-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:clamp(18px,2vw,28px)}'

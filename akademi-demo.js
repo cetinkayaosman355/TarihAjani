@@ -32,7 +32,7 @@
   var PLAYABLE = CAPS.length; // ilk 2 ders demoda izlenebilir
 
   var CSS = ''
-    + '#akademi-demo{position:relative;background:linear-gradient(180deg,#040509,#080407 42%,#080407 58%,#040509);overflow:hidden;isolation:isolate}'
+    + '#akademi-demo{position:relative;background:#040509;overflow:hidden;isolation:isolate}'
     + '#akademi-demo .ak-bgfx{display:none}'
     + '#akademi-demo .ak-vin{position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 130% at 50% 20%,transparent 46%,rgba(0,0,0,.55))}'
     + '#akademi-demo .ak-wrap{position:relative;z-index:1;width:min(1740px,94vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'

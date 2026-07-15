@@ -51,7 +51,7 @@
   ];
 
   var CSS = ''
-    + '#studio-demo{position:relative;background:linear-gradient(180deg,#040509,#0b0806 42%,#0b0806 58%,#040509);overflow:hidden}'
+    + '#studio-demo{position:relative;background:#040509;overflow:hidden}'
     + '#studio-demo .sd-glow{display:none}'
     + '#studio-demo .sd-wrap{position:relative;width:min(1740px,94vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(20px,3vw,40px)}'
     // iki sütun — tepeden hizalı
