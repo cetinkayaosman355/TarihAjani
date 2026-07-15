@@ -89,10 +89,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3"><link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png?v=3"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
   <style>
-    html, body { margin: 0; padding: 0; background: #06070d; }
-    /* Tek, yumuşak ve simetrik zemin — yön yön renk lekesi (lacivert/kırmızı) yok;
-       tüm akış boyunca aynı sıcak-nötr karanlık kalır, bölümler kaynaşarak akar. */
-    body { background-image: radial-gradient(circle 1200px at 50% 0%, rgba(32,28,26,.20), transparent 60%); background-attachment: fixed; }
+    html, body { margin: 0; padding: 0; background: #040509; }
+    /* Tek, yumuşak ve simetrik zemin — siyaha dönük koyu ton; yön yön renk lekesi yok.
+       Tüm akış boyunca aynı derin karanlık kalır, bölümler kaynaşarak akar. */
+    body { background-image: radial-gradient(circle 1200px at 50% 0%, rgba(15,17,26,.28), transparent 62%); background-attachment: fixed; }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     header nav > a, header nav > div > a { font-family: 'Special Elite', monospace !important; font-weight: 700 !important; letter-spacing: .08em !important; font-size: 12px !important; }
@@ -335,29 +335,29 @@
 
   <!-- NASIL ÇALIŞIR · ince operasyon şeridi (kısa, sade; sayfayla kaynaşan geçiş) -->
   <section id="nasil-calisir" data-screen-label="Nasıl Çalışır" style="width: 100%;">
-    <div style="width: min(1120px, 92vw); margin: 0 auto; padding: clamp(28px, 3.2vw, 44px) clamp(20px, 4vw, 40px); text-align: center;">
-      <p style="margin: 0 0 24px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .3em;">OPERASYON AKIŞI · NASIL ÇALIŞIR</p>
+    <div style="width: min(1120px, 92vw); margin: 0 auto; padding: clamp(22px, 2.6vw, 36px) clamp(20px, 4vw, 40px); text-align: center;">
+      <p style="margin: 0 0 20px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .3em;">OPERASYON AKIŞI · NASIL ÇALIŞIR</p>
       <div class="yol-track" style="position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-        <div class="yol-line" style="position: absolute; top: 23px; left: 12.5%; right: 12.5%; height: 1px; background: rgba(193,154,82,.4); z-index: 0;"></div>
-        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 10px; justify-items: center; text-align: center;">
-          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(193,154,82,.55); background: #06070d; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #e6c478;">01</span>
-          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 15.5px; font-weight: 700; color: #f2ecd9;">Dosyanı seç</p>
-          <p class="yol-d" style="margin: 0; color: #9aa0ad; font-size: 11.5px; line-height: 1.5; max-width: 22ch;">Arşivden hikâyeni ya da konunu seç.</p>
+        <div class="yol-line" style="position: absolute; top: 19px; left: 13%; right: 13%; height: 1px; background: rgba(193,154,82,.32); z-index: 0;"></div>
+        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 8px; justify-items: center; text-align: center;">
+          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(193,154,82,.5); background: #040509; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #e6c478;">01</span>
+          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #f2ecd9;">Dosyanı seç</p>
+          <p class="yol-d" style="margin: 0; color: #8b909d; font-size: 11px; line-height: 1.5; max-width: 20ch;">Arşivden hikâyeni ya da konunu seç.</p>
         </div>
-        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 10px; justify-items: center; text-align: center;">
-          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(193,154,82,.55); background: #06070d; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #e6c478;">02</span>
-          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 15.5px; font-weight: 700; color: #f2ecd9;">Materyali incele</p>
-          <p class="yol-d" style="margin: 0; color: #9aa0ad; font-size: 11.5px; line-height: 1.5; max-width: 22ch;">Senaryo, ses ve prompt dosyalarını aç.</p>
+        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 8px; justify-items: center; text-align: center;">
+          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(193,154,82,.5); background: #040509; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #e6c478;">02</span>
+          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #f2ecd9;">Materyali incele</p>
+          <p class="yol-d" style="margin: 0; color: #8b909d; font-size: 11px; line-height: 1.5; max-width: 20ch;">Senaryo, ses ve prompt dosyalarını aç.</p>
         </div>
-        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 10px; justify-items: center; text-align: center;">
-          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(193,154,82,.55); background: #06070d; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #e6c478;">03</span>
-          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 15.5px; font-weight: 700; color: #f2ecd9;">Üretime başla</p>
-          <p class="yol-d" style="margin: 0; color: #9aa0ad; font-size: 11.5px; line-height: 1.5; max-width: 22ch;">Görseli, videoyu ve sesi oluştur.</p>
+        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 8px; justify-items: center; text-align: center;">
+          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(193,154,82,.5); background: #040509; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #e6c478;">03</span>
+          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #f2ecd9;">Üretime başla</p>
+          <p class="yol-d" style="margin: 0; color: #8b909d; font-size: 11px; line-height: 1.5; max-width: 20ch;">Görseli, videoyu ve sesi oluştur.</p>
         </div>
-        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 10px; justify-items: center; text-align: center;">
-          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(193,154,82,.55); background: #06070d; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #e6c478;">04</span>
-          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 15.5px; font-weight: 700; color: #f2ecd9;">Hikâyeni yayınla</p>
-          <p class="yol-d" style="margin: 0; color: #9aa0ad; font-size: 11.5px; line-height: 1.5; max-width: 22ch;">Kanalında paylaş, arşivini büyüt.</p>
+        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 8px; justify-items: center; text-align: center;">
+          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(193,154,82,.5); background: #040509; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #e6c478;">04</span>
+          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #f2ecd9;">Hikâyeni yayınla</p>
+          <p class="yol-d" style="margin: 0; color: #8b909d; font-size: 11px; line-height: 1.5; max-width: 20ch;">Kanalında paylaş, arşivini büyüt.</p>
         </div>
       </div>
     </div>
@@ -373,10 +373,10 @@
   <section id="kazanc-demo" data-screen-label="Seni Ne Bekliyor"><div id="kazanc-demo-mount"></div></section>
 
   <!-- SEVİYELER -->
-  <section id="seviyeler" data-screen-label="Seviyeler" style="position: relative; overflow: hidden; width: min(1340px, 92vw); margin: 0 auto; padding: 80px clamp(20px, 4vw, 40px) 30px; background: #08090d; border: 1px solid rgba(193,154,82,.16);">
-    <img src="assets/real-studio.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.32) saturate(.4); z-index: -1;">
-    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,9,15,.9) 0%, rgba(6,8,14,.85) 45%, rgba(5,6,12,.94) 100%); z-index: -1;"></div>
-    <div style="position: absolute; inset: 0; background: radial-gradient(circle 820px at 50% 15%, rgba(230,196,120,.08), transparent 62%); z-index: -1;"></div>
+  <section id="seviyeler" data-screen-label="Seviyeler" style="position: relative; overflow: hidden; width: 100%; margin: 0 auto; padding: 72px max(calc((100% - 1300px) / 2), clamp(20px, 4vw, 40px)) 30px;">
+    <img src="assets/real-studio.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.22) saturate(.35); z-index: -1;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4,5,9,.92) 0%, rgba(4,5,9,.8) 45%, rgba(4,5,9,.95) 100%); z-index: -1;"></div>
+    <div style="position: absolute; inset: 0; background: radial-gradient(circle 900px at 50% 12%, rgba(230,196,120,.06), transparent 60%); z-index: -1;"></div>
     <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">AYLIK ÜYELİK · 003</p>
     <h2 style="margin: 12px 0 32px; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.6vw, 44px); font-weight: 700;">Ajanlık seviyeni seç</h2>
 
