@@ -120,10 +120,10 @@
 
   function svgHTML(){
     var m = MILES.map(function(mi,i){
-      var ty = mi.pos==='down' ? mi.y+32 : mi.y-42;
-      return '<circle class="mdot '+mi.ln+'" data-i="'+i+'" cx="'+mi.x+'" cy="'+mi.y+'" r="5"></circle>'
-        + '<text class="mtxt" data-i="'+i+'" x="'+mi.x+'" y="'+ty+'" text-anchor="'+(mi.x>860?'end':'middle')+'">'
-        + '<tspan class="k">'+mi.k+'</tspan><tspan class="d" x="'+mi.x+'" dy="19" '+(mi.x>860?'text-anchor="end"':'')+'>'+mi.d+'</tspan></text>';
+      var ty = mi.pos==='down' ? mi.y+26 : mi.y-20;
+      return '<circle class="mdot '+mi.ln+'" data-i="'+i+'" cx="'+mi.x+'" cy="'+mi.y+'" r="4.5"></circle>'
+        + '<text class="mtxt" data-i="'+i+'" x="'+mi.x+'" y="'+ty+'" text-anchor="middle">'
+        + '<tspan class="k">'+mi.k+'</tspan></text>';
     }).join('');
     var nodes = IG_NODES.map(function(p){
       return '<circle class="ignode" cx="'+p[0]+'" cy="'+p[1]+'" r="4.5"></circle>';
@@ -144,8 +144,6 @@
       + '<path class="ln ig glow" id="kz-line-ig" d="'+PATH_IG+'"></path>'
       + '<g class="ignodes">'+nodes+'</g>'
       + '<circle class="igtip" cx="968" cy="92" r="6"></circle><circle class="igtip-core" cx="968" cy="92" r="2.6"></circle>'
-      + '<text class="etxt ig" x="958" y="70" text-anchor="end"><tspan class="pn">INSTAGRAM</tspan><tspan class="nv" x="958" dy="19">35.000 takipçi</tspan></text>'
-      + '<text class="etxt yt" x="958" y="122" text-anchor="end"><tspan class="pn">YOUTUBE</tspan><tspan class="nv" x="958" dy="19">7.000 abone · 5M izlenme</tspan></text>'
       + m + '</svg>';
   }
 
