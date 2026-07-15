@@ -44,16 +44,32 @@
   function render() {
     var st = state.stats || {};
     var members = st.members || 0;
+    var productions = st.productions || 0;
 
-    var ratingLine = (st.reviews > 0)
-      ? '<span style="color:#e6c478;font-size:15px;letter-spacing:2px;vertical-align:middle;">' + stars(st.avgRating) + '</span>' +
-        '<span style="color:#b7bcc7;font-size:12.5px;margin-left:8px;">' + st.avgRating + ' / 5 · ' + fmt(st.reviews) + ' değerlendirme' + (members ? ' · ' + fmt(members) + ' kayıtlı ajan' : '') + '</span>'
-      : '<span style="color:#9aa0ad;font-size:12.5px;">İlk değerlendirmeyi sen bırak — deneyimini paylaş.</span>';
+    // Güven satırı: yorum olsun olmasın GERÇEK sayılar hep görünsün (uydurma yok).
+    // Yorum varsa yıldız+ortalama öne çıkar; yoksa üye/üretim sayısı taşır.
+    var trustBits = [];
+    if (members) trustBits.push(fmt(members) + ' kayıtlı ajan');
+    if (productions) trustBits.push(fmt(productions) + ' üretilen bölüm');
+    var ratingLine;
+    if (st.reviews > 0) {
+      ratingLine = '<span style="color:#e6c478;font-size:15px;letter-spacing:2px;vertical-align:middle;">' + stars(st.avgRating) + '</span>' +
+        '<span style="color:#b7bcc7;font-size:12.5px;margin-left:8px;">' + st.avgRating + ' / 5 · ' + fmt(st.reviews) + ' değerlendirme' +
+        (trustBits.length ? ' · ' + trustBits.join(' · ') : '') + '</span>';
+    } else if (trustBits.length) {
+      ratingLine = '<span style="color:#b7bcc7;font-size:12.5px;">' + trustBits.join(' · ') +
+        '</span><span style="color:#9aa0ad;font-size:12.5px;margin-left:8px;">&middot; ilk değerlendirmeyi sen bırak</span>';
+    } else {
+      ratingLine = '<span style="color:#9aa0ad;font-size:12.5px;">İlk değerlendirmeyi sen bırak — deneyimini paylaş.</span>';
+    }
 
-    // Editoryal yorum kartları: tırnak motifi + serif italik alıntı + doğrulanmış ajan
+    // Editoryal yorum kartları: tırnak motifi + serif italik alıntı + doğrulanmış ajan.
+    // 1-2 yorumda grid kartları germesin diye kapsayıcıyı sayıya göre daralt + ortala.
     var reviewsHtml = '';
     if (state.reviews.length) {
-      reviewsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:14px;margin-top:26px;">' +
+      var n = Math.min(3, state.reviews.length);
+      var maxW = n === 1 ? '440px' : (n === 2 ? '760px' : '100%');
+      reviewsHtml = '<div style="max-width:' + maxW + ';margin:26px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:14px;">' +
         state.reviews.slice(0, 3).map(function (r) {
           var name = esc(r.name || 'Ajan');
           var initial = ((r.name || 'A').trim().charAt(0) || 'A').toUpperCase();
@@ -170,12 +186,21 @@
     });
   }
 
-  function load() {
+  function load(attempt) {
     if (state.loading) return;
     state.loading = true;
     Promise.all([api({ action: 'stats' }), api({ action: 'list', limit: 6 })]).then(function (res) {
-      state.stats = (res[0] && res[0].ok) ? res[0] : { members: 0, productions: 0, reviews: 0, avgRating: 0 };
-      state.reviews = (res[1] && res[1].ok && res[1].reviews) ? res[1].reviews : [];
+      var statsOk = res[0] && res[0].ok;
+      var listOk = res[1] && res[1].ok && res[1].reviews;
+      // Edge fonksiyonu cold-start'ta ilk isteği düşürebilir: ikisi de başarısızsa
+      // bir kez daha dene ki yorumlar geçici bir hatadan ötürü kaybolmasın.
+      if (!statsOk && !listOk && (attempt || 0) < 2) {
+        state.loading = false;
+        setTimeout(function () { load((attempt || 0) + 1); }, 1200);
+        return;
+      }
+      state.stats = statsOk ? res[0] : { members: 0, productions: 0, reviews: 0, avgRating: 0 };
+      state.reviews = listOk ? res[1].reviews : [];
       state.loaded = true;
       ensure();
     });
