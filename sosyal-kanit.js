@@ -32,13 +32,68 @@
     return out;
   }
 
+  var CSS = ''
+    + '#ta-sosyal-kanit .sk-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:clamp(28px,3.4vw,56px);align-items:start;max-width:1240px;margin:0 auto}'
+    + '#ta-sosyal-kanit .sk-left{min-width:0}'
+    + '#ta-sosyal-kanit .sk-right{display:grid;gap:12px}'
+    + '#ta-sosyal-kanit .sk-card{position:relative;border:1px solid rgba(193,154,82,.22);background:linear-gradient(160deg,#0b0e16,#070a11);padding:15px 18px;overflow:hidden}'
+    + '#ta-sosyal-kanit .sk-card .qm{position:absolute;top:-4px;right:14px;font-family:\'Playfair Display\',serif;font-size:54px;line-height:1;color:rgba(193,154,82,.13);pointer-events:none}'
+    + '#ta-sosyal-kanit .sk-stars{color:#e6c478;font-size:11px;letter-spacing:2px;margin-bottom:8px}'
+    + '#ta-sosyal-kanit .sk-quote{font-family:\'Playfair Display\',serif;font-style:italic;font-size:14.5px;line-height:1.55;color:#e6e1d3;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}'
+    + '#ta-sosyal-kanit .sk-who{display:flex;align-items:center;gap:10px}'
+    + '#ta-sosyal-kanit .sk-av{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-family:\'Playfair Display\',serif;font-weight:700;font-size:13px;color:#e6c478;border:1px solid rgba(193,154,82,.5);background:rgba(193,154,82,.08)}'
+    + '#ta-sosyal-kanit .sk-name{color:#f2ecd9;font-size:12.5px;font-weight:600;line-height:1.25}'
+    + '#ta-sosyal-kanit .sk-badge{color:#8f96a4;font-family:\'Special Elite\',monospace;font-size:8.5px;letter-spacing:.04em}'
+    + '#ta-sosyal-kanit .sk-badge .v{color:#7ba05a}'
+    // placeholder — ileride dolacak
+    + '#ta-sosyal-kanit .sk-ph{border-style:dashed;border-color:rgba(193,154,82,.18);background:linear-gradient(160deg,#090c13,#06080d)}'
+    + '#ta-sosyal-kanit .sk-ph .bar{height:9px;border-radius:3px;background:linear-gradient(90deg,rgba(230,220,196,.04),rgba(230,220,196,.11),rgba(230,220,196,.04));background-size:200% 100%;animation:sk-sh 1.7s linear infinite;margin-bottom:9px}'
+    + '#ta-sosyal-kanit .sk-ph .bar.w1{width:90%}#ta-sosyal-kanit .sk-ph .bar.w2{width:74%}#ta-sosyal-kanit .sk-ph .bar.w3{width:52%}'
+    + '#ta-sosyal-kanit .sk-ph .sk-who{margin-top:12px;opacity:.7}'
+    + '#ta-sosyal-kanit .sk-ph .sk-av{color:#5a5f6c;border-color:rgba(129,135,151,.3);background:rgba(129,135,151,.06)}'
+    + '#ta-sosyal-kanit .sk-ph .sk-soon{font-family:\'Special Elite\',monospace;font-size:9px;letter-spacing:.14em;color:#6f7686}'
+    + '@keyframes sk-sh{0%{background-position:200% 0}100%{background-position:-200% 0}}'
+    + '@media(max-width:820px){#ta-sosyal-kanit .sk-grid{grid-template-columns:1fr;gap:26px}#ta-sosyal-kanit .sk-left{text-align:center}}'
+    + '@media(prefers-reduced-motion:reduce){#ta-sosyal-kanit .sk-ph .bar{animation:none}}';
+
+  function injectStyle(){ if(document.getElementById('ta-sk-style'))return; var s=document.createElement('style'); s.id='ta-sk-style'; s.textContent=CSS; document.head.appendChild(s); }
+
   function mount(force) {
     var host = document.getElementById('ta-sosyal-kanit');
     if (!host) return;
     if (!force && host.querySelector('#ta-sk-root')) return; // zaten çizili
+    injectStyle();
     host.innerHTML = render();
     wire(host);
     animateCounters(host);
+  }
+
+  function realCard(r) {
+    var name = esc(r.name || 'Ajan');
+    var initial = ((r.name || 'A').trim().charAt(0) || 'A').toUpperCase();
+    var tier = r.tier ? esc(r.tier) + ' · ' : '';
+    return '<figure class="sk-card" style="margin:0;">' +
+      '<span class="qm" aria-hidden="true">”</span>' +
+      '<div class="sk-stars">' + stars(r.rating) + '</div>' +
+      '<blockquote class="sk-quote">“' + esc(r.body) + '”</blockquote>' +
+      '<figcaption class="sk-who">' +
+        '<span class="sk-av">' + initial + '</span>' +
+        '<span style="min-width:0;">' +
+          '<span class="sk-name">' + name + '</span>' +
+          '<span class="sk-badge" style="display:block;">' + tier + '<span class="v">✓</span> doğrulanmış</span>' +
+        '</span>' +
+      '</figcaption>' +
+    '</figure>';
+  }
+  function phCard() {
+    return '<div class="sk-card sk-ph" aria-hidden="true">' +
+      '<span class="qm">”</span>' +
+      '<div class="bar w1"></div><div class="bar w2"></div><div class="bar w3"></div>' +
+      '<div class="sk-who"><span class="sk-av">·</span><span style="min-width:0;">' +
+        '<span class="sk-name" style="color:#7f8593;">Onaylı yorum</span>' +
+        '<span class="sk-soon" style="display:block;">yakında burada</span>' +
+      '</span></div>' +
+    '</div>';
   }
 
   function render() {
@@ -47,7 +102,6 @@
     var productions = st.productions || 0;
 
     // Güven satırı: yorum olsun olmasın GERÇEK sayılar hep görünsün (uydurma yok).
-    // Yorum varsa yıldız+ortalama öne çıkar; yoksa üye/üretim sayısı taşır.
     var trustBits = [];
     if (members) trustBits.push(fmt(members) + ' kayıtlı ajan');
     if (productions) trustBits.push(fmt(productions) + ' üretilen bölüm');
@@ -63,32 +117,13 @@
       ratingLine = '<span style="color:#9aa0ad;font-size:12.5px;">İlk değerlendirmeyi sen bırak — deneyimini paylaş.</span>';
     }
 
-    // Editoryal yorum kartları: tırnak motifi + serif italik alıntı + doğrulanmış ajan.
-    // 1-2 yorumda grid kartları germesin diye kapsayıcıyı sayıya göre daralt + ortala.
-    var reviewsHtml = '';
-    if (state.reviews.length) {
-      var n = Math.min(3, state.reviews.length);
-      var maxW = n === 1 ? '440px' : (n === 2 ? '760px' : '100%');
-      reviewsHtml = '<div style="max-width:' + maxW + ';margin:26px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:14px;">' +
-        state.reviews.slice(0, 3).map(function (r) {
-          var name = esc(r.name || 'Ajan');
-          var initial = ((r.name || 'A').trim().charAt(0) || 'A').toUpperCase();
-          var tier = r.tier ? esc(r.tier) + ' · ' : '';
-          return '<figure style="position:relative;margin:0;border:1px solid rgba(193,154,82,.22);background:linear-gradient(160deg,#0b0e16,#070a11);padding:20px 20px 18px;display:flex;flex-direction:column;gap:13px;overflow:hidden;">' +
-            '<span aria-hidden="true" style="position:absolute;top:0;right:14px;font-family:\'Playfair Display\',serif;font-size:64px;line-height:1;color:rgba(193,154,82,.14);pointer-events:none;">”</span>' +
-            '<div style="color:#e6c478;font-size:12px;letter-spacing:2px;">' + stars(r.rating) + '</div>' +
-            '<blockquote style="margin:0;font-family:\'Playfair Display\',serif;font-style:italic;font-size:15px;line-height:1.62;color:#e6e1d3;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;">“' + esc(r.body) + '”</blockquote>' +
-            '<figcaption style="display:flex;align-items:center;gap:10px;margin-top:auto;">' +
-              '<span style="flex:0 0 auto;width:33px;height:33px;border-radius:50%;display:grid;place-items:center;font-family:\'Playfair Display\',serif;font-weight:700;font-size:14px;color:#e6c478;border:1px solid rgba(193,154,82,.5);background:rgba(193,154,82,.08);">' + initial + '</span>' +
-              '<span style="min-width:0;line-height:1.3;">' +
-                '<b style="display:block;color:#f2ecd9;font-size:13px;font-weight:600;">' + name + '</b>' +
-                '<span style="color:#8f96a4;font-family:\'Special Elite\',monospace;font-size:9px;letter-spacing:.05em;">' + tier + '<span style="color:#7ba05a;">✓</span> doğrulanmış</span>' +
-              '</span>' +
-            '</figcaption>' +
-          '</figure>';
-        }).join('') +
-      '</div>';
+    // Sağ sütun: HER ZAMAN 3 kart. Gerçek onaylı yorumlar öne dolar; kalan yerler
+    // "ileride dolacak" placeholder olarak durur (uydurma yorum YOK).
+    var cardsHtml = '';
+    for (var i = 0; i < 3; i++) {
+      cardsHtml += state.reviews[i] ? realCard(state.reviews[i]) : phCard();
     }
+    var reviewsHtml = '<div class="sk-right">' + cardsHtml + '</div>';
 
     var formHtml;
     if (state.done) {
@@ -119,15 +154,16 @@
       '</div>';
     }
 
-    return '<div id="ta-sk-root">' +
-      '<div style="text-align:center;margin-bottom:6px;">' +
+    return '<div id="ta-sk-root" class="sk-grid">' +
+      '<div class="sk-left">' +
         '<p style="margin:0 0 6px;color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.24em;">AJAN DEFTERİ · GERÇEK GÖRÜŞLER</p>' +
-        '<h2 style="margin:0;font-family:\'Playfair Display\',serif;font-size:clamp(26px,3vw,33px);font-weight:800;color:#f2ecd9;">Ajanlar ne <span style="color:#e6c478;">diyor?</span></h2>' +
-        '<div style="width:58px;height:2px;margin:13px auto 0;background:linear-gradient(90deg,transparent,#c19a52,transparent);"></div>' +
-        '<div style="margin-top:12px;">' + ratingLine + '</div>' +
+        '<h2 style="margin:0;font-family:\'Playfair Display\',serif;font-size:clamp(26px,3vw,38px);font-weight:800;line-height:1.05;color:#f2ecd9;">Ajanlar ne <span style="color:#e6c478;">diyor?</span></h2>' +
+        '<div style="width:58px;height:2px;margin:14px 0 0;background:linear-gradient(90deg,#c19a52,transparent);"></div>' +
+        '<p style="margin:16px 0 0;color:#aeb4c1;font-size:14.5px;line-height:1.62;max-width:40ch;">Gerçek ziyaretçilerden gelen, admin onaylı görüşler burada birikiyor. Sen de deneyimini bırak; onaylandığında yanda yayınlanır.</p>' +
+        '<div style="margin-top:14px;">' + ratingLine + '</div>' +
+        formHtml +
       '</div>' +
       reviewsHtml +
-      formHtml +
     '</div>';
   }
 

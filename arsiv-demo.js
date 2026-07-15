@@ -31,16 +31,18 @@
   var NF = 5; // çekmecedeki görünür dosya sayısı
 
   var CSS = ''
-    + '#arsiv-demo{position:relative;background:linear-gradient(180deg,#040509,#090603 42%,#090603 58%,#040509);overflow:hidden;isolation:isolate}'
+    + '#arsiv-demo{position:relative;background:#040509;overflow:hidden;isolation:isolate}'
     // sinematik arka plan — çekilen dosyanın görseli (çift katman, çapraz geçiş)
     + '#arsiv-demo .ad-bg{position:absolute;inset:0;z-index:0;opacity:0;transform:scale(1.12);transition:opacity 1.1s ease,transform 12s linear;background-size:cover;background-position:center;filter:saturate(.62) contrast(1.02)}'
     + '#arsiv-demo .ad-bg.on{opacity:.3;transform:scale(1.0)}'
     + '#arsiv-demo .ad-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(5,6,9,.96) 30%,rgba(5,6,9,.62) 62%,rgba(5,6,9,.9)),radial-gradient(120% 130% at 50% 0%,transparent 40%,rgba(0,0,0,.78))}'
     + '#arsiv-demo .ad-grain{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.5;mix-blend-mode:overlay;background-image:radial-gradient(rgba(255,255,255,.05) .5px,transparent .5px);background-size:3px 3px}'
     + '#arsiv-demo .ad-glow{display:none}'
-    + '#arsiv-demo .ad-wrap{position:relative;z-index:2;width:min(1740px,96vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
-    + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.86fr 1.14fr;gap:clamp(30px,3.4vw,60px);align-items:center}'
+    + '#arsiv-demo .ad-wrap{position:relative;z-index:2;width:min(1740px,94vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
+    + '#arsiv-demo .ad-work{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(30px,3.4vw,60px);align-items:center}'
     + '#arsiv-demo .ad-panel{display:flex;flex-direction:column;gap:16px;min-width:0}'
+    + '#arsiv-demo .ad-btnrow{display:flex;gap:12px;flex-wrap:wrap}'
+    + '#arsiv-demo .ad-btnrow .ad-btn{flex:1 1 220px;justify-content:center}'
     // ayırt edici başlık — sınıflandırma bandı
     + '#arsiv-demo .ad-live{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;color:#e6c478;font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.24em;border:1px solid rgba(193,154,82,.4);padding:8px 15px;background:rgba(12,10,6,.5);backdrop-filter:blur(2px)}'
     + '#arsiv-demo .ad-live .d{width:9px;height:9px;border-radius:50%;background:#e11d1d;box-shadow:0 0 0 0 rgba(225,29,29,.6);animation:ad-pulse 1.4s ease-out infinite}'
@@ -107,12 +109,12 @@
       + '<h2>Arşivi karıştır, <span class="g">bir dosya seç.</span></h2>'
       + '<p class="ad-sub">Düğmeye bas; dosyalar karışsın, rastgele biri çekilsin — künyesi, alıntısı ve senaryosuyla yanda açılsın.</p>'
       + '<div class="ad-drawer" id="ad-drawer"></div>'
-      + '<button class="ad-btn" id="ad-draw">⚁ ARŞİVİ KARIŞTIR</button>'
+      + '<div class="ad-btnrow"><button class="ad-btn" id="ad-draw">⚁ ARŞİVİ KARIŞTIR</button><a class="ad-btn ghost" href="/arsiv">Tüm Arşivi İncele →</a></div>'
       + '<div class="ad-count" id="ad-count"></div>'
-      + '<a class="ad-btn ghost" href="/arsiv" style="align-self:flex-start">Tüm Arşivi İncele · 42 Dosya →</a>'
       + '</div>'
       + '<div class="ad-doss" id="ad-doss"><div class="art" id="ad-art"></div><div class="body" id="ad-body"></div></div>'
-      + '</div></div>';
+      + '</div>'
+      + '</div>';
 
     var drawer=mount.querySelector('#ad-drawer'), doss=mount.querySelector('#ad-doss'),
         art=mount.querySelector('#ad-art'), body=mount.querySelector('#ad-body'),

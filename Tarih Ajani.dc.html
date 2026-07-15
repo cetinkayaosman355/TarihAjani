@@ -87,14 +87,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3"><link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png?v=3"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=4"><link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png?v=4"><link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-512.png?v=4"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=4">
   <style>
     html, body { margin: 0; padding: 0; background: #040509; }
     /* Ortak dikey ritim skalası — her bölüm aynı nabza oturur */
     :root { --sp: clamp(48px, 5vw, 64px); --sp-sm: clamp(32px, 3.5vw, 46px); }
     /* Bölümler arası anlam köprüsü — aşama hissi (renk değişimi değil, ince bağlantı) */
-    .ta-kopru { width: min(680px, 90vw); margin: 0 auto; padding: 4px 20px; text-align: center; }
-    .ta-kopru .ln { display: block; width: 1px; height: 30px; margin: 0 auto 14px; background: linear-gradient(rgba(193,154,82,.55), rgba(193,154,82,0)); }
+    .ta-kopru { width: 100%; margin: 0; padding: 18px 20px 8px; text-align: center; position: relative; z-index: 3; background: #040509; }
+    .ta-kopru .ln { display: none; }
     .ta-kopru p { margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(15.5px, 1.9vw, 20px); line-height: 1.45; color: #c7ccd6; }
     .ta-kopru em { font-style: italic; color: #e6c478; }
     /* Tek, yumuşak ve simetrik zemin — siyaha dönük koyu ton; yön yön renk lekesi yok.
@@ -231,28 +231,28 @@
       <a href="/studio" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">STUDIO</a>
       <a href="/zaman-tuneli" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">OYUN</a>
       <a href="/urunler?q=1" title="Ara" aria-label="Ara" style="display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; border: 1px solid rgba(193,154,82,.45); color: #d6d0c2; text-decoration: none; font-size: 11.5px; letter-spacing: .12em; padding: 8px 15px 8px 12px;" style-hover="color: #f2ecd9; background: rgba(193,154,82,.12);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>ARA</a>
-      <a href="/uyelik" title="Üyeysen giriş yap" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 12px; margin-left: 18px;" style-hover="color: #f2ecd9;">GİRİŞ</a>
-      <a href="/studio" style="color: #171207; font-weight: 800; letter-spacing: .1em; text-decoration: none; padding: 10px 18px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 6px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">ÜCRETSİZ DENE</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12.5px; letter-spacing: .12em; text-decoration: none; padding: 10px 16px; border: 1px solid rgba(193,154,82,.55); margin-left: 22px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">AJAN GİRİŞİ</a>
+      <a href="/studio" style="color: #171207; font-weight: 800; letter-spacing: .1em; text-decoration: none; padding: 10px 18px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 8px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">ÜCRETSİZ DENE</a>
     </nav>
   </header>
 
   <!-- SON DAKİKA BANDI · gazete masthead şeridi (parşömen zemin, koyu mürekkep).
        position:absolute → sayfayla birlikte akıp gider (menü gibi yapışıp takip etmez).
        durdur/kapat + header yüksekliğine oturma: bant.js -->
-  <div id="son-dakika" role="complementary" aria-label="Son dakika bandı" style="position: absolute; top: 84px; left: 0; right: 0; z-index: 20; height: 34px; display: flex; align-items: stretch; overflow: hidden; background: linear-gradient(180deg, #f4e7cc, #e7d5ac); box-shadow: inset 0 1px 0 rgba(255,250,238,.6), 0 2px 0 rgba(124,31,22,.28), 0 10px 20px -10px rgba(0,0,0,.55); font-family: 'Hanken Grotesk', system-ui, sans-serif;">
-    <a href="/haber" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 0 13px; background: linear-gradient(115deg, #7c1f16, #a62f22); color: #f7ecd4; font-size: 10px; font-weight: 700; letter-spacing: .18em; text-decoration: none; white-space: nowrap; box-shadow: 2px 0 6px -2px rgba(124,31,22,.5);"><span style="width: 6px; height: 6px; border-radius: 50%; background: #f7ecd4; box-shadow: 0 0 5px rgba(247,236,212,.8); animation: ta-pulse 1.4s ease-in-out infinite;"></span>SON DAKİKA</a>
+  <div id="son-dakika" role="complementary" aria-label="Son dakika bandı" style="position: absolute; top: 94px; left: clamp(16px, 4vw, 56px); right: clamp(16px, 4vw, 56px); z-index: 20; height: 28px; display: flex; align-items: stretch; overflow: hidden; background: linear-gradient(180deg, rgba(244,231,204,.97), rgba(231,213,172,.97)); box-shadow: inset 0 1px 0 rgba(255,250,238,.55), 0 8px 22px -10px rgba(0,0,0,.6); font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+    <a href="/haber" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 0 11px; background: linear-gradient(115deg, #7c1f16, #a62f22); color: #f7ecd4; font-size: 9px; font-weight: 700; letter-spacing: .16em; text-decoration: none; white-space: nowrap;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #f7ecd4; box-shadow: 0 0 5px rgba(247,236,212,.8); animation: ta-pulse 1.4s ease-in-out infinite;"></span>SON DAKİKA</a>
     <div style="flex: 1; overflow: hidden; position: relative;">
       <div id="sd-ray" style="display: inline-flex; align-items: center; height: 100%; white-space: nowrap; will-change: transform; animation: ta-ticker 75s linear infinite;">
-        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #14100a; font-size: 12px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Fatih'in gemileri bir gecede karadan yürütüldü — Haliç kıyısında büyük panik</span>
-        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #14100a; font-size: 12px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Nusret'in gece döktüğü 26 mayın boğazı kilitledi — düşman zırhlıları geri çekiliyor</span>
-        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #14100a; font-size: 12px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Beytülhikme'den yükselen dumanlar Bağdat semalarını kapladı — Dicle mürekkepten karardı</span>
-        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #14100a; font-size: 12px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Surlarda gedik açıldı: kuşatmanın 53'üncü gününde şehrin düştüğü doğrulandı</span>
-        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #14100a; font-size: 12px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Vezüv uyandı: Pompeii üzerine gece gibi bir kül bulutu çöktü, kıyıdan kaçış sürüyor</span>
-        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #14100a; font-size: 12px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Fatih'in gemileri bir gecede karadan yürütüldü — Haliç kıyısında büyük panik</span>
-        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #14100a; font-size: 12px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Nusret'in gece döktüğü 26 mayın boğazı kilitledi — düşman zırhlıları geri çekiliyor</span>
-        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #14100a; font-size: 12px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Beytülhikme'den yükselen dumanlar Bağdat semalarını kapladı — Dicle mürekkepten karardı</span>
-        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #14100a; font-size: 12px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Surlarda gedik açıldı: kuşatmanın 53'üncü gününde şehrin düştüğü doğrulandı</span>
-        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #14100a; font-size: 12px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Vezüv uyandı: Pompeii üzerine gece gibi bir kül bulutu çöktü, kıyıdan kaçış sürüyor</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Fatih'in gemileri bir gecede karadan yürütüldü — Haliç kıyısında büyük panik</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Nusret'in gece döktüğü 26 mayın boğazı kilitledi — düşman zırhlıları geri çekiliyor</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Beytülhikme'den yükselen dumanlar Bağdat semalarını kapladı — Dicle mürekkepten karardı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Surlarda gedik açıldı: kuşatmanın 53'üncü gününde şehrin düştüğü doğrulandı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Vezüv uyandı: Pompeii üzerine gece gibi bir kül bulutu çöktü, kıyıdan kaçış sürüyor</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Fatih'in gemileri bir gecede karadan yürütüldü — Haliç kıyısında büyük panik</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Nusret'in gece döktüğü 26 mayın boğazı kilitledi — düşman zırhlıları geri çekiliyor</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Beytülhikme'den yükselen dumanlar Bağdat semalarını kapladı — Dicle mürekkepten karardı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Surlarda gedik açıldı: kuşatmanın 53'üncü gününde şehrin düştüğü doğrulandı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Vezüv uyandı: Pompeii üzerine gece gibi bir kül bulutu çöktü, kıyıdan kaçış sürüyor</span>
       </div>
     </div>
     <button id="sd-durdur" type="button" aria-label="Bandı durdur veya sürdür" title="Durdur / sürdür" style="flex-shrink: 0; width: 30px; display: grid; place-items: center; background: rgba(124,31,22,.06); border: 0; border-left: 1px solid rgba(124,31,22,.22); color: #7c1f16; font-size: 8.5px; letter-spacing: .08em; padding: 0;">❚❚</button>
@@ -298,34 +298,29 @@
   </section>
 
   <!-- ÜÇ YOL · nereden başlarsın (Studio / Arşiv / Akademi seçimi) -->
-  <section data-screen-label="Üç Yol" style="position: relative; background: linear-gradient(180deg, rgba(14,12,10,.5), transparent); padding: var(--sp) 0;">
-    <div style="width: min(1240px, 92vw); margin: 0 auto; padding: 0 clamp(20px, 4vw, 40px);">
-      <div style="text-align: center; max-width: 620px; margin: 0 auto 32px;">
-        <p style="margin: 0; color: #c9a765; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .3em;">NEREDEN BAŞLARSIN · ÜÇ YOL</p>
-        <h2 style="margin: 12px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(24px, 3vw, 36px); font-weight: 800; color: #f4ecd8;">Sana uygun <span style="color: #e6c478;">kapıyı seç</span></h2>
-        <p style="margin: 12px 0 0; color: #9aa0ad; font-size: 13.5px; line-height: 1.6;">İster sıfırdan üret, ister hazır bir dosyayla başla, ister sistemi baştan öğren — her yol aynı yayına çıkar.</p>
-      </div>
-      <div class="yol3-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
-        <a href="/studio" style="display:flex;flex-direction:column;gap:12px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg, rgba(13,15,22,.7), rgba(7,9,14,.55));padding:24px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-4px);border-color:rgba(230,196,120,.55);box-shadow:0 20px 50px -24px rgba(0,0,0,.85);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;color:#e6c478;"><rect x="3.5" y="8" width="17" height="11.5" rx="1.5"/><path d="M3.7 8l3-3.6h4l-3 3.6M11 8l3-3.6h4l-3 3.6"/><path d="M10.4 11.8v4.6l4-2.3z" fill="currentColor" stroke="none"/></svg>
+  <section data-screen-label="Üç Yol" style="position: relative; background: transparent; padding: var(--sp-sm) 0 clamp(18px,2.4vw,28px);">
+    <div style="width: min(1520px, 94vw); margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px);">
+      <div class="yol3-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;">
+        <a href="/studio" style="display:flex;flex-direction:column;gap:9px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(160deg, rgba(16,13,9,.55), rgba(9,7,5,.4));padding:18px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-3px);border-color:rgba(230,196,120,.55);box-shadow:0 18px 44px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;color:#e6c478;"><rect x="3.5" y="8" width="17" height="11.5" rx="1.5"/><path d="M3.7 8l3-3.6h4l-3 3.6M11 8l3-3.6h4l-3 3.6"/><path d="M10.4 11.8v4.6l4-2.3z" fill="currentColor" stroke="none"/></svg>
           <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">01 · KENDİN ÜRET</span>
-          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:19px;font-weight:800;color:#f2ecd9;">Studio ile üret</h3>
-          <p style="margin:0;color:#9aa0ad;font-size:13px;line-height:1.55;">Konunu yaz; senaryo, seslendirme, sahne promptu ve yayın paketi tek dosyada çıksın.</p>
-          <span style="margin-top:auto;padding-top:8px;color:#e6c478;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;">STUDIO'YU DENE &rarr;</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:18px;font-weight:800;color:#f2ecd9;">Studio ile üret</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:12.5px;line-height:1.5;">Konunu yaz; senaryo, seslendirme ve sahne planın oluşsun.</p>
+          <span style="margin-top:auto;padding-top:6px;color:#e6c478;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.14em;">STUDIO'YU DENE &rarr;</span>
         </a>
-        <a href="/arsiv" style="display:flex;flex-direction:column;gap:12px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg, rgba(13,15,22,.7), rgba(7,9,14,.55));padding:24px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-4px);border-color:rgba(230,196,120,.55);box-shadow:0 20px 50px -24px rgba(0,0,0,.85);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;color:#e6c478;"><rect x="3.5" y="4.8" width="17" height="4.8" rx="1"/><path d="M5 9.6v8.6c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V9.6"/><path d="M9.6 13.4h4.8"/></svg>
+        <a href="/arsiv" style="display:flex;flex-direction:column;gap:9px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(160deg, rgba(16,13,9,.55), rgba(9,7,5,.4));padding:18px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-3px);border-color:rgba(230,196,120,.55);box-shadow:0 18px 44px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;color:#e6c478;"><rect x="3.5" y="4.8" width="17" height="4.8" rx="1"/><path d="M5 9.6v8.6c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V9.6"/><path d="M9.6 13.4h4.8"/></svg>
           <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">02 · HAZIR İÇERİKLE BAŞLA</span>
-          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:19px;font-weight:800;color:#f2ecd9;">Arşivden başla</h3>
-          <p style="margin:0;color:#9aa0ad;font-size:13px;line-height:1.55;">Araştırılmış, üretime hazır 42 vaka dosyasından birini seç; senaryosu ve kaynağı hazır.</p>
-          <span style="margin-top:auto;padding-top:8px;color:#e6c478;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;">ARŞİVİ AÇ &rarr;</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:18px;font-weight:800;color:#f2ecd9;">Arşivden başla</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:12.5px;line-height:1.5;">Araştırılmış 42 vaka dosyasından birini seç, üretime hemen geç.</p>
+          <span style="margin-top:auto;padding-top:6px;color:#e6c478;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.14em;">ARŞİVİ AÇ &rarr;</span>
         </a>
-        <a href="/egitim" style="display:flex;flex-direction:column;gap:12px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg, rgba(13,15,22,.7), rgba(7,9,14,.55));padding:24px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-4px);border-color:rgba(230,196,120,.55);box-shadow:0 20px 50px -24px rgba(0,0,0,.85);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;color:#e6c478;"><path d="M12 5 21.5 9 12 13 2.5 9 12 5Z"/><path d="M6 11v4.4c0 1.3 2.7 2.5 6 2.5s6-1.2 6-2.5V11"/><path d="M21.5 9v4.4"/></svg>
+        <a href="/egitim" style="display:flex;flex-direction:column;gap:9px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(160deg, rgba(16,13,9,.55), rgba(9,7,5,.4));padding:18px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-3px);border-color:rgba(230,196,120,.55);box-shadow:0 18px 44px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;color:#e6c478;"><path d="M12 5 21.5 9 12 13 2.5 9 12 5Z"/><path d="M6 11v4.4c0 1.3 2.7 2.5 6 2.5s6-1.2 6-2.5V11"/><path d="M21.5 9v4.4"/></svg>
           <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">03 · SİSTEMİ ÖĞREN</span>
-          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:19px;font-weight:800;color:#f2ecd9;">Akademide öğren</h3>
-          <p style="margin:0;color:#9aa0ad;font-size:13px;line-height:1.55;">Kanalını ve üretim düzenini adım adım kur; 9 derslik kapalı program seni bekliyor.</p>
-          <span style="margin-top:auto;padding-top:8px;color:#e6c478;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;">AKADEMİYE GİR &rarr;</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:18px;font-weight:800;color:#f2ecd9;">Akademide öğren</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:12.5px;line-height:1.5;">Kanalını ve üretim düzenini 9 derslik programla kur.</p>
+          <span style="margin-top:auto;padding-top:6px;color:#e6c478;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.14em;">AKADEMİYE GİR &rarr;</span>
         </a>
       </div>
     </div>
@@ -335,31 +330,40 @@
   <section id="akademi-demo" data-screen-label="Ajan Akademisi"><div id="akademi-demo-mount"></div></section>
 
   <!-- NASIL ÇALIŞIR · ince operasyon şeridi (kısa, sade; sayfayla kaynaşan geçiş) -->
-  <section id="nasil-calisir" data-screen-label="Nasıl Çalışır" style="width: 100%; background: linear-gradient(180deg, #040509, #070809 45%, #070809 55%, #040509);">
-    <div style="width: min(1120px, 92vw); margin: 0 auto; padding: var(--sp-sm) clamp(20px, 4vw, 40px); text-align: center;">
-      <p style="margin: 0 0 20px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .3em;">OPERASYON AKIŞI · NASIL ÇALIŞIR</p>
-      <div class="yol-track" style="position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-        <div class="yol-line" style="position: absolute; top: 19px; left: 13%; right: 13%; height: 1px; background: rgba(193,154,82,.32); z-index: 0;"></div>
-        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 8px; justify-items: center; text-align: center;">
-          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(193,154,82,.5); background: #040509; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #e6c478;">01</span>
-          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #f2ecd9;">Dosyanı seç</p>
-          <p class="yol-d" style="margin: 0; color: #8b909d; font-size: 11px; line-height: 1.5; max-width: 20ch;">Arşivden hikâyeni ya da konunu seç.</p>
-        </div>
-        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 8px; justify-items: center; text-align: center;">
-          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(193,154,82,.5); background: #040509; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #e6c478;">02</span>
-          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #f2ecd9;">Materyali incele</p>
-          <p class="yol-d" style="margin: 0; color: #8b909d; font-size: 11px; line-height: 1.5; max-width: 20ch;">Senaryo, ses ve prompt dosyalarını aç.</p>
-        </div>
-        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 8px; justify-items: center; text-align: center;">
-          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(193,154,82,.5); background: #040509; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #e6c478;">03</span>
-          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #f2ecd9;">Üretime başla</p>
-          <p class="yol-d" style="margin: 0; color: #8b909d; font-size: 11px; line-height: 1.5; max-width: 20ch;">Görseli, videoyu ve sesi oluştur.</p>
-        </div>
-        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 8px; justify-items: center; text-align: center;">
-          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(193,154,82,.5); background: #040509; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #e6c478;">04</span>
-          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #f2ecd9;">Hikâyeni yayınla</p>
-          <p class="yol-d" style="margin: 0; color: #8b909d; font-size: 11px; line-height: 1.5; max-width: 20ch;">Kanalında paylaş, arşivini büyüt.</p>
-        </div>
+  <section id="nasil-calisir" data-screen-label="Nasıl Çalışır" style="width: 100%; background: transparent;">
+    <style>
+      #nasil-calisir .op-wrap{position:relative;width:min(1180px,92vw);margin:0 auto;padding:clamp(18px,2.2vw,28px) clamp(20px,4vw,40px)}
+      #nasil-calisir .op-grid{position:relative;z-index:1;display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(28px,4vw,60px);align-items:center}
+      #nasil-calisir .op-eyebrow{margin:0 0 14px;color:#c19a52;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.28em;display:flex;align-items:center;gap:9px}
+      #nasil-calisir .op-eyebrow b{width:6px;height:6px;border-radius:50%;background:#c19a52}
+      #nasil-calisir .op-eyebrow.op-center{position:relative;z-index:1;justify-content:center;margin:0 0 16px;font-size:10px;letter-spacing:.3em}
+      #nasil-calisir .op-h2{margin:0;font-family:'Playfair Display',serif;font-size:clamp(28px,3.4vw,46px);font-weight:800;line-height:1.03;letter-spacing:-.018em;color:#f6efe0}
+      #nasil-calisir .op-h2 .g{background:linear-gradient(102deg,#b18742,#e6c478 42%,#fff0b1 52%,#a5762f);-webkit-background-clip:text;background-clip:text;color:transparent}
+      #nasil-calisir .op-sub{margin:16px 0 0;color:#b3b9c6;font-size:14.5px;line-height:1.62;max-width:36ch}
+      #nasil-calisir .op-btn{margin-top:22px;display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(193,154,82,.5);color:#e6c478;font-family:'Special Elite',monospace;font-size:12.5px;letter-spacing:.14em;padding:15px 26px;text-decoration:none;transition:background .2s,box-shadow .2s}
+      #nasil-calisir .op-btn:hover{background:rgba(193,154,82,.12);box-shadow:0 14px 42px -16px rgba(230,196,120,.5)}
+      #nasil-calisir .op-line{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(16px,2.4vw,36px)}
+      #nasil-calisir .op-rail{position:absolute;top:19px;left:6%;right:6%;height:1px;z-index:0;background:linear-gradient(90deg,transparent,rgba(193,154,82,.4) 10%,rgba(193,154,82,.4) 90%,transparent)}
+      #nasil-calisir .op-node{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px}
+      #nasil-calisir .op-ring{flex:0 0 auto;width:38px;height:38px;border-radius:50%;border:1px solid rgba(193,154,82,.45);background:#0a0906;display:grid;place-items:center;color:#e6c478;box-shadow:0 0 0 6px #040509}
+      #nasil-calisir .op-ring svg{width:17px;height:17px}
+      #nasil-calisir .op-n{color:#c19a52;font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.16em;margin-right:7px}
+      #nasil-calisir .op-k{margin:0;font-family:'Playfair Display',serif;font-size:14.5px;font-weight:700;color:#f2ecd9;letter-spacing:-.005em;background:#040509;padding:2px 4px}
+      #nasil-calisir .op-d{margin:-3px 0 0;color:#8b909d;font-size:11.5px;line-height:1.45;max-width:22ch}
+      #nasil-calisir .op-foot{position:relative;z-index:1;margin-top:clamp(28px,3vw,44px);display:flex;align-items:center;justify-content:center;gap:16px;color:#8a8271;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.24em;text-align:center}
+      #nasil-calisir .op-foot .ln{height:1px;flex:1;max-width:140px;background:linear-gradient(90deg,transparent,rgba(193,154,82,.4))}
+      #nasil-calisir .op-foot .ln.r{background:linear-gradient(90deg,rgba(193,154,82,.4),transparent)}
+      @media(max-width:1000px){#nasil-calisir .op-grid{grid-template-columns:1fr;gap:34px}#nasil-calisir .op-sub{max-width:56ch}}
+      @media(max-width:760px){#nasil-calisir .op-line{grid-template-columns:1fr 1fr;gap:14px 10px}#nasil-calisir .op-rail{display:none}#nasil-calisir .op-node{justify-content:flex-start}}
+    </style>
+    <div class="op-wrap">
+      <p class="op-eyebrow op-center">OPERASYON AKIŞI · NASIL ÇALIŞIR</p>
+      <div class="op-line">
+        <span class="op-rail"></span>
+        <div class="op-node"><span class="op-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.4c0-.8.6-1.4 1.4-1.4h3.8c.4 0 .8.2 1.1.5L11 7h6.6c.8 0 1.4.6 1.4 1.4"/><path d="M3 8.8h17.2c.6 0 1 .5.9 1.1l-1.3 7.2c-.1.6-.6 1-1.2 1H4.6c-.6 0-1.1-.4-1.2-1L2 8.8"/></svg></span><p class="op-k"><span class="op-n">01</span>Materyali İncele</p></div>
+        <div class="op-node"><span class="op-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6.5C5.7 3 5 3.7 5 4.5v15c0 .8.7 1.5 1.5 1.5H12"/><path d="M14 3l4 4M14 3v4h4"/><path d="M8.5 9h5M8.5 12.5h3.5"/><path d="M20.4 13.6l1.9 1.9-5.1 5.1-2.4.5.5-2.4 5.1-5.1Z"/></svg></span><p class="op-k"><span class="op-n">02</span>Üretime Başla</p></div>
+        <div class="op-node"><span class="op-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5V4.2"/><path d="M7.5 8.2 12 3.7l4.5 4.5"/><path d="M5 13.5v4.8c0 .7.6 1.2 1.2 1.2h11.6c.6 0 1.2-.5 1.2-1.2v-4.8"/></svg></span><p class="op-k"><span class="op-n">03</span>Hikâyeni Yayınla</p></div>
+        <div class="op-node"><span class="op-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V6"/><path d="M4 20h16"/><path d="M7.5 20v-5M12 20v-8M16.5 20v-4"/><path d="M5.5 12.5 10 8.5l3.5 2.5L20 6"/><path d="M16.6 6H20v3.4"/></svg></span><p class="op-k"><span class="op-n">04</span>Sonuçları İzle</p></div>
       </div>
     </div>
   </section>
@@ -567,7 +571,7 @@
   </section>
 
   <!-- AJANLAR NE DİYOR · yorumlar -->
-  <section data-screen-label="Yorumlar" style="position: relative; overflow: hidden; width: min(1040px, 92vw); margin: 0 auto; padding: var(--sp) clamp(22px, 4vw, 40px) var(--sp);">
+  <section data-screen-label="Yorumlar" style="position: relative; overflow: hidden; width: min(1240px, 94vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 40px);">
     <img src="assets/evidence-board.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .1; filter: brightness(.55) saturate(.7); pointer-events: none; z-index: -1;">
     <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,7,13,.88), rgba(6,7,13,.92)); pointer-events: none; z-index: -1;"></div>
     <!-- Gerçek sosyal kanıt: canlı sayaçlar + onaylı kullanıcı yorumları (sosyal-kanit.js doldurur) -->
@@ -580,21 +584,23 @@
   <section id="sss" data-screen-label="SSS" style="position: relative; overflow: hidden; background: linear-gradient(180deg, transparent, rgba(10,9,8,.5) 30%);">
     <img src="assets/real-wall.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .12; filter: saturate(.6) brightness(.7);">
     <div style="position: absolute; inset: 0; background: radial-gradient(circle 760px at 50% 12%, rgba(7,9,15,.5), #07090f 84%);"></div>
-    <div style="position: relative; z-index: 2; width: min(920px, 92vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 40px);">
-      <div style="text-align: center; margin-bottom: 40px;">
-        <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .26em;">SORGU ODASI · DOSYA 47-A/2026</p>
-        <h2 style="margin: 14px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.8vw, 48px); font-weight: 800;">Sorgu <span style="color: #e6c478;">Tutanağı</span></h2>
+    <div style="position: relative; z-index: 2; width: min(1240px, 94vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 40px); display: grid; grid-template-columns: .82fr 1.18fr; gap: clamp(32px, 5vw, 64px); align-items: start;" class="sss-grid">
+      <div style="align-self: center;">
+        <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .26em;">SORGU ODASI · DOSYA 47-A/2026</p>
+        <h2 style="margin: 12px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(26px, 3vw, 38px); font-weight: 800; line-height: 1.05;">Sorgu <span style="color: #e6c478;">Tutanağı</span></h2>
+        <div style="width: 58px; height: 2px; margin: 16px 0 0; background: linear-gradient(90deg, #c19a52, transparent);"></div>
+        <p style="margin: 18px 0 0; color: #a4a9b5; font-size: 14.5px; line-height: 1.65; max-width: 34ch;">En çok merak edilen sorular ve net cevapları. Aradığını bulamazsan bize yaz — aynı gün dönüş yapılır.</p>
       </div>
       <div style="display: grid; gap: 10px;">
         <sc-for list="{{ faqs }}" as="q" hint-placeholder-count="5">
           <div style="border-bottom: 1px solid rgba(193,154,82,.18);">
-            <button onClick="{{ q.toggle }}" style="width: 100%; display: flex; align-items: center; gap: 16px; background: transparent; border: 0; color: #e9dfc8; text-align: left; padding: 20px 6px; font-size: 16px; font-weight: 600; cursor: pointer;" style-hover="color: #e6c478;">
-              <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 13px; flex-shrink: 0;">{{ q.no }}</span>
+            <button onClick="{{ q.toggle }}" style="width: 100%; display: flex; align-items: center; gap: 16px; background: transparent; border: 0; color: #e9dfc8; text-align: left; padding: 15px 6px; font-size: 14.5px; font-weight: 600; cursor: pointer;" style-hover="color: #e6c478;">
+              <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11.5px; flex-shrink: 0;">{{ q.no }}</span>
               <span style="flex: 1;">{{ q.q }}</span>
-              <span style="color: #c19a52; font-family: 'Playfair Display', serif; font-size: 22px; line-height: 1;">{{ q.mark }}</span>
+              <span style="color: #c19a52; font-family: 'Playfair Display', serif; font-size: 18px; line-height: 1;">{{ q.mark }}</span>
             </button>
             <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}">
-              <p style="margin: 0; padding: 0 6px 22px 44px; color: #a4a9b5; line-height: 1.75; font-size: 14.5px;">{{ q.a }}</p>
+              <p style="margin: 0; padding: 0 6px 18px 38px; color: #a4a9b5; line-height: 1.7; font-size: 13.5px;">{{ q.a }}</p>
             </sc-if>
           </div>
         </sc-for>
@@ -609,7 +615,7 @@
     <div style="position: relative; z-index: 2; width: min(1340px, 94vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 48px); display: grid; grid-template-columns: 1fr 1fr; gap: clamp(36px, 5vw, 72px); align-items: center;" class="sss-grid">
       <div style="display: grid; gap: 18px; align-content: center;">
         <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .28em;">GÖREV ÇAĞRISI</p>
-        <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(32px, 4.4vw, 56px); font-weight: 800; line-height: 1.05;">Ajan kadrosuna<br><span style="color: #e6c478;">katıl</span></h2>
+        <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(26px, 3vw, 38px); font-weight: 800; line-height: 1.05;">Ajan kadrosuna<br><span style="color: #e6c478;">katıl</span></h2>
         <p style="margin: 0; color: #cbd0da; max-width: 44ch; line-height: 1.72; font-size: 15.5px;">İlk dosyanı bu gece aç; senaryo, seslendirme ve yayın paketi dakikalar içinde masanda. Soruların, projelerin ve iş birlikleri için de aynı yerden yaz — aynı gün dönüş yapılır.</p>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
           <a href="/uyelik" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .12em; padding: 16px 28px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.4); transform: translateY(-2px);">AJAN OL →</a>

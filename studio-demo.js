@@ -51,11 +51,11 @@
   ];
 
   var CSS = ''
-    + '#studio-demo{position:relative;background:linear-gradient(180deg,#040509,#05070e 42%,#05070e 58%,#040509);overflow:hidden}'
+    + '#studio-demo{position:relative;background:#040509;overflow:hidden}'
     + '#studio-demo .sd-glow{display:none}'
-    + '#studio-demo .sd-wrap{position:relative;width:min(1790px,96.5vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(20px,3vw,40px)}'
+    + '#studio-demo .sd-wrap{position:relative;width:min(1740px,94vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
     // iki sütun — tepeden hizalı
-    + '#studio-demo .sd-work{display:grid;grid-template-columns:.84fr 1.16fr;gap:clamp(24px,2.8vw,44px);align-items:stretch}'
+    + '#studio-demo .sd-work{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(30px,3.4vw,60px);align-items:center}'
     + '#studio-demo .sd-panel{display:flex;flex-direction:column;justify-content:flex-start;gap:15px;min-width:0;padding-top:0}'
     + '#studio-demo .sd-panel.sd-mid{justify-content:flex-start;padding-top:0}'
     + '#studio-demo .sd-live{display:inline-flex;align-items:center;gap:8px;color:#e08a80;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.22em;margin-bottom:2px}'
@@ -64,7 +64,7 @@
     + '#studio-demo h2{margin:0;font-family:\'Playfair Display\',serif;font-size:clamp(27px,3.1vw,40px);font-weight:800;line-height:1.04;letter-spacing:-.01em;color:#f6efe0}'
     + '#studio-demo h2 .g{background:linear-gradient(102deg,#b18742,#e6c478 42%,#fff0b1 52%,#d6ad5b 64%,#a5762f);-webkit-background-clip:text;background-clip:text;color:transparent}'
     // konu kutusu — yazılıyormuş gibi
-    + '#studio-demo .sd-promptbox{border:1px solid rgba(193,154,82,.3);background:#070a12;padding:13px 15px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}'
+    + '#studio-demo .sd-promptbox{border:1px solid rgba(193,154,82,.3);background:#0c0a06;padding:13px 15px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}'
     + '#studio-demo .sd-promptbox .pl{flex-shrink:0;color:#c19a52;font-family:\'Special Elite\',monospace;font-size:9.5px;letter-spacing:.18em}'
     + '#studio-demo .sd-promptbox .tx{color:#eadfc6;font-size:14.5px;line-height:1.4;font-family:\'Playfair Display\',serif;font-style:italic}'
     + '#studio-demo .sd-promptbox .caret{display:inline-block;width:2px;height:15px;background:#e6c478;transform:translateY(2px);animation:sd-caret 1s step-end infinite}'
@@ -79,12 +79,12 @@
     + '#studio-demo .sd-btn.hero{padding:17px 34px;font-size:14px;letter-spacing:.16em;box-shadow:0 16px 48px -18px rgba(230,196,120,.55)}'
     + '#studio-demo .sd-btn.ghost{background:transparent;border:1px solid rgba(193,154,82,.5);color:#e6c478;font-family:\'Hanken Grotesk\',system-ui,sans-serif;font-weight:700;font-size:13px;letter-spacing:.03em}'
     + '#studio-demo .sd-btn.ghost:hover{background:rgba(193,154,82,.12);box-shadow:none}'
-    + '#studio-demo .sd-tryrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}'
+    + '#studio-demo .sd-tryrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}'
     + '#studio-demo .sd-note{color:#868c9c;font-size:11px}'
     // yan yana çıktı kutuları
     + '#studio-demo .sd-oh{color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.2em}'
     + '#studio-demo .sd-outrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}'
-    + '#studio-demo .sd-obox{min-width:0;border:1px solid rgba(193,154,82,.2);background:#070a12;padding:12px 13px;opacity:0;transform:translateY(8px);transition:opacity .45s,transform .45s}'
+    + '#studio-demo .sd-obox{min-width:0;border:1px solid rgba(193,154,82,.2);background:#0c0a06;padding:12px 13px;opacity:0;transform:translateY(8px);transition:opacity .45s,transform .45s}'
     + '#studio-demo .sd-obox.in{opacity:1;transform:none}'
     + '#studio-demo .sd-obox .bh{display:flex;align-items:center;gap:7px;margin-bottom:7px}'
     + '#studio-demo .sd-obox .ck{width:16px;height:16px;border-radius:50%;background:rgba(90,122,62,.16);border:1px solid rgba(90,122,62,.5);display:grid;place-items:center;color:#7ba05a;font-size:9px}'
@@ -92,7 +92,7 @@
     + '#studio-demo .sd-obox span{display:block;color:#8b93a1;font-size:12px;line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}'
     // sağ sahne — Tarih Ajanı önizleme (büyük görsel)
     + '#studio-demo .sd-stage{display:block}'
-    + '#studio-demo .sd-canvas{position:relative;width:100%;aspect-ratio:2/1;overflow:hidden;border:1px solid rgba(193,154,82,.3);background:radial-gradient(circle at 50% 40%,#101120,#08090e);box-shadow:0 40px 90px -52px rgba(0,0,0,.9)}'
+    + '#studio-demo .sd-canvas{position:relative;width:100%;aspect-ratio:16/10;overflow:hidden;border:1px solid rgba(193,154,82,.3);background:radial-gradient(circle at 50% 40%,#0c0a07,#080705);box-shadow:0 40px 90px -52px rgba(0,0,0,.9)}'
     // boş ekran yerine: 4 preset görselinden çapraz (X) mozaik
     + '#studio-demo .sd-mosaic{position:absolute;inset:0;z-index:0}'
     + '#studio-demo .sd-mosaic i{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.34) saturate(.62)}'

@@ -32,24 +32,23 @@
   var PLAYABLE = CAPS.length; // ilk 2 ders demoda izlenebilir
 
   var CSS = ''
-    + '#akademi-demo{position:relative;background:linear-gradient(180deg,#040509,#080407 42%,#080407 58%,#040509);overflow:hidden;isolation:isolate}'
+    + '#akademi-demo{position:relative;background:#040509;overflow:hidden;isolation:isolate}'
     + '#akademi-demo .ak-bgfx{display:none}'
     + '#akademi-demo .ak-vin{position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 130% at 50% 20%,transparent 46%,rgba(0,0,0,.55))}'
-    + '#akademi-demo .ak-wrap{position:relative;z-index:1;width:min(1580px,92vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
-    + '#akademi-demo .ak-head{max-width:960px;margin-bottom:clamp(18px,2vw,28px);padding-bottom:16px;border-bottom:1px solid rgba(193,154,82,.18);display:flex;gap:20px;align-items:center}'
-    + '#akademi-demo .ak-head-tx{min-width:0}'
-    // akademi arması (elit okul mührü)
-    + '#akademi-demo .ak-crest{position:relative;flex:0 0 auto;width:70px;height:70px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 32%,rgba(230,196,120,.16),rgba(8,9,14,.7));border:1px solid rgba(193,154,82,.55);box-shadow:inset 0 0 0 3px rgba(4,5,9,.85),inset 0 0 0 4px rgba(193,154,82,.28),0 10px 26px -12px rgba(0,0,0,.85)}'
-    + '#akademi-demo .ak-crest b{font-family:\'Playfair Display\',serif;font-weight:800;font-size:23px;color:#e6c478;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,.6)}'
-    + '#akademi-demo .ak-crest i{position:absolute;bottom:9px;font-family:\'Special Elite\',monospace;font-style:normal;font-size:5px;letter-spacing:.24em;color:#c19a52}'
-    + '#akademi-demo .ak-crest::before{content:"";position:absolute;top:7px;font-size:8px;color:#c19a52;line-height:1}'
-    + '#akademi-demo .ak-live{display:inline-flex;align-items:center;gap:10px;color:#e6c478;font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.24em;border:1px solid rgba(193,154,82,.4);padding:7px 14px;background:rgba(12,10,6,.5)}'
-    + '#akademi-demo .ak-live .d{width:9px;height:9px;border-radius:50%;background:#e11d1d;box-shadow:0 0 0 0 rgba(225,29,29,.6);animation:ak-pulse 1.6s ease-out infinite}'
-    + '@keyframes ak-pulse{0%{box-shadow:0 0 0 0 rgba(225,29,29,.55)}70%{box-shadow:0 0 0 10px rgba(225,29,29,0)}100%{box-shadow:0 0 0 0 rgba(225,29,29,0)}}'
-    + '#akademi-demo h2{margin:14px 0 8px;font-family:\'Playfair Display\',serif;font-size:clamp(26px,3vw,41px);font-weight:800;line-height:1.04;letter-spacing:-.015em;color:#f6efe0}'
+    + '#akademi-demo .ak-wrap{position:relative;z-index:1;width:min(1740px,94vw);margin:0 auto;padding:clamp(48px,5vw,64px) clamp(22px,3vw,48px)}'
+    // 2 sütun düzen: başlık sol üstte · ders sicili | video (altında katıl butonu)
+    + '#akademi-demo .ak-head-min{margin:0 0 clamp(18px,2vw,26px)}'
+    + '#akademi-demo .ak-eyebrow{margin:0 0 8px;color:#c19a52;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.26em}'
+    + '#akademi-demo h2{margin:0;font-family:\'Playfair Display\',serif;font-size:clamp(26px,2.8vw,38px);font-weight:800;line-height:1.03;letter-spacing:-.015em;color:#f6efe0}'
     + '#akademi-demo h2 .g{background:linear-gradient(102deg,#b18742,#e6c478 42%,#fff0b1 52%,#a5762f);-webkit-background-clip:text;background-clip:text;color:transparent}'
-    + '#akademi-demo .ak-sub{margin:0;color:#b3b9c6;font-size:14.5px;line-height:1.6;max-width:62ch}'
-    + '#akademi-demo .ak-work{display:grid;grid-template-columns:.88fr 1.12fr;gap:clamp(26px,3vw,54px);align-items:start}'
+    + '#akademi-demo .ak-work{display:grid;grid-template-columns:1fr 1.34fr;gap:clamp(22px,2.6vw,46px);align-items:stretch}'
+    + '#akademi-demo .ak-video{display:flex;flex-direction:column}'
+    + '#akademi-demo .ak-lessons{display:flex;flex-direction:column}'
+    + '#akademi-demo .ak-prog{flex:1}'
+    + '#akademi-demo .ak-join{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:12px;background:transparent;border:1px solid rgba(193,154,82,.5);color:#e6c478;font-family:\'Special Elite\',monospace;font-weight:700;font-size:13px;letter-spacing:.14em;padding:14px 20px;text-decoration:none;transition:background .2s,box-shadow .2s}'
+    + '#akademi-demo .ak-join:hover{background:rgba(193,154,82,.12);box-shadow:0 12px 40px -16px rgba(230,196,120,.4)}'
+    + '#akademi-demo .ak-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:7px 18px;margin-top:10px}'
+    + '#akademi-demo .ak-tags span{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.05em;color:#7ba05a}'
     // SOL — eğitim sicili
     + '#akademi-demo .ak-prog{position:relative;border:1px solid rgba(193,154,82,.3);background:rgba(10,10,15,.68);backdrop-filter:blur(4px)}'
     + '#akademi-demo .ak-prog::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(193,154,82,.7) 20%,rgba(230,196,120,.9) 50%,rgba(193,154,82,.7) 80%,transparent)}'
@@ -79,8 +78,11 @@
     + '#akademi-demo .ak-btn:hover{transform:translateY(-2px);box-shadow:0 16px 46px -14px rgba(230,196,120,.55)}'
     + '#akademi-demo .ak-cta .tag{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.05em;color:#7ba05a}'
     // SAĞ — video karesi
-    + '#akademi-demo .ak-frame{position:relative;border:1px solid rgba(193,154,82,.34);background:linear-gradient(165deg,#0c0d14,#080910 60%,#0a0b12);aspect-ratio:16/9;min-height:320px;overflow:hidden;box-shadow:0 40px 90px -40px rgba(0,0,0,.9)}'
-    + '#akademi-demo .ak-frame::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.12) 3px 4px);opacity:.5}'
+    + '#akademi-demo .ak-frame{position:relative;flex:1;border:1px solid rgba(193,154,82,.34);background:linear-gradient(165deg,#12100a,#0a0806 60%,#0c0a07);min-height:340px;overflow:hidden;box-shadow:0 40px 90px -40px rgba(0,0,0,.9)}'
+    // gerçek tarihî görsel — video önizlemesi boş durmasın
+    + '#akademi-demo .ak-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:brightness(.4) saturate(.85) sepia(.12);transition:filter .6s}'
+    + '#akademi-demo .ak-frame.ak-playing .ak-thumb{filter:brightness(.16) saturate(.7)}'
+    + '#akademi-demo .ak-frame::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,7,10,.35),rgba(6,7,10,.15) 40%,rgba(6,7,10,.6)),repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.12) 3px 4px);z-index:1;opacity:.85}'
     // köşe süsleri (elit "gizli gösterim" çerçevesi)
     + '#akademi-demo .ak-frame .cnr{position:absolute;width:16px;height:16px;z-index:3;pointer-events:none;border-color:rgba(230,196,120,.7)}'
     + '#akademi-demo .ak-frame .cnr.tl{top:9px;left:9px;border-top:1px solid;border-left:1px solid}'
@@ -111,7 +113,8 @@
     + '#akademi-demo .ak-end .ghost{cursor:pointer;background:rgba(10,14,9,.5);border:1px solid rgba(193,154,82,.5);color:#e6c478;font-family:\'Special Elite\',monospace;font-size:12.5px;letter-spacing:.14em;padding:14px 24px;text-decoration:none;transition:background .2s}'
     + '#akademi-demo .ak-end .ghost:hover{background:rgba(193,154,82,.14)}'
     + '#akademi-demo .ak-under{display:flex;justify-content:space-between;gap:14px;margin-top:10px;font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.12em;color:#948c72}'
-    + '@media(max-width:900px){#akademi-demo .ak-work{grid-template-columns:1fr}#akademi-demo .ak-work>div{min-width:0}#akademi-demo .ak-frame{min-height:300px}}'
+    + '@media(max-width:1120px){#akademi-demo .ak-work{grid-template-columns:1fr 1.25fr}#akademi-demo .ak-intro{grid-column:1/-1;align-self:auto}#akademi-demo .ak-intro h2{max-width:none}#akademi-demo .ak-sub{max-width:60ch}}'
+    + '@media(max-width:760px){#akademi-demo .ak-work{grid-template-columns:1fr}#akademi-demo .ak-work>div{min-width:0}#akademi-demo .ak-frame{min-height:300px}}'
     + '@media(max-width:640px){'
       + '#akademi-demo .ak-wrap{width:min(1660px,92vw);padding:clamp(40px,9vw,52px) 14px}'
       + '#akademi-demo h2{font-size:clamp(24px,7.4vw,34px)}'
@@ -147,25 +150,16 @@
     var chHtml=''; for(var c=0;c<CH;c++) chHtml+='<b><i></i></b>';
 
     mount.innerHTML =
-      '<div class="ak-bgfx"></div><div class="ak-vin"></div>'
+      '<div class="ak-vin"></div>'
       + '<div class="ak-wrap">'
-      + '<div class="ak-head">'
-      + '<div class="ak-crest" aria-hidden="true"><b>IX</b><i>AKADEMİ</i></div>'
-      + '<div class="ak-head-tx">'
-      + '<div class="ak-live"><span class="d"></span>KAPALI PROGRAM · 9 DERS · SERTİFİKALI</div>'
-      + '<h2>Ajan <span class="g">Akademisi</span></h2>'
-      + '<p class="ak-sub">Tarih araştırmacılığının kapalı okulu: kaynak doğrulama, anlatı kurgusu, stüdyo ve yayın. İlk ders açık — gerisi eğitim sicilinle birlikte açılır.</p>'
-      + '</div>'
-      + '</div>'
+      + '<div class="ak-head-min"><p class="ak-eyebrow">◆ KAPALI PROGRAM · 9 DERS · SERTİFİKALI</p><h2>Ajan <span class="g">Akademisi</span></h2></div>'
       + '<div class="ak-work">'
-      + '<div>'
-      + '<div class="ak-prog"><div class="ak-ptop"><b>EĞİTİM SİCİLİ</b><span id="ak-score">0 / 9 DERS</span></div>'
+      + '<div class="ak-lessons"><div class="ak-prog"><div class="ak-ptop"><b>EĞİTİM SİCİLİ</b><span id="ak-score">0 / 9 DERS</span></div>'
       + lesHtml
-      + '<div class="ak-note" id="ak-note">İlk ders izlenmeye hazır.</div></div>'
-      + '<div class="ak-cta"><a class="ak-btn" href="/egitim">Akademi’ye Katıl · 9 Ders →</a><span class="tag">✓ Sertifikalı</span><span class="tag">✓ Kendi hızında</span></div>'
-      + '</div>'
-      + '<div>'
+      + '<div class="ak-note" id="ak-note">İlk ders izlenmeye hazır.</div></div></div>'
+      + '<div class="ak-video">'
       + '<div class="ak-frame">'
+      + '<img class="ak-thumb" src="/assets/books.jpg" alt="" loading="lazy">'
       + '<span class="cnr tl"></span><span class="cnr tr"></span><span class="cnr bl"></span><span class="cnr br"></span>'
       + '<div class="ak-ch" id="ak-ch">'+chHtml+'</div>'
       + '<div class="ak-meta"><span id="ak-rec">EĞİTİM KAYDI · DERS 01</span><span id="ak-tc">00:00 / 00:40</span></div>'
@@ -175,12 +169,16 @@
       + '<div class="ak-end" id="ak-end"><div class="in"><div class="ok">✓</div><h4 id="ak-eh"></h4><p id="ak-ep"></p><div class="row" id="ak-er"></div></div></div>'
       + '</div>'
       + '<div class="ak-under"><span id="ak-cur">DERS 01 · SÖYLENTİ İLE KAYDI AYIRMAK</span><span>◉ ÖN İZLEME</span></div>'
+      + '<a class="ak-join" href="/egitim">Akademi’ye Katıl · 9 Ders &rarr;</a>'
+      + '<div class="ak-tags"><span>✓ 9 ders</span><span>✓ Sertifikalı</span><span>✓ Kendi hızında</span></div>'
       + '</div>'
-      + '</div></div>';
+      + '</div>'
+      + '</div>';
 
     var $=function(id){return mount.querySelector('#'+id);};
     var chs=[].slice.call(mount.querySelectorAll('#ak-ch b')),
         cap=$('ak-cap'), play=$('ak-play'), end=$('ak-end'), tc=$('ak-tc'),
+        frame=mount.querySelector('.ak-frame'),
         note=$('ak-note'), score=$('ak-score'), lesBtns=[].slice.call(mount.querySelectorAll('.ak-les'));
 
     var done=0, playing=false, timers=[];
@@ -205,6 +203,7 @@
     function playLesson(i){
       if(playing)return; playing=true; clearT();
       end.classList.remove('on'); play.style.display='none';
+      if(frame)frame.classList.add('ak-playing');
       $('ak-rec').textContent='EĞİTİM KAYDI · DERS '+pad(i+1);
       $('ak-cur').textContent='DERS '+pad(i+1)+' · '+LESSONS[i].t.toUpperCase();
       lesBtns.forEach(function(b,k){ if(k===i)b.classList.add('act'); else b.classList.remove('act'); });
@@ -224,6 +223,7 @@
 
     function finish(i){
       playing=false; chs.forEach(function(b){b.classList.add('full');});
+      if(frame)frame.classList.remove('ak-playing');
       tc.textContent='00:40 / 00:40'; cap.textContent='';
       done=Math.max(done,i+1); score.textContent=done+' / 9 DERS';
       setLesson(i,'done');
@@ -253,8 +253,11 @@
   }
 
   function injectStyle(){ if(document.getElementById('ak-style'))return; var s=document.createElement('style'); s.id='ak-style'; s.textContent=CSS; document.head.appendChild(s); }
-  function ensure(){ var m=document.getElementById('akademi-demo-mount'); if(!m)return; if(m.__akDone&&m.querySelector('.ak-wrap'))return; injectStyle(); m.__akDone=true; render(m); }
-  window.__akInit=true; ensure(); document.addEventListener('DOMContentLoaded',ensure);
-  var t=0,iv=setInterval(function(){ensure();if(++t>40)clearInterval(iv);},500);
-  if(window.MutationObserver){var mt=null;new MutationObserver(function(){clearTimeout(mt);mt=setTimeout(ensure,150);}).observe(document.documentElement,{childList:true,subtree:true});}
+  function ensure(){ var m=document.getElementById('akademi-demo-mount'); if(!m)return; if(m.querySelector('.ak-wrap'))return; injectStyle(); render(m); }
+  // GÜVENLİ MONTAJ: dc'yi kıran senkron document-level MutationObserver YOK.
+  // Yalnız DOMContentLoaded + sınırlı aralık; dc kutuyu boşaltırsa (.ak-wrap yoksa)
+  // yeniden çiz, aksi halde no-op. Sonrasında seyrek bekçi.
+  window.__akInit=true;
+  function start(){ ensure(); var t=0,iv=setInterval(function(){ ensure(); if(++t>40){ clearInterval(iv); setInterval(ensure,4000); } },500); }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',start); } else { start(); }
 })();
