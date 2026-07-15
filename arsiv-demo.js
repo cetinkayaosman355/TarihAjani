@@ -77,7 +77,7 @@
     + '#arsiv-demo .ad-doss .dh{font-family:\'Special Elite\',monospace;font-size:11px;letter-spacing:.22em;color:#c19a52;margin-bottom:14px}'
     + '#arsiv-demo .ad-doss h3{font-family:\'Playfair Display\',serif;font-weight:800;font-size:clamp(24px,2.6vw,34px);line-height:1.06;color:#f4ecd8;margin:0 0 18px;max-width:22ch}'
     + '#arsiv-demo .ad-meta{display:flex;flex-wrap:wrap;gap:10px 30px;margin-bottom:18px}'
-    + '#arsiv-demo .ad-meta span{display:block;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.1em;color:#666d7c;margin-bottom:3px}'
+    + '#arsiv-demo .ad-meta span{display:block;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.1em;color:#868da0;margin-bottom:3px}'
     + '#arsiv-demo .ad-meta b{color:#cdd2dc;font-weight:600;font-size:13.5px}'
     + '#arsiv-demo .ad-redact{position:relative;color:#bcc3cf;font-size:15px;line-height:1.72;margin:0 0 18px;max-width:52ch;overflow:hidden}'
     + '#arsiv-demo .ad-redact::after{content:"";position:absolute;inset:-2px -4px;background:repeating-linear-gradient(90deg,#1a1206 0 46px,#241a0a 46px 50px);transform-origin:left;transform:scaleX(1);transition:transform .75s cubic-bezier(.7,0,.3,1)}'

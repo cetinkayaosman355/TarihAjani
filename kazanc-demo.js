@@ -36,7 +36,7 @@
     // istatistik sayaçları (başlığın sağında)
     + '#kazanc-demo .kz-stats{display:grid;grid-template-columns:repeat(4,auto);gap:clamp(16px,2.4vw,44px)}'
     + '#kazanc-demo .kz-st b{display:block;font-family:\'Playfair Display\',serif;font-size:clamp(26px,2.6vw,40px);font-weight:800;color:#e6c478;line-height:1;font-variant-numeric:tabular-nums}'
-    + '#kazanc-demo .kz-st span{display:block;margin-top:6px;font-family:\'Special Elite\',monospace;font-size:9.5px;letter-spacing:.16em;color:#77705c}'
+    + '#kazanc-demo .kz-st span{display:block;margin-top:6px;font-family:\'Special Elite\',monospace;font-size:9.5px;letter-spacing:.16em;color:#948c72}'
     // grafik paneli
     + '#kazanc-demo .kz-chart{position:relative;border:1px solid rgba(193,154,82,.28);background:linear-gradient(165deg,#0a0b13,#080910 60%,#0a0b12);padding:clamp(14px,1.6vw,24px) clamp(14px,1.6vw,24px) 8px;box-shadow:0 36px 80px -44px rgba(0,0,0,.9)}'
     + '#kazanc-demo .kz-chart .lbl{position:absolute;top:16px;left:20px;display:flex;align-items:center;gap:18px;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.2em;color:#9aa2b0}'
@@ -70,7 +70,7 @@
     + '#kazanc-demo .mtxt tspan.k{font-family:\'Special Elite\',monospace;font-size:9px;letter-spacing:.22em;fill:#a5824a}'
     + '#kazanc-demo .mtxt tspan.d{font-family:\'Playfair Display\',serif;font-style:italic;font-size:14.5px;fill:#d6dbe4;letter-spacing:.01em}'
     + '#kazanc-demo .grid line{stroke:rgba(230,220,196,.06);stroke-width:1}'
-    + '#kazanc-demo .gx{font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.12em;fill:#5d6370}'
+    + '#kazanc-demo .gx{font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.12em;fill:#7e8598}'
     // gelir kanalları + CTA
     + '#kazanc-demo .kz-low{display:grid;grid-template-columns:repeat(3,1fr) auto;gap:12px;align-items:stretch;margin-top:14px}'
     + '#kazanc-demo .kz-gel{border:1px solid rgba(193,154,82,.2);background:#070a12;padding:13px 15px;display:flex;gap:11px;align-items:flex-start}'
@@ -82,7 +82,7 @@
     + '#kazanc-demo .kz-btn:hover{transform:translateY(-2px);box-shadow:0 14px 44px -14px rgba(230,196,120,.55)}'
     + '#kazanc-demo .kz-btn.ghost{background:transparent;border:1px solid rgba(193,154,82,.5);color:#e6c478}'
     + '#kazanc-demo .kz-btn.ghost:hover{background:rgba(193,154,82,.12);box-shadow:none}'
-    + '#kazanc-demo .kz-dis{margin:12px 2px 0;color:#5d6370;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.06em}'
+    + '#kazanc-demo .kz-dis{margin:12px 2px 0;color:#7e8598;font-family:\'Special Elite\',monospace;font-size:10px;letter-spacing:.06em}'
     + '@media(max-width:1100px){#kazanc-demo .kz-stats{grid-template-columns:repeat(2,auto)}#kazanc-demo .kz-low{grid-template-columns:1fr 1fr}#kazanc-demo .kz-cta{grid-column:1/-1;flex-direction:row}}'
     + '@media(max-width:640px){'
       + '#kazanc-demo .kz-wrap{width:min(1460px,92vw);padding:clamp(40px,9vw,52px) 14px}'
