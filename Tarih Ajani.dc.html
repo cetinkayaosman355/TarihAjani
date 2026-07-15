@@ -166,6 +166,25 @@
       .steps-grid { grid-template-columns: 1fr !important; }
     }
 
+    /* ── MOBİL SADE AKIŞ (≤840px) · masaüstü/web ETKİLENMEZ ──
+       Yalnız çekirdek bölümler: Hero · Akademi · Arşiv · Studio · Seviyeler ·
+       Ürünler(2) · Neler Yaptık · Ajan Kadrosu. Gerisi mobilde gizli. */
+    @media (max-width: 840px) {
+      section[data-screen-label="Üç Yol"],
+      #nasil-calisir,
+      #kazanc-demo,
+      #zaman-hatlari,
+      section[data-screen-label="Yorumlar"],
+      #sss,
+      #son-dakika { display: none !important; }
+      /* Ürünler: mobilde sadece 2 ürün göster */
+      #urunler .vitrin-grid > *:nth-child(n+3) { display: none !important; }
+      /* Hero'daki yorucu ikincil not gizlensin (sade kalsın) */
+      [style*="ta-rise .9s .65s"] { display: none !important; }
+      /* Mobilde yorucu ikincil metinler gizlensin — çekirdek mesaj kalır */
+      .m-hide { display: none !important; }
+    }
+
     /* ── BUTON & BAŞLIK DÜZELTMELERİ ── */
     a[style*="linear-gradient(110deg"], a[style*="border: 1px solid rgba(129,135,151"], a[style*="border: 1px solid rgba(193,154,82"] { display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap; }
     @media (max-width: 820px) {
@@ -616,7 +635,7 @@
       <div style="display: grid; gap: 18px; align-content: center;">
         <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .28em;">GÖREV ÇAĞRISI</p>
         <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(26px, 3vw, 38px); font-weight: 800; line-height: 1.05;">Ajan kadrosuna<br><span style="color: #e6c478;">katıl</span></h2>
-        <p style="margin: 0; color: #cbd0da; max-width: 44ch; line-height: 1.72; font-size: 15.5px;">İlk dosyanı bu gece aç; senaryo, seslendirme ve yayın paketi dakikalar içinde masanda. Soruların, projelerin ve iş birlikleri için de aynı yerden yaz — aynı gün dönüş yapılır.</p>
+        <p style="margin: 0; color: #cbd0da; max-width: 44ch; line-height: 1.72; font-size: 15.5px;">İlk dosyanı bu gece aç; senaryo, seslendirme ve yayın paketi dakikalar içinde masanda.<span class="m-hide"> Soruların, projelerin ve iş birlikleri için de aynı yerden yaz — aynı gün dönüş yapılır.</span></p>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
           <a href="/uyelik" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .12em; padding: 16px 28px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.4); transform: translateY(-2px);">AJAN OL →</a>
           <a href="/studio" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; border: 1px solid rgba(193,154,82,.5); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .12em; padding: 16px 28px; background: rgba(3,5,11,.5);" style-hover="background: rgba(193,154,82,.14);">STUDIO'YA GİR</a>
