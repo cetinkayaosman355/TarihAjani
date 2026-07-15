@@ -54,6 +54,7 @@
 <script src="/kazanc-demo.js" defer></script>
 <script src="/gecis.js" defer></script>
 <script src="/bant.js" defer></script>
+<script src="/cerez.js" defer></script>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#06070d">
 <meta name="mobile-web-app-capable" content="yes">
@@ -108,9 +109,13 @@
     @keyframes ta-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes ta-pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
     @keyframes ta-ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-    #sd-ray:hover, .aj-ray:hover { animation-play-state: paused !important; }
-    @media (prefers-reduced-motion: reduce) { #sd-ray, .aj-ray { animation: none !important; } }
-    #ya-ray::-webkit-scrollbar { height: 6px; } #ya-ray::-webkit-scrollbar-thumb { background: rgba(193,154,82,.3); }
+    #son-dakika:hover #sd-ray { animation-play-state: paused; }
+    @media (prefers-reduced-motion: reduce) { #sd-ray { animation: none !important; } }
+    #ya-ray { scrollbar-color: rgba(193,154,82,.55) rgba(193,154,82,.08); }
+    #ya-ray::-webkit-scrollbar { height: 7px; }
+    #ya-ray::-webkit-scrollbar-track { background: rgba(193,154,82,.07); }
+    #ya-ray::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #a77d35, #d8b26a); border-radius: 4px; }
+    #ya-ray::-webkit-scrollbar-thumb:hover { background: linear-gradient(90deg, #b98d3f, #e6c478); }
     @keyframes ta-caret { 0%, 45% { opacity: 1; } 50%, 100% { opacity: 0; } }
     @keyframes ta-sweep { 0%, 30% { background-position: 100% center; } 75%, 100% { background-position: -100% center; } }
     @keyframes ta-stamp { from { opacity: 0; transform: rotate(-4deg) scale(2.2); } to { opacity: 1; transform: rotate(-4deg) scale(1); } }
@@ -132,8 +137,10 @@
       .nasil-grid { grid-template-columns: 1fr !important; }
       .nasil-img { min-height: 220px !important; }
       .steps-line { display: none !important; }
-      /* yol haritası mobilde dikey rota: adımlar arasında kesikli bağlantı */
-      #nasil-calisir .yol-adim::before { content: ''; display: block; width: 0; height: 22px; border-left: 2px dashed rgba(193,154,82,.38); margin: 0 auto 2px; }
+      /* yol haritası mobilde dikey rota: rotayı gizle, adımları alt alta bağla */
+      #nasil-calisir .yol-track { grid-template-columns: 1fr !important; gap: 0 !important; }
+      #nasil-calisir .yol-line { display: none !important; }
+      #nasil-calisir .yol-adim + .yol-adim::before { content: ''; display: block; width: 2px; height: 24px; margin: 2px auto 12px; background: linear-gradient(180deg, rgba(193,154,82,.25), #c19a52); }
       header { height: auto !important; min-height: 58px; flex-wrap: wrap !important; padding: 10px 14px !important; row-gap: 2px; }
       header nav { flex-wrap: wrap !important; gap: 2px !important; justify-content: flex-end; }
       header nav a { padding: 7px 8px !important; font-size: 10.5px !important; }
@@ -145,8 +152,6 @@
     }
     @media (max-width: 600px) {
       [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
-      .aj-roz { font-size: 8px !important; padding: 8px 8px !important; letter-spacing: .06em !important; }
-      .aj-git { font-size: 8.5px !important; padding: 8px 9px !important; letter-spacing: .06em !important; }
       [style*="padding: 120px"] { padding-top: 130px !important; }
       /* telefonda kartlar 2 dar sütuna sıkışmasın — tablet 2 sütun kalır */
       .steps-grid { grid-template-columns: 1fr !important; }
@@ -221,25 +226,27 @@
     </nav>
   </header>
 
-  <!-- SON DAKİKA BANDI · tarihten dramatik manşetler (durdur/kapat: bant.js) -->
-  <div id="son-dakika" role="complementary" aria-label="Son dakika bandı" style="position: fixed; top: 84px; left: 0; right: 0; z-index: 29; height: 32px; display: flex; align-items: stretch; overflow: hidden; background: rgba(3,5,11,.92); border-bottom: 1px solid rgba(193,154,82,.25); backdrop-filter: blur(6px);">
-    <a href="/haber" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; background: linear-gradient(115deg, #7c1f16, #a62f22); color: #f4e4c1; font-family: 'Special Elite', monospace; font-size: 9.5px; font-weight: 700; letter-spacing: .16em; text-decoration: none; white-space: nowrap;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #f4e4c1; animation: ta-pulse 1.4s ease-in-out infinite;"></span>SON DAKİKA</a>
+  <!-- SON DAKİKA BANDI · gazete masthead şeridi (parşömen zemin, koyu mürekkep).
+       position:absolute → sayfayla birlikte akıp gider (menü gibi yapışıp takip etmez).
+       durdur/kapat + header yüksekliğine oturma: bant.js -->
+  <div id="son-dakika" role="complementary" aria-label="Son dakika bandı" style="position: absolute; top: 84px; left: 0; right: 0; z-index: 20; height: 34px; display: flex; align-items: stretch; overflow: hidden; background: linear-gradient(180deg, #f4e7cc, #e7d5ac); box-shadow: inset 0 1px 0 rgba(255,250,238,.6), 0 2px 0 rgba(124,31,22,.28), 0 10px 20px -10px rgba(0,0,0,.55); font-family: 'Special Elite', monospace;">
+    <a href="/haber" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 0 13px; background: linear-gradient(115deg, #7c1f16, #a62f22); color: #f7ecd4; font-size: 10px; font-weight: 700; letter-spacing: .18em; text-decoration: none; white-space: nowrap; box-shadow: 2px 0 6px -2px rgba(124,31,22,.5);"><span style="width: 6px; height: 6px; border-radius: 50%; background: #f7ecd4; box-shadow: 0 0 5px rgba(247,236,212,.8); animation: ta-pulse 1.4s ease-in-out infinite;"></span>SON DAKİKA</a>
     <div style="flex: 1; overflow: hidden; position: relative;">
       <div id="sd-ray" style="display: inline-flex; align-items: center; height: 100%; white-space: nowrap; will-change: transform; animation: ta-ticker 75s linear infinite;">
-        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 26px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Fatih'in gemileri bir gecede karadan yürüttüğü bildirildi — Haliç kıyısında büyük panik</span>
-        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 26px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Nusret'in gece döktüğü 26 mayın boğazı kilitledi — düşman zırhlıları geri çekiliyor</span>
-        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 26px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Beytülhikme'den yükselen dumanlar Bağdat semalarını kapladı — Dicle'nin mürekkepten karardığı söyleniyor</span>
-        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 26px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Surlarda gedik açıldı: kuşatmanın 53'üncü gününde şehrin düştüğü doğrulandı</span>
-        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 26px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Vezüv uyandı: Pompeii üzerine gece gibi bir kül bulutu çöktü, kıyıdan kaçış sürüyor</span>
-        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 26px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Fatih'in gemileri bir gecede karadan yürüttüğü bildirildi — Haliç kıyısında büyük panik</span>
-        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 26px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Nusret'in gece döktüğü 26 mayın boğazı kilitledi — düşman zırhlıları geri çekiliyor</span>
-        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 26px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Beytülhikme'den yükselen dumanlar Bağdat semalarını kapladı — Dicle'nin mürekkepten karardığı söyleniyor</span>
-        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 26px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Surlarda gedik açıldı: kuşatmanın 53'üncü gününde şehrin düştüğü doğrulandı</span>
-        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 26px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Vezüv uyandı: Pompeii üzerine gece gibi bir kül bulutu çöktü, kıyıdan kaçış sürüyor</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #33230f; font-size: 11.5px; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Fatih'in gemileri bir gecede karadan yürütüldü — Haliç kıyısında büyük panik</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #33230f; font-size: 11.5px; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Nusret'in gece döktüğü 26 mayın boğazı kilitledi — düşman zırhlıları geri çekiliyor</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #33230f; font-size: 11.5px; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Beytülhikme'den yükselen dumanlar Bağdat semalarını kapladı — Dicle mürekkepten karardı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #33230f; font-size: 11.5px; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Surlarda gedik açıldı: kuşatmanın 53'üncü gününde şehrin düştüğü doğrulandı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #33230f; font-size: 11.5px; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Vezüv uyandı: Pompeii üzerine gece gibi bir kül bulutu çöktü, kıyıdan kaçış sürüyor</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #33230f; font-size: 11.5px; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Fatih'in gemileri bir gecede karadan yürütüldü — Haliç kıyısında büyük panik</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #33230f; font-size: 11.5px; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Nusret'in gece döktüğü 26 mayın boğazı kilitledi — düşman zırhlıları geri çekiliyor</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #33230f; font-size: 11.5px; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Beytülhikme'den yükselen dumanlar Bağdat semalarını kapladı — Dicle mürekkepten karardı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #33230f; font-size: 11.5px; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Surlarda gedik açıldı: kuşatmanın 53'üncü gününde şehrin düştüğü doğrulandı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 24px; color: #33230f; font-size: 11.5px; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Vezüv uyandı: Pompeii üzerine gece gibi bir kül bulutu çöktü, kıyıdan kaçış sürüyor</span>
       </div>
     </div>
-    <button id="sd-durdur" type="button" aria-label="Bandı durdur veya sürdür" title="Durdur / sürdür" style="flex-shrink: 0; width: 30px; display: grid; place-items: center; background: none; border: 0; border-left: 1px solid rgba(193,154,82,.2); color: #c19a52; font-size: 8.5px; letter-spacing: .08em; padding: 0;">❚❚</button>
-    <button id="sd-kapat" type="button" aria-label="Bandı kapat" title="Kapat" style="flex-shrink: 0; width: 30px; display: grid; place-items: center; background: none; border: 0; border-left: 1px solid rgba(193,154,82,.2); color: #c19a52; font-size: 14px; padding: 0;">×</button>
+    <button id="sd-durdur" type="button" aria-label="Bandı durdur veya sürdür" title="Durdur / sürdür" style="flex-shrink: 0; width: 30px; display: grid; place-items: center; background: rgba(124,31,22,.06); border: 0; border-left: 1px solid rgba(124,31,22,.22); color: #7c1f16; font-size: 8.5px; letter-spacing: .08em; padding: 0;">❚❚</button>
+    <button id="sd-kapat" type="button" aria-label="Bandı kapat" title="Kapat" style="flex-shrink: 0; width: 30px; display: grid; place-items: center; background: rgba(124,31,22,.06); border: 0; border-left: 1px solid rgba(124,31,22,.22); color: #7c1f16; font-size: 15px; padding: 0;">×</button>
   </div>
 
   <!-- HERO -->
@@ -281,7 +288,7 @@
   </section>
 
   <!-- BİR AJAN OLURSAN · kazanım şeridi -->
-  <section data-screen-label="Kazanımlar" style="position: relative; background: #08090d; border-bottom: 1px solid rgba(193,154,82,.15); padding: clamp(32px, 4vw, 46px) 0;">
+  <section data-screen-label="Kazanımlar" style="position: relative; background: linear-gradient(180deg, rgba(10,12,20,.55), rgba(8,9,13,.15)); padding: clamp(32px, 4vw, 46px) 0;">
     <div style="width: min(1340px, 92vw); margin: 0 auto; padding: 0 clamp(20px, 4vw, 40px);">
       <div style="display: flex; align-items: center; gap: 16px; justify-content: center; margin-bottom: 30px;">
         <span style="flex: 1; max-width: 130px; height: 1px; background: linear-gradient(to left, rgba(193,154,82,.5), transparent);"></span>
@@ -324,31 +331,32 @@
   <!-- AJAN AKADEMİSİ CANLI DEMO -->
   <section id="akademi-demo" data-screen-label="Ajan Akademisi"><div id="akademi-demo-mount"></div></section>
 
-  <!-- NASIL ÇALIŞIR · ince operasyon şeridi -->
-  <section id="nasil-calisir" data-screen-label="Nasıl Çalışır" style="width: 100%; background: #06070d; border-top: 1px solid rgba(193,154,82,.15); border-bottom: 1px solid rgba(193,154,82,.15);">
-    <div style="width: min(1180px, 92vw); margin: 0 auto; padding: clamp(30px, 3.6vw, 48px) clamp(20px, 4vw, 40px); text-align: center;">
-      <p style="margin: 0 0 26px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .3em;">OPERASYON AKIŞI · NASIL ÇALIŞIR</p>
-      <div style="position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;" class="steps-grid">
-        <div style="position: absolute; top: 23px; left: 12.5%; right: 12.5%; height: 1px; background: rgba(193,154,82,.4); z-index: 1;" class="steps-line"></div>
-        <div style="position: relative; display: grid; gap: 11px; justify-items: center; text-align: center;">
-          <span style="position: relative; z-index: 2; display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(193,154,82,.55); background: #06070d; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #e6c478;">01</span>
-          <p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #f2ecd9;">Dosyanı seç</p>
-          <p style="margin: 0; color: #9aa0ad; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .03em; line-height: 1.55; max-width: 22ch;">Arşivden hikâyeni ya da sistemini seç.</p>
+  <!-- NASIL ÇALIŞIR · operasyon rotası (dolu altın duraklar, tek bakışta akış) -->
+  <section id="nasil-calisir" data-screen-label="Nasıl Çalışır" style="width: 100%;">
+    <div style="width: min(1180px, 92vw); margin: 0 auto; padding: clamp(38px, 4.4vw, 58px) clamp(20px, 4vw, 40px); text-align: center;">
+      <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .3em;">OPERASYON ROTASI</p>
+      <h2 style="margin: 0 0 32px; font-family: 'Playfair Display', serif; font-size: clamp(24px, 3vw, 36px); font-weight: 800; color: #f4ecd8;">Nasıl <span style="color: #e6c478;">çalışır?</span></h2>
+      <div class="yol-track" style="position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;">
+        <div class="yol-line" style="position: absolute; top: 26px; left: 12.5%; right: 12.5%; height: 2px; background: linear-gradient(90deg, rgba(193,154,82,.2), #c19a52 18%, #e6c478 50%, #c19a52 82%, rgba(193,154,82,.2)); z-index: 0;"></div>
+        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 12px; justify-items: center; text-align: center;">
+          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(150deg, #c19a52, #e6c478); color: #1a1206; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 800; box-shadow: 0 0 0 5px #06070d, 0 8px 22px -8px rgba(230,196,120,.7);">1</span>
+          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 16.5px; font-weight: 700; color: #f2ecd9;">Dosyanı seç</p>
+          <p class="yol-d" style="margin: 0; color: #9aa0ad; font-size: 12.5px; line-height: 1.55; max-width: 24ch;">Arşivden bir vaka dosyası aç ya da kendi konunu yaz.</p>
         </div>
-        <div style="position: relative; display: grid; gap: 11px; justify-items: center; text-align: center;">
-          <span style="position: relative; z-index: 2; display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(193,154,82,.55); background: #06070d; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #e6c478;">02</span>
-          <p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #f2ecd9;">Materyalleri incele</p>
-          <p style="margin: 0; color: #9aa0ad; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .03em; line-height: 1.55; max-width: 22ch;">Senaryo, ses ve prompt dosyalarını aç.</p>
+        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 12px; justify-items: center; text-align: center;">
+          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(150deg, #c19a52, #e6c478); color: #1a1206; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 800; box-shadow: 0 0 0 5px #06070d, 0 8px 22px -8px rgba(230,196,120,.7);">2</span>
+          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 16.5px; font-weight: 700; color: #f2ecd9;">Materyali incele</p>
+          <p class="yol-d" style="margin: 0; color: #9aa0ad; font-size: 12.5px; line-height: 1.55; max-width: 24ch;">Senaryo, seslendirme ve sahne promptlarını gör.</p>
         </div>
-        <div style="position: relative; display: grid; gap: 11px; justify-items: center; text-align: center;">
-          <span style="position: relative; z-index: 2; display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(193,154,82,.55); background: #06070d; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #e6c478;">03</span>
-          <p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #f2ecd9;">Üretime başla</p>
-          <p style="margin: 0; color: #9aa0ad; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .03em; line-height: 1.55; max-width: 22ch;">Görseli, videoyu ve seslendirmeyi oluştur.</p>
+        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 12px; justify-items: center; text-align: center;">
+          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(150deg, #c19a52, #e6c478); color: #1a1206; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 800; box-shadow: 0 0 0 5px #06070d, 0 8px 22px -8px rgba(230,196,120,.7);">3</span>
+          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 16.5px; font-weight: 700; color: #f2ecd9;">Studio'da üret</p>
+          <p class="yol-d" style="margin: 0; color: #9aa0ad; font-size: 12.5px; line-height: 1.55; max-width: 24ch;">Görsel, ses ve videoyu tek dosyada oluştur.</p>
         </div>
-        <div style="position: relative; display: grid; gap: 11px; justify-items: center; text-align: center;">
-          <span style="position: relative; z-index: 2; display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(193,154,82,.55); background: #06070d; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #e6c478;">04</span>
-          <p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #f2ecd9;">Hikâyeni yayınla</p>
-          <p style="margin: 0; color: #9aa0ad; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .03em; line-height: 1.55; max-width: 22ch;">Kanalında paylaş ve arşivini büyüt.</p>
+        <div class="yol-adim" style="position: relative; z-index: 1; display: grid; gap: 12px; justify-items: center; text-align: center;">
+          <span class="yol-dot" style="display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(150deg, #6f9b4a, #a7c67e); color: #0f1a09; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 800; box-shadow: 0 0 0 5px #06070d, 0 8px 22px -8px rgba(111,155,74,.7);">4</span>
+          <p class="yol-k" style="margin: 0; font-family: 'Playfair Display', serif; font-size: 16.5px; font-weight: 700; color: #f2ecd9;">Kanalında yayınla</p>
+          <p class="yol-d" style="margin: 0; color: #9aa0ad; font-size: 12.5px; line-height: 1.55; max-width: 24ch;">Kapak ve başlıkla paylaş, arşivini büyüt.</p>
         </div>
       </div>
     </div>
@@ -359,24 +367,6 @@
 
   <!-- STUDIO CANLI DEMO -->
   <section id="studio-demo" data-screen-label="Canlı Demo"><div id="studio-demo-mount"></div></section>
-
-  <!-- AJANS BÜLTENİ · kısa geçiş bandı (studio → kazanç arası) -->
-  <section data-screen-label="Ajans Bülteni" aria-label="Tarih Ajanı Haber bülteni" style="width: min(1340px, 92vw); margin: 0 auto; padding: 22px 0;">
-    <div style="display: flex; align-items: stretch; border-top: 3px double rgba(193,154,82,.4); border-bottom: 3px double rgba(193,154,82,.4); background: rgba(4,6,12,.65); overflow: hidden;">
-      <span class="aj-roz" style="flex-shrink: 0; display: inline-flex; align-items: center; padding: 10px 14px; background: linear-gradient(115deg, #7c1f16, #a62f22); color: #f4e4c1; font-family: 'Special Elite', monospace; font-size: 10px; font-weight: 700; letter-spacing: .14em; white-space: nowrap;">TARİH AJANI · HABER</span>
-      <div style="flex: 1; overflow: hidden;">
-        <div class="aj-ray" style="display: inline-flex; align-items: center; height: 100%; white-space: nowrap; will-change: transform; animation: ta-ticker 55s linear infinite;">
-          <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 28px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Ajansın telgraf servisi açıldı — tarihin manşetleri artık günlük bültende</span>
-          <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 28px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Vezüv'den Çanakkale'ye: her dosya bir manşet, her manşet bir vaka</span>
-          <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 28px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Arşivden sızan belgeler dramatik haber diliyle yeniden yazılıyor</span>
-          <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 28px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Ajansın telgraf servisi açıldı — tarihin manşetleri artık günlük bültende</span>
-          <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 28px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Vezüv'den Çanakkale'ye: her dosya bir manşet, her manşet bir vaka</span>
-          <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 28px; color: #e6d8b8; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .05em;"><span style="color: #c19a52;">✦</span>Arşivden sızan belgeler dramatik haber diliyle yeniden yazılıyor</span>
-        </div>
-      </div>
-      <a href="/haber" class="aj-git" style="flex-shrink: 0; display: inline-flex; align-items: center; padding: 10px 16px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .12em; text-decoration: none; border-left: 1px solid rgba(193,154,82,.25); white-space: nowrap;" style-hover="background: rgba(193,154,82,.1); color: #f2ecd9;">BÜLTENE GİT →</a>
-    </div>
-  </section>
 
   <!-- SENİ NE BEKLİYOR · KAZANÇ PROJEKSİYONU -->
   <section id="kazanc-demo" data-screen-label="Seni Ne Bekliyor"><div id="kazanc-demo-mount"></div></section>
@@ -573,7 +563,7 @@
   </section>
 
   <!-- SSS · Sorgu Tutanağı -->
-  <section id="sss" data-screen-label="SSS" style="position: relative; overflow: hidden; background: #07090f; border-top: 1px solid rgba(193,154,82,.12);">
+  <section id="sss" data-screen-label="SSS" style="position: relative; overflow: hidden; background: linear-gradient(180deg, rgba(7,9,15,.2), #07090f 22%);">
     <img src="assets/real-wall.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .12; filter: saturate(.6) brightness(.7);">
     <div style="position: absolute; inset: 0; background: radial-gradient(circle 760px at 50% 12%, rgba(7,9,15,.5), #07090f 84%);"></div>
     <div style="position: relative; z-index: 2; width: min(920px, 92vw); margin: 0 auto; padding: clamp(56px, 6vw, 92px) clamp(20px, 4vw, 40px);">

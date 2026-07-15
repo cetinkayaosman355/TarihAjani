@@ -25,7 +25,12 @@
       '<p style="margin:0 0 6px;font-family:\'Special Elite\',monospace;font-size:10.5px;letter-spacing:.16em;color:#676d7c;">YASAL</p>' +
       link('/gizlilik', 'Gizlilik Politikası') +
       link('/mesafeli-satis', 'Mesafeli Satış Sözleşmesi') +
-      link('/iade', 'İade & İptal Koşulları');
+      link('/iade', 'İade & İptal Koşulları') +
+      // <button> (not <a>): page-transition.js only kaçırır <a>; panel açılır.
+      // cerez.js yoksa /gizlilik'e düşer.
+      '<button type="button" class="ta-cerez-link" onclick="if(window.taCerez){window.taCerez.open()}else{location.href=\'/gizlilik\'}" ' +
+        'style="display:block;width:100%;text-align:left;background:none;border:0;padding:0;cursor:pointer;' +
+        'color:#a4a9b5;text-decoration:none;margin:3px 0;font:inherit;font-size:12.5px;">Çerez Tercihleri</button>';
 
     var col3 = document.createElement('div');
     col3.innerHTML =
