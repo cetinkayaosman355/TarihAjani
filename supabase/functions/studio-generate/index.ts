@@ -162,42 +162,69 @@ async function generateImage(prompt: string, size: string): Promise<string> {
   if (!key || !prompt.trim()) return "";
   // gpt-image oranları: kare / yatay (3:2) / dikey (2:3)
   const gSize = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
-  try {
-    const r = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "gpt-image-1.5",
-        prompt: prompt.slice(0, 30000),
-        n: 1,
-        size: gSize,
-        quality: "medium",            // dengeli kalite/maliyet
-        output_format: "jpeg",        // daha küçük data URI (png ~çok büyük)
-        output_compression: 82,
-        moderation: "low",            // tarihî sahne (savaş/ölüm) yanlış engelini azalt
-      }),
-    });
-    if (r.ok) {
-      const d = await r.json();
-      const b64 = d.data?.[0]?.b64_json;
-      if (b64) return "data:image/jpeg;base64," + b64;
-      const u = d.data?.[0]?.url;
-      if (u) return u;
+
+  // gpt-image tek denemesi. Başarı → data URI; başarısızsa hatayı LOG'la (Supabase
+  // function loglarında görünür, teşhis için) ve boş dön ki sıradaki yol denensin.
+  async function tryGptImage(model: string): Promise<string> {
+    try {
+      const r = await fetchT("https://api.openai.com/v1/images/generations", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          prompt: prompt.slice(0, 30000),
+          n: 1,
+          size: gSize,
+          quality: "medium",            // dengeli kalite/maliyet
+          output_format: "jpeg",        // daha küçük data URI (png ~çok büyük)
+          output_compression: 82,
+          moderation: "low",            // tarihî sahne (savaş/ölüm) yanlış engelini azalt
+        }),
+      }, 120_000);
+      if (r.ok) {
+        const d = await r.json();
+        const b64 = d.data?.[0]?.b64_json;
+        if (b64) return "data:image/jpeg;base64," + b64;
+        const u = d.data?.[0]?.url;
+        if (u) return u;
+        return "";
+      }
+      // 429/5xx → geçici; çağıran taraf tekrar dener. 4xx (model yok/moderasyon) → kalıcı.
+      const body = await r.text().catch(() => "");
+      console.error(`generateImage ${model} HTTP ${r.status}: ${body.slice(0, 300)}`);
+      return r.status === 429 || r.status >= 500 ? "RETRY" : "";
+    } catch (e) {
+      console.error(`generateImage ${model} exception: ${String(e).slice(0, 200)}`);
+      return "RETRY";   // ağ/zaman aşımı → tekrar denenebilir
     }
-  } catch (_e) { /* dall-e-3'e düş */ }
-  // Yedek: dall-e-3 (url döner, ~1 saat geçerli)
+  }
+
+  // Model zinciri: önce en kaliteli gpt-image-1.5, hesapta yoksa gpt-image-1'e düş.
+  // Geçici hatada (RETRY) bir kez daha dene — anlık 429/500'ler kullanıcıya hata
+  // olarak yansımasın (kalite ve güvenilirlik önce).
+  for (const model of ["gpt-image-1.5", "gpt-image-1"]) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const out = await tryGptImage(model);
+      if (out && out !== "RETRY") return out;
+      if (out !== "RETRY") break;   // kalıcı hata (model yok/moderasyon) → sıradaki modele geç
+    }
+  }
+
+  // Son yedek: dall-e-3 (url döner, ~1 saat geçerli)
   const dSize = size === "9:16" ? "1024x1792" : size === "16:9" ? "1792x1024" : "1024x1024";
   try {
-    const r = await fetch("https://api.openai.com/v1/images/generations", {
+    const r = await fetchT("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({ model: "dall-e-3", prompt: prompt.slice(0, 3800), n: 1, size: dSize }),
-    });
+    }, 90_000);
     if (r.ok) {
       const d = await r.json();
       return d.data?.[0]?.url ?? "";
     }
-  } catch (_e) { /* boş dön */ }
+    const body = await r.text().catch(() => "");
+    console.error(`generateImage dall-e-3 HTTP ${r.status}: ${body.slice(0, 300)}`);
+  } catch (e) { console.error(`generateImage dall-e-3 exception: ${String(e).slice(0, 200)}`); }
   return "";
 }
 

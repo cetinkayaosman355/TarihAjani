@@ -2147,6 +2147,27 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     return alloc;
   }
 
+  // Sınırlı eşzamanlılıkla iş havuzu — bağımsız çağrıları paralel çalıştırır
+  // (kaliteden ödün YOK; yalnız bekleme süresini kısaltır). Her işçi kendi
+  // hatasını yutar; sonuçlar giriş sırasında toplanır. onDone her tamamlanışta
+  // ilerleme yüzdesi için çağrılır.
+  async runPool(items, worker, concurrency, onDone) {
+    const results = new Array(items.length);
+    let next = 0, finished = 0;
+    const lanes = Math.max(1, Math.min(concurrency || 3, items.length));
+    const run = async () => {
+      while (next < items.length) {
+        const i = next++;
+        try { results[i] = await worker(items[i], i); }
+        catch (e) { results[i] = undefined; }
+        finished++;
+        if (onDone) { try { onDone(finished, items.length); } catch (_e) {} }
+      }
+    };
+    await Promise.all(Array.from({ length: lanes }, run));
+    return results;
+  }
+
   // TEK bölüm için k sahnelik görsel+video promptu — 2 deneme, sonra
   // deterministik geri dönüş (asla boş dönmez). Çağrılar küçük olduğu için
   // truncation/zaman aşımı olmaz; her biri ücretsiz ('scenes' aksiyonu).
@@ -2212,20 +2233,29 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     if (!secs.length) secs = [{ bolum: result.baslik || this.state.idea || 'Bölüm', metin: result.logline || '' }];
     const alloc = this.allocScenes(secs, N);
     const CHUNK = 8;   // her çağrı en çok 8 sahne → küçük, hızlı, truncation'sız
-    const gorsel = [], video = [];
+    // Tüm sahne gruplarını (bölüm+ofset) düz bir iş listesine aç; her iş bağımsız
+    // olduğundan paralel çalıştırılabilir. Sıralama korunur: sonuçlar bölüm ve
+    // ofset sırasına göre birleştirilir → sahneler doğru sırada kalır.
+    const jobs = [];
     for (let i = 0; i < secs.length; i++) {
       let k = alloc[i] || 0;
       if (k <= 0) continue;
-      let done = 0;
-      while (done < k) {
-        const chunk = Math.min(CHUNK, k - done);
-        this.setState({ genMsg: 'SAHNE PROMPTLARI · BÖLÜM ' + (i + 1) + '/' + secs.length + '…', genPct: Math.min(98, 88 + Math.round((i / Math.max(1, secs.length)) * 9)) });
-        const part = await this.sceneBatch(secs[i], chunk, i + 1, secs.length, cfg, done);
-        part.gorsel.forEach(g => gorsel.push(g));
-        part.video.forEach(v => video.push(v));
-        done += chunk;
+      for (let done = 0; done < k; done += CHUNK) {
+        jobs.push({ i, done, chunk: Math.min(CHUNK, k - done) });
       }
     }
+    const total = jobs.length || 1;
+    const parts = await this.runPool(jobs, (j) =>
+      this.sceneBatch(secs[j.i], j.chunk, j.i + 1, secs.length, cfg, j.done),
+      3,
+      (fin) => this.setState({ genMsg: 'SAHNE PROMPTLARI · ' + fin + '/' + total + '…', genPct: Math.min(98, 88 + Math.round((fin / total) * 10)) })
+    );
+    const gorsel = [], video = [];
+    parts.forEach((part) => {
+      if (!part) return;
+      (part.gorsel || []).forEach(g => gorsel.push(g));
+      (part.video || []).forEach(v => video.push(v));
+    });
     if (gorsel.length) result.gorsel_promptlar = gorsel;
     if (video.length) result.video_promptlar = video;
     return this.qualityFix(result);
@@ -2272,13 +2302,16 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const sec = this.durationSec();
     const n = Math.max(1, secs.length);
     const words = Math.round(sec * 2.0 / n) + '-' + Math.round(sec * 2.6 / n);
-    for (let i = 0; i < secs.length; i++) {
-      this.setState({ genMsg: 'BÖLÜM ' + (i + 1) + ' / ' + secs.length + ' KALEME ALINIYOR…', genPct: 45 + Math.round((i / Math.max(1, secs.length)) * 38) });
-      try {
-        const reply = await this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secs[i].bolum || '') + '" bölümünün TAM seslendirme metnini yaz: KESİN ' + words + ' kelime (bu aralığı AŞMA — süre kilidi), akıcı Türkçe, şu tonla: ' + tonStr + '. Somut isim/tarih/yer/sayı geçir; klişe ve dolgu YOK. Önceki bölümden doğal biçimde devral, bir sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver. YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + secs.map(x => x.bolum).join(' | ') + '\nBu bölümün özeti: ' + (secs[i].metin || ''), 2500);
-        if (reply && reply.trim()) secs[i].metin = reply.trim();
-      } catch (e) { /* özetle devam et */ }
-    }
+    const order = secs.map(x => x.bolum).join(' | ');
+    // Her bölüm metni bağımsızdır (taslak özetinden yazılır, birbirinin ürettiği
+    // metne değil) → paralel yazılabilir. Kalite aynı; bekleme süresi kısalır.
+    const total = secs.length || 1;
+    const replies = await this.runPool(secs, (secItem) =>
+      this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secItem.bolum || '') + '" bölümünün TAM seslendirme metnini yaz: KESİN ' + words + ' kelime (bu aralığı AŞMA — süre kilidi), akıcı Türkçe, şu tonla: ' + tonStr + '. Somut isim/tarih/yer/sayı geçir; klişe ve dolgu YOK. Önceki bölümden doğal biçimde devral, bir sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver. YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + order + '\nBu bölümün özeti: ' + (secItem.metin || ''), 2500),
+      3,
+      (fin) => this.setState({ genMsg: 'BÖLÜM ' + fin + ' / ' + total + ' KALEME ALINIYOR…', genPct: 45 + Math.round((fin / total) * 38) })
+    );
+    replies.forEach((reply, i) => { if (reply && reply.trim()) secs[i].metin = reply.trim(); });
     return result;
   }
 
