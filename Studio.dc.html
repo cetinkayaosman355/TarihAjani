@@ -2278,8 +2278,8 @@ class Component extends DCLogic {
     const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
     // Tarihî Gravür fotogerçekçi değildir; anti-artifact satırı stile göre değişir
     const antiArtifact = s.style === 'gravur'
-      ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
-      : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
+      ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects, no transparent or ghostly figures.'
+      : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces, no transparent or ghostly figures, no double exposure — every person fully solid and opaque.';
 
     const p = `Sen "Tarih Ajanı" adlı Türkçe tarih YouTube kanalının BAŞ senaristi, araştırmacısı ve yapım yönetmenisin. Kanal tarihi bir dedektif titizliğiyle işler: her iddia belgeye dayanır, anlatım bir vaka dosyası gibi kurgulanır, izleyici ilk saniyeden ipuçlarıyla sürüklenir. Çıktın PROFESYONEL yayın kalitesinde olmalı; yüzeysel, genel-geçer, "ansiklopedi özeti" gibi metinler KABUL EDİLMEZ.
 
@@ -2356,8 +2356,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       stilStr: m.stil[s.style] || m.stil.sinematik,
       oran: { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal',
       anti: s.style === 'gravur'
-        ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
-        : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.',
+        ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects, no transparent or ghostly figures.'
+        : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces, no transparent or ghostly figures, no double exposure — every person fully solid and opaque.',
       vidTail: 'Stable face and anatomy, no warping, no morphing, no flicker.'
     };
   }
@@ -3378,8 +3378,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       const stilStr = m.stil[s.style] || m.stil.sinematik;
       const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
       const anti = s.style === 'gravur'
-        ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
-        : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
+        ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects, no transparent or ghostly figures.'
+        : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces, no transparent or ghostly figures, no double exposure — every person fully solid and opaque.';
       const tail = kind === 'vp' ? 'Stable face and anatomy, no warping, no morphing, no flicker.' : anti;
       const what = kind === 'gp' ? 'image-generation prompt' : 'video-generation prompt describing ONE camera move/action, 5-8 seconds';
       const reply = await this.askAI('Rewrite the following ' + what + ' for the scene "' + (item.sahne || '') + '" of a Turkish history-mystery YouTube video. Produce a NEW, improved variation (different composition or angle), in English. It MUST start with this exact style core: "' + stilStr + '", must include "' + oran + '", and must END with this exact line: "' + tail + '". Return ONLY the prompt text, no quotes or explanation.\n\nCurrent prompt:\n' + (item.prompt || ''), 600, 'regen');

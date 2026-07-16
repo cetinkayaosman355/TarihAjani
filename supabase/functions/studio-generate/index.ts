@@ -177,9 +177,10 @@ async function generateImage(prompt: string, size: string): Promise<string> {
           prompt: prompt.slice(0, 30000),
           n: 1,
           size: gSize,
-          quality: "medium",            // dengeli kalite/maliyet
+          quality: "high",              // kalite > maliyet (ChatGPT ile aynı kademe;
+                                        // medium kalabalık sahnede saydam/hayalet insan üretiyordu)
           output_format: "jpeg",        // daha küçük data URI (png ~çok büyük)
-          output_compression: 82,
+          output_compression: 88,
           moderation: "low",            // tarihî sahne (savaş/ölüm) yanlış engelini azalt
         }),
       }, 120_000);
@@ -219,7 +220,7 @@ async function generateImage(prompt: string, size: string): Promise<string> {
     const r = await fetchT("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "dall-e-3", prompt: prompt.slice(0, 3800), n: 1, size: dSize }),
+      body: JSON.stringify({ model: "dall-e-3", prompt: prompt.slice(0, 3800), n: 1, size: dSize, quality: "hd" }),
     }, 90_000);
     if (r.ok) {
       const d = await r.json();
