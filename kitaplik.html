@@ -36,6 +36,10 @@
     --ahsap-koyu: #241608;
     --serif-display: 'Playfair Display', Georgia, serif;
     --serif-body: 'Cormorant Garamond', Georgia, serif;
+    /* Sinematik büro görselleri (Higgsfield · soul_location) */
+    --buro-genis: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_221146_54927e24-dec6-4661-af01-2ce06e6bd68d.png");
+    --buro-dar: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_221200_090ca3bf-c671-4c17-a888-215f64003cac.png");
+    --raf-fon: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_221211_674b1dc6-d8e0-4012-9ec2-20ecf9447ce2.png");
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -84,194 +88,80 @@
   .oda {
     position: absolute;
     inset: 0;
-    transform-origin: 50% 43%;
-    transition: transform 1.25s cubic-bezier(.72,0,.28,1),
-                opacity 1.25s cubic-bezier(.72,0,.28,1),
-                filter 1.25s cubic-bezier(.72,0,.28,1);
+    overflow: hidden;
+    cursor: pointer;
+    transform-origin: 50% 46%;
+    transition: transform 1.3s cubic-bezier(.66,0,.24,1),
+                opacity 1.3s cubic-bezier(.66,0,.24,1),
+                filter 1.3s cubic-bezier(.66,0,.24,1);
     will-change: transform, opacity, filter;
   }
   .sahne.giris .oda {
-    transform: scale(4.2);
+    transform: scale(3.7);
     opacity: 0;
-    filter: blur(7px) brightness(1.35);
+    filter: blur(6px) brightness(1.22);
   }
-  /* Ahşap lambri duvar */
-  .duvar {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(180deg, rgba(0,0,0,.55), transparent 30%, transparent 62%, rgba(0,0,0,.6)),
-      repeating-linear-gradient(90deg, #2c1d10 0 84px, #34240f 84px 86px, #241608 86px 170px),
-      linear-gradient(#2a1c10, #1a1109);
-    box-shadow: inset 0 0 220px rgba(0,0,0,.75);
+  /* Foto-gerçekçi büro görseli (Higgsfield ile üretildi) */
+  .oda-foto {
+    position: absolute; inset: -3%;
+    background-image: var(--buro-genis);
+    background-size: cover;
+    background-position: center 42%;
+    background-repeat: no-repeat;
+    animation: kenBurns 26s ease-in-out infinite alternate;
+    will-change: transform;
   }
-  /* Pencere — yağmur + şimşek */
-  .pencere {
-    position: absolute;
-    left: 6%; top: 12%;
-    width: min(240px, 26vw);
-    height: min(320px, 40vh);
-    border-radius: 8px 8px 4px 4px;
-    background: linear-gradient(160deg, #10203a 0%, #0a1526 60%, #060d18 100%);
-    border: 10px solid #1c1206;
-    box-shadow:
-      0 0 0 2px rgba(201,162,75,.16),
-      inset 0 0 60px rgba(0,0,0,.7),
-      0 24px 60px rgba(0,0,0,.6);
-    overflow: hidden;
+  @media (max-width: 620px) {
+    .oda-foto { background-image: var(--buro-dar); background-position: center 38%; }
   }
-  .pencere::before {
-    /* cam bölmeleri */
-    content: "";
+  @keyframes kenBurns {
+    from { transform: scale(1.02) translate(0, 0); }
+    to   { transform: scale(1.12) translate(-1.2%, -1.6%); }
+  }
+  /* Camda yağmur ışıltısı — çok hafif, akan */
+  .oda-yagmur {
+    position: absolute; inset: -20%;
+    background-image: repeating-linear-gradient(101deg,
+      transparent 0 8px, rgba(190,212,240,.05) 8px 9px, transparent 9px 15px);
+    animation: yagsun .6s linear infinite;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+  @keyframes yagsun { from { transform: translateY(-15px); } to { transform: translateY(15px); } }
+  /* Uzakta çakan şimşek parıltısı */
+  .oda-simsek {
     position: absolute; inset: 0;
-    background:
-      linear-gradient(90deg, transparent 48.5%, #1c1206 48.5% 51.5%, transparent 51.5%),
-      linear-gradient(180deg, transparent 48.5%, #1c1206 48.5% 51.5%, transparent 51.5%);
-    z-index: 3;
-  }
-  .yagmur {
-    position: absolute; inset: -20% -20%;
-    background-image: repeating-linear-gradient(102deg,
-      transparent 0 7px, rgba(180,205,235,.16) 7px 8px, transparent 8px 14px);
-    animation: yagsun 0.55s linear infinite;
-    z-index: 2;
-  }
-  @keyframes yagsun { from { transform: translateY(-14px); } to { transform: translateY(14px); } }
-  .simsek {
-    position: absolute; inset: 0; z-index: 1;
-    background: radial-gradient(circle at 60% 30%, rgba(190,215,255,.85), transparent 60%);
-    opacity: 0;
-    animation: cak 8s ease-out infinite;
+    background: linear-gradient(118deg, rgba(160,195,255,.5), transparent 46%);
+    opacity: 0; mix-blend-mode: screen; pointer-events: none;
+    animation: cak 9s ease-out infinite;
   }
   @keyframes cak {
-    0%, 92%, 100% { opacity: 0; }
-    93% { opacity: .9; }
-    94% { opacity: .1; }
-    95% { opacity: .7; }
-    96% { opacity: 0; }
+    0%, 90%, 100% { opacity: 0; }
+    91% { opacity: .5; } 92% { opacity: .06; }
+    93% { opacity: .38; } 95% { opacity: 0; }
   }
-
-  /* Kitaplık dolabı — asıl kahraman, zoom merkezi */
-  .dolap {
+  /* Sinematik vinyet + yazı okunabilirlik perdesi */
+  .oda-vinyet {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(6,5,3,.74) 0%, rgba(6,5,3,.12) 20%, transparent 42%,
+        transparent 55%, rgba(6,5,3,.5) 80%, rgba(6,5,3,.9) 100%),
+      radial-gradient(ellipse at 50% 46%, transparent 40%, rgba(0,0,0,.58) 100%);
+  }
+  /* Yaklaşma ipucu — fotoğrafın ortasındaki rafa işaret eder */
+  .oda-ipucu {
     position: absolute;
-    left: 50%; top: 48%;
+    left: 50%; top: 46%;
     transform: translate(-50%, -50%);
-    width: min(330px, 44vw);
-    height: min(342px, 46vh);
-    border: none;
-    cursor: pointer;
-    padding: 14px 16px;
-    border-radius: 8px;
-    background:
-      linear-gradient(180deg, #3c2914, #24160a);
-    box-shadow:
-      0 0 0 3px #1a1006,
-      0 0 0 5px rgba(201,162,75,.22),
-      0 40px 90px rgba(0,0,0,.7),
-      inset 0 0 40px rgba(0,0,0,.6);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    transition: transform .5s cubic-bezier(.22,1,.36,1), box-shadow .5s;
-  }
-  .dolap:hover, .dolap:focus-visible {
-    outline: none;
-    transform: translate(-50%, -52%) scale(1.03);
-    box-shadow:
-      0 0 0 3px #1a1006,
-      0 0 0 6px rgba(233,207,142,.5),
-      0 50px 110px rgba(0,0,0,.75),
-      0 0 60px rgba(233,207,142,.25),
-      inset 0 0 40px rgba(0,0,0,.55);
-  }
-  .dolap-raf {
-    flex: 1;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 6px;
-    padding: 8px 6px 10px;
-    border-radius: 3px;
-    background: linear-gradient(180deg, #180e05, #0d0703);
-    box-shadow: inset 0 -10px 16px rgba(0,0,0,.7), inset 0 2px 3px rgba(0,0,0,.6);
-    border-bottom: 7px solid #2c1c0d;
-  }
-  .mini {
-    width: 15px;
-    border-radius: 2px 2px 0 0;
-    box-shadow: inset -2px 0 3px rgba(0,0,0,.45), inset 2px 0 2px rgba(255,255,255,.08);
-  }
-  .dolap-parilti {
-    position: absolute; inset: -30% 10%;
-    background: radial-gradient(circle at 50% 55%, rgba(233,207,142,.28), transparent 62%);
+    width: clamp(120px, 20vw, 220px);
+    height: clamp(120px, 20vw, 220px);
+    border-radius: 50%;
     pointer-events: none;
-    animation: nabiz 3.4s ease-in-out infinite;
+    box-shadow: 0 0 0 1px rgba(233,207,142,.35), 0 0 60px rgba(233,207,142,.22);
+    background: radial-gradient(circle, rgba(233,207,142,.12), transparent 68%);
+    animation: nabiz 3.2s ease-in-out infinite;
   }
-  @keyframes nabiz { 0%,100% { opacity:.35; } 50% { opacity:.85; } }
-  .dolap-etiket {
-    position: absolute;
-    left: 50%; bottom: -46px;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    font-family: var(--serif-display);
-    font-size: .82rem;
-    letter-spacing: .26em;
-    text-indent: .26em;
-    text-transform: uppercase;
-    color: var(--gold-bright);
-    pointer-events: none;
-    text-shadow: 0 2px 10px rgba(0,0,0,.9);
-    animation: nabiz 3.4s ease-in-out infinite;
-  }
-
-  /* Çalışma masası — ön plan */
-  .masa {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: min(150px, 22vh);
-    background:
-      linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.6)),
-      repeating-linear-gradient(90deg, #4a3016 0 60px, #3c2712 60px 62px),
-      linear-gradient(#432d15, #2a1a0c);
-    box-shadow: 0 -20px 50px rgba(0,0,0,.6), inset 0 6px 10px rgba(255,255,255,.06);
-    z-index: 5;
-  }
-  .masa::before {
-    content: "";
-    position: absolute; left: 0; right: 0; top: -1px;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, rgba(233,207,142,.35), transparent);
-  }
-  .masa-props {
-    position: absolute;
-    bottom: 62%;
-    left: 0; right: 0;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: clamp(20px, 7vw, 78px);
-    font-size: clamp(1.6rem, 5vw, 2.6rem);
-    filter: drop-shadow(0 8px 10px rgba(0,0,0,.6));
-  }
-  .lamba-isik {
-    position: absolute;
-    left: 50%; bottom: 0;
-    width: min(560px, 82vw);
-    height: 300px;
-    transform: translateX(-50%);
-    background: radial-gradient(ellipse at 50% 100%, rgba(233,207,142,.22), transparent 68%);
-    pointer-events: none;
-    z-index: 4;
-  }
-  .prop { position: relative; }
-  .prop .yazi {
-    position: absolute; left: 50%; bottom: -18px;
-    transform: translateX(-50%);
-    font-size: .5rem; letter-spacing: .1em; color: var(--gold-dim);
-    white-space: nowrap; opacity: .7;
-  }
-  .lamba { animation: parla 4s ease-in-out infinite; }
-  @keyframes parla { 0%,100% { filter: drop-shadow(0 0 6px rgba(233,207,142,.4)); } 50% { filter: drop-shadow(0 0 16px rgba(233,207,142,.75)); } }
+  @keyframes nabiz { 0%,100% { opacity:.3; transform:translate(-50%,-50%) scale(.94); } 50% { opacity:.85; transform:translate(-50%,-50%) scale(1.06); } }
 
   /* Sahne metni */
   .sahne-yazi {
@@ -351,6 +241,18 @@
   .kutuphane { display: none; }
   .kutuphane.acik { display: block; animation: yavasBelir 1s ease both; }
   @keyframes yavasBelir { from { opacity: 0; } to { opacity: 1; } }
+  /* Gerçek kitaplık yakın planı — soluk, sinematik arka fon */
+  .kutuphane.acik::before {
+    content: "";
+    position: fixed; inset: 0;
+    z-index: 0;
+    background-image: var(--raf-fon);
+    background-size: cover;
+    background-position: center;
+    opacity: .10;
+    filter: blur(2px) saturate(.85) brightness(.7);
+    pointer-events: none;
+  }
 
   .zerre {
     position: fixed; border-radius: 50%;
@@ -695,45 +597,12 @@
 
 <!-- ============ AÇILIŞ SAHNESİ ============ -->
 <div class="sahne" id="sahne" aria-label="Ajan Z'nin bürosu">
-  <div class="oda" id="oda">
-    <div class="duvar"></div>
-
-    <div class="pencere" aria-hidden="true">
-      <div class="simsek"></div>
-      <div class="yagmur"></div>
-    </div>
-
-    <button class="dolap" id="dolapBtn" aria-label="Kitaplığa yaklaş">
-      <span class="dolap-parilti"></span>
-      <span class="dolap-raf">
-        <span class="mini" style="height:78%;background:linear-gradient(#8a5a2e,#5e3a1a)"></span>
-        <span class="mini" style="height:92%;background:linear-gradient(#2f7d76,#1d4f4b)"></span>
-        <span class="mini" style="height:70%;background:linear-gradient(#99392b,#5f1f16)"></span>
-        <span class="mini" style="height:86%;background:linear-gradient(#5d7d3a,#39511f)"></span>
-        <span class="mini" style="height:80%;background:linear-gradient(#3c5e93,#23375c)"></span>
-        <span class="mini" style="height:94%;background:linear-gradient(#6d4a82,#452b55)"></span>
-      </span>
-      <span class="dolap-raf">
-        <span class="mini" style="height:88%;background:linear-gradient(#8c4232,#55251a)"></span>
-        <span class="mini" style="height:74%;background:linear-gradient(#2f7d76,#1f4a51)"></span>
-        <span class="mini" style="height:90%;background:linear-gradient(#b08b3a,#6f5620)"></span>
-        <span class="mini" style="height:68%;background:linear-gradient(#7e2f24,#4a1810)"></span>
-        <span class="mini" style="height:84%;background:linear-gradient(#3a6a4a,#22402c)"></span>
-        <span class="mini" style="height:78%;background:linear-gradient(#4a4a6a,#26263a)"></span>
-      </span>
-      <span class="dolap-etiket">Kitaplığa Yaklaş</span>
-    </button>
-
-    <div class="lamba-isik"></div>
-    <div class="masa">
-      <div class="masa-props" aria-hidden="true">
-        <span class="prop lamba">🪔</span>
-        <span class="prop">📖</span>
-        <span class="prop">🔍</span>
-        <span class="prop">🕰️</span>
-        <span class="prop">☕</span>
-      </div>
-    </div>
+  <div class="oda" id="oda" role="button" tabindex="0" aria-label="Kitaplığa yaklaş">
+    <div class="oda-foto"></div>
+    <div class="oda-yagmur" aria-hidden="true"></div>
+    <div class="oda-simsek" aria-hidden="true"></div>
+    <div class="oda-ipucu" aria-hidden="true"></div>
+    <div class="oda-vinyet" aria-hidden="true"></div>
   </div>
 
   <div class="sahne-yazi">
@@ -1008,7 +877,6 @@ const kitaplar = [
 /* ---------------- Element referansları ---------------- */
 const sahne = document.getElementById("sahne");
 const oda = document.getElementById("oda");
-const dolapBtn = document.getElementById("dolapBtn");
 const girBtn = document.getElementById("girBtn");
 const atlaBtn = document.getElementById("atlaBtn");
 const buroDonBtn = document.getElementById("buroDonBtn");
@@ -1054,9 +922,12 @@ function buroyaDon() {
   sahne.classList.remove("giris");
   window.scrollTo(0, 0);
 }
-dolapBtn.addEventListener("click", () => kutuphaneyiAc(true));
-girBtn.addEventListener("click", () => kutuphaneyiAc(true));
-atlaBtn.addEventListener("click", () => kutuphaneyiAc(false));
+oda.addEventListener("click", () => kutuphaneyiAc(true));
+oda.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); kutuphaneyiAc(true); }
+});
+girBtn.addEventListener("click", (e) => { e.stopPropagation(); kutuphaneyiAc(true); });
+atlaBtn.addEventListener("click", (e) => { e.stopPropagation(); kutuphaneyiAc(false); });
 buroDonBtn.addEventListener("click", buroyaDon);
 
 let kurulumTamam = false;
