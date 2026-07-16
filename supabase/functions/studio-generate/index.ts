@@ -14,7 +14,25 @@
 // Yanıt: { ok:true, result, text, charged:boolean, credits:number }
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { Image } from "npm:imagescript@1.3.0";
+
+// imagescript SADECE 9:16/16:9 kırpması için gerekir ve WASM kodeği yükler.
+// Modül seviyesinde import edilirse yüklenmesi başarısız olduğunda TÜM fonksiyon
+// boot'ta çöker (her aksiyon 500). Bu yüzden tembel yüklüyoruz: yalnız kırpma
+// anında, tek sefer, try/catch ile. Yüklenemezse görsel kırpılmadan döner.
+let _ImageMod: any = null;
+let _imageTried = false;
+async function loadImage(): Promise<any> {
+  if (_ImageMod || _imageTried) return _ImageMod;
+  _imageTried = true;
+  try {
+    const mod = await import("npm:imagescript@1.3.0");
+    _ImageMod = (mod as any).Image || (mod as any).default?.Image || null;
+  } catch (e) {
+    console.error("imagescript yuklenemedi (kirpma atlanacak): " + String(e).slice(0, 150));
+    _ImageMod = null;
+  }
+  return _ImageMod;
+}
 
 // CORS artık allowlist: yalnız kendi alan adlarımız + Netlify önizleme + yerel
 // geliştirme. Bilinmeyen origin'e ana alan döner (tarayıcı isteği reddeder).
@@ -469,6 +487,8 @@ async function cropToAspect(dataUri: string, size: string): Promise<string> {
   const parsed = dataUriToBytes(dataUri);
   if (!parsed) return dataUri;
   try {
+    const Image = await loadImage();
+    if (!Image) return dataUri;                        // kodek yüklenemedi → kırpmadan döndür
     const img = await Image.decode(parsed.bytes);
     const cur = img.width / img.height;
     if (Math.abs(cur - target) < 0.01) return dataUri;
