@@ -18,6 +18,7 @@
 <meta name="twitter:description" content="Etrüskler, Sümerler, İbn Fadlan, Türkistan'da Japonya Planı ve Truva — beş vaka dosyasını içeren e-kitabın okuma odası.">
 <meta name="twitter:image" content="https://tarihajani.com/assets/books.jpg">
 <script src="./support.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/uye-nav.js" defer></script>
 <script src="/canli-sohbet.js" defer></script>
 <script src="/mobil-nav.js" defer></script>
@@ -84,7 +85,13 @@
     </a>
     <div style="display: flex; align-items: center; gap: 10px;">
       <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .18em;">{{ progressLabel }}</span>
-      <a href="/urunler" style="color: #171207; font-weight: 800; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 10px 16px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52);" style-hover="box-shadow: 0 6px 30px rgba(230,196,120,.35);">SATIN AL · 149 TL</a>
+      <sc-if value="{{ owned }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ pdfBook }}" style="cursor: pointer; border: 1px solid rgba(193,154,82,.55); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .14em; padding: 10px 14px;" style-hover="background: rgba(193,154,82,.12);">⤓ PDF / YAZDIR</button>
+        <span style="color: #a8c8a2; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .16em; border: 1px solid rgba(122,168,116,.5); padding: 10px 12px;">✓ SET AÇIK</span>
+      </sc-if>
+      <sc-if value="{{ notOwned }}" hint-placeholder-val="{{ true }}">
+        <a href="/satis#5li-hikaye" style="color: #171207; font-weight: 800; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 10px 16px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52);" style-hover="box-shadow: 0 6px 30px rgba(230,196,120,.35);">SATIN AL · 49 TL</a>
+      </sc-if>
     </div>
   </header>
 
@@ -100,7 +107,7 @@
         </button>
       </sc-for>
       <div style="margin-top: 18px; border: 1px solid rgba(193,154,82,.25); background: rgba(193,154,82,.05); padding: 14px;">
-        <p style="margin: 0; color: #a4a9b5; font-size: 12px; line-height: 1.6;">İlk vaka ücretsiz önizleme. Tam sete erişim için seti satın al; hesabına tanımlanır.</p>
+        <p style="margin: 0; color: #a4a9b5; font-size: 12px; line-height: 1.6;">{{ sideNote }}</p>
       </div>
     </aside>
 
@@ -130,8 +137,11 @@
         <div style="border: 1px solid rgba(193,154,82,.35); background: #070a12; padding: clamp(30px, 5vw, 54px); text-align: center; animation: ta-rise .4s ease both;">
           <span style="display: inline-block; padding: 12px 22px; border: 3px double rgba(201,162,90,.8); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 15px; letter-spacing: .28em; text-indent: .28em; transform: rotate(-3deg);">MÜHÜRLÜ DOSYA</span>
           <p style="margin: 22px auto 0; color: #a4a9b5; max-width: 44ch; line-height: 1.7; font-size: 14.5px;">{{ chTeaser }}</p>
-          <p style="margin: 14px 0 0; color: #676d7c; font-size: 12.5px;">Bu vaka, tam sette yer alıyor. Seti satın aldığında beş dosyanın tamamı açılır.</p>
-          <a href="/urunler" style="display: inline-block; margin-top: 22px; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .18em; padding: 15px 30px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.35);">SETİ SATIN AL · 149 TL</a>
+          <p style="margin: 14px 0 0; color: #676d7c; font-size: 12.5px;">Bu vaka, tam sette yer alıyor. Seti satın aldığında beş dosyanın tamamı hesabına açılır.</p>
+          <div style="display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 22px;">
+            <a href="/satis#5li-hikaye" style="display: inline-block; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .18em; padding: 15px 30px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.35);">SETİ SATIN AL · 49 TL</a>
+            <a href="/uyelik?next=%2Fvaka-dosyalari" style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11.5px; letter-spacing: .14em; text-decoration: none; border-bottom: 1px solid rgba(193,154,82,.45); padding-bottom: 3px;" style-hover="color: #f2ecd9;">SATIN ALDIYSAN GİRİŞ YAP →</a>
+          </div>
         </div>
       </sc-if>
     </article>
@@ -140,7 +150,80 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { ch: 0 };
+  state = { ch: 0, owned: false, user: null };
+
+  constructor(props) {
+    super(props);
+    // kaldığı sayfadan devam — okuma konumu cihazda saklanır
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = parseInt(localStorage.getItem('ta_vaka_ch') || '0', 10);
+        if (saved > 0 && saved < 5) this.state = { ...this.state, ch: saved };
+      } catch (e) {}
+    }
+  }
+
+  componentDidMount() { this.initSupabase(0); }
+  componentWillUnmount() {
+    if (this._authSub && this._authSub.data && this._authSub.data.subscription) this._authSub.data.subscription.unsubscribe();
+  }
+
+  initSupabase(tries) {
+    if (typeof window === 'undefined') return;
+    if (!window.supabase || !window.supabase.createClient) {
+      if (tries < 40) setTimeout(() => this.initSupabase(tries + 1), 150);
+      return;
+    }
+    const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    this.sb = window.supabase.createClient(SB_URL, SB_KEY);
+    this.sb.auth.getSession().then(({ data }) => {
+      const u = data && data.session && data.session.user;
+      this.setState({ user: u ? { id: u.id } : null });
+      if (u) this.loadAccess(u.id);
+    });
+    this._authSub = this.sb.auth.onAuthStateChange((_e, session) => {
+      const u = session && session.user;
+      this.setState({ user: u ? { id: u.id } : null, owned: u ? this.state.owned : false });
+      if (u) this.loadAccess(u.id);
+    });
+  }
+
+  // Erişim kuralı (Eğitim sayfasıyla aynı desen): tek seferlik alımda admin
+  // profiles.has_access açar; üyelik seviyeleri e-kitap arşivini zaten kapsar.
+  async loadAccess(userId) {
+    if (!this.sb || !userId) return;
+    try {
+      const { data, error } = await this.sb.from('profiles').select('has_access,tier').eq('id', userId).maybeSingle();
+      const tierOk = data && ['gozlemci', 'ajan', 'basmufettis'].indexOf(data.tier) !== -1;
+      this.setState({ owned: !error && !!data && (data.has_access === true || tierOk) });
+    } catch (e) {}
+  }
+
+  goCh(i) {
+    this.setState({ ch: i });
+    try { localStorage.setItem('ta_vaka_ch', String(i)); } catch (e) {}
+  }
+
+  // Kitabın tamamını (kilidi açık bölümleri) yazdırma penceresine döker —
+  // tarayıcının "PDF olarak kaydet" seçeneği kitabın PDF halini üretir.
+  pdfBook() {
+    const chs = this.chapters().filter(c => c.free || this.state.owned);
+    const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    let body = '<h1>Vaka Dosyaları — 5 Hikâye</h1><p class="sub">Tarih Ajanı · tarihajani.com</p>';
+    chs.forEach(c => {
+      body += '<div class="ch"><p class="no">' + esc(c.no) + ' · ' + esc(c.era) + '</p><h2>' + esc(c.title) + '</h2>';
+      (c.paras || []).forEach(p => { body += '<p>' + esc(p) + '</p>'; });
+      if (c.verdict) body += '<div class="verdict"><p class="vh">AJANIN HÜKMÜ</p><p><em>' + esc(c.verdict) + '</em></p></div>';
+      body += '</div>';
+    });
+    const css = 'body{font-family:Georgia,serif;color:#1a1a1a;max-width:44em;margin:2em auto;padding:0 1.5em;line-height:1.75}h1{font-size:1.9em;margin:0}p.sub{color:#8a6d3b;letter-spacing:.2em;font-size:.75em;margin:.4em 0 2em}div.ch{page-break-before:always;margin-top:2.5em}div.ch:first-of-type{page-break-before:auto}p.no{color:#8a6d3b;font-size:.72em;letter-spacing:.22em;margin:0}h2{font-size:1.4em;margin:.3em 0 1em}div.verdict{border:1px solid #c9a25a;padding:.9em 1.1em;margin-top:1.4em}p.vh{color:#8a6d3b;font-size:.7em;letter-spacing:.24em;margin:0 0 .5em}';
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>Vaka Dosyaları — Tarih Ajanı</title><style>' + css + '</style></head><body>' + body + '</body></html>');
+    w.document.close();
+    setTimeout(() => { try { w.print(); } catch (e) {} }, 450);
+  }
 
   chapters() {
     return [
@@ -159,22 +242,53 @@ class Component extends DCLogic {
       {
         no: 'DOSYA 02', title: 'Sümerlerin Sırrı: 5.000 Yıldır Çözülemedi', era: 'M.Ö. 3500 · MEZOPOTAMYA',
         teaser: 'Yazıyı, tekerleği, okulu ve mahkemeyi icat eden halk, kendisinin nereden geldiğini yazmayı unuttu. Dilleri hiçbir dil ailesine benzemiyor; komşuları onlara "karabaşlılar" diyordu. Tabletlerdeki tufan hikâyesi, Tevrat’tan iki bin yıl daha yaşlı.',
-        paras: [], verdict: ''
+        paras: [
+          'İnsanlık tarihinin ilk imzası bir şaire ya da krala değil, bir muhasebeciye ait. Uruk kentinden kalan ve M.Ö. 3400 civarına tarihlenen bir kil tablette, arpa teslimatını onaylayan bir isim okunur: Kuşim. Yazı, destan söylemek için değil, tahıl saymak için icat edildi — ve onu icat eden halk, kendi geçmişini kaydetmeyi hiç akıl etmedi.',
+          'Sümerler M.Ö. 3500’lerde Mezopotamya’nın güneyinde tarih sahnesine çıktığında dünya köylerden ibaretti; onlar şehir kurdu. Uruk, on binlerce nüfusuyla çağının açık ara en büyük yerleşimiydi. Tekerlek, saban, okul, mahkeme, takvim ve altmışlık sayı sistemi — saatin altmış dakikası, dakikanın altmış saniyesi bugün bile onların mirasıdır.',
+          'Dosyadaki ilk tuhaflık dilleri. Sümerce, bilinen hiçbir dil ailesine bağlanamıyor — ne Sami, ne Hint-Avrupa, ne başka bir aile. Kendilerine "sağ-giga", yani "kara başlı halk" diyorlardı; nereden geldiklerine dair tek satır bırakmadılar. Dilbilimciler yüz elli yıldır akraba dil arıyor; aday çok, kanıt sıfır.',
+          'İkinci tuhaflık Kral Listesi. Tufandan önceki sekiz kral için toplam 241.200 yıl saltanat yazar — tek bir krala yirmi sekiz bin yıl. Sonra satır değişir: tufan her şeyi siler. 1872’de George Smith, Gılgamış tabletindeki tufan anlatısını çözdüğünde Londra’da fırtına koptu: gemi, kuşların salınması, kurban — tanıdık hikâye, Tevrat metinlerinden yüzyıllarca yaşlı bir tablette duruyordu.',
+          'Okul tabletleri dosyanın en insani sayfalarıdır. "Edubba" denen tablet evlerinde öğrenciler kil tablet kopyalar, geç kalan falakaya yatardı; bir tablette, dayaktan bunalan öğrencinin babasına yalvarıp öğretmeni eve yemeğe davet ettirdiği ve hocanın hediyelerle yumuşadığı yazılıdır. Dört bin yıl önce yazılmış bu okul şikâyeti, bugün herhangi bir koridorda duyulabilir.',
+          'Sonları da savaşsız bir çözülme oldu. M.Ö. 2004 dolayında Ur şehri Elam ordusuna düştü; siyasi güç Sami dilli Akkad ve Babil dünyasına geçti. Ama Sümerce ölmedi: Avrupa’daki Latince gibi, iki bin yıl daha tapınaklarda ve okullarda kutsal dil olarak yaşadı. Halk eriyip komşularına karıştı; dilleri, sahibi kaybolmuş bir şifre olarak kaldı.'
+        ],
+        verdict: 'İcatları belge belge kanıtlı: yazı, şehir, okul ve hukuk onların. Ama kim oldukları sorusu beş bin yıldır yanıtsız — dil akrabasız, köken kayıtsız. Uygarlığı kuran halkın kendisi, dosyanın en büyük boşluğu. Vaka açık.'
       },
       {
         no: 'DOSYA 03', title: 'İbn Fadlan: Türkler ve Vikingler Arasında', era: 'M.S. 921 · İDİL BOYU',
         teaser: 'Bağdat’tan yola çıkan bir elçilik kâtibi, Oğuz bozkırından Viking cenazesine uzanan bir rapor bıraktı. Gördüklerini süslemeden yazdı — ve bu yüzden raporu, iki dünyanın da en güvenilir tanıklığı oldu.',
-        paras: [], verdict: ''
+        paras: [
+          '921 yılının Haziran ayında Bağdat’tan bir kervan yola çıktı. Halife Muktedir, Volga Bulgarlarının hükümdarı Almış Han’a elçilik gönderiyordu: han İslam’ı kabul etmişti ve karşılığında din bilginleri, para ve Hazarlara karşı bir kale istiyordu. Kervandaki kâtibin adı Ahmed ibn Fadlan’dı — tarih onu, gördüğünü süslemeden yazan ender bir tanık olarak hatırlayacaktı.',
+          'Yol, Harezm üzerinden Oğuz bozkırına çıktı. Soğuğu şöyle kaydeder: sakalı, sudan çıktığında tek parça buz kesmiştir. Oğuz beylerinin çadırında konakladı, âdetlerini tek tek not etti; beğenmediklerini de yazdı ama uydurmadı. En değerli huyu şuydu: kendi gördüğü ile başkasından duyduğunu hiç karıştırmadı — duyduklarını "bana anlatıldı" diye işaretledi.',
+          'Görevin utanç verici sırrını da saklamadı: kale için ödenmesi gereken para heyete hiç teslim edilmemişti. Almış Han parayı sorduğunda elçilik sustu; han öfkesini kâtipten çıkardı. İbn Fadlan bu fiyaskoyu kendi heyetini güzellemeden kaydetti. Rapor tam da bu yüzden değerlidir — yazarı kimseyi memnun etmek için yazmıyordu.',
+          'İdil kıyısında "Rus" denen kuzeyli tüccarlarla karşılaştı — bugün Viking dediğimiz adamlarla. Onları "hurma ağacı gibi uzun, kızıla çalan tenli" diye tarif eder; boyunlarından tırnaklarına uzanan dövmeleri, yanlarından ayırmadıkları baltaları ve her sabah aynı leğende sırayla yıkanmalarını — burun sümkürmeleri dahil — tek tek yazar. Hayranlık ve tiksinti aynı sayfada, sansürsüz durur.',
+          'Raporun zirvesi bir cenazedir. Ölen Rus reisi için gemisi karaya çekildi; gönüllü olan bir cariye günlerce ağırlandı, "Ölüm Meleği" denen yaşlı kadın töreni yönetti ve gemi, reis ve eşyalarıyla birlikte ateşe verildi. Yanındaki Rus, İbn Fadlan’a dönüp şöyle dedi: "Siz Araplar ahmaksınız — en sevdiğiniz insanı toprağa gömüp kurtlara yediriyorsunuz. Biz onu bir anda yakıyoruz; cennete o saat giriyor." Kâtip cevabını değil, yalnız cümleyi kaydetti.',
+          'Rapor yüzyıllarca kayıptı; yalnız coğrafyacı Yakut’un alıntılarından biliniyordu. 1923’te Başkurt asıllı tarihçi Zeki Velidi Togan, İran’ın Meşhed şehrinde bir kütüphane rafında tam nüshayı buldu. Vikinglerin en canlı görgü tanıklığını dünya bilimine bir Türk tarihçi kazandırdı.'
+        ],
+        verdict: 'Gördüğünü yazan, duyduğunu "duydum" diye ayıran bir tanık — onuncu yüzyıl için neredeyse mucize. Raporun gövdesi güvenilir; yol boyu anlatılan devler ve efsane bahisleri duyumdur, şüpheli damgası yer. Belgenin kendisi: birinci sınıf delil.'
       },
       {
         no: 'DOSYA 04', title: 'Türkistan’da Japonya Planı', era: '1930’LAR · ORTA ASYA',
         teaser: 'İki savaş arasında Tokyo’dan Orta Asya’ya uzanan sessiz bir hesap: ajanlar, haritalar ve hiç kurulmayan bir devlet. Arşivler açıldıkça plan netleşiyor — kimin planı olduğu ise hâlâ tartışmalı.',
-        paras: [], verdict: ''
+        paras: [
+          '1930’ların Tokyo’sunda bir grup kurmay subay, masalarına Orta Asya haritaları seriyordu. Sovyetler Birliği’nin yumuşak karnı sayılan Türkistan, Japon Genelkurmayı için bir soruya dönüşmüştü: Moskova’yı kendi içinde meşgul edecek bir cephe açılabilir mi?',
+          'Model hazırdı. 1932’de Mançurya’da kukla devlet Mançukuo kurulmuş, ardından İç Moğolistan’da benzer bir yönetim denenmişti. Pan-Asyacı ideolojinin "Asya Asyalılarındır" sloganı, sırada Sovyet Orta Asyası için de bir tampon devlet fikri olduğunu fısıldıyordu — kâğıt üzerinde bir Türkistan.',
+          'Dosyanın belgeli kısmı, Japonya’nın resmî İslam politikasıdır: Kaikyō seisaku. Tokyo’da İslam araştırma enstitüleri kuruldu; 1938’de Tokyo Camii açıldı ve kürsüsüne Osmanlı’nın son kuşağından ünlü seyyah Abdürreşid İbrahim çıktı. Kwantung Ordusu istihbaratı Türkistanlı muhacirlerle sistemli temas hâlindeydi; sürgündeki Türkistan davasının önde gelen isimlerinin bile kapısı çalınıyordu.',
+          'Karşı taraf dosyayı kendince "çözdü": Stalin’in 1937-38 Büyük Temizliği’nde binlerce Orta Asyalı aydın, yazar ve devlet adamı "Japon casusu" damgasıyla kurşuna dizildi. Suçlamaların ezici çoğunluğu işkenceyle imzalatılmış uydurmalardı; ama paranoyanın çekirdeğinde gerçek bir Japon ilgisi vardı. Sahte dosyalar, gerçek bir merakın gölgesinde yazıldı.',
+          'Planın sonu masada değil, savaş alanında geldi. 1939 yazında Moğolistan sınırındaki Nomonhan’da Kızıl Ordu, Kwantung Ordusu’na ağır bir yenilgi yaşattı. Tokyo yüzünü Pasifik’e döndü; 1941’de Sovyet-Japon tarafsızlık paktı imzalandı. Türkistan haritaları arşiv kutularına kaldırıldı — kurulmayan devlet, yarım kalmış bir kurmay tatbikatı olarak tarihte asılı kaldı.'
+        ],
+        verdict: 'Japon ilgisi ve istihbarat ağı belgeli; "kurulmaya hazır bir devlet planı" iddiasının boyutu ise tartışmalı. Sovyet mahkeme tutanakları delil sayılmaz — işkence ürünüdür. Hüküm: niyet doğrulandı, kapsam mühürlü; Japon arşivleri tamamen açılana dek dosya kapanmaz.'
       },
       {
         no: 'DOSYA 05', title: 'Truva Savaşı Gerçek miydi?', era: 'M.Ö. 1200 · EGE KIYILARI',
         teaser: 'Homeros bir şair miydi, yoksa bir muhabir mi? Hisarlık’taki dokuz katmanlı şehir, Hitit arşivlerindeki "Wilusa" yazışmaları ve yanık VIIa katmanı aynı soruya bakıyor: destanın altında bir savaş var mı?',
-        paras: [], verdict: ''
+        paras: [
+          'Homeros bir şair miydi, yoksa üç bin yıl gecikmiş bir muhabir mi? Sorunun adresi Çanakkale’de bir höyük: Hisarlık. 1871’de buraya kazma vuran Heinrich Schliemann, aradığını bulmaya önceden karar vermiş bir hazine avcısıydı — ve tam da bu yüzden dosyayı az kalsın mahvediyordu.',
+          'Schliemann höyükte üst üste dokuz şehir buldu ve "Priamos’un Hazinesi" dediği altınları dünyaya duyurdu. Tek sorun: altınların çıktığı Troya II katmanı, Homeros’un anlattığı çağdan yaklaşık bin yıl daha eskiydi. Yanlış şehri kazmış, üstelik aceleci hendekleriyle savaşın asıl katmanlarını da delip geçmişti.',
+          'Gerçek şüpheli üst katmanlardaydı. Troya VI: anıtsal surlar ve kuleler — büyük olasılıkla depremle yıkılmış. Ve Troya VIIa: M.Ö. 1180 civarına tarihlenen bir yangın tabakası; sokak aralarına aceleyle gömülmüş cesetler, duvar diplerinde ok uçları ve sapan taşları, zemine gömülü erzak küpleriyle daralmış evler. Bu tablo, arkeolojinin kuşatma tarifine birebir oturur.',
+          'Dönüm noktası Hitit arşivinden geldi. Boğazköy tabletlerinde batı Anadolu’da "Wilusa" adlı bir krallık geçer — araştırmacıların büyük bölümü bunun Homeros’taki İlios, yani İlyon olduğunda hemfikirdir. Bir Wilusa kralının adı Alaksandu’dur; İlyada’daki Paris’in öteki adı Aleksandros. Tabletlerdeki denizaşırı güç "Ahhiyawa" Akhalarla eşleştirilir — ve bir mektupta Hitit kralı, Ahhiyawa kralına Wilusa yüzünden aralarında savaş yaşandığını hatırlatır.',
+          'Homeros bu olaylardan dört yüz yıl sonra söyledi destanını. Ama sözlü gelenek şaşırtıcı emanetler taşıdı: İlyada’da geçen domuz dişi kaplı miğfer ile kule boyu kalkan yalnız Tunç Çağı’nda kullanılmıştı ve Homeros’un çağında çoktan unutulmuştu. Şair, hiç görmediği bir dünyanın gerçek eşyasını ezbere söylüyordu.',
+          '1988’den itibaren Manfred Korfmann’ın kazıları son parçayı ekledi: surların dışında geniş bir aşağı şehir ve savunma hendeği bulundu. Truva sanılandan kat kat büyük, Anadolu karakterli, Boğazlar’ın ticaretini tutan gerçek bir güç merkeziydi — yani uğruna gerçekten savaşılacak bir yer.'
+        ],
+        verdict: 'On yıllık tek büyük savaş ve tahta at kanıtlanamaz — o kısım şiirin malı. Ama M.Ö. 13.-12. yüzyılda Wilusa/Truva’da savaş ya da savaşlar gerçek: yangın katmanı, ok uçları ve Hitit yazışmaları aynı yeri gösteriyor. Hüküm: destanın çekirdeği doğrulandı.'
       }
     ];
   }
@@ -183,7 +297,7 @@ class Component extends DCLogic {
     const s = this.state;
     const chs = this.chapters();
     const cur = chs[s.ch];
-    const unlocked = !!cur.free;
+    const unlocked = !!cur.free || !!s.owned;
     const navBtn = (enabled) => ({
       border: '1px solid rgba(193,154,82,.4)', background: 'transparent',
       color: enabled ? '#e6c478' : '#3a3f4c', cursor: enabled ? 'pointer' : 'default',
@@ -194,13 +308,18 @@ class Component extends DCLogic {
     return {
       true: true, false: false,
       progressLabel: 'VAKA ' + (s.ch + 1) + ' / ' + chs.length,
+      owned: !!s.owned, notOwned: !s.owned,
+      sideNote: s.owned
+        ? 'Set hesabında açık: beş dosyanın tamamını okuyabilir, PDF olarak indirebilirsin. Okuma konumun bu cihazda saklanır.'
+        : 'İlk vaka ücretsiz önizleme. Tam sete erişim için seti satın al; ödemen onaylanınca hesabına tanımlanır. Satın aldıysan giriş yapman yeterli.',
+      pdfBook: () => this.pdfBook(),
       toc: chs.map((c, i) => {
         const on = i === s.ch;
         return {
           no: c.no, title: c.title,
-          lockMark: c.free ? '' : '· MÜHÜRLÜ',
+          lockMark: (c.free || s.owned) ? '' : '· MÜHÜRLÜ',
           noColor: on ? '#c19a52' : '#565b69',
-          pick: () => this.setState({ ch: i }),
+          pick: () => this.goCh(i),
           style: {
             textAlign: 'left', width: '100%', cursor: 'pointer', padding: '12px 14px',
             border: on ? '1px solid rgba(193,154,82,.55)' : '1px solid rgba(129,135,151,.18)',
@@ -215,8 +334,8 @@ class Component extends DCLogic {
       chParas: (cur.paras || []).map(t => ({ t })),
       chVerdict: cur.verdict || '',
       chTeaser: cur.teaser || '',
-      prevCh: () => { if (s.ch > 0) this.setState({ ch: s.ch - 1 }); },
-      nextCh: () => { if (s.ch < chs.length - 1) this.setState({ ch: s.ch + 1 }); },
+      prevCh: () => { if (s.ch > 0) this.goCh(s.ch - 1); },
+      nextCh: () => { if (s.ch < chs.length - 1) this.goCh(s.ch + 1); },
       prevStyle: navBtn(s.ch > 0),
       nextStyle: navBtn(s.ch < chs.length - 1)
     };

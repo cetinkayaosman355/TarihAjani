@@ -2314,6 +2314,7 @@ GÖRSEL & VİDEO PROMPT KURALLARI (tümü İngilizce — bu promptlar DOĞRUDAN 
 - UZUNLUK: her görsel promptu ~50-80 kelime, her video promptu ~30-50 kelime — yoğun ve katmanlı ama tekrarsız; gereksiz sıfat yığını yapma.
 - Her video promptu tek bir kamera hareketi/aksiyon (5-8 sn) tarif eder (ör. slow push-in, gentle pan left, subtle parallax) ve ŞU satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker."
 - Görsellerde yazı/logo/altyazı YOK. Aynı karakter birden çok sahnede geçiyorsa sabit kimlik tarifini (yaş, ten, saç, yüz, kıyafet, ayırt edici detay) her ilgili promptun başında BİREBİR tekrarla (tutarlı yüz için).
+- BENZERLİK KURALI: Tanınmış tarihî bir kişi geçiyorsa (padişah, kral, komutan, bilgin…) jenerik "a sultan" YAZMA — o kişinin BELGELENMİŞ görünümünü portre/minyatür kaynaklarına göre İngilizce tarif et: yüz şekli, burun, sakal/bıyık rengi ve biçimi, yaş, başlık ve kıyafet ayrıntısı (ör. Kanuni yaşlılığında: long gaunt pale face, prominent aquiline nose, thin grey drooping mustache, sparse white beard, enormous rounded white mucevveze turban). Kişi görünümü belgesizse dönem-doğru ama net bir kimlik kurgula ve sabit tut.
 - Tarihî doğruluk görselde de esas: dönem-dışı nesne, modern kıyafet, yanlış coğrafya kullanma.
 
 TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan; emin olmadığın ayrıntıyı UYDURMA, spekülasyonu işaretle; hassas konularda saygılı ol.
@@ -2413,7 +2414,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       : '';
     const prompt = 'Bir Türkçe tarih belgeselinin "' + bolum + '" (bölüm ' + idx + '/' + totalSecs + ') kısmı için TAM ' + k + ' sahnelik GÖRSEL ve VİDEO promptu üret. Sahneler bu bölümün anlatısını SIRAYLA, sinematik biçimde görselleştirmeli; metindeki somut kişi/mekân/nesne/aksiyonu birebir yansıt (hikâyeyi tanı, jenerik sahne yazma).\n' +
       bibleLine +
-      'GÖRSEL PROMPT: İngilizce, "' + cfg.stilStr + '" ile BAŞLAR, "' + cfg.oran + '" içerir; ana özne+aksiyon, dönem-doğru mekân/kıyafet/nesne (anakronizm YOK), ışık/atmosfer, kompozisyon/kamera, renk/duygu, doku katmanları (~50-80 kelime), şu satırla BİTER: "' + cfg.anti + '".\n' +
+      'GÖRSEL PROMPT: İngilizce, "' + cfg.stilStr + '" ile BAŞLAR, "' + cfg.oran + '" içerir; ana özne+aksiyon, dönem-doğru mekân/kıyafet/nesne (anakronizm YOK), ışık/atmosfer, kompozisyon/kamera, renk/duygu, doku katmanları (~50-80 kelime), şu satırla BİTER: "' + cfg.anti + '". Tanınmış tarihî kişi geçiyorsa jenerik yazma: belgelenmiş görünümünü (yüz şekli, burun, sakal/bıyık, yaş, başlık/kıyafet) portre kaynaklarına göre tarif et.\n' +
       'VİDEO PROMPT: tek kamera hareketi/aksiyon 5-8 sn (~30-50 kelime), şu satırla biter: "' + cfg.vidTail + '". Bir karakter sahnede geçiyorsa yukarıdaki SABİT kimlik tarifini promptun başında birebir tekrarla (tutarlı yüz için).\n' +
       'ÇIKTI: SADECE geçerli tek JSON, ilk karakter { son karakter }. Şema: {"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","prompt":"İngilizce görsel"}],"video_promptlar":[{"sahne":"aynı sahne adı","prompt":"İngilizce video"}]}. Her dizi TAM ' + k + ' öğe.\n\nBÖLÜM METNİ:\n' + (metin || bolum);
     const maxTok = Math.min(4000, 800 + k * 260);
