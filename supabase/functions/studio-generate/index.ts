@@ -86,11 +86,13 @@ function sceneCount(text: string): number {
 }
 
 // Sırayla denenir; "model bulunamadı" hatasında bir sonrakine geçer.
+// Ö-06: claude-sonnet-5 en önde — önceki Opus kalitesine yakın çıktı ve
+// 31.08.2026'ya kadar tanıtım fiyatıyla sonnet-4-6'dan bile ucuz.
 const CLAUDE_MODELS = [
+  "claude-sonnet-5",
   "claude-sonnet-4-6",
   "claude-sonnet-4-5",
   "claude-sonnet-4-20250514",
-  "claude-3-7-sonnet-latest",
 ];
 
 async function callClaude(prompt: string, maxTokens?: number): Promise<string> {
@@ -210,7 +212,8 @@ async function generateImage(prompt: string, size: string): Promise<string> {
     }
   }
 
-  // Son yedek: dall-e-3 (url döner, ~1 saat geçerli)
+  // Son yedek: dall-e-3. URL'si ~1 saatte ölür → K-03: burada İNDİRİP kalıcı
+  // data URI olarak döndürürüz; kullanıcı arşivinde görsel asla kaybolmaz.
   const dSize = size === "9:16" ? "1024x1792" : size === "16:9" ? "1792x1024" : "1024x1024";
   try {
     const r = await fetchT("https://api.openai.com/v1/images/generations", {
@@ -220,10 +223,23 @@ async function generateImage(prompt: string, size: string): Promise<string> {
     }, 90_000);
     if (r.ok) {
       const d = await r.json();
-      return d.data?.[0]?.url ?? "";
+      const u = d.data?.[0]?.url ?? "";
+      if (u) {
+        try {
+          const img = await fetchT(u, {}, 60_000);
+          if (img.ok) {
+            const bytes = new Uint8Array(await img.arrayBuffer());
+            let bin = "";
+            for (let i = 0; i < bytes.length; i += 32768) bin += String.fromCharCode(...bytes.subarray(i, i + 32768));
+            return "data:image/png;base64," + btoa(bin);
+          }
+        } catch (_e) { /* indirilemezse geçici URL yine de döner */ }
+        return u;
+      }
+    } else {
+      const body = await r.text().catch(() => "");
+      console.error(`generateImage dall-e-3 HTTP ${r.status}: ${body.slice(0, 300)}`);
     }
-    const body = await r.text().catch(() => "");
-    console.error(`generateImage dall-e-3 HTTP ${r.status}: ${body.slice(0, 300)}`);
   } catch (e) { console.error(`generateImage dall-e-3 exception: ${String(e).slice(0, 200)}`); }
   return "";
 }
@@ -252,11 +268,11 @@ async function generateSpeech(text: string, voice: string): Promise<Uint8Array |
       body.instructions = "Türkçe belgesel anlatıcısı: sakin, derin, sürükleyici. Dedektif dosyası okur gibi; özel adlarda hafif duraklama, gerilim cümlelerinde tempo.";
     }
     try {
-      const r = await fetch("https://api.openai.com/v1/audio/speech", {
+      const r = await fetchT("https://api.openai.com/v1/audio/speech", {
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
         body: JSON.stringify(body),
-      });
+      }, 90_000);
       if (!r.ok) return null;
       return new Uint8Array(await r.arrayBuffer());
     } catch (_e) { return null; }
@@ -297,7 +313,7 @@ async function generateSpeechEleven(text: string, voiceId: string): Promise<Uint
   const parts: Uint8Array[] = [];
   for (const c of chunks) {
     try {
-      const r = await fetch("https://api.elevenlabs.io/v1/text-to-speech/" + voiceId + "?output_format=mp3_44100_128", {
+      const r = await fetchT("https://api.elevenlabs.io/v1/text-to-speech/" + voiceId + "?output_format=mp3_44100_128", {
         method: "POST",
         headers: { "xi-api-key": key, "Content-Type": "application/json", "Accept": "audio/mpeg" },
         body: JSON.stringify({
@@ -360,23 +376,36 @@ Türkçe, madde madde yaz. UYDURMA yok; emin olmadığını "rivayete göre" diy
   // (504 zaman aşımı yaşamamak üretimin kendisinden önemli).
   const aKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (aKey) {
-    try {
-      const r = await fetchT("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "x-api-key": aKey, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-5",
-          max_tokens: 1400,
-          messages: [{ role: "user", content: q }],
-          tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
-        }),
-      }, 35_000);
-      if (r.ok) {
-        const d = await r.json();
-        const txt = (d.content || []).map((c: any) => (c && c.type === "text") ? c.text : "").join("\n").trim();
-        if (txt) return txt;
-      }
-    } catch (_e) { /* aşağıdaki yedeğe düş */ }
+    // Ö-06: önce sonnet-5 + yeni arama aracı (sonuçları akıllıca filtreler);
+    // hesapta yoksa eski model+araç ikilisine düşer — araştırma asla tamamen kaybolmaz.
+    const attempts = [
+      { model: "claude-sonnet-5", tool: "web_search_20260209" },
+      { model: "claude-sonnet-4-6", tool: "web_search_20260209" },
+      { model: "claude-sonnet-4-5", tool: "web_search_20250305" },
+    ];
+    for (const a of attempts) {
+      try {
+        const r = await fetchT("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "x-api-key": aKey, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: a.model,
+            max_tokens: 1400,
+            messages: [{ role: "user", content: q }],
+            tools: [{ type: a.tool, name: "web_search", max_uses: 3 }],
+          }),
+        }, 22_000);
+        if (r.ok) {
+          const d = await r.json();
+          const txt = (d.content || []).map((c: any) => (c && c.type === "text") ? c.text : "").join("\n").trim();
+          if (txt) return txt;
+        } else {
+          const body = await r.text().catch(() => "");
+          // model/araç bu hesapta yok → sıradaki ikiliye geç; başka hata → yedek OpenAI
+          if (!/not_found|model|tool/i.test(body)) break;
+        }
+      } catch (_e) { break; /* zaman aşımı → araştırma bütçesini koru */ }
+    }
   }
   try {
     const r = await fetchT("https://api.openai.com/v1/chat/completions", {
@@ -418,11 +447,11 @@ async function editImage(imageUri: string, prompt: string, size: string): Promis
   fd.append("n", "1");
   fd.append("image", new Blob([parsed.bytes], { type: parsed.type }), "image." + ext);
   try {
-    const r = await fetch("https://api.openai.com/v1/images/edits", {
+    const r = await fetchT("https://api.openai.com/v1/images/edits", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}` },
       body: fd,
-    });
+    }, 120_000);
     if (r.ok) {
       const d = await r.json();
       const b64 = d.data?.[0]?.b64_json;
@@ -434,11 +463,40 @@ async function editImage(imageUri: string, prompt: string, size: string): Promis
   return "";
 }
 
+// ── G-01: hız limiti — bellek içi, edge örneği başına (patlama koruması) ──
+const RL = new Map<string, { n: number; t: number }>();
+function rateLimited(key: string, limit: number): boolean {
+  const now = Date.now();
+  if (RL.size > 5000) RL.clear();
+  const e = RL.get(key);
+  if (!e || now - e.t > 60_000) { RL.set(key, { n: 1, t: now }); return false; }
+  e.n++;
+  return e.n > limit;
+}
+
+// ── Ö-08: telemetri — her üretimin sonucu tabloya yazılır ("hata payı sıfır"
+// hedefinin ölçüm aracı). Tablo yoksa/başarısızsa sessizce geçer, üretimi etkilemez.
+let LOGC: any = null;
+function logRun(row: Record<string, unknown>) {
+  try {
+    if (!LOGC) {
+      const u = Deno.env.get("SUPABASE_URL"), k = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (!u || !k) return;
+      LOGC = createClient(u, k);
+    }
+    LOGC.from("uretim_log").insert(row).then(() => {}, () => {});
+  } catch (_e) { /* telemetri asla üretimi bozmaz */ }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  const t0 = Date.now();
   try {
     const b = await req.json();
     const act = String(b.action || "");
+    // Hız limiti: kimliksiz/ücretsiz istekler dakikada 30, tümü 90 (IP başına)
+    const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
+    if (rateLimited("all:" + ip, 90)) return json({ ok: false, error: "Çok fazla istek — bir dakika sonra tekrar dene." }, 429);
     const isEdit = act === "edit";
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
     // TTS'in prompt/konusu yok, yalnız seslendirme METNİ var — bu kontrolden muaf
@@ -451,6 +509,12 @@ Deno.serve(async (req) => {
       : isEdit
         ? (b.free ? 0 : EDIT_COST)
         : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
+
+    // G-01: ücretsiz AI uçları daha sıkı sınırlı (dakikada 30) — bot/istismar
+    // bizim OpenAI/Anthropic faturamızı şişiremesin.
+    if (cost === 0 && rateLimited("free:" + ip, 30)) {
+      return json({ ok: false, error: "Çok fazla istek — bir dakika sonra tekrar dene." }, 429);
+    }
 
     // Ücretli çağrı → kullanıcıyı doğrula ve bakiyeyi ön-kontrol et.
     // Düzenleme ücretsiz olsa bile giriş şarttır (istismarı önler).
@@ -474,6 +538,7 @@ Deno.serve(async (req) => {
     // GÖRSEL ÜRETİMİ — metin üretiminden ayrı akış (başarılıysa kredi düşer)
     if (String(b.action || "") === "image") {
       const url = await generateImage(String(b.prompt || ""), String(b.size || ""));
+      logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "uretilemedi" });
       if (!url) return json({ ok: false, error: "Görsel üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       if (cost > 0 && admin && userId) {
         const { data: sp } = await admin.rpc("spend_credits", { p_user: userId, p_amount: cost, p_reason: "gorsel" });
@@ -508,6 +573,7 @@ Deno.serve(async (req) => {
     if (String(b.action || "") === "tts") {
       if (!ttsText) return json({ ok: false, error: "Seslendirme metni boş." }, 400);
       const bytes = await synthSpeech(ttsText, b);
+      logRun({ action: "tts", ok: !!bytes, ms: Date.now() - t0, user_id: userId || null, err: bytes ? null : "uretilemedi" });
       if (!bytes) return json({ ok: false, error: "Ses üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       let url = "";
       if (admin) {
@@ -560,7 +626,9 @@ ${brief}
 ${prompt}`;
       }
     }
-    const gen = () => useClaude ? callClaude(genPrompt, b.max_tokens) : callOpenAI(genPrompt, b.max_tokens, isGen);
+    // G-01: token tavanı sunucuda — ücretsiz uçlarda istemci 16k isteyemez
+    const capTok = Math.min(Number(b.max_tokens) || 4000, isGen ? 16000 : 4000);
+    const gen = () => useClaude ? callClaude(genPrompt, capTok) : callOpenAI(genPrompt, capTok, isGen);
 
     let result = await gen();
     // Sahne promptları AYRI 'scenes' çağrılarında bölüm bölüm üretiliyor; taslakta
@@ -572,8 +640,10 @@ ${prompt}`;
         if (sceneCount(retry) >= 0) result = retry;
       }
       if (sceneCount(result) < 0) {
+        logRun({ action: "generate", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "gecersiz_json" });
         return json({ ok: false, error: "Yapay zekâ geçerli JSON döndürmedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       }
+      logRun({ action: "generate", ok: true, ms: Date.now() - t0, user_id: userId || null });
     }
 
     // Üretim başarılı → krediyi ATOMİK düş (başarısız üretim kredi yakmaz)
