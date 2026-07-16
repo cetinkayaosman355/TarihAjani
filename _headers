@@ -12,7 +12,7 @@
 /zaman-tuneli/assets/*
   Cache-Control: public, max-age=604800
 
-/oyunlar/*
+/oyun/*
   Cache-Control: public, max-age=3600
 
 # PWA — service worker ve manifest hep taze kalsın (güncellemeler anında yayılsın)

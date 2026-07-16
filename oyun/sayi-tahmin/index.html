@@ -7,10 +7,10 @@
 </head>
 <body>
 <style>
-.ta-return{position:fixed;z-index:60;top:16px;color:#f0ece2;text-decoration:none;font:700 11px/1 "Special Elite","Courier New",monospace;letter-spacing:.14em;padding:10px 13px;border:1px solid rgba(201,162,90,.45);background:rgba(3,5,11,.78);backdrop-filter:blur(10px);transition:color .2s,border-color .2s}
+.ta-return{position:fixed;z-index:60;top:calc(16px + env(safe-area-inset-top));color:#f0ece2;text-decoration:none;font:700 11px/1 "Special Elite","Courier New",monospace;letter-spacing:.14em;padding:10px 13px;border:1px solid rgba(201,162,90,.45);background:rgba(3,5,11,.78);backdrop-filter:blur(10px);transition:color .2s,border-color .2s}
 .ta-return:hover{color:#e6c478;border-color:#e6c478}
 .ta-return.l{left:16px}.ta-return.r{right:16px}
-@media(max-width:560px){.ta-return{font-size:9.5px;padding:8px 10px;top:10px}.ta-return.l{left:10px}.ta-return.r{right:10px}}
+@media(max-width:560px){.ta-return{font-size:9.5px;padding:8px 10px;top:calc(10px + env(safe-area-inset-top))}.ta-return.l{left:10px}.ta-return.r{right:10px}}
 </style>
 <a class="ta-return l" href="/zaman-tuneli">&#8592; OYUN T&#220;NEL&#304;</a>
 <a class="ta-return r" href="/">TA &#183; ANA SAYFA</a>
@@ -169,7 +169,7 @@
 
   /* mute toggle */
   .mute-btn {
-    position: fixed; top: 16px; right: 16px; z-index: 5;
+    position: fixed; top: calc(16px + env(safe-area-inset-top)); right: 16px; z-index: 5;
     width: 40px; height: 40px; border-radius: 50%;
     background: rgba(4,8,22,0.7); border:1px solid var(--hair-soft); color: var(--gold-2);
     font-size: 16px; cursor:pointer; backdrop-filter: blur(4px);

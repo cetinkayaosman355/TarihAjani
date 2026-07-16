@@ -11,9 +11,9 @@
 /dene              /ornek.html                200
 /vaka-dosyalari    /Vaka%20Dosyalari.dc.html  200
 /zaman-tuneli      /zaman-tuneli/index.html   200
-/satranc           /oyunlar/satranc/index.html 200
-/mangala           /oyunlar/mangala/index.html 200
-/oyunlar           /oyunlar/index.html        200
+/satranc           /oyun/satranc-1402         301!
+/mangala           /oyun/mangala              301!
+/oyunlar           /zaman-tuneli              301!
 /admin             /Admin.dc.html             200
 /satis             /Satis.dc.html             200
 /uyelik            /Uyelik.dc.html            200
