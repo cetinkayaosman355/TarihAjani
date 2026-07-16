@@ -282,7 +282,10 @@
                     </sc-if>
                     <sc-if value="{{ iq.pending }}" hint-placeholder-val="{{ true }}">
                       <div style="{{ iq.pendStyle }}">
-                        <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; text-align: center; padding: 10px;">{{ iq.status }}</span>
+                        <div style="display: grid; gap: 12px; place-items: center;">
+                          <div style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(193,154,82,.25); border-top-color: #e6c478; animation: ta-spin 1s linear infinite;"></div>
+                          <span style="color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; text-align: center; padding: 0 10px;">{{ iq.status }}</span>
+                        </div>
                       </div>
                     </sc-if>
                     <p style="margin: 0; color: #818797; font-size: 11.5px; line-height: 1.5; padding: 10px 12px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ iq.prompt }}</p>
@@ -594,7 +597,8 @@
                     </sc-if>
                     <sc-if value="{{ hasSysAudio }}" hint-placeholder-val="{{ false }}">
                       <audio controls="{{ true }}" preload="none" src="{{ sysAudioUrl }}" style="width: 100%; margin-top: 12px;"></audio>
-                      <a href="{{ sysAudioUrl }}" download="tarih-ajani-seslendirme.mp3" style="display: block; margin-top: 8px; text-align: center; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; color: #e6c478; border: 1px solid rgba(193,154,82,.5); padding: 10px; text-decoration: none;" style-hover="background: rgba(193,154,82,.12);">⬇ MP3 İNDİR</a>
+                      <button onClick="{{ dlAudio }}" disabled="{{ audioDl }}" style="display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 10px; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; border: 0; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12px; letter-spacing: .12em; padding: 14px;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.35); transform: translateY(-1px);"><span style="font-size: 15px; line-height: 1;">⬇</span> {{ audioDlLabel }}</button>
+                      <p style="margin: 7px 0 0; text-align: center; color: #676d7c; font-size: 11px;">{{ audioFileHint }}</p>
                     </sc-if>
                   </div>
                   <div style="border: 1px solid rgba(193,154,82,.35); background: rgba(193,154,82,.05); padding: 20px 22px;">
@@ -1036,7 +1040,7 @@ class Component extends DCLogic {
       history: saved.history || [],
       creditModal: false,
       elKey: saved.elKey || '', ttsBusy: false, ttsError: '', audioUrl: '',
-      sysTtsBusy: false, sysTtsError: '', sysAudioUrl: '',
+      sysTtsBusy: false, sysTtsError: '', sysAudioUrl: '', audioDl: false,
       copied: {}
     };
   }
@@ -2000,6 +2004,33 @@ class Component extends DCLogic {
       if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
     });
   }
+  // Türkçe başlıktan güvenli dosya adı üret
+  slugTr(t, fallback) {
+    const s = String(t || '').toLocaleLowerCase('tr')
+      .replace(/ı/g, 'i').replace(/İ/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50);
+    return s || (fallback || 'tarih-ajani');
+  }
+  audioFileName() { return this.slugTr((this.state.result || {}).baslik, 'tarih-ajani') + '-seslendirme.mp3'; }
+  // Seslendirmeyi DOĞRUDAN indir (uzak URL'de bile yeni sekme açmadan), hikâye adıyla
+  async dlAudio() {
+    const url = this.state.sysAudioUrl; if (!url) return;
+    const name = this.audioFileName();
+    this.setState({ audioDl: true });
+    try {
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      const obj = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = obj; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(obj), 1500);
+    } catch (e) {
+      const a = document.createElement('a'); a.href = url; a.download = name; a.target = '_blank';
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+    this.setState({ audioDl: false });
+  }
 
   buildPrompt(outlineOnly) {
     const s = this.state;
@@ -2627,8 +2658,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[x.ar] || '16/9';
         return {
           ...x, hasUrl: !!x.url, pending: !x.url,
-          thumbStyle: { width: '100%', aspectRatio: arCss, objectFit: 'cover', display: 'block', cursor: 'zoom-in' },
-          pendStyle: { aspectRatio: arCss, display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px)' },
+          thumbStyle: { width: '100%', aspectRatio: arCss, maxHeight: '56vh', objectFit: 'contain', background: '#05070d', display: 'block', cursor: 'zoom-in' },
+          pendStyle: { width: '100%', aspectRatio: arCss, maxHeight: '56vh', display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px)', backgroundSize: '34px 34px', animation: 'ta-scan .9s linear infinite' },
           zoom: () => this.setState({ imgZoom: x.url }),
           dl: () => this.dlImage(x.url),
           sel: !!(s.imgSel || {})[x.id],
@@ -2730,7 +2761,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[x.ar] || '16/9';
         return {
           url: x.url,
-          thumbStyle: { width: '100%', aspectRatio: arCss, objectFit: 'cover', display: 'block', cursor: 'zoom-in' },
+          thumbStyle: { width: '100%', aspectRatio: arCss, maxHeight: '48vh', objectFit: 'contain', background: '#05070d', display: 'block', cursor: 'zoom-in' },
           zoom: () => this.setState({ imgZoom: x.url }),
           dl: () => this.dlImage(x.url),
           del: () => this.delSavedImg(x.id)
@@ -2816,6 +2847,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       sysTtsLabel: s.sysTtsBusy ? '🎙 ÜRETİLİYOR… (~20 sn)' : ('🎙 SESLENDİRME ÜRET · ' + this.ttsCost() + ' KR'),
       sysTtsError: s.sysTtsError,
       hasSysAudio: !!s.sysAudioUrl, sysAudioUrl: s.sysAudioUrl,
+      dlAudio: () => this.dlAudio(), audioDl: s.audioDl,
+      audioDlLabel: s.audioDl ? 'İNDİRİLİYOR…' : 'MP3 İNDİR',
+      audioFileHint: this.audioFileName(),
       sysVoiceName: (() => { const o = this.find('voice', s.voice); return o ? o.name + ' (' + (o.engine === 'eleven' ? 'ElevenLabs' : (o.oa || 'onyx')) + ')' : 'Erkek · Anlatıcı (onyx)'; })(),
 
       resKapak: mkCopy(r.kapak, 'kp').map((x, i) => ({
