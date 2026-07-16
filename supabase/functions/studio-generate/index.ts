@@ -120,8 +120,33 @@ async function callOpenAI(prompt: string, maxTokens?: number, jsonMode?: boolean
 
 // Üretim çıktısını JSON'a çevirmeyi dene (client ile aynı temizleme); olmazsa null.
 function tryParseJson(text: string): any | null {
-  const clean = String(text).replace(/^[\s\S]*?\{/, "{").replace(/\}[^}]*$/, "}");
-  try { return JSON.parse(clean); } catch { return null; }
+  let t = String(text).trim();
+  // ```json … ``` çitlerini soy (model bazen kod bloğu ekler)
+  t = t.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "");
+  const clean = t.replace(/^[\s\S]*?\{/, "{").replace(/\}[^}]*$/, "}");
+  try { return JSON.parse(clean); } catch { /* devam: onarım dene */ }
+  // Kesilmiş JSON kurtarma: string içi/dışı takip ederek açık {/[ yığınını
+  // DOĞRU SIRAYLA kapat (iç içe yapıda sıra önemlidir).
+  try {
+    const src = t.replace(/^[\s\S]*?\{/, "{");        // ilk { den başla, sonu kesme
+    const stack: string[] = [];
+    let inStr = false, esc = false;
+    for (const ch of src) {
+      if (inStr) {
+        if (esc) esc = false;
+        else if (ch === "\\") esc = true;
+        else if (ch === '"') inStr = false;
+        continue;
+      }
+      if (ch === '"') inStr = true;
+      else if (ch === "{" || ch === "[") stack.push(ch);
+      else if (ch === "}" || ch === "]") stack.pop();
+    }
+    let s = src.replace(/,\s*$/, "");                 // asılı virgülü at
+    if (inStr) s += '"';                              // yarım string'i kapat
+    for (let i = stack.length - 1; i >= 0; i--) s += stack[i] === "{" ? "}" : "]";
+    return JSON.parse(s);
+  } catch { return null; }
 }
 
 // -1: geçersiz JSON · 0..N: gorsel_promptlar öğe sayısı
@@ -141,25 +166,26 @@ const CLAUDE_MODELS = [
   "claude-sonnet-4-20250514",
 ];
 
-async function callClaude(prompt: string, maxTokens?: number): Promise<string> {
+async function callClaude(prompt: string, maxTokens?: number, jsonMode?: boolean): Promise<string> {
   const key = Deno.env.get("ANTHROPIC_API_KEY");
   if (!key) throw new Error("ANTHROPIC_API_KEY secret eksik.");
   let lastErr = "";
   for (const model of CLAUDE_MODELS) {
     let tokens = Math.min(maxTokens || 4000, 16000);
     for (let attempt = 0; attempt < 2; attempt++) {
+      // JSON GÜVENİLİRLİĞİ: asistan cevabını "{" ile ÖN-DOLDUR → Claude önsöz/
+      // markdown/```json ekleyemez, doğrudan JSON gövdesini yazmak zorunda kalır.
+      const messages: any[] = [{ role: "user", content: prompt }];
+      if (jsonMode) messages.push({ role: "assistant", content: "{" });
       const r = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model,
-          max_tokens: tokens,
-          messages: [{ role: "user", content: prompt }],
-        }),
+        body: JSON.stringify({ model, max_tokens: tokens, messages }),
       });
       if (r.ok) {
         const d = await r.json();
-        return (d.content || []).map((c: any) => c.text || "").join("\n");
+        const body = (d.content || []).map((c: any) => c.text || "").join("\n");
+        return jsonMode ? "{" + body : body;   // ön-doldurulan "{" cevaba dahil değildir → geri ekle
       }
       const txt = await r.text();
       lastErr = txt;
@@ -729,9 +755,13 @@ ${brief}
 ${prompt}`;
       }
     }
-    // G-01: token tavanı sunucuda — ücretsiz uçlarda istemci 16k isteyemez
-    const capTok = Math.min(Number(b.max_tokens) || 4000, isGen ? 16000 : 4000);
-    const gen = () => useClaude ? callClaude(genPrompt, capTok) : callOpenAI(genPrompt, capTok, isGen);
+    // G-01: token tavanı sunucuda — ücretsiz uçlarda istemci 16k isteyemez.
+    // Üretimde TABAN 8000: taslak JSON'un ortadan kesilip geçersiz olmasını önler.
+    const capTok = isGen
+      ? Math.min(Math.max(Number(b.max_tokens) || 8000, 8000), 16000)
+      : Math.min(Number(b.max_tokens) || 4000, 4000);
+    // Üretimde jsonMode: Claude prefill + OpenAI response_format json_object
+    const gen = () => useClaude ? callClaude(genPrompt, capTok, isGen) : callOpenAI(genPrompt, capTok, isGen);
 
     let result = await gen();
     // Sahne promptları AYRI 'scenes' çağrılarında bölüm bölüm üretiliyor; taslakta
