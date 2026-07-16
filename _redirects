@@ -7,6 +7,8 @@
 /ekitap            /Ekitap.dc.html            200
 /urunler           /Urunler.dc.html           200
 /studio            /Studio.dc.html            200
+/ornek             /ornek.html                200
+/dene              /ornek.html                200
 /vaka-dosyalari    /Vaka%20Dosyalari.dc.html  200
 /zaman-tuneli      /zaman-tuneli/index.html   200
 /satranc           /oyunlar/satranc/index.html 200
@@ -17,6 +19,15 @@
 /uyelik            /Uyelik.dc.html            200
 /bulten            /bulten.html               200
 /bulten-tesekkurler  /bulten-tesekkurler.html 200
+/oyun/sayi-tahmin  /oyun/sayi-tahmin/index.html  200
+/oyun/satranc-1402 /oyun/satranc-1402/index.html 200
+/oyun/mangala      /oyun/mangala/index.html      200
+/arsiv             /Arsiv.dc.html             200
+# Vaka Günlüğü arşive taşındı → tek hub /arsiv (hikâyeler /arsiv/<slug>/)
+/vaka-gunlugu      /arsiv                     301!
+/vaka-gunlugu/     /arsiv                     301!
+/arsiv/katalog     /arsiv                     301!
+/arsiv/katalog/    /arsiv                     301!
 
 # Eski .dc.html adresleri → temiz URL (301: tek kanonik adres, çift içerik önlenir)
 /Tarih%20Ajani.dc.html     /                  301!
@@ -26,3 +37,4 @@
 /Studio.dc.html            /studio            301!
 /Vaka%20Dosyalari.dc.html  /vaka-dosyalari    301!
 /Uyelik.dc.html            /uyelik            301!
+/Arsiv.dc.html             /arsiv             301!

@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tarih Ajanı — Zaman Görevi</title>
+</head>
+<body>
+<style>
+.ta-return{position:fixed;z-index:60;top:16px;color:#f0ece2;text-decoration:none;font:700 11px/1 "Special Elite","Courier New",monospace;letter-spacing:.14em;padding:10px 13px;border:1px solid rgba(201,162,90,.45);background:rgba(3,5,11,.78);backdrop-filter:blur(10px);transition:color .2s,border-color .2s}
+.ta-return:hover{color:#e6c478;border-color:#e6c478}
+.ta-return.l{left:16px}.ta-return.r{right:16px}
+@media(max-width:560px){.ta-return{font-size:9.5px;padding:8px 10px;top:10px}.ta-return.l{left:10px}.ta-return.r{right:10px}}
+</style>
+<a class="ta-return l" href="/zaman-tuneli">&#8592; OYUN T&#220;NEL&#304;</a>
+<a class="ta-return r" href="/">TA &#183; ANA SAYFA</a>
+
+<style>
+  :root {
+    --ink-900: #05091a;
+    --ink-850: #070c22;
+    --ink-800: #0a1030;
+    --ink-750: #0d1740;
+    --gold:   #c9a24b;
+    --gold-2: #e7cd86;
+    --gold-3: #f3e4bd;
+    --parchment: #ece1c8;
+    --txt:    #eef1f8;
+    --dim:    #9aa6bf;
+    --faint:  #5f6c8a;
+    --hair:   rgba(201,162,75,0.22);
+    --hair-soft: rgba(201,162,75,0.12);
+    --emerald: #5cb999;
+    --rose:    #dd8c88;
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --mono: ui-monospace, "SFMono-Regular", "DejaVu Sans Mono", "Courier New", monospace;
+    --sans: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--txt);
+    background: var(--ink-900);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 16px;
+    overflow-x: hidden;
+  }
+
+  #veil { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.035;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+  }
+
+  .app { position: relative; z-index: 2; width: 100%; max-width: min(1020px, 96vw); }
+
+  /* ---- CARD ---- */
+  .card {
+    position: relative;
+    background:
+      radial-gradient(120% 90% at 50% -10%, rgba(201,162,75,0.09), transparent 60%),
+      linear-gradient(180deg, rgba(14,24,58,0.78), rgba(6,11,30,0.90));
+    border: 1px solid var(--hair-soft);
+    border-radius: 14px;
+    padding: 30px 40px 28px;
+    box-shadow: 0 40px 90px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+    backdrop-filter: blur(6px);
+  }
+  .card::before {
+    content: ""; position: absolute; inset: 12px;
+    border: 1px solid var(--hair-soft); border-radius: 8px; pointer-events: none;
+  }
+  .corner { position: absolute; width: 26px; height: 26px; z-index: 3; pointer-events: none; }
+  .corner::before, .corner::after { content: ""; position: absolute; background: var(--gold); opacity: 0.6; }
+  .corner::before { width: 26px; height: 1px; }
+  .corner::after { width: 1px; height: 26px; }
+  .corner.tl { top: 8px; left: 8px; } .corner.tl::before { top:0; left:0; } .corner.tl::after { top:0; left:0; }
+  .corner.tr { top: 8px; right: 8px; } .corner.tr::before { top:0; right:0; } .corner.tr::after { top:0; right:0; }
+  .corner.bl { bottom: 8px; left: 8px; } .corner.bl::before { bottom:0; left:0; } .corner.bl::after { bottom:0; left:0; }
+  .corner.br { bottom: 8px; right: 8px; } .corner.br::before { bottom:0; right:0; } .corner.br::after { bottom:0; right:0; }
+
+  /* ---- CREST ---- */
+  .crest { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .emblem { width: 60px; height: 60px; margin-bottom: 12px; }
+  .emblem .spin { transform-origin: 50% 50%; animation: turn 60s linear infinite; }
+  @keyframes turn { to { transform: rotate(360deg); } }
+
+  .kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+  .kicker .sep { opacity: 0.5; margin: 0 7px; }
+
+  h1 {
+    margin: 0 0 6px; font-family: var(--serif); font-weight: 700;
+    font-size: clamp(38px, 9vw, 58px); line-height: 1.0; letter-spacing: 0.5px;
+    text-wrap: balance; color: var(--gold-3);
+  }
+  h1 .amp { font-style: italic; color: var(--gold); font-weight: 400; }
+
+  .rule { display:flex; align-items:center; justify-content:center; gap:12px; margin: 12px 0 14px; color: var(--gold); }
+  .rule::before, .rule::after { content:""; height:1px; width:64px; background: linear-gradient(90deg, transparent, var(--gold)); opacity:0.6; }
+  .rule::after { background: linear-gradient(90deg, var(--gold), transparent); }
+  .rule .diamond { width:6px; height:6px; background: var(--gold); transform: rotate(45deg); }
+
+  .subtitle { color: var(--dim); font-family: var(--serif); font-size: 16px; font-style: italic; line-height: 1.6; margin: 0 auto 18px; max-width: 46ch; text-align: center; }
+
+  .record-line { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-2); text-align:center; margin-bottom: 22px; }
+  .record-line span { color: var(--txt); font-weight: 700; }
+  .record-line.hidden { display: none; }
+
+  .brief { font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: #c6cee0; border-top: 1px solid var(--hair-soft); border-bottom: 1px solid var(--hair-soft); padding: 13px 4px; margin-bottom: 20px; text-align: left; }
+  .brief .bl { color: var(--gold); letter-spacing: 2px; display:block; margin-bottom: 8px; font-size: 10px; text-transform: uppercase; }
+  .brief strong { color: var(--gold-2); font-weight: 600; }
+
+  .field-label { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; text-align:center; }
+
+  /* clearance */
+  .clearance { display: flex; gap: 10px; margin-bottom: 20px; }
+  .cl-opt {
+    flex: 1; text-align: center; padding: 12px 6px 11px;
+    border: 1px solid var(--hair-soft); border-radius: 9px; cursor: pointer;
+    font-family: var(--mono); font-size: 13px; color: var(--dim);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    user-select: none; background: rgba(4,8,22,0.4); display: block; width: 100%;
+  }
+  .cl-opt .lv { display:block; font-size:9px; letter-spacing:2px; color: var(--faint); margin-bottom:5px; }
+  .cl-opt .nm { display:block; font-family: var(--serif); font-size: 15px; color: var(--txt); }
+  .cl-opt small { display: block; font-size: 10px; margin-top: 5px; color: var(--faint); }
+  .cl-opt:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .cl-opt:focus-visible { outline: 2px solid var(--gold-3); outline-offset: 2px; }
+  .cl-opt.active { border-color: var(--gold); background: linear-gradient(180deg, rgba(201,162,75,0.18), rgba(201,162,75,0.06)); box-shadow: 0 8px 22px rgba(201,162,75,0.14), inset 0 0 0 1px rgba(201,162,75,0.3); }
+  .cl-opt.active .nm { color: var(--gold-3); }
+  .cl-opt.active .lv { color: var(--gold); }
+
+  /* buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+    padding: 16px 22px; font-family: var(--mono); font-size: 13px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase; color: #1a1405;
+    background: linear-gradient(180deg, var(--gold-2), var(--gold));
+    border: none; border-radius: 9px; cursor: pointer;
+    transition: transform 0.14s ease, box-shadow 0.25s, filter 0.2s;
+    box-shadow: 0 10px 26px rgba(201,162,75,0.28), inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+  .btn:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 14px 32px rgba(201,162,75,0.36), inset 0 1px 0 rgba(255,255,255,0.5); }
+  .btn:active { transform: translateY(0); }
+  .btn:focus-visible { outline: 2px solid var(--gold-3); outline-offset: 3px; }
+  .btn.ghost { background: transparent; color: var(--gold); border: 1px solid var(--hair); box-shadow: none; }
+  .btn.ghost:hover { border-color: var(--gold); background: rgba(201,162,75,0.06); }
+
+  /* category select */
+  .cat-wrap { margin-bottom: 26px; }
+  .cat-select {
+    width:100%; font-family:var(--mono); font-size:13px; color:var(--txt);
+    background:rgba(4,8,22,0.55); border:1px solid var(--hair-soft); border-radius:9px;
+    padding:13px 40px 13px 14px; appearance:none; -webkit-appearance:none; cursor:pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--gold) 50%), linear-gradient(135deg, var(--gold) 50%, transparent 50%);
+    background-position: right 17px center, right 12px center; background-size:5px 5px, 5px 5px; background-repeat:no-repeat;
+    transition: border-color .2s;
+  }
+  .cat-select:hover { border-color: var(--gold); }
+  .cat-select:focus-visible { outline:2px solid var(--gold-3); outline-offset:2px; }
+  .cat-select option { background:#0a1330; color:var(--txt); }
+
+  /* mute toggle */
+  .mute-btn {
+    position: fixed; top: 16px; right: 16px; z-index: 5;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(4,8,22,0.7); border:1px solid var(--hair-soft); color: var(--gold-2);
+    font-size: 16px; cursor:pointer; backdrop-filter: blur(4px);
+    transition: border-color .2s, transform .12s;
+  }
+  .mute-btn:hover { border-color: var(--gold); transform: translateY(-1px); }
+  .mute-btn:focus-visible { outline:2px solid var(--gold-3); outline-offset:2px; }
+  .mute-btn.muted { color: var(--faint); }
+
+  /* jokers */
+  .jokers { display: flex; gap: 9px; margin-bottom: 16px; }
+  .joker {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; color: var(--gold-2);
+    background: rgba(4,8,22,0.5); border: 1px solid var(--hair-soft); border-radius: 8px;
+    padding: 9px 6px; cursor: pointer;
+    transition: border-color .15s, transform .12s, background .15s;
+  }
+  .joker .ji { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--gold-3); line-height: 1; }
+  .joker:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-1px); background: rgba(201,162,75,0.08); }
+  .joker:focus-visible { outline: 2px solid var(--gold-3); outline-offset: 2px; }
+  .joker:disabled { opacity: 0.32; cursor: default; color: var(--faint); }
+  .joker:disabled .ji { color: var(--faint); }
+
+  .option.removed { opacity: 0.26; pointer-events: none; }
+  .option.removed .opt-text { text-decoration: line-through; }
+
+  /* ---- QUIZ ---- */
+  .qtop { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; }
+  .chrono { position: relative; width: 88px; height: 88px; flex-shrink: 0; }
+  .chrono svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .chrono .trk { fill: none; stroke: rgba(201,162,75,0.14); stroke-width: 3.5; }
+  .chrono .prg { fill: none; stroke: var(--gold); stroke-width: 3.5; stroke-linecap: round; filter: drop-shadow(0 0 4px rgba(201,162,75,0.5)); transition: stroke 0.3s; }
+  .chrono .ticks line { stroke: rgba(201,162,75,0.35); stroke-width: 1; }
+  .chrono .num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 27px; font-weight: 700; color: var(--txt); }
+  .chrono .sec { position:absolute; bottom:17px; left:0; right:0; text-align:center; font-family:var(--mono); font-size:7.5px; letter-spacing:2px; color: var(--faint); }
+
+  .qmeters { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .meter { font-family: var(--mono); background: rgba(4,8,22,0.5); border: 1px solid var(--hair-soft); border-radius: 8px; padding: 8px 12px; }
+  .meter .k { font-size: 8.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--faint); display:block; margin-bottom: 2px; }
+  .meter .v { font-size: 18px; font-weight: 700; color: var(--txt); font-variant-numeric: tabular-nums; }
+  .meter .v.gold { color: var(--gold-2); }
+
+  .caseline { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-family: var(--mono); font-size: 10px; letter-spacing: 2px; color: var(--faint); text-transform: uppercase; border-bottom: 1px solid var(--hair-soft); padding-bottom: 12px; margin-bottom: 20px; }
+  .caseline .era { color: var(--gold); }
+  .caseline .file { color: var(--dim); }
+
+  .question { font-family: var(--serif); font-size: clamp(20px, 4.8vw, 25px); line-height: 1.4; font-weight: 400; color: var(--txt); margin-bottom: 24px; text-wrap: pretty; }
+
+  .options { display: grid; gap: 11px; }
+  .option {
+    text-align: left; padding: 15px 17px; background: rgba(4,8,22,0.45);
+    border: 1px solid var(--hair-soft); border-radius: 9px; color: var(--txt);
+    font-size: 15.5px; cursor: pointer;
+    transition: transform 0.16s, border-color 0.16s, background 0.16s;
+    display: flex; align-items: center; gap: 14px; font-family: var(--sans);
+    animation: optin 0.32s ease both;
+  }
+  @keyframes optin { from { opacity: 0; } to { opacity: 1; } }
+  .option .key { flex-shrink: 0; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: transparent; color: var(--gold-2); font-family: var(--serif); font-weight: 700; font-size: 15px; border: 1px solid var(--hair); transition: border-color 0.16s, background 0.16s, color 0.16s; }
+  .option:hover:not(.disabled) { border-color: var(--gold); background: rgba(201,162,75,0.07); transform: translateX(4px); }
+  .option:hover:not(.disabled) .key { border-color: var(--gold); }
+  .option:focus-visible { outline: 2px solid var(--gold-3); outline-offset: 2px; }
+  .option.correct { border-color: var(--emerald); background: rgba(92,185,153,0.13); }
+  .option.correct .key { background: var(--emerald); color: #052018; border-color: var(--emerald); }
+  .option.wrong { border-color: var(--rose); background: rgba(221,140,136,0.12); }
+  .option.wrong .key { background: var(--rose); color: #320f0e; border-color: var(--rose); }
+  .option.disabled { cursor: default; }
+
+  .feedback { margin-top: 20px; padding: 15px 17px; border-radius: 9px; font-size: 14px; line-height: 1.65; display: none; }
+  .feedback.show { display: block; }
+  .feedback.ok { background: rgba(92,185,153,0.09); border: 1px solid rgba(92,185,153,0.35); }
+  .feedback.no { background: rgba(221,140,136,0.09); border: 1px solid rgba(221,140,136,0.35); }
+  .feedback .lead { font-family: var(--mono); font-weight: 700; letter-spacing: 1.5px; font-size: 12px; }
+  .feedback.ok .lead { color: var(--emerald); }
+  .feedback.no .lead { color: var(--rose); }
+  .feedback .info { color: var(--dim); display:block; margin-top: 7px; font-family: var(--serif); font-style: italic; font-size: 14.5px; }
+
+  .next-row { margin-top: 20px; display: none; }
+  .next-row.show { display: block; }
+
+  /* wax seal */
+  .seal { position: absolute; top: 40%; left: 50%; transform: translate(-50%,-50%) scale(0.3); opacity: 0; width: 128px; height: 128px; pointer-events: none; z-index: 6; }
+  .seal.show { animation: sealin 0.55s cubic-bezier(.2,1.3,.35,1) forwards; }
+  @keyframes sealin {
+    0% { opacity:0; transform: translate(-50%,-50%) scale(1.5) rotate(-14deg); }
+    60% { opacity:0.96; transform: translate(-50%,-50%) scale(0.94) rotate(-8deg); }
+    100% { opacity:0.94; transform: translate(-50%,-50%) scale(1) rotate(-8deg); }
+  }
+  .seal .stxt { font-family: var(--mono); font-weight: 800; font-size: 15px; letter-spacing: 1px; }
+
+  /* ---- RESULT ---- */
+  .r-wrap { text-align:center; }
+  .r-medal { width: 78px; height: 78px; margin: 0 auto 12px; }
+  .r-title { font-family: var(--serif); font-weight:700; font-size: 30px; letter-spacing:0.5px; color: var(--gold-3); margin-bottom: 8px; }
+  .r-rank { color: var(--dim); font-family: var(--mono); font-size: 12px; line-height:1.7; margin-bottom: 20px; max-width: 44ch; margin-left:auto; margin-right:auto; }
+  .r-record { font-family: var(--mono); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-3); background: rgba(201,162,75,0.12); border: 1px solid var(--hair); border-radius: 999px; padding: 7px 16px; display: inline-block; margin-bottom: 18px; }
+  .r-record.hidden { display: none; }
+  .r-score { font-family: var(--serif); font-size: 60px; font-weight: 700; color: var(--gold-2); line-height:1; }
+  .r-sub { font-family: var(--mono); color: var(--faint); font-size: 10px; letter-spacing: 4px; margin: 6px 0 26px; text-transform:uppercase; }
+  .r-stats { display: flex; justify-content: center; gap: 12px; margin-bottom: 26px; }
+  .r-stats .rs { flex:1; max-width:130px; background: rgba(4,8,22,0.5); border:1px solid var(--hair-soft); border-radius:9px; padding:14px 6px; }
+  .r-stats .rs b { display:block; font-family:var(--serif); font-size: 26px; color: var(--txt); }
+  .r-stats .rs span { font-family:var(--mono); font-size: 9px; letter-spacing:1.5px; color: var(--faint); text-transform:uppercase; }
+
+  .hidden { display: none !important; }
+
+  @keyframes rise { 0% { opacity: 0; transform: translateY(14px); } 100% { opacity: 1; transform: translateY(0); } }
+  .anim { animation: rise 0.45s cubic-bezier(.2,.7,.3,1); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .anim, .seal.show, .emblem .spin, .option { animation: none; }
+    .seal.show { opacity: 0.94; transform: translate(-50%,-50%) scale(1) rotate(-8deg); }
+    .btn, .option, .chrono .prg, .cl-opt { transition: none; }
+  }
+
+  @media (max-width: 520px) {
+    .card { padding: 28px 20px 24px; }
+    .qmeters { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<canvas id="veil"></canvas>
+<button id="mute" class="mute-btn" aria-label="Sesi aç/kapat" aria-pressed="false">♪</button>
+
+<div class="app">
+
+  <!-- START -->
+  <div id="screen-start" class="card anim">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    <div class="crest">
+      <svg class="emblem" viewBox="0 0 100 100" aria-hidden="true">
+        <g class="spin">
+          <circle cx="50" cy="50" r="46" fill="none" stroke="#c9a24b" stroke-width="1" opacity="0.5"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#c9a24b" stroke-width="0.5" opacity="0.35"/>
+          <g id="emb-ticks"></g>
+        </g>
+        <g stroke="#e7cd86" stroke-width="2.2" fill="none" stroke-linejoin="round">
+          <path d="M36 32 H64 M36 68 H64"/>
+          <path d="M36 32 C36 46 64 54 64 68"/>
+          <path d="M64 32 C64 46 36 54 36 68"/>
+        </g>
+        <path d="M50 50 L44 40 H56 Z" fill="#e7cd86" opacity="0.85"/>
+        <path d="M50 50 L44 60 H56 Z" fill="#c9a24b" opacity="0.7"/>
+      </svg>
+      <div class="kicker">CHRONOS<span class="sep">◆</span>ZAMAN İSTİHBARAT BÜROSU</div>
+      <h1>Tarih <span class="amp">Ajanı</span></h1>
+      <div class="rule"><span class="diamond"></span></div>
+      <p class="subtitle">Zaman çizgisinde kayıtlar bozuluyor. Sapmaları düzeltmekle görevli saha ajanı sensin — her doğru cevap tarihi yerine oturtur.</p>
+    </div>
+
+    <div class="record-line hidden" id="record-line">◆ En Yüksek Puan · <span id="record-val">0</span></div>
+
+    <div class="brief">
+      <span class="bl">◈ Gelen Telsiz · Şifre Çözüldü</span>
+      Ajan, saha hazır. İletilen dosyaları doğru yanıtla ve zaman çizgisini <strong>stabilize et</strong>. Kronometre işliyor — ne kadar hızlıysan o kadar çok <strong>puan</strong>. Üst üste doğrular <strong>seri bonusu</strong> kazandırır; görev sonunda rütben tescillenir.
+    </div>
+
+    <div class="field-label">— Yetki Seviyesi Seç —</div>
+    <div class="clearance" id="clearance" role="radiogroup" aria-label="Yetki seviyesi">
+      <button type="button" class="cl-opt active" data-diff="kolay" role="radio" aria-checked="true"><span class="lv">SEVİYE I</span><span class="nm">Çaylak</span><small>20 saniye</small></button>
+      <button type="button" class="cl-opt" data-diff="orta" role="radio" aria-checked="false"><span class="lv">SEVİYE II</span><span class="nm">Saha Ajanı</span><small>15 saniye</small></button>
+      <button type="button" class="cl-opt" data-diff="zor" role="radio" aria-checked="false"><span class="lv">SEVİYE III</span><span class="nm">Efsane</span><small>10 saniye</small></button>
+    </div>
+
+    <button class="btn" id="btn-start">◈ Görevi Aç</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screen-quiz" class="card hidden">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    <svg class="seal" id="seal" viewBox="0 0 128 128" aria-hidden="true">
+      <circle cx="64" cy="64" r="60" fill="none" stroke="currentColor" stroke-width="2" opacity="0.5"/>
+      <circle cx="64" cy="64" r="52" fill="none" stroke="currentColor" stroke-width="3"/>
+      <circle cx="64" cy="64" r="44" fill="none" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+      <g id="seal-ticks"></g>
+      <text class="stxt" id="seal-text" x="64" y="70" text-anchor="middle" fill="currentColor"></text>
+    </svg>
+
+    <div class="qtop">
+      <div class="chrono" aria-hidden="true">
+        <svg viewBox="0 0 88 88">
+          <g class="ticks" id="ticks"></g>
+          <circle class="trk" cx="44" cy="44" r="37"></circle>
+          <circle class="prg" id="chrono-prg" cx="44" cy="44" r="37"></circle>
+        </svg>
+        <div class="num" id="chrono-num">20</div>
+        <div class="sec">SANİYE</div>
+      </div>
+      <div class="qmeters">
+        <div class="meter"><span class="k">Puan</span><span class="v gold" id="hud-score">0</span></div>
+        <div class="meter"><span class="k">Seri</span><span class="v" id="hud-streak">0</span></div>
+        <div class="meter"><span class="k">Can</span><span class="v" id="hud-lives">♦ ♦ ♦</span></div>
+        <div class="meter"><span class="k">Dosya</span><span class="v" id="hud-prog">1/12</span></div>
+      </div>
+    </div>
+
+    <div class="caseline">
+      <span class="era" id="qera">DÖNEM</span>
+      <span class="file" id="qfile">DOSYA 01</span>
+    </div>
+
+    <div class="jokers" id="jokers" aria-label="Joker hakları">
+      <button type="button" class="joker" id="jk-fifty" title="Yarı Yarıya — iki yanlış şıkkı ele"><span class="ji">½</span><span>50:50</span></button>
+      <button type="button" class="joker" id="jk-skip" title="Pas — soruyu can kaybetmeden atla"><span class="ji">⇥</span><span>PAS</span></button>
+      <button type="button" class="joker" id="jk-time" title="+5 saniye ekle"><span class="ji">+5</span><span>SÜRE</span></button>
+    </div>
+
+    <div class="question" id="question">…</div>
+    <div class="options" id="options"></div>
+
+    <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+    <div class="next-row" id="next-row"><button class="btn" id="btn-next">◈ Sonraki Dosya</button></div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result" class="card hidden">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    <div class="r-wrap">
+      <svg class="r-medal" id="r-medal" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="34" fill="none" stroke="#c9a24b" stroke-width="2"/>
+        <circle cx="50" cy="50" r="27" fill="none" stroke="#e7cd86" stroke-width="1" opacity="0.7"/>
+        <path d="M40 78 L34 96 L50 88 L66 96 L60 78 Z" fill="#c9a24b" opacity="0.85"/>
+        <text id="medal-icon" x="50" y="60" text-anchor="middle" font-size="30">🎖️</text>
+      </svg>
+      <div class="kicker">Görev Raporu</div>
+      <div class="r-title" id="result-title">Görev Tamamlandı</div>
+      <div class="r-rank" id="result-rank"></div>
+      <div class="r-record hidden" id="r-record">★ Yeni Rekor</div>
+      <div class="r-score" id="result-score">0</div>
+      <div class="r-sub">Toplam Puan</div>
+      <div class="r-stats">
+        <div class="rs"><b id="rs-correct">0</b><span>Doğru</span></div>
+        <div class="rs"><b id="rs-wrong">0</b><span>Yanlış</span></div>
+        <div class="rs"><b id="rs-best">0</b><span>En İyi Seri</span></div>
+      </div>
+      <button class="btn" id="btn-restart">◈ Yeni Görev</button>
+      <div style="height:11px"></div>
+      <button class="btn ghost" id="btn-menu">◂ Ana Menü</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* ===== GUILLOCHÉ VEIL — drawn ONCE, redrawn only on resize ===== */
+const Veil = (function () {
+  const c = document.getElementById("veil"), ctx = c.getContext("2d");
+  let w, h, dpr, cx, cy;
+
+  function rosette(R, r, d, alpha) {
+    ctx.beginPath();
+    const steps = 1200, diff = R - r;
+    for (let i = 0; i <= steps; i++) {
+      const t = (i / steps) * Math.PI * 2 * r;
+      const x = diff * Math.cos(t) + d * Math.cos((diff / r) * t);
+      const y = diff * Math.sin(t) - d * Math.sin((diff / r) * t);
+      if (i === 0) ctx.moveTo(cx + x, cy + y); else ctx.lineTo(cx + x, cy + y);
+    }
+    ctx.strokeStyle = "rgba(201,162,75," + alpha + ")";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  function draw() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = c.width = Math.floor(innerWidth * dpr);
+    h = c.height = Math.floor(innerHeight * dpr);
+    c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px";
+    cx = w / 2; cy = h / 2;
+
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.75);
+    g.addColorStop(0, "#0a1638"); g.addColorStop(0.55, "#060c22"); g.addColorStop(1, "#03060f");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+
+    const base = Math.min(w, h) * (dpr > 1 ? 0.42 : 0.46);
+    rosette(base, base * 0.30, base * 0.34, 0.05);
+    rosette(base * 0.82, base * 0.19, base * 0.26, 0.06);
+    rosette(base * 0.62, base * 0.14, base * 0.20, 0.07);
+    rosette(base * 0.40, base * 0.11, base * 0.13, 0.06);
+
+    ctx.strokeStyle = "rgba(201,162,75,0.05)";
+    for (let rr = base * 1.05; rr < Math.max(w, h) * 0.8; rr += 70 * dpr) {
+      ctx.beginPath(); ctx.arc(cx, cy, rr, 0, Math.PI * 2); ctx.stroke();
+    }
+  }
+
+  let resizeTimer = null;
+  addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(draw, 150);
+  });
+  draw();
+  return { draw };
+})();
+
+/* ===== SVG tick helpers ===== */
+function radialTicks(groupId, count, cx, cy, r1, r2, longEvery, longR2, stroke, sw, op) {
+  const g = document.getElementById(groupId);
+  if (!g) return;
+  for (let i = 0; i < count; i++) {
+    const a = (i / count) * Math.PI * 2 - Math.PI / 2;
+    const rr2 = (longEvery && i % longEvery === 0) ? longR2 : r2;
+    const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l.setAttribute("x1", (cx + Math.cos(a) * r1).toFixed(2));
+    l.setAttribute("y1", (cy + Math.sin(a) * r1).toFixed(2));
+    l.setAttribute("x2", (cx + Math.cos(a) * rr2).toFixed(2));
+    l.setAttribute("y2", (cy + Math.sin(a) * rr2).toFixed(2));
+    if (stroke) { l.setAttribute("stroke", stroke); l.setAttribute("stroke-width", sw); l.setAttribute("opacity", op); }
+    g.appendChild(l);
+  }
+}
+radialTicks("ticks", 12, 44, 44, 43, 39, 3, 36);
+radialTicks("emb-ticks", 24, 50, 50, 46, 43, 6, 40, "#c9a24b", "1", "0.4");
+radialTicks("seal-ticks", 36, 64, 64, 52, 48, 3, 45, "currentColor", "1.4", "0.7");
+
+/* ===== SORU HAVUZU (100) ===== */
+const POOL = [
+  { era: "Osmanlı Dönemi", q: "İstanbul'un fethi hangi yılda gerçekleşmiştir?",
+    opts: ["1453", "1492", "1071", "1517"], a: 0,
+    info: "Fatih Sultan Mehmet, 29 Mayıs 1453'te İstanbul'u fethetti ve Orta Çağ'ı kapattı." },
+  { era: "Türkiye Cumhuriyeti", q: "Türkiye Cumhuriyeti hangi tarihte ilan edilmiştir?",
+    opts: ["23 Nisan 1920", "29 Ekim 1923", "30 Ağustos 1922", "19 Mayıs 1919"], a: 1,
+    info: "Cumhuriyet, 29 Ekim 1923'te ilan edildi ve Mustafa Kemal Atatürk ilk cumhurbaşkanı oldu." },
+  { era: "Antik Çağ", q: "Anadolu'da parayı (sikkeyi) ilk kez basan uygarlık hangisidir?",
+    opts: ["Hititler", "Frigyalılar", "Lidyalılar", "Urartular"], a: 2,
+    info: "Lidyalılar, MÖ 7. yüzyılda ilk madeni parayı basarak ticarette çığır açtılar." },
+  { era: "Dünya Tarihi", q: "Fransız İhtilali hangi yılda başlamıştır?",
+    opts: ["1776", "1789", "1804", "1815"], a: 1,
+    info: "1789'da Bastille'in düşmesiyle başlayan ihtilal 'Özgürlük, Eşitlik, Kardeşlik' ilkelerini yaydı." },
+  { era: "Selçuklu Dönemi", q: "Malazgirt Savaşı hangi yılda kazanılarak Anadolu'nun kapıları Türklere açılmıştır?",
+    opts: ["1071", "1176", "1243", "1048"], a: 0,
+    info: "1071 Malazgirt Zaferi'nde Sultan Alparslan, Bizans İmparatoru Romen Diyojen'i yendi." },
+  { era: "Dünya Tarihi", q: "Birinci Dünya Savaşı hangi olayla başlamıştır?",
+    opts: ["Pearl Harbor saldırısı", "Avusturya veliahtının öldürülmesi", "Almanya'nın Polonya'yı işgali", "Rus Devrimi"], a: 1,
+    info: "1914'te Avusturya-Macaristan veliahtı Franz Ferdinand'ın Saraybosna'da öldürülmesi savaşı tetikledi." },
+  { era: "Kurtuluş Savaşı", q: "Mustafa Kemal'in Samsun'a çıkarak Milli Mücadele'yi fiilen başlattığı tarih hangisidir?",
+    opts: ["23 Nisan 1920", "19 Mayıs 1919", "9 Eylül 1922", "30 Ağustos 1922"], a: 1,
+    info: "19 Mayıs 1919'da Samsun'a çıkış, Kurtuluş Savaşı'nın başlangıcı kabul edilir." },
+  { era: "Antik Çağ", q: "Ünlü 'İpek Yolu' esas olarak hangi iki bölgeyi birbirine bağlıyordu?",
+    opts: ["Afrika ile Avrupa", "Çin ile Akdeniz/Avrupa", "Amerika ile Asya", "Hindistan ile Avustralya"], a: 1,
+    info: "İpek Yolu, Çin'den başlayıp Orta Asya üzerinden Akdeniz ve Avrupa'ya uzanan ticaret ağıydı." },
+  { era: "Dünya Tarihi", q: "İkinci Dünya Savaşı hangi yıllar arasında yaşanmıştır?",
+    opts: ["1914-1918", "1939-1945", "1929-1933", "1945-1949"], a: 1,
+    info: "1939-1945 arasında yaşanan savaş, insanlık tarihinin en yıkıcı çatışması oldu." },
+  { era: "Bilim Tarihi", q: "Hareketli metal harflerle matbaayı Avrupa'da geliştiren kişi kimdir?",
+    opts: ["Leonardo da Vinci", "Johannes Gutenberg", "Galileo Galilei", "İbrahim Müteferrika"], a: 1,
+    info: "Gutenberg, 15. yüzyıl ortasında matbaayı geliştirerek bilginin hızla yayılmasını sağladı." },
+  { era: "Osmanlı Dönemi", q: "Osmanlı Devleti'nin kurucusu kimdir?",
+    opts: ["Orhan Bey", "Osman Bey", "Ertuğrul Gazi", "I. Murad"], a: 1,
+    info: "Osmanlı Beyliği, 1299 civarında Osman Bey tarafından kuruldu ve adını ondan aldı." },
+  { era: "Coğrafi Keşifler", q: "Amerika kıtasına 1492'de ulaşan denizci kimdir?",
+    opts: ["Vasco da Gama", "Macellan", "Kristof Kolomb", "Marco Polo"], a: 2,
+    info: "Kristof Kolomb, 1492'de İspanya adına Atlantik'i geçerek Amerika kıtasına ulaştı." },
+  { era: "Antik Çağ", q: "Piramitleriyle ünlü, Nil Nehri çevresinde kurulan medeniyet hangisidir?",
+    opts: ["Mezopotamya", "Antik Mısır", "Antik Yunan", "Pers"], a: 1,
+    info: "Antik Mısır medeniyeti, Nil'in verimli kıyılarında binlerce yıl varlığını sürdürdü." },
+  { era: "Türkiye Cumhuriyeti", q: "Türkiye'de kadınlara milletvekili seçme ve seçilme hakkı hangi yıl tanınmıştır?",
+    opts: ["1923", "1930", "1934", "1945"], a: 2,
+    info: "1934'te kadınlar milletvekili seçme ve seçilme hakkını kazandı; bu birçok Avrupa ülkesinden önceydi." },
+  { era: "Dünya Tarihi", q: "'Sanayi Devrimi' ilk olarak hangi ülkede başlamıştır?",
+    opts: ["Fransa", "Almanya", "İngiltere", "ABD"], a: 2,
+    info: "18. yüzyılda İngiltere'de başlayan Sanayi Devrimi, buhar gücüyle üretimi dönüştürdü." },
+  { era: "Kurtuluş Savaşı", q: "Çanakkale Deniz Zaferi hangi tarihte kazanılmıştır?",
+    opts: ["18 Mart 1915", "19 Mayıs 1919", "30 Ağustos 1922", "29 Ekim 1923"], a: 0,
+    info: "18 Mart 1915'te Çanakkale Boğazı'nı geçmek isteyen düşman donanması geri püskürtüldü." },
+  { era: "Türkiye Cumhuriyeti", q: "Ankara hangi yıl başkent ilan edilmiştir?",
+    opts: ["1920", "1923", "1925", "1927"], a: 1,
+    info: "13 Ekim 1923'te Ankara, yeni Türkiye Devleti'nin başkenti ilan edildi." },
+  { era: "Dünya Tarihi", q: "Berlin Duvarı hangi yıl yıkılmıştır?",
+    opts: ["1961", "1975", "1989", "1991"], a: 2,
+    info: "1989'da yıkılan Berlin Duvarı, Soğuk Savaş'ın sonunun simgesi oldu." },
+  { era: "Dünya Tarihi", q: "Ay'a ayak basan ilk insan kimdir?",
+    opts: ["Yuri Gagarin", "Neil Armstrong", "Buzz Aldrin", "John Glenn"], a: 1,
+    info: "Neil Armstrong, 20 Temmuz 1969'da Apollo 11 göreviyle Ay'a ayak basan ilk insan oldu." },
+  { era: "Dünya Tarihi", q: "Rönesans hareketi ilk olarak hangi ülkede başlamıştır?",
+    opts: ["Fransa", "İtalya", "İngiltere", "Almanya"], a: 1,
+    info: "14. yüzyılda İtalya'da başlayan Rönesans, sanat ve bilimde büyük bir uyanış getirdi." },
+  { era: "Antik Çağ", q: "Yazıyı (çivi yazısı) ilk kullanan uygarlık hangisidir?",
+    opts: ["Mısırlılar", "Sümerler", "Hititler", "Fenikeliler"], a: 1,
+    info: "Sümerler, MÖ 3200 civarında çivi yazısını geliştirerek tarihi çağları başlattı." },
+  { era: "Antik Çağ", q: "İlk alfabeyi geliştiren uygarlık hangisidir?",
+    opts: ["Sümerler", "Fenikeliler", "Lidyalılar", "Persler"], a: 1,
+    info: "Fenikeliler, sesleri simgeleyen ilk alfabeyi geliştirip Akdeniz'e yaydılar." },
+  { era: "Osmanlı Dönemi", q: "Tanzimat Fermanı hangi yıl ilan edilmiştir?",
+    opts: ["1839", "1856", "1876", "1908"], a: 0,
+    info: "1839'da ilan edilen Tanzimat Fermanı, Osmanlı'da geniş çaplı yenileşme dönemini başlattı." },
+  { era: "Kurtuluş Savaşı", q: "İstiklal Marşı, TBMM tarafından hangi tarihte kabul edilmiştir?",
+    opts: ["23 Nisan 1920", "12 Mart 1921", "19 Mayıs 1919", "29 Ekim 1923"], a: 1,
+    info: "Mehmet Akif Ersoy'un yazdığı İstiklal Marşı, 12 Mart 1921'de milli marş olarak kabul edildi." },
+  { era: "Sanat Tarihi", q: "Ünlü 'Mona Lisa' tablosunu kim yapmıştır?",
+    opts: ["Michelangelo", "Leonardo da Vinci", "Raphael", "Vincent van Gogh"], a: 1,
+    info: "Mona Lisa, Rönesans ustası Leonardo da Vinci'nin 16. yüzyıl başında yaptığı en ünlü eseridir." },
+  { era: "Buluşlar", q: "Telefonu icat eden kişi olarak kim bilinir?",
+    opts: ["Thomas Edison", "Alexander Graham Bell", "Nikola Tesla", "Guglielmo Marconi"], a: 1,
+    info: "Alexander Graham Bell, 1876'da telefonun patentini aldı ve iletişimi kökten değiştirdi." },
+  { era: "Buluşlar", q: "Elektrikli ampulü geliştiren mucit kimdir?",
+    opts: ["Nikola Tesla", "Thomas Edison", "Michael Faraday", "James Watt"], a: 1,
+    info: "Thomas Edison, 1879'da uzun ömürlü elektrikli ampulü geliştirerek yaygın kullanıma soktu." },
+  { era: "Osmanlı Dönemi", q: "Kanuni Sultan Süleyman'ın Avrupa'da kullanılan lakabı nedir?",
+    opts: ["Yavuz", "Muhteşem", "Fatih", "Gazi"], a: 1,
+    info: "Avrupalılar, ihtişamlı saltanatı nedeniyle Kanuni'ye 'Muhteşem Süleyman' (Suleiman the Magnificent) derdi." },
+  { era: "Dünya Tarihi", q: "Amerika Birleşik Devletleri hangi yıl bağımsızlığını ilan etmiştir?",
+    opts: ["1776", "1789", "1804", "1812"], a: 0,
+    info: "4 Temmuz 1776'da Bağımsızlık Bildirgesi ile ABD kuruluşunu ilan etti." },
+  { era: "Bizans", q: "İstanbul'un, Konstantinopolis adını almadan önceki antik adı nedir?",
+    opts: ["Byzantion", "Nikaia", "Antiokheia", "Efes"], a: 0,
+    info: "Şehir, MÖ 7. yüzyılda kurulan Byzantion adını taşıyordu; sonradan Konstantinopolis oldu." },
+  { era: "Türkiye Cumhuriyeti", q: "Latin harflerine geçişi sağlayan Harf İnkılabı hangi yıl yapılmıştır?",
+    opts: ["1924", "1926", "1928", "1930"], a: 2,
+    info: "1 Kasım 1928'de kabul edilen Harf İnkılabı ile yeni Türk (Latin) alfabesine geçildi." },
+  { era: "Türkiye Cumhuriyeti", q: "Osmanlı'da saltanat hangi yıl kaldırılmıştır?",
+    opts: ["1920", "1922", "1923", "1924"], a: 1,
+    info: "1 Kasım 1922'de saltanat kaldırıldı; son padişah Vahdettin ülkeyi terk etti." },
+  { era: "Kurtuluş Savaşı", q: "Türkiye'nin bağımsızlığını uluslararası alanda tanıtan Lozan Antlaşması hangi yıl imzalanmıştır?",
+    opts: ["1920", "1922", "1923", "1925"], a: 2,
+    info: "24 Temmuz 1923'te imzalanan Lozan Barış Antlaşması, yeni Türkiye'nin tapu belgesi sayılır." },
+  { era: "Dünya Tarihi", q: "Fransız İhtilali sonrası Fransa'da imparatorluğunu ilan eden komutan kimdir?",
+    opts: ["XVI. Louis", "Napolyon Bonapart", "Robespierre", "Charles de Gaulle"], a: 1,
+    info: "Napolyon Bonapart, 1804'te kendini imparator ilan ederek Avrupa'yı yıllarca meşgul etti." },
+  { era: "Antik Çağ", q: "Olimpiyat Oyunları ilk olarak hangi antik uygarlıkta düzenlenmiştir?",
+    opts: ["Roma", "Antik Yunan", "Mısır", "Pers"], a: 1,
+    info: "İlk Olimpiyatlar MÖ 776'da Antik Yunan'daki Olympia kentinde düzenlendi." },
+  { era: "Coğrafi Keşifler", q: "Dünyanın çevresini gemiyle ilk kez dolaşan sefer kimin adıyla anılır?",
+    opts: ["Kristof Kolomb", "Macellan", "Vasco da Gama", "Marco Polo"], a: 1,
+    info: "Macellan'ın 1519'da başlattığı sefer, dünyanın yuvarlak olduğunu fiilen kanıtladı." },
+  { era: "Selçuklu Dönemi", q: "Büyük Selçuklu Devleti'ni kuran ve ilk sultanı olan kişi kimdir?",
+    opts: ["Alparslan", "Tuğrul Bey", "Melikşah", "Çağrı Bey"], a: 1,
+    info: "Tuğrul Bey, 1040 Dandanakan Savaşı'nın ardından Büyük Selçuklu Devleti'ni kurdu." },
+  { era: "Osmanlı Dönemi", q: "İstanbul'u fetheden Fatih Sultan Mehmet, hangi padişahın oğludur?",
+    opts: ["I. Bayezid", "II. Murad", "Yavuz Sultan Selim", "Çelebi Mehmet"], a: 1,
+    info: "Fatih Sultan Mehmet, II. Murad'ın oğludur ve 1451'de tahta çıkmıştır." },
+  { era: "Bilim Tarihi", q: "Yerçekimi yasasını formüle eden bilim insanı kimdir?",
+    opts: ["Galileo Galilei", "Isaac Newton", "Albert Einstein", "Kopernik"], a: 1,
+    info: "Isaac Newton, 17. yüzyılda evrensel çekim yasasını ortaya koyarak modern fiziğin temelini attı." },
+  { era: "Bilim Tarihi", q: "Güneş'in merkezde olduğu (Güneş merkezli) evren modelini ilk öne süren kimdir?",
+    opts: ["Batlamyus", "Kopernik", "Kepler", "Galileo Galilei"], a: 1,
+    info: "Kopernik, 16. yüzyılda Dünya'nın Güneş çevresinde döndüğünü savunarak astronomiyi dönüştürdü." },
+
+  { era: "Osmanlı Dönemi", q: "Yavuz Sultan Selim'in 1517'de Kahire'yi alarak Memlükleri yıktığı savaş hangisidir?",
+    opts: ["Ridaniye", "Mercidabık", "Çaldıran", "Mohaç"], a: 0,
+    info: "1517 Ridaniye Savaşı'yla Mısır alındı ve halifelik Osmanlı'ya geçti." },
+  { era: "Osmanlı Dönemi", q: "Kanuni Sultan Süleyman'ın 1526'da kazanarak Macaristan'ı Osmanlı'ya bağladığı savaş hangisidir?",
+    opts: ["Mohaç", "Varna", "Niğbolu", "Kosova"], a: 0,
+    info: "1526 Mohaç Meydan Muharebesi yaklaşık iki saatte kazanıldı ve Macaristan fethedildi." },
+  { era: "Osmanlı Dönemi", q: "Osmanlı donanmasının 1571'de yenildiği ünlü deniz savaşı hangisidir?",
+    opts: ["Preveze", "Çeşme", "İnebahtı", "Sinop"], a: 2,
+    info: "1571 İnebahtı (Lepanto) yenilgisinin ardından donanma kısa sürede yeniden inşa edildi." },
+  { era: "Osmanlı Dönemi", q: "Barbaros Hayreddin Paşa'nın 1538'de kazandığı büyük deniz zaferi hangisidir?",
+    opts: ["Trafalgar", "Preveze", "İnebahtı", "Çeşme"], a: 1,
+    info: "1538 Preveze Deniz Zaferi ile Akdeniz bir Türk gölü hâline geldi." },
+  { era: "Osmanlı Dönemi", q: "Osmanlı'nın başarısız olan II. Viyana Kuşatması hangi yılda gerçekleşti?",
+    opts: ["1529", "1683", "1699", "1718"], a: 1,
+    info: "1683 II. Viyana bozgunu, Osmanlı'da uzun geri çekilme döneminin başlangıcı sayılır." },
+  { era: "Osmanlı Dönemi", q: "Osmanlı'nın toprak kaybını ilk kez kabul ettiği 1699 tarihli antlaşma hangisidir?",
+    opts: ["Karlofça", "Pasarofça", "Küçük Kaynarca", "Edirne"], a: 0,
+    info: "1699 Karlofça Antlaşması, Osmanlı için Gerileme Dönemi'nin başlangıcı kabul edilir." },
+  { era: "Osmanlı Dönemi", q: "Zevk ve sanata düşkünlüğüyle bilinen Lale Devri hangi padişah döneminde yaşandı?",
+    opts: ["III. Ahmet", "II. Mahmut", "I. Mahmut", "IV. Murat"], a: 0,
+    info: "Lale Devri (1718-1730), III. Ahmet ve Sadrazam Nevşehirli Damat İbrahim Paşa dönemidir." },
+  { era: "Osmanlı Dönemi", q: "İlk Türk matbaasını kuran kişi kimdir?",
+    opts: ["Katip Çelebi", "İbrahim Müteferrika", "Evliya Çelebi", "Ali Kuşçu"], a: 1,
+    info: "İbrahim Müteferrika, 1727'de ilk Türk matbaasını kurdu." },
+  { era: "Osmanlı Dönemi", q: "Osmanlı'nın ilk anayasası Kanun-i Esasi hangi yıl ilan edildi?",
+    opts: ["1839", "1856", "1876", "1908"], a: 2,
+    info: "1876'da ilan edilen Kanun-i Esasi ile I. Meşrutiyet dönemi başladı." },
+  { era: "Osmanlı Dönemi", q: "Dünya haritası ve 'Kitab-ı Bahriye' ile tanınan ünlü Osmanlı denizcisi kimdir?",
+    opts: ["Piri Reis", "Turgut Reis", "Seydi Ali Reis", "Barbaros"], a: 0,
+    info: "Piri Reis, 1513 tarihli dünya haritasıyla döneminin en ileri kartograflarından biriydi." },
+  { era: "Osmanlı Dönemi", q: "Mimar Sinan'ın 'ustalık eserim' dediği yapı hangisidir?",
+    opts: ["Süleymaniye Camii", "Selimiye Camii", "Şehzade Camii", "Sultanahmet Camii"], a: 1,
+    info: "Edirne'deki Selimiye Camii, Mimar Sinan'ın ustalık dönemi başyapıtıdır." },
+
+  { era: "Selçuklu Dönemi", q: "Anadolu Selçuklu Devleti'nin başkenti neresiydi?",
+    opts: ["Konya", "Bursa", "İznik", "Sivas"], a: 0,
+    info: "Anadolu Selçuklu Devleti'nin başkenti Konya'ydı." },
+  { era: "Selçuklu Dönemi", q: "1176 Miryokefalon Savaşı hangi iki taraf arasında yaşandı?",
+    opts: ["Anadolu Selçuklu - Bizans", "Osmanlı - Bizans", "Selçuklu - Haçlılar", "Osmanlı - Safevi"], a: 0,
+    info: "1176 Miryokefalon Zaferi'yle Anadolu'nun kesin Türk yurdu olduğu kabul edildi." },
+  { era: "Selçuklu Dönemi", q: "Büyük Selçuklu'da Nizamiye Medreselerini kuran ünlü vezir kimdir?",
+    opts: ["Nizamülmülk", "Alparslan", "Melikşah", "Tuğrul Bey"], a: 0,
+    info: "Vezir Nizamülmülk, Nizamiye Medreseleri ile eğitimi kurumsallaştırdı." },
+  { era: "Selçuklu Dönemi", q: "1243 Kösedağ Savaşı'nda Anadolu Selçuklu hangi güce yenildi?",
+    opts: ["Moğollar", "Bizans", "Haçlılar", "Memlükler"], a: 0,
+    info: "1243 Kösedağ yenilgisi, Anadolu Selçuklu'nun Moğol egemenliğine girmesine yol açtı." },
+  { era: "Antik Çağ", q: "Türklerin en eski yazılı belgeleri olan Orhun Yazıtları hangi devlete aittir?",
+    opts: ["Göktürkler", "Uygurlar", "Hunlar", "Selçuklular"], a: 0,
+    info: "Orhun (Göktürk) Yazıtları, 8. yüzyıla ait ilk Türkçe yazılı kaynaklardır." },
+  { era: "Antik Çağ", q: "Dede Korkut Hikâyeleri hangi Türk boyuna aittir?",
+    opts: ["Oğuzlar", "Kıpçaklar", "Uygurlar", "Hazarlar"], a: 0,
+    info: "Dede Korkut Hikâyeleri, Oğuz Türklerinin destansı anlatılarıdır." },
+
+  { era: "Türkiye Cumhuriyeti", q: "Türkiye Büyük Millet Meclisi hangi tarihte açıldı?",
+    opts: ["23 Nisan 1920", "19 Mayıs 1919", "29 Ekim 1923", "30 Ağustos 1922"], a: 0,
+    info: "TBMM, 23 Nisan 1920'de Ankara'da açıldı; bu tarih Ulusal Egemenlik günüdür." },
+  { era: "Türkiye Cumhuriyeti", q: "Sakarya Meydan Muharebesi hangi yıl kazanıldı?",
+    opts: ["1920", "1921", "1922", "1923"], a: 1,
+    info: "1921 Sakarya Zaferi, Kurtuluş Savaşı'nda dönüm noktası oldu ('Hatt-ı müdafaa yoktur, sath-ı müdafaa vardır')." },
+  { era: "Türkiye Cumhuriyeti", q: "Dumlupınar'daki Başkomutanlık Meydan Muharebesi hangi tarihte kazanıldı?",
+    opts: ["30 Ağustos 1922", "26 Ağustos 1922", "9 Eylül 1922", "18 Mart 1915"], a: 0,
+    info: "30 Ağustos 1922 zaferi, düşmanın Anadolu'dan atılmasını kesinleştirdi (Zafer Bayramı)." },
+  { era: "Türkiye Cumhuriyeti", q: "İzmir'in düşman işgalinden kurtuluşu hangi tarihtir?",
+    opts: ["9 Eylül 1922", "30 Ağustos 1922", "29 Ekim 1923", "19 Mayıs 1919"], a: 0,
+    info: "9 Eylül 1922'de İzmir'in kurtarılmasıyla Batı Cephesi'ndeki savaş fiilen sona erdi." },
+  { era: "Türkiye Cumhuriyeti", q: "Halifelik hangi tarihte kaldırılmıştır?",
+    opts: ["1922", "1923", "1924", "1928"], a: 2,
+    info: "3 Mart 1924'te halifelik kaldırıldı ve eğitim Tevhid-i Tedrisat ile birleştirildi." },
+  { era: "Türkiye Cumhuriyeti", q: "Eğitimi tek çatı altında toplayan Tevhid-i Tedrisat Kanunu hangi yıl kabul edildi?",
+    opts: ["1924", "1926", "1928", "1930"], a: 0,
+    info: "1924 Tevhid-i Tedrisat Kanunu ile bütün okullar Milli Eğitim'e bağlandı." },
+  { era: "Türkiye Cumhuriyeti", q: "Türk Medeni Kanunu 1926'da hangi ülkeden örnek alınarak kabul edildi?",
+    opts: ["İsviçre", "Fransa", "Almanya", "İtalya"], a: 0,
+    info: "1926'da İsviçre Medeni Kanunu örnek alınarak kabul edildi." },
+  { era: "Türkiye Cumhuriyeti", q: "Soyadı Kanunu hangi yıl kabul edildi?",
+    opts: ["1928", "1930", "1934", "1938"], a: 2,
+    info: "1934 Soyadı Kanunu ile herkese soyadı alma zorunluluğu getirildi." },
+  { era: "Türkiye Cumhuriyeti", q: "Türkiye'nin ilk kadın savaş pilotu ve Atatürk'ün manevi kızı kimdir?",
+    opts: ["Sabiha Gökçen", "Halide Edip Adıvar", "Afet İnan", "Nezihe Muhiddin"], a: 0,
+    info: "Sabiha Gökçen, dünyanın ilk kadın savaş pilotlarından biri oldu." },
+  { era: "Türkiye Cumhuriyeti", q: "Türkiye'de 1946'da kurulup 1950'de iktidara gelen ve çok partili döneme geçişi simgeleyen parti hangisidir?",
+    opts: ["Demokrat Parti", "Cumhuriyet Halk Partisi", "Adalet Partisi", "Anavatan Partisi"], a: 0,
+    info: "1950 seçimleriyle Demokrat Parti iktidara gelerek çok partili hayatı pekiştirdi." },
+
+  { era: "Dünya Tarihi", q: "Roma İmparatorluğu resmen Doğu ve Batı olarak hangi yıl ikiye ayrıldı?",
+    opts: ["313", "330", "395", "476"], a: 2,
+    info: "395'te Theodosius'un ölümüyle imparatorluk Doğu ve Batı olarak ikiye ayrıldı." },
+  { era: "Dünya Tarihi", q: "Batı Roma İmparatorluğu'nun yıkılışı hangi çağın sonu kabul edilir ve hangi yılda gerçekleşti?",
+    opts: ["395", "476", "1204", "1453"], a: 1,
+    info: "476'da Batı Roma'nın yıkılışı, İlk Çağ'ın sonu ve Orta Çağ'ın başlangıcı sayılır." },
+  { era: "Dünya Tarihi", q: "İlk Haçlı Seferi hangi yıl başlamıştır?",
+    opts: ["1096", "1204", "1291", "1453"], a: 0,
+    info: "1096'da başlayan I. Haçlı Seferi, Kudüs'ün Haçlılarca ele geçirilmesiyle sonuçlandı." },
+  { era: "Dünya Tarihi", q: "Yüzyıl Savaşları hangi iki ülke arasında yaşandı?",
+    opts: ["İngiltere - Fransa", "İspanya - Portekiz", "Almanya - Rusya", "İtalya - Avusturya"], a: 0,
+    info: "İngiltere ile Fransa arasındaki Yüzyıl Savaşları (1337-1453) sürdü." },
+  { era: "Dünya Tarihi", q: "Reform hareketini başlatan, 95 tezi yayımlayan din adamı kimdir?",
+    opts: ["Martin Luther", "Jean Calvin", "Kopernik", "Erasmus"], a: 0,
+    info: "Martin Luther, 1517'de 95 tezini yayımlayarak Reform'u başlattı." },
+  { era: "Dünya Tarihi", q: "Amerikan İç Savaşı sırasında köleliği kaldıran ABD başkanı kimdir?",
+    opts: ["Abraham Lincoln", "George Washington", "Thomas Jefferson", "Franklin Roosevelt"], a: 0,
+    info: "Abraham Lincoln döneminde 1865'te ABD'de kölelik kaldırıldı." },
+  { era: "Dünya Tarihi", q: "Rus Çarlığı'nı yıkan 1917 devrimi hangisidir?",
+    opts: ["Ekim (Bolşevik) Devrimi", "Fransız İhtilali", "Meiji Restorasyonu", "Sanayi Devrimi"], a: 0,
+    info: "1917 Ekim Devrimi ile Bolşevikler iktidara geldi ve Sovyet dönemi başladı." },
+  { era: "Dünya Tarihi", q: "İkinci Dünya Savaşı'nda ABD'nin atom bombası attığı Japon şehirleri hangileridir?",
+    opts: ["Hiroşima ve Nagazaki", "Tokyo ve Osaka", "Kyoto ve Kobe", "Nagoya ve Sendai"], a: 0,
+    info: "Ağustos 1945'te Hiroşima ve Nagazaki'ye atılan bombalar savaşı bitirdi." },
+  { era: "Dünya Tarihi", q: "Birleşmiş Milletler (BM) hangi yıl kuruldu?",
+    opts: ["1919", "1945", "1949", "1955"], a: 1,
+    info: "BM, İkinci Dünya Savaşı'nın ardından 1945'te kuruldu." },
+  { era: "Dünya Tarihi", q: "Soğuk Savaş hangi iki süper güç arasında yaşandı?",
+    opts: ["ABD - SSCB", "İngiltere - Fransa", "Çin - Japonya", "Almanya - İtalya"], a: 0,
+    info: "Soğuk Savaş, 1947-1991 arası ABD ve SSCB kutupları arasında sürdü." },
+  { era: "Dünya Tarihi", q: "İkinci Dünya Savaşı'nda Normandiya Çıkarması (D-Day) hangi yıl yapıldı?",
+    opts: ["1941", "1942", "1944", "1945"], a: 2,
+    info: "6 Haziran 1944 D-Day çıkarması, Batı Cephesi'nde dönüm noktası oldu." },
+  { era: "Dünya Tarihi", q: "Sovyetler Birliği hangi yıl dağıldı?",
+    opts: ["1989", "1990", "1991", "1993"], a: 2,
+    info: "1991'de SSCB dağıldı ve Soğuk Savaş sona erdi." },
+  { era: "Antik Çağ", q: "Kavimler Göçü hangi yüzyılda başlamıştır?",
+    opts: ["4. yüzyıl", "8. yüzyıl", "11. yüzyıl", "15. yüzyıl"], a: 0,
+    info: "375'te Hunların hareketiyle başlayan Kavimler Göçü, İlk Çağ'ı kapatan olaylardandır." },
+
+  { era: "Antik Çağ", q: "Demokrasinin doğduğu antik Yunan şehir devleti hangisidir?",
+    opts: ["Atina", "Sparta", "Roma", "Kartaca"], a: 0,
+    info: "Atina, doğrudan demokrasinin ilk uygulandığı şehir devletiydi." },
+  { era: "Antik Çağ", q: "Tarihte bilinen ilk yazılı kanunları (Hammurabi Kanunları) yapan uygarlık hangisidir?",
+    opts: ["Babil", "Mısır", "Hitit", "Asur"], a: 0,
+    info: "Babil Kralı Hammurabi'nin kanunları, bilinen en eski yazılı hukuk düzenlemelerindendir." },
+  { era: "Antik Çağ", q: "Tarihteki ilk yazılı antlaşma olan Kadeş Antlaşması hangi iki uygarlık arasında imzalandı?",
+    opts: ["Hititler - Mısırlılar", "Sümerler - Akadlar", "Persler - Yunanlar", "Romalılar - Kartacalılar"], a: 0,
+    info: "Kadeş Antlaşması, Hititler ile Mısırlılar arasında imzalanan ilk yazılı antlaşmadır." },
+  { era: "Antik Çağ", q: "Doğu seferleriyle büyük bir imparatorluk kuran Büyük İskender hangi ülkenin kralıydı?",
+    opts: ["Makedonya", "Pers", "Mısır", "Roma"], a: 0,
+    info: "Makedonya Kralı Büyük İskender, Asya'ya kadar uzanan bir imparatorluk kurdu." },
+  { era: "Antik Çağ", q: "Truva Savaşı'nı anlatan ünlü destan ve şairi hangisidir?",
+    opts: ["İlyada - Homeros", "Aeneas - Vergilius", "Şehname - Firdevsi", "İlahi Komedya - Dante"], a: 0,
+    info: "Homeros'un İlyada destanı, Truva Savaşı'nı konu alır." },
+  { era: "Antik Çağ", q: "Roma'da cumhuriyeti sona erdirip imparatorluğu başlatan ilk imparator kimdir?",
+    opts: ["Augustus", "Julius Sezar", "Neron", "Konstantin"], a: 0,
+    info: "Octavianus (Augustus), MÖ 27'de Roma'nın ilk imparatoru oldu." },
+  { era: "Antik Çağ", q: "Çift başlı kartal simgesiyle bilinen, Anadolu'da kurulmuş uygarlık hangisidir?",
+    opts: ["Hititler", "Frigyalılar", "Lidyalılar", "İyonlar"], a: 0,
+    info: "Hititler, başkentleri Hattuşa'da güçlü bir Anadolu uygarlığı kurdu." },
+  { era: "Antik Çağ", q: "Efes'teki, dünyanın yedi harikasından sayılan tapınak hangi tanrıçaya adanmıştır?",
+    opts: ["Artemis", "Athena", "Afrodit", "Hera"], a: 0,
+    info: "Efes'teki Artemis Tapınağı, antik dünyanın yedi harikasından biriydi." },
+
+  { era: "Buluşlar", q: "Motorlu uçağı icat eden kardeşler kimlerdir?",
+    opts: ["Wright Kardeşler", "Lumière Kardeşler", "Montgolfier Kardeşler", "Grimm Kardeşler"], a: 0,
+    info: "Wright Kardeşler, 1903'te ilk kontrollü motorlu uçuşu gerçekleştirdi." },
+  { era: "Buluşlar", q: "Buhar makinesini geliştirerek Sanayi Devrimi'ne öncülük eden kişi kimdir?",
+    opts: ["James Watt", "George Stephenson", "Henry Ford", "Nikola Tesla"], a: 0,
+    info: "James Watt'ın geliştirdiği buhar makinesi, fabrika ve ulaşımı dönüştürdü." },
+  { era: "Buluşlar", q: "Telgrafta kullanılan nokta-çizgi alfabesini geliştiren kişi kimdir?",
+    opts: ["Samuel Morse", "Alexander Bell", "Thomas Edison", "Guglielmo Marconi"], a: 0,
+    info: "Samuel Morse, telgraf ve Mors alfabesiyle uzak mesafe iletişimini hızlandırdı." },
+  { era: "Bilim Tarihi", q: "Radyoaktivite üzerine çalışmalarıyla iki kez Nobel kazanan bilim insanı kimdir?",
+    opts: ["Marie Curie", "Rosalind Franklin", "Lise Meitner", "Ada Lovelace"], a: 0,
+    info: "Marie Curie, hem Fizik hem Kimya dallarında Nobel kazanan ilk kişidir." },
+  { era: "Bilim Tarihi", q: "Görelilik (izafiyet) teorisini geliştiren fizikçi kimdir?",
+    opts: ["Albert Einstein", "Isaac Newton", "Niels Bohr", "Stephen Hawking"], a: 0,
+    info: "Einstein, görelilik teorisiyle uzay ve zaman anlayışını kökten değiştirdi." },
+  { era: "Bilim Tarihi", q: "Penisilini keşfederek antibiyotik çağını başlatan bilim insanı kimdir?",
+    opts: ["Alexander Fleming", "Louis Pasteur", "Robert Koch", "Edward Jenner"], a: 0,
+    info: "Alexander Fleming, 1928'de penisilini keşfetti." },
+  { era: "Bilim Tarihi", q: "Teleskopu gökyüzü gözleminde etkili biçimde ilk kullanan bilim insanı kimdir?",
+    opts: ["Galileo Galilei", "Kopernik", "Johannes Kepler", "Isaac Newton"], a: 0,
+    info: "Galileo, teleskopla Jüpiter'in uydularını gözlemleyerek astronomiyi ilerletti." },
+  { era: "Bilim Tarihi", q: "DNA'nın çift sarmal yapısını açıklayan bilim insanları kimlerdir?",
+    opts: ["Watson ve Crick", "Mendel ve Darwin", "Pasteur ve Koch", "Curie ve Becquerel"], a: 0,
+    info: "James Watson ve Francis Crick, 1953'te DNA'nın çift sarmal yapısını tanımladı." },
+  { era: "Sanat Tarihi", q: "Vatikan'daki Sistine Şapeli'nin tavanını boyayan Rönesans sanatçısı kimdir?",
+    opts: ["Michelangelo", "Leonardo da Vinci", "Raphael", "Botticelli"], a: 0,
+    info: "Michelangelo, Sistine Şapeli tavan freskleriyle Rönesans'ın zirvelerinden birini yarattı." },
+  { era: "Coğrafi Keşifler", q: "Ümit Burnu'nu dolaşarak Hindistan'a deniz yoluyla ulaşan ilk denizci kimdir?",
+    opts: ["Vasco da Gama", "Kristof Kolomb", "Macellan", "Marco Polo"], a: 0,
+    info: "Vasco da Gama, 1498'de Ümit Burnu üzerinden Hindistan'a ulaştı." },
+  { era: "Coğrafi Keşifler", q: "Amerika kıtasına adını veren İtalyan denizci kimdir?",
+    opts: ["Amerigo Vespucci", "Kristof Kolomb", "Macellan", "John Cabot"], a: 0,
+    info: "Yeni kıtanın ayrı bir kara olduğunu vurgulayan Amerigo Vespucci'nin adı kıtaya verildi." },
+  { era: "Kurtuluş Savaşı", q: "Kurtuluş Savaşı'nda Doğu Cephesi komutanı olan ve Gümrü Antlaşması'nı imzalayan kişi kimdir?",
+    opts: ["Kâzım Karabekir", "İsmet İnönü", "Fevzi Çakmak", "Rauf Orbay"], a: 0,
+    info: "Doğu Cephesi komutanı Kâzım Karabekir, 1920 Gümrü Antlaşması'yla doğu sınırını güvence altına aldı." },
+];
+
+const ROUND = 12;         // her turda sorulan soru sayısı
+const KEYS = ["A", "B", "C", "D"];
+const DIFFS = { kolay: 20, orta: 15, zor: 10 };
+const CIRC = 2 * Math.PI * 37;
+const BEST_KEY = "ta_best_score";
+
+/* localStorage güvenli erişim */
+function loadBest() { try { return parseInt(localStorage.getItem(BEST_KEY), 10) || 0; } catch (e) { return 0; } }
+function saveBest(v) { try { localStorage.setItem(BEST_KEY, String(v)); } catch (e) {} }
+let best = loadBest();
+
+let state = {};
+let rafId = null;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+const screens = {
+  start: document.getElementById("screen-start"),
+  quiz: document.getElementById("screen-quiz"),
+  result: document.getElementById("screen-result"),
+};
+function show(name) {
+  Object.values(screens).forEach(s => s.classList.add("hidden"));
+  const el = screens[name];
+  el.classList.remove("hidden", "anim"); void el.offsetWidth; el.classList.add("anim");
+}
+
+function refreshRecordLine() {
+  const line = document.getElementById("record-line");
+  if (best > 0) { document.getElementById("record-val").textContent = best; line.classList.remove("hidden"); }
+  else line.classList.add("hidden");
+}
+refreshRecordLine();
+
+/* ---- kategori (ilk sayfada gösterilmiyor; varsayılan tüm sorular) ---- */
+let chosenCat = 'Tümü';
+(function(){
+  const sel = document.getElementById('category');
+  if(!sel) return;
+  const counts = {};
+  POOL.forEach(q => counts[q.era] = (counts[q.era]||0)+1);
+  const eras = Object.keys(counts).sort((a,b)=>a.localeCompare(b,'tr'));
+  const all = document.createElement('option'); all.value='Tümü'; all.textContent='Tümü · '+POOL.length+' soru'; sel.appendChild(all);
+  eras.forEach(e=>{ const o=document.createElement('option'); o.value=e; o.textContent=e+' · '+counts[e]+' soru'; sel.appendChild(o); });
+  sel.addEventListener('change', ()=>{ chosenCat = sel.value; });
+})();
+
+/* ---- ses efektleri (WebAudio, harici dosya yok) ---- */
+let audioCtx = null, muted = false;
+try { muted = localStorage.getItem('ta_muted') === '1'; } catch (e) {}
+function ensureAudio(){
+  if(!audioCtx){ const AC = window.AudioContext || window.webkitAudioContext; if(AC) try { audioCtx = new AC(); } catch(e){} }
+  if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+function tone(freq, start, dur, type, gain){
+  if(muted || !audioCtx) return;
+  const t0 = audioCtx.currentTime + start;
+  const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+  osc.type = type || 'sine'; osc.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(gain || 0.12, t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(g); g.connect(audioCtx.destination); osc.start(t0); osc.stop(t0 + dur + 0.03);
+}
+function sCorrect(){ ensureAudio(); tone(660,0,0.13,'sine',0.12); tone(990,0.10,0.17,'sine',0.10); }
+function sWrong(){ ensureAudio(); tone(220,0,0.26,'sawtooth',0.08); tone(150,0.09,0.30,'sawtooth',0.07); }
+function sTimeout(){ ensureAudio(); tone(440,0,0.16,'triangle',0.10); tone(260,0.13,0.28,'triangle',0.09); }
+(function(){
+  const mb = document.getElementById('mute');
+  const sync = ()=>{ mb.textContent = muted ? '🔇' : '♪'; mb.classList.toggle('muted', muted); mb.setAttribute('aria-pressed', String(muted)); };
+  sync();
+  mb.addEventListener('click', ()=>{ muted = !muted; try { localStorage.setItem('ta_muted', muted?'1':'0'); } catch(e){} if(!muted) ensureAudio(); sync(); });
+})();
+
+/* zorluk seçimi */
+let chosenDiff = "kolay";
+document.querySelectorAll(".cl-opt").forEach(opt => {
+  opt.addEventListener("click", () => {
+    document.querySelectorAll(".cl-opt").forEach(o => { o.classList.remove("active"); o.setAttribute("aria-checked", "false"); });
+    opt.classList.add("active"); opt.setAttribute("aria-checked", "true");
+    chosenDiff = opt.dataset.diff;
+  });
+});
+
+function startGame() {
+  ensureAudio();
+  const pool = chosenCat === 'Tümü' ? POOL : POOL.filter(q => q.era === chosenCat);
+  const count = Math.min(ROUND, pool.length);
+  state = {
+    diff: chosenDiff, cat: chosenCat,
+    order: shuffle(pool).slice(0, count),
+    index: 0, score: 0, streak: 0, bestStreak: 0, lives: 3, correct: 0, wrong: 0,
+    answered: false, timeLeft: 0, timeTotal: 0, timeStart: 0,
+    jokers: { fifty: true, skip: true, time: true },
+  };
+  show("quiz"); renderQuestion();
+}
+
+function updateHud() {
+  document.getElementById("hud-score").textContent = state.score;
+  document.getElementById("hud-streak").textContent = state.streak;
+  document.getElementById("hud-lives").textContent = state.lives > 0 ? "♦ ".repeat(state.lives).trim() : "—";
+  document.getElementById("hud-prog").textContent = (state.index + 1) + "/" + state.order.length;
+}
+
+function renderQuestion() {
+  stopTimer(); state.answered = false;
+  const item = state.order[state.index];
+  updateHud();
+  document.getElementById("qera").textContent = "◈ " + item.era.toUpperCase();
+  document.getElementById("qfile").textContent = "DOSYA " + String(state.index + 1).padStart(2, "0");
+  document.getElementById("question").textContent = item.q;
+
+  const shuffled = shuffle(item.opts.map((text, i) => ({ text, correct: i === item.a })));
+  const optionsEl = document.getElementById("options"); optionsEl.innerHTML = "";
+  shuffled.forEach((o, i) => {
+    const btn = document.createElement("button"); btn.className = "option"; btn.type = "button";
+    btn.dataset.correct = o.correct ? "1" : "0";
+    btn.style.animationDelay = (i * 55) + "ms";
+    const key = document.createElement("span"); key.className = "key"; key.textContent = KEYS[i];
+    const label = document.createElement("span"); label.className = "opt-text"; label.textContent = o.text;
+    btn.append(key, label);
+    btn.addEventListener("click", () => selectAnswer(btn, o.correct));
+    optionsEl.appendChild(btn);
+  });
+
+  const fb = document.getElementById("feedback"); fb.className = "feedback"; fb.textContent = "";
+  document.getElementById("next-row").classList.remove("show");
+  document.getElementById("seal").setAttribute("class", "seal");
+  updateJokers();
+  startTimer();
+}
+
+function startTimer() {
+  state.timeTotal = DIFFS[state.diff];
+  state.timeStart = performance.now();
+  const prg = document.getElementById("chrono-prg"), num = document.getElementById("chrono-num");
+  prg.style.strokeDasharray = CIRC.toFixed(2);
+  state.timeLeft = state.timeTotal;
+  const step = (now) => {
+    const remaining = Math.max(0, state.timeTotal - (now - state.timeStart) / 1000);
+    state.timeLeft = remaining;
+    const frac = Math.max(0, Math.min(1, remaining / state.timeTotal));
+    prg.style.strokeDashoffset = (CIRC * (1 - frac)).toFixed(2);
+    prg.style.stroke = frac > 0.5 ? "var(--gold)" : frac > 0.25 ? "#e2b35a" : "var(--rose)";
+    num.textContent = Math.ceil(remaining);
+    num.style.color = frac > 0.25 ? "var(--txt)" : "var(--rose)";
+    if (remaining <= 0) { timeOut(); return; }
+    rafId = requestAnimationFrame(step);
+  };
+  rafId = requestAnimationFrame(step);
+}
+function stopTimer() { if (rafId) cancelAnimationFrame(rafId); rafId = null; }
+
+function showSeal(ok, text) {
+  const s = document.getElementById("seal");
+  s.style.color = ok ? "var(--emerald)" : "var(--rose)";
+  document.getElementById("seal-text").textContent = text;
+  s.setAttribute("class", "seal"); void s.offsetWidth; s.classList.add("show");
+}
+
+function markCorrectOption(item) {
+  document.querySelectorAll(".option").forEach(el => {
+    if (el.querySelector(".opt-text").textContent === item.opts[item.a]) el.classList.add("correct");
+  });
+}
+
+function selectAnswer(btn, isCorrect) {
+  if (state.answered) return; state.answered = true; stopTimer();
+  const item = state.order[state.index];
+  document.querySelectorAll(".option").forEach(el => el.classList.add("disabled"));
+  const fb = document.getElementById("feedback");
+  if (isCorrect) {
+    btn.classList.add("correct");
+    const timeBonus = Math.round(state.timeLeft) * 5, streakBonus = state.streak * 20;
+    const gained = 100 + timeBonus + streakBonus;
+    state.score += gained; state.streak++; state.bestStreak = Math.max(state.bestStreak, state.streak); state.correct++;
+    sCorrect(); showSeal(true, "TESCİL");
+    fb.className = "feedback ok show";
+    fb.innerHTML = `<span class="lead">✓ KAYIT DOĞRULANDI · +${gained} PUAN</span><span class="info">Süre bonusu +${timeBonus} · Seri bonusu +${streakBonus}. ${item.info}</span>`;
+  } else {
+    btn.classList.add("wrong"); markCorrectOption(item);
+    state.streak = 0; state.lives--; state.wrong++;
+    sWrong(); showSeal(false, "SAPMA");
+    fb.className = "feedback no show";
+    fb.innerHTML = `<span class="lead">✕ ZAMAN ÇİZGİSİNDE SAPMA</span><span class="info">${item.info}</span>`;
+  }
+  updateHud(); afterAnswer();
+}
+
+function timeOut() {
+  if (state.answered) return; state.answered = true; stopTimer();
+  const item = state.order[state.index];
+  document.querySelectorAll(".option").forEach(el => el.classList.add("disabled"));
+  markCorrectOption(item);
+  state.streak = 0; state.lives--; state.wrong++;
+  document.getElementById("chrono-num").textContent = "0";
+  updateHud(); sTimeout(); showSeal(false, "SÜRE!");
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback no show";
+  fb.innerHTML = `<span class="lead">✕ KRONOMETRE SIFIRLANDI</span><span class="info">${item.info}</span>`;
+  afterAnswer();
+}
+
+function afterAnswer() {
+  updateJokers();
+  const isLast = state.lives <= 0 || state.index + 1 >= state.order.length;
+  document.getElementById("btn-next").textContent = isLast ? "◈ Görev Raporu" : "◈ Sonraki Dosya";
+  document.getElementById("next-row").classList.add("show");
+}
+
+function nextQuestion() {
+  if (state.lives <= 0 || state.index + 1 >= state.order.length) { endGame(); return; }
+  state.index++; renderQuestion();
+}
+
+function endGame() {
+  stopTimer(); show("result");
+  const ratio = state.correct / state.order.length;
+  let rank, icon, title;
+  if (state.lives <= 0) { icon = "🚨"; title = "Görev Başarısız"; rank = "ZAMAN ÇİZGİSİ KARARSIZ — Canların tükendi ve çatlaklar kapatılamadı. Ajan, yeniden sahaya inmelisin."; }
+  else if (ratio >= 0.9) { icon = "🏆"; title = "Efsane Ajan"; rank = "RÜTBE: BAŞ AJAN — Tarih tümüyle stabilize edildi. Büro seninle gurur duyuyor."; }
+  else if (ratio >= 0.7) { icon = "🎖️"; title = "Kıdemli Ajan"; rank = "RÜTBE: SAHA UZMANI — Zaman çizgisi güvende. Etkileyici bir operasyondu."; }
+  else if (ratio >= 0.5) { icon = "🥈"; title = "Saha Ajanı"; rank = "RÜTBE: AJAN — Görev tamamlandı, ancak çizgide birkaç sapma açık kaldı."; }
+  else { icon = "🥉"; title = "Çaylak Ajan"; rank = "RÜTBE: STAJYER — Kayıtlarda ciddi boşluklar var. Arşivde biraz daha çalışman gerek."; }
+
+  const rec = document.getElementById("r-record");
+  if (state.score > best) { best = state.score; saveBest(best); rec.classList.remove("hidden"); }
+  else rec.classList.add("hidden");
+  refreshRecordLine();
+
+  document.getElementById("medal-icon").textContent = icon;
+  document.getElementById("result-title").textContent = title;
+  document.getElementById("result-rank").textContent = rank;
+  document.getElementById("result-score").textContent = state.score;
+  document.getElementById("rs-correct").textContent = state.correct;
+  document.getElementById("rs-wrong").textContent = state.wrong;
+  document.getElementById("rs-best").textContent = state.bestStreak;
+}
+
+/* ---- jokerler ---- */
+function sClick(){ ensureAudio(); tone(520, 0, 0.08, 'sine', 0.06); }
+function updateJokers(){
+  const j = (state && state.jokers) || {};
+  const set = (id, avail) => { const b = document.getElementById(id); if (b) b.disabled = !avail || state.answered; };
+  set('jk-fifty', j.fifty); set('jk-skip', j.skip); set('jk-time', j.time);
+}
+function useFifty(){
+  if (!state.jokers || state.answered || !state.jokers.fifty) return;
+  const wrongs = Array.prototype.filter.call(
+    document.querySelectorAll('.option'),
+    o => o.dataset.correct === '0' && !o.classList.contains('removed')
+  );
+  if (wrongs.length < 2) return;
+  state.jokers.fifty = false;
+  shuffle(wrongs).slice(0, 2).forEach(o => o.classList.add('removed'));
+  sClick(); updateJokers();
+}
+function useTime(){
+  if (!state.jokers || state.answered || !state.jokers.time) return;
+  state.jokers.time = false;
+  state.timeTotal += 5;
+  const num = document.getElementById('chrono-num');
+  num.style.color = 'var(--emerald)';
+  setTimeout(() => { if (!state.answered) num.style.color = 'var(--txt)'; }, 500);
+  sClick(); updateJokers();
+}
+function useSkip(){
+  if (!state.jokers || state.answered || !state.jokers.skip) return;
+  state.jokers.skip = false;
+  state.answered = true; stopTimer(); sClick();
+  if (state.lives <= 0 || state.index + 1 >= state.order.length) { endGame(); }
+  else { state.index++; renderQuestion(); }
+}
+document.getElementById('jk-fifty').addEventListener('click', useFifty);
+document.getElementById('jk-skip').addEventListener('click', useSkip);
+document.getElementById('jk-time').addEventListener('click', useTime);
+
+document.getElementById("btn-start").addEventListener("click", startGame);
+document.getElementById("btn-next").addEventListener("click", nextQuestion);
+document.getElementById("btn-restart").addEventListener("click", startGame);
+document.getElementById("btn-menu").addEventListener("click", () => { show("start"); refreshRecordLine(); });
+
+document.addEventListener("keydown", (e) => {
+  if (screens.quiz.classList.contains("hidden")) return;
+  const map = { a:0, b:1, c:2, d:3, "1":0, "2":1, "3":2, "4":3 };
+  const key = e.key.toLowerCase();
+  if (key in map && !state.answered) {
+    const opts = document.querySelectorAll(".option");
+    const opt = opts[map[key]];
+    if (opt && !opt.classList.contains("removed")) opt.click();
+  } else if (key === "f" && !state.answered) { useFifty(); }
+  else if (key === "p" && !state.answered) { useSkip(); }
+  else if (key === "t" && !state.answered) { useTime(); }
+  else if ((e.key === "Enter" || e.key === " ") && state.answered) { e.preventDefault(); nextQuestion(); }
+});
+</script>
+<script src="/analytics.js"></script>
+</body>
+</html>

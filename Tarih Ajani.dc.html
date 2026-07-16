@@ -17,24 +17,93 @@
 <meta name="twitter:description" content="Tarihe dedektif gözüyle bakan vaka dosyaları: e-kitaplar, hazır hikâye dosyaları, video promptları, içerik üretim eğitimi ve AI destekli Studio. Dosyalar açılıyor.">
 <meta name="twitter:image" content="https://tarihajani.com/assets/og-cover.png">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://tarihajani.com/#org","name":"Tarih Ajanı","url":"https://tarihajani.com/","logo":"https://tarihajani.com/assets/logo-mark.png","email":"iletisim@tarihajani.com","sameAs":["https://www.youtube.com/@TarihAjani","https://www.instagram.com/tarih.ajani"]},{"@type":"WebSite","name":"Tarih Ajanı","url":"https://tarihajani.com/","publisher":{"@id":"https://tarihajani.com/#org"},"inLanguage":"tr"}]}
+{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://tarihajani.com/#org","name":"Tarih Ajanı","url":"https://tarihajani.com/","logo":"https://tarihajani.com/assets/logo-mark.png","email":"iletisim@tarihajani.com","sameAs":["https://www.youtube.com/@TarihAjani","https://www.instagram.com/tarih.ajani"]},{"@type":"WebSite","name":"Tarih Ajanı","url":"https://tarihajani.com/","publisher":{"@id":"https://tarihajani.com/#org"},"inLanguage":"tr"},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Tarih Ajanı tam olarak nedir?","acceptedAnswer":{"@type":"Answer","text":"Tarihi bir dedektif titizliğiyle araştıran ve bu yöntemi öğreten bir içerik stüdyosudur. Dijital kitaplar, Studio üretim sistemi, eğitim programı ve YouTube içerikleriyle kendi tarih anlatını kurmanı sağlar."}},{"@type":"Question","name":"Ödemeyi nasıl yapıyorum?","acceptedAnswer":{"@type":"Answer","text":"İki yol var: Havale/EFT ile doğrulanmış IBAN hesabımıza ödeme yapıp dekontu iletirsin, ya da kredi kartıyla resmi Shopier mağazamız üzerinden ödersin."}},{"@type":"Question","name":"Studio nasıl çalışıyor?","acceptedAnswer":{"@type":"Answer","text":"Bir fikir ya da olay yazarsın; sistem senaryoyu, ElevenLabs seslendirme ayarlarını, kapak ve sahne promptlarını, YouTube başlık-etiket-açıklamasını ve Instagram metnini tek dosyada üretir. Her dosya 1 kredi harcar."}},{"@type":"Question","name":"Dijital kitaplara nasıl erişirim?","acceptedAnswer":{"@type":"Answer","text":"Ödemen doğrulandıktan sonra erişim bilgileri e-posta adresine gönderilir. Kitaplar tarayıcıdan ve mobilden okunabilir, güncellemeler otomatik olarak arşivine düşer."}},{"@type":"Question","name":"Aboneliğimi istediğim zaman iptal edebilir miyim?","acceptedAnswer":{"@type":"Answer","text":"Evet. Abonelik aylıktır, tek tıkla iptal edilir. Dönem sonuna kadar erişimin açık kalır, dosyaların arşivde seni bekler."}},{"@type":"Question","name":"İçerikler hangi sıklıkla güncelleniyor?","acceptedAnswer":{"@type":"Answer","text":"Her ay yeni bir vaka dosyası açılır. Studio sistemi ve eğitim modülleri ise yöntem geliştikçe sürüm notlarıyla birlikte güncellenir."}}]}]}
+</script>
+<script>
+/* Emniyet şimi — support.js'ten ÖNCE yüklenmeli.
+   dc'nin React'ı açılışta gövdeyi birkaç geçişte işlerken, geç yüklenen
+   widget'lar (demo mount'ları, sosyal kanıt) aynı kutulara innerHTML basar.
+   React bayat düğüm referansını silmeye kalkınca "removeChild ... not a child"
+   fırlatır ve dc TÜM SAYFAYI hata perdesine düşürür. Düğüm zaten koptuysa
+   silme amacına ulaşmıştır: sayfayı düşürmek yerine sessizce geç. */
+(function () {
+  var orig = Node.prototype.removeChild;
+  Node.prototype.removeChild = function (child) {
+    try { return orig.call(this, child); }
+    catch (e) {
+      if (child && !child.parentNode) return child;                    // zaten kopmuş
+      if (child && child.parentNode && child.parentNode !== this) {    // başka yere taşınmış
+        child.parentNode.removeChild(child); return child;
+      }
+      throw e;
+    }
+  };
+})();
 </script>
 <script src="./support.js"></script>
+<script src="/uye-nav.js" defer></script>
+<script src="/canli-sohbet.js" defer></script>
+<script src="/mobil-nav.js" defer></script>
+<script src="/ara.js" defer></script>
+<script src="/tema.js" defer></script>
+<script src="/alt-bilgi.js" defer></script><script src="/hos-geldin.js" defer></script>
+<script src="/sosyal-kanit.js" defer></script>
+<script src="/studio-demo.js" defer></script>
+<script src="/arsiv-demo.js" defer></script>
+<script src="/akademi-demo.js" defer></script>
+<script src="/kazanc-demo.js" defer></script>
+<script src="/gecis.js" defer></script>
+<script src="/bant.js" defer></script>
+<script src="/cerez.js" defer></script>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#06070d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tarih Ajanı">
+<script src="/pwa.js" defer></script>
 </head>
 <body>
+<noscript>
+  <div style="max-width:820px;margin:0 auto;padding:40px 20px;font-family:system-ui,sans-serif;color:#e9dfc8;background:#06070d;">
+    <h1>Tarih Ajanı — Tarih videolarını dakikalar içinde üret</h1>
+    <p>Tarihe dedektif gözüyle bakan bir içerik stüdyosu: hazır vaka dosyaları, video ve görsel promptları, AI destekli Studio üretim sistemi, e-kitaplar ve içerik üretim eğitimi. Bir konu yaz; senaryo, seslendirme, sahne promptları ve yayın paketi tek dosyada çıksın.</p>
+    <h2>Bölümler</h2>
+    <ul>
+      <li><a href="/studio">Studio — Kendi vaka dosyanı üret</a></li>
+      <li><a href="/arsiv">Hikâye Arşivi — 42 hazır vaka dosyası</a></li>
+      <li><a href="/ekitap">E-Kitaplar ve dijital ürünler</a></li>
+      <li><a href="/egitim">Akademi — içerik üretim eğitimi</a></li>
+      <li><a href="/uyelik">Üyelik paketleri: Gözlemci 599₺, Ajan 1.299₺, Başmüfettiş 1.999₺ / ay</a></li>
+      <li><a href="/urunler">Tüm ürünler</a></li>
+      <li><a href="/ornek">Ücretsiz örnek vaka dosyası</a></li>
+    </ul>
+    <p>Site içeriği tarayıcıda yüklenir. Tam deneyim için JavaScript'i etkinleştirin.</p>
+  </div>
+</noscript>
 <x-dc>
 <helmet>
   <title>Tarih Ajanı | Tarihin Gizli Dosyaları Açılıyor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="assets/logo-mark.png">
+  <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/ta-logo-32.png"><link rel="icon" type="image/png" sizes="64x64" href="/assets/ta-logo-64.png"><link rel="icon" type="image/png" sizes="512x512" href="/assets/ta-logo-512.png"><link rel="apple-touch-icon" href="/assets/ta-logo-180.png">
   <style>
-    html, body { margin: 0; padding: 0; background: #06070d; }
-    body { background-image: radial-gradient(circle 900px at 15% 8%, rgba(20,24,40,.4), transparent 55%), radial-gradient(circle 1100px at 92% 30%, rgba(18,22,38,.4), transparent 60%), radial-gradient(circle 800px at 50% 100%, rgba(16,20,34,.35), transparent 60%); background-attachment: fixed; }
+    html, body { margin: 0; padding: 0; background: #040509; }
+    /* Ortak dikey ritim skalası — her bölüm aynı nabza oturur */
+    :root { --sp: clamp(48px, 5vw, 64px); --sp-sm: clamp(32px, 3.5vw, 46px); }
+    /* Bölümler arası anlam köprüsü — aşama hissi (renk değişimi değil, ince bağlantı) */
+    .ta-kopru { width: 100%; margin: 0; padding: 18px 20px 8px; text-align: center; position: relative; z-index: 3; background: #040509; }
+    .ta-kopru .ln { display: none; }
+    .ta-kopru p { margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(15.5px, 1.9vw, 20px); line-height: 1.45; color: #c7ccd6; }
+    .ta-kopru em { font-style: italic; color: #e6c478; }
+    /* Tek, yumuşak ve simetrik zemin — siyaha dönük koyu ton; yön yön renk lekesi yok.
+       Tüm akış boyunca aynı derin karanlık kalır, bölümler kaynaşarak akar. */
+    body { background-image: radial-gradient(circle 1200px at 50% 0%, rgba(15,17,26,.28), transparent 62%); background-attachment: fixed; }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    header nav a { font-family: 'Hanken Grotesk', system-ui, sans-serif !important; font-weight: 600 !important; letter-spacing: .1em !important; }
+    header nav > a, header nav > div > a { font-family: 'Special Elite', monospace !important; font-weight: 700 !important; letter-spacing: .08em !important; font-size: 12px !important; }
+    header nav > div > div a, header nav > div > div a span { font-family: 'Hanken Grotesk', system-ui, sans-serif !important; letter-spacing: .01em !important; }
     header nav a:hover { color: #e6c478 !important; }
     @keyframes ta-dust { 0% { transform: translateY(0) translateX(0); opacity: 0; } 12% { opacity: .55; } 88% { opacity: .4; } 100% { transform: translateY(-130px) translateX(26px); opacity: 0; } }
     @keyframes ta-sandfall { 0% { transform: scaleY(0); } 100% { transform: scaleY(1); } }
@@ -48,10 +117,19 @@
     input:focus, textarea:focus { outline: 1px solid rgba(193,154,82,.6); }
     @keyframes ta-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes ta-pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+    @keyframes ta-ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    #son-dakika:hover #sd-ray { animation-play-state: paused; }
+    @media (prefers-reduced-motion: reduce) { #sd-ray { animation: none !important; } }
+    #ya-ray { scrollbar-color: rgba(193,154,82,.55) rgba(193,154,82,.08); }
+    #ya-ray::-webkit-scrollbar { height: 7px; }
+    #ya-ray::-webkit-scrollbar-track { background: rgba(193,154,82,.07); }
+    #ya-ray::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #a77d35, #d8b26a); border-radius: 4px; }
+    #ya-ray::-webkit-scrollbar-thumb:hover { background: linear-gradient(90deg, #b98d3f, #e6c478); }
     @keyframes ta-caret { 0%, 45% { opacity: 1; } 50%, 100% { opacity: 0; } }
     @keyframes ta-sweep { 0%, 30% { background-position: 100% center; } 75%, 100% { background-position: -100% center; } }
     @keyframes ta-stamp { from { opacity: 0; transform: rotate(-4deg) scale(2.2); } to { opacity: 1; transform: rotate(-4deg) scale(1); } }
     @keyframes ta-scan { to { transform: translateX(100%); } }
+    @keyframes ta-banner-sweep { 0% { background-position: 200% 0; } 100% { background-position: -60% 0; } }
     @keyframes ta-bootout { to { opacity: 0; visibility: hidden; } }
     @keyframes ta-heropan { from { transform: scale(1) translateX(0); } to { transform: scale(1.16) translateX(-1.5%); } }
     @keyframes ta-candle { 0%, 100% { opacity: 1; } 7% { opacity: .82; } 13% { opacity: .96; } 22% { opacity: .75; } 30% { opacity: .98; } 41% { opacity: .84; } 54% { opacity: 1; } 62% { opacity: .78; } 73% { opacity: .95; } 85% { opacity: .86; } }
@@ -61,11 +139,21 @@
     /* ── MOBİL UYUM ── */
     @media (max-width: 820px) {
       .vitrin-grid { grid-template-columns: 1fr !important; }
+      .tl-detail { grid-template-columns: 1fr !important; }
+      .arsiv-grid { grid-template-columns: 1fr !important; }
       .sss-grid { grid-template-columns: 1fr !important; }
-      header { height: auto !important; min-height: 58px; flex-wrap: wrap !important; padding: 10px 14px !important; row-gap: 2px; }
+      .steps-grid { grid-template-columns: 1fr 1fr !important; }
+      .nasil-grid { grid-template-columns: 1fr !important; }
+      .nasil-img { min-height: 220px !important; }
+      .steps-line { display: none !important; }
+      /* yol haritası mobilde dikey rota: rotayı gizle, adımları alt alta bağla */
+      #nasil-calisir .yol-track { grid-template-columns: 1fr !important; gap: 0 !important; }
+      #nasil-calisir .yol-line { display: none !important; }
+      #nasil-calisir .yol-adim + .yol-adim::before { content: ''; display: block; width: 2px; height: 24px; margin: 2px auto 12px; background: linear-gradient(180deg, rgba(193,154,82,.25), #c19a52); }
+      header { height: auto !important; min-height: 58px; flex-wrap: wrap !important; padding: 10px 16px !important; row-gap: 2px; background: rgba(3,5,11,.9) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(193,154,82,.16); }
       header nav { flex-wrap: wrap !important; gap: 2px !important; justify-content: flex-end; }
       header nav a { padding: 7px 8px !important; font-size: 10.5px !important; }
-      header img { height: 44px !important; }
+      header img { height: 39px !important; }
       aside { position: static !important; top: auto !important; }
       [style*="grid-template-columns: 250px"], [style*="grid-template-columns: 230px"] { grid-template-columns: 1fr !important; }
       [style*="grid-template-columns: 1.5fr 1fr"] { grid-template-columns: 1fr !important; }
@@ -74,6 +162,52 @@
     @media (max-width: 600px) {
       [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
       [style*="padding: 120px"] { padding-top: 130px !important; }
+      /* telefonda kartlar 2 dar sütuna sıkışmasın — tablet 2 sütun kalır */
+      .steps-grid { grid-template-columns: 1fr !important; }
+    }
+
+    /* ── MOBİL SADE AKIŞ (≤840px) · masaüstü/web ETKİLENMEZ ──
+       Yalnız çekirdek bölümler: Hero · Akademi · Arşiv · Studio · Seviyeler ·
+       Ürünler(2) · Neler Yaptık · Ajan Kadrosu. Gerisi mobilde gizli. */
+    @media (max-width: 840px) {
+      section[data-screen-label="Üç Yol"],
+      #nasil-calisir,
+      #kazanc-demo,
+      #zaman-hatlari,
+      section[data-screen-label="Yorumlar"],
+      #sss,
+      #son-dakika { display: none !important; }
+      /* Ürünler: mobilde sadece 2 ürün göster */
+      #urunler .vitrin-grid > *:nth-child(n+3) { display: none !important; }
+      /* Mobilde yorucu ikincil metinler gizlensin — çekirdek mesaj kalır */
+      .m-hide { display: none !important; }
+    }
+
+    /* ── PREMİUM MOBİL YERLEŞİM (telefon ≤600px) · masaüstü ETKİLENMEZ ── */
+    @media (max-width: 600px) {
+      /* Hero: sıkışmış üst etiketi rahatlat */
+      .hero-eyebrow { letter-spacing: .16em !important; font-size: 10.5px !important; }
+      /* Hero CTA: birincil tam en, ikincil + sosyal ikonlar tek satırda dizili (öksüz sarma yok) */
+      .hero-cta { gap: 10px !important; margin-top: 28px !important; }
+      .hero-cta > a:first-child { flex: 1 1 100% !important; justify-content: center !important; padding: 17px 20px !important; }
+      .hero-cta > a[href="/ornek"] { flex: 1 1 100% !important; justify-content: center !important; }
+      /* Sosyal ikonlar mobil hero'da gizli — footer ve Ajan Kadrosu'nda zaten var */
+      .hero-cta > a[aria-label] { display: none !important; }
+      /* Hero istatistik: 3'ü tek satırda eşit sütun, öksüz 7/24 sarması bitsin */
+      .hero-stats { flex-wrap: nowrap !important; gap: 12px !important; margin-top: 26px !important; }
+      .hero-stats > .hero-stat { flex: 1 1 0 !important; min-width: 0 !important; }
+      .hero-stats > .hero-stat > p:first-child { font-size: 21px !important; }
+      .hero-stats > .hero-stat > p + p { font-size: 8.5px !important; letter-spacing: .02em !important; }
+      /* Ürünler kategori çipleri: sarıp kesilmesin — tek satır zarif kaydırma */
+      .shop-cats { flex-wrap: nowrap !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+      .shop-cats::-webkit-scrollbar { display: none; }
+      .shop-cats > button { flex: 0 0 auto !important; white-space: nowrap !important; }
+      /* Bölümlere biraz daha nefes — premium ritim */
+      :root { --sp: clamp(52px, 13vw, 62px) !important; --sp-sm: clamp(38px, 9vw, 46px) !important; }
+      /* Ürün kartları: sıcak altın kenar + yumuşak derinlik (lüks his) */
+      #urunler .vitrin-grid > div { border-color: rgba(193,154,82,.34) !important; box-shadow: 0 22px 48px -30px rgba(0,0,0,.95) !important; }
+      /* Seviye kartlarına yumuşak yükseklik gölgesi */
+      #seviyeler [style*="minmax(280px"] > div { box-shadow: 0 24px 55px -34px rgba(0,0,0,.9) !important; }
     }
 
     /* ── BUTON & BAŞLIK DÜZELTMELERİ ── */
@@ -87,9 +221,10 @@
 </style>
   <script>window.__taFadeBg='#06070d';window.__taNoIntroFade=true;</script>
   <script src="page-transition.js"></script>
+  <script src="analytics.js"></script>
 </helmet>
 
-<div style="min-height: 100vh; background: transparent; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+<div style="min-height: 100vh; background: transparent; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 500;">
 
   <!-- AÇILIŞ SAHNESİ -->
   <div aria-hidden="true" style="position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: #05070f; pointer-events: none; animation: ta-bootout .5s 1.05s ease forwards;">
@@ -107,22 +242,10 @@
     <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
       <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 50px; width: auto;">
     </a>
-    <nav style="display: flex; align-items: center; gap: 4px;">
-      <div style="position: relative;" onMouseEnter="{{ openEkitap }}" onMouseLeave="{{ closeNav }}">
-        <a href="/ekitap" style="display: inline-block; color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">E-KİTAP</a>
-        <sc-if value="{{ navEkitap }}" hint-placeholder-val="{{ false }}">
-          <div style="position: absolute; top: 100%; left: 0; z-index: 45; min-width: 296px; padding-top: 10px;">
-            <div style="border: 1px solid rgba(193,154,82,.4); background: rgba(3,5,11,.97); backdrop-filter: blur(10px); display: grid;">
-              <a href="/ekitap" style="display: grid; gap: 3px; text-decoration: none; padding: 12px 16px; border-bottom: 1px solid rgba(129,135,151,.12);" style-hover="background: rgba(193,154,82,.08);"><span style="color: #eadfc6; font-size: 13px; font-weight: 600;">E-kitap Rafı</span><span style="color: #7c8393; font-size: 11px; line-height: 1.35;">Satıştaki tüm dijital kitaplar</span></a>
-              <a href="/satis#5li-hikaye" style="display: grid; gap: 3px; text-decoration: none; padding: 12px 16px; border-bottom: 1px solid rgba(129,135,151,.12);" style-hover="background: rgba(193,154,82,.08);"><span style="color: #eadfc6; font-size: 13px; font-weight: 600;">Giriş Kitabı</span><span style="color: #7c8393; font-size: 11px; line-height: 1.35;">Arşive ilk adım · 5’li hikâye</span></a>
-              <a href="/satis#gizli-uygarliklar" style="display: grid; gap: 3px; text-decoration: none; padding: 12px 16px; border-bottom: 1px solid rgba(129,135,151,.12);" style-hover="background: rgba(193,154,82,.08);"><span style="color: #eadfc6; font-size: 13px; font-weight: 600;">E-Kitap Setleri</span><span style="color: #7c8393; font-size: 11px; line-height: 1.35;">Genişletilmiş vaka koleksiyonları</span></a>
-              <a href="/satis#hazir-arsiv" style="display: grid; gap: 3px; text-decoration: none; padding: 12px 16px;" style-hover="background: rgba(193,154,82,.08);"><span style="color: #eadfc6; font-size: 13px; font-weight: 600;">Hazır Hikâye Arşivi</span><span style="color: #7c8393; font-size: 11px; line-height: 1.35;">Kopyalamaya hazır üretim dosyaları</span></a>
-            </div>
-          </div>
-        </sc-if>
-      </div>
+    <nav style="display: flex; align-items: center; flex: 1; gap: 10px;">
+      <a href="/" style="margin-left: auto; color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ANA SAYFA</a>
       <div style="position: relative;" onMouseEnter="{{ openUrunler }}" onMouseLeave="{{ closeNav }}">
-        <a href="/urunler" style="display: inline-block; color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ÜRÜNLER</a>
+        <a href="/urunler" style="display: inline-block; color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ÜRÜNLER</a>
         <sc-if value="{{ navUrunler }}" hint-placeholder-val="{{ false }}">
           <div style="position: absolute; top: 100%; left: 0; z-index: 45; min-width: 296px; padding-top: 10px;">
             <div style="border: 1px solid rgba(193,154,82,.4); background: rgba(3,5,11,.97); backdrop-filter: blur(10px); display: grid;">
@@ -135,7 +258,7 @@
         </sc-if>
       </div>
       <div style="position: relative;" onMouseEnter="{{ openUyelik }}" onMouseLeave="{{ closeNav }}">
-        <a href="/uyelik" style="display: inline-block; color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ÜYELİK</a>
+        <a href="/uyelik" style="display: inline-block; color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ÜYELİK</a>
         <sc-if value="{{ navUyelik }}" hint-placeholder-val="{{ false }}">
           <div style="position: absolute; top: 100%; left: 0; z-index: 45; min-width: 296px; padding-top: 10px;">
             <div style="border: 1px solid rgba(193,154,82,.4); background: rgba(3,5,11,.97); backdrop-filter: blur(10px); display: grid;">
@@ -146,23 +269,39 @@
           </div>
         </sc-if>
       </div>
-      <a href="/egitim" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">EĞİTİM</a>
-      <div style="position: relative;" onMouseEnter="{{ openSocial }}" onMouseLeave="{{ closeSocial }}">
-        <button onClick="{{ toggleSocial }}" style="border: 0; background: transparent; color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; padding: 9px 13px; cursor: pointer; font-family: inherit;" style-hover="color: #e6c478;">SOSYAL MEDYA {{ socialMark }}</button>
-        <sc-if value="{{ socialOpen }}" hint-placeholder-val="{{ false }}">
-          <div style="position: absolute; top: 100%; right: 0; z-index: 45; min-width: 200px; padding-top: 10px;">
-            <div style="border: 1px solid rgba(193,154,82,.4); background: rgba(3,5,11,.97); backdrop-filter: blur(10px); display: grid;">
-            <a href="https://www.youtube.com/@TarihAjani" target="_blank" style="display: flex; align-items: center; gap: 10px; color: #cfd3e0; font-size: 13px; letter-spacing: .08em; text-decoration: none; padding: 14px 18px; border-bottom: 1px solid rgba(129,135,151,.15);" style-hover="color: #e6c478; background: rgba(193,154,82,.08);"><span style="color: #c19a52;">▶</span> YouTube</a>
-            <a href="https://www.instagram.com/tarih.ajani" target="_blank" style="display: flex; align-items: center; gap: 10px; color: #cfd3e0; font-size: 13px; letter-spacing: .08em; text-decoration: none; padding: 14px 18px;" style-hover="color: #e6c478; background: rgba(193,154,82,.08);"><span style="color: #c19a52;">◉</span> Instagram</a>
-            </div>
-          </div>
-        </sc-if>
-      </div>
-      <a href="/zaman-tuneli" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; border: 1px solid rgba(129,135,151,.3); margin-left: 8px;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">ZAMAN TÜNELİ</a>
-      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12.5px; letter-spacing: .1em; text-decoration: none; padding: 10px 16px; border: 1px solid rgba(193,154,82,.55); margin-left: 8px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">GİRİŞ YAP</a>
-      <a href="/studio" style="color: #171207; font-weight: 800; font-size: 12.5px; letter-spacing: .1em; text-decoration: none; padding: 11px 18px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 8px;" style-hover="box-shadow: 0 6px 30px rgba(230,196,120,.35);">STUDIO'YA GİR</a>
+      <a href="/egitim" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">AKADEMİ</a>
+      <a href="/arsiv" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ARŞİV</a>
+      <a href="/haber" style="display: inline-flex; align-items: center; gap: 7px; color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #9E2B23; box-shadow: 0 0 6px rgba(158,43,35,.8); animation: ta-pulse 1.6s ease-in-out infinite;"></span>HABER</a>
+      <a href="/studio" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">STUDIO</a>
+      <a href="/zaman-tuneli" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">OYUN</a>
+      <a href="/urunler?q=1" title="Ara" aria-label="Ara" style="display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; border: 1px solid rgba(193,154,82,.45); color: #d6d0c2; text-decoration: none; font-size: 11.5px; letter-spacing: .12em; padding: 8px 15px 8px 12px;" style-hover="color: #f2ecd9; background: rgba(193,154,82,.12);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>ARA</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12.5px; letter-spacing: .12em; text-decoration: none; padding: 10px 16px; border: 1px solid rgba(193,154,82,.55); margin-left: 22px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">AJAN GİRİŞİ</a>
+      <a href="/ornek" style="color: #171207; font-weight: 800; letter-spacing: .1em; text-decoration: none; padding: 10px 18px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 8px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">ÜCRETSİZ DENE</a>
     </nav>
   </header>
+
+  <!-- SON DAKİKA BANDI · gazete masthead şeridi (parşömen zemin, koyu mürekkep).
+       position:absolute → sayfayla birlikte akıp gider (menü gibi yapışıp takip etmez).
+       durdur/kapat + header yüksekliğine oturma: bant.js -->
+  <div id="son-dakika" role="complementary" aria-label="Son dakika bandı" style="position: absolute; top: 94px; left: clamp(16px, 4vw, 56px); right: clamp(16px, 4vw, 56px); z-index: 20; height: 28px; display: flex; align-items: stretch; overflow: hidden; background: linear-gradient(180deg, rgba(244,231,204,.97), rgba(231,213,172,.97)); box-shadow: inset 0 1px 0 rgba(255,250,238,.55), 0 8px 22px -10px rgba(0,0,0,.6); font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+    <a href="/haber" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 0 11px; background: linear-gradient(115deg, #7c1f16, #a62f22); color: #f7ecd4; font-size: 9px; font-weight: 700; letter-spacing: .16em; text-decoration: none; white-space: nowrap;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #f7ecd4; box-shadow: 0 0 5px rgba(247,236,212,.8); animation: ta-pulse 1.4s ease-in-out infinite;"></span>SON DAKİKA</a>
+    <div style="flex: 1; overflow: hidden; position: relative;">
+      <div id="sd-ray" style="display: inline-flex; align-items: center; height: 100%; white-space: nowrap; will-change: transform; animation: ta-ticker 75s linear infinite;">
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Fatih'in gemileri bir gecede karadan yürütüldü — Haliç kıyısında büyük panik</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Nusret'in gece döktüğü 26 mayın boğazı kilitledi — düşman zırhlıları geri çekiliyor</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Beytülhikme'den yükselen dumanlar Bağdat semalarını kapladı — Dicle mürekkepten karardı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Surlarda gedik açıldı: kuşatmanın 53'üncü gününde şehrin düştüğü doğrulandı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Vezüv uyandı: Pompeii üzerine gece gibi bir kül bulutu çöktü, kıyıdan kaçış sürüyor</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Fatih'in gemileri bir gecede karadan yürütüldü — Haliç kıyısında büyük panik</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Nusret'in gece döktüğü 26 mayın boğazı kilitledi — düşman zırhlıları geri çekiliyor</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Beytülhikme'den yükselen dumanlar Bağdat semalarını kapladı — Dicle mürekkepten karardı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Surlarda gedik açıldı: kuşatmanın 53'üncü gününde şehrin düştüğü doğrulandı</span>
+        <span style="display: inline-flex; align-items: center; gap: 9px; padding: 0 22px; color: #14100a; font-size: 11px; font-weight: 600; letter-spacing: .01em;"><span style="color: #a62f22; font-weight: 700;">✦</span>Vezüv uyandı: Pompeii üzerine gece gibi bir kül bulutu çöktü, kıyıdan kaçış sürüyor</span>
+      </div>
+    </div>
+    <button id="sd-durdur" type="button" aria-label="Bandı durdur veya sürdür" title="Durdur / sürdür" style="flex-shrink: 0; width: 30px; display: grid; place-items: center; background: rgba(124,31,22,.06); border: 0; border-left: 1px solid rgba(124,31,22,.22); color: #7c1f16; font-size: 8.5px; letter-spacing: .08em; padding: 0;">❚❚</button>
+    <button id="sd-kapat" type="button" aria-label="Bandı kapat" title="Kapat" style="flex-shrink: 0; width: 30px; display: grid; place-items: center; background: rgba(124,31,22,.06); border: 0; border-left: 1px solid rgba(124,31,22,.22); color: #7c1f16; font-size: 15px; padding: 0;">×</button>
+  </div>
 
   <!-- HERO -->
   <section data-screen-label="Hero" style="position: relative; min-height: 100vh; display: flex; align-items: center; overflow: hidden;">
@@ -179,143 +318,129 @@
       <span style="position: absolute; left: 46%; bottom: 30%; width: 2px; height: 2px; border-radius: 50%; background: rgba(230,196,120,.45); animation: ta-dust 12s 5.5s linear infinite;"></span>
     </div>
     <div style="position: relative; z-index: 2; width: min(1340px, 92vw); margin: 0 auto; padding: 120px clamp(20px, 5vw, 60px) 80px;">
-      <p style="margin: 0 0 16px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .3em; animation: ta-rise .8s .1s ease both;">ARŞİVİN GÖLGESİNDE, GERÇEĞİN İZİNDE</p>
-      <h1 style="margin: 0; font-family: 'Playfair Display', serif; font-weight: 800; font-size: clamp(38px, 5.4vw, 68px); line-height: 1.06; animation: ta-rise .9s .25s ease both;">Tarihin gizli dosyaları<br><span style="background: linear-gradient(105deg, #b18742 0%, #e6c478 40%, #fff0b1 50%, #d6ad5b 62%, #9d7536 100%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ta-sweep 7s 2s linear infinite;">açılıyor.</span></h1>
-      <p style="margin: 24px 0 0; color: #cbd0da; font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(13.5px, 1vw, 15px); line-height: 1.6; max-width: 440px; animation: ta-rise .9s .4s ease both;">Tarih Ajanı'nda e-kitaplar, hazır hikâye dosyaları, video promptları, içerik üretim eğitimleri ve AI destekli Studio sistemi seni bekliyor.</p>
-      <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; animation: ta-rise .9s .55s ease both;">
-        <a href="/ekitap" style="display: flex; align-items: center; gap: 10px; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-weight: 800; font-size: 13.5px; letter-spacing: .1em; padding: 17px 26px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.4); transform: translateY(-2px);">
-          <span>E-KİTAPLARI GÖR</span><span style="font-family: 'Special Elite', monospace;">→</span>
+      <p class="hero-eyebrow" style="margin: 0 0 16px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .3em; animation: ta-rise .8s .1s ease both;">YAPAY ZEKÂ DESTEKLİ TARİH STÜDYOSU</p>
+      <h1 style="margin: 0; font-family: 'Playfair Display', serif; font-weight: 800; font-size: clamp(38px, 5.4vw, 68px); line-height: 1.06; animation: ta-rise .9s .25s ease both;">Tarih videolarını<br><span style="background: linear-gradient(105deg, #b18742 0%, #e6c478 40%, #fff0b1 50%, #d6ad5b 62%, #9d7536 100%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ta-sweep 7s 2s linear infinite;">dakikalar içinde üret.</span></h1>
+      <p style="margin: 24px 0 0; color: #e3d9c4; font-size: clamp(15px, 1.15vw, 17.5px); line-height: 1.65; max-width: 540px; font-weight: 600; animation: ta-rise .9s .4s ease both;">Konunu yaz; senaryo, seslendirme, sinematik sahne promptları ve yayın paketini <span style="color: #e6c478;">tek dosyada</span> al.</p>
+      <div class="hero-cta" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; animation: ta-rise .9s .55s ease both;">
+        <a href="/ornek" style="display: flex; align-items: center; gap: 11px; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-weight: 800; font-size: 13.5px; letter-spacing: .1em; padding: 17px 26px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.4); transform: translateY(-2px);">
+          <span style="font-family: 'Special Elite', monospace; font-size: 17px; line-height: 1; opacity: .9;">⌖</span><span>ÜCRETSİZ DOSYA OLUŞTUR</span><span style="font-family: 'Special Elite', monospace;">→</span>
         </a>
-        <a href="/studio" style="display: flex; align-items: center; gap: 10px; text-decoration: none; border: 1px solid rgba(193,154,82,.6); color: #e6c478; font-weight: 700; font-size: 13.5px; letter-spacing: .1em; padding: 17px 26px; background: rgba(3,5,11,.5); backdrop-filter: blur(8px);" style-hover="background: rgba(193,154,82,.12); transform: translateY(-2px);">STUDIO'YA GİR</a>
-        <a href="#seviyeler" style="display: flex; align-items: center; gap: 10px; text-decoration: none; border: 1px solid rgba(129,135,151,.4); color: #b6bcc9; font-weight: 600; font-size: 13.5px; letter-spacing: .1em; padding: 17px 26px; background: rgba(3,5,11,.5);" style-hover="border-color: rgba(193,154,82,.5); color: #e6c478;">EĞİTİM PAKETLERİNİ İNCELE</a>
+        <a href="/ornek" style="display: flex; align-items: center; gap: 10px; text-decoration: none; border: 1px solid rgba(193,154,82,.6); color: #e6c478; font-weight: 700; font-size: 13.5px; letter-spacing: .1em; padding: 17px 26px; background: rgba(3,5,11,.5); backdrop-filter: blur(8px);" style-hover="background: rgba(193,154,82,.12); transform: translateY(-2px);">ÖRNEK DOSYAYI GÖR</a>
+        <a href="https://www.youtube.com/@TarihAjani" target="_blank" aria-label="YouTube" style="display: inline-flex; align-items: center; justify-content: center; width: 52px; text-decoration: none; border: 1px solid rgba(193,154,82,.5); color: #e6c478; background: rgba(3,5,11,.5);" style-hover="background: rgba(193,154,82,.14); color: #fff0b1;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="3.4"></rect><path d="M10 9.2v5.6L15 12l-5-2.8Z" fill="currentColor" stroke="none"></path></svg></a>
+        <a href="https://www.instagram.com/tarih.ajani" target="_blank" aria-label="Instagram" style="display: inline-flex; align-items: center; justify-content: center; width: 52px; text-decoration: none; border: 1px solid rgba(193,154,82,.5); color: #e6c478; background: rgba(3,5,11,.5);" style-hover="background: rgba(193,154,82,.14); color: #fff0b1;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4.2"></circle><circle cx="17.2" cy="6.8" r="1.15" fill="currentColor" stroke="none"></circle></svg></a>
       </div>
-      <div style="display: flex; gap: 30px; margin-top: 46px; animation: ta-rise .9s .7s ease both;">
-        <div><p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: #e6c478;">◆◆</p><p style="margin: 2px 0 0; color: #818797; font-size: 12px; letter-spacing: .08em;">ÇİFT BELGE KURALI</p></div>
-        <div style="width: 1px; background: rgba(129,135,151,.25);"></div>
-        <div><p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: #e6c478;">Aylık</p><p style="margin: 2px 0 0; color: #818797; font-size: 12px; letter-spacing: .08em;">YENİ VAKA DOSYASI</p></div>
-        <div style="width: 1px; background: rgba(129,135,151,.25);"></div>
-        <div><p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: #e6c478;">3</p><p style="margin: 2px 0 0; color: #818797; font-size: 12px; letter-spacing: .08em;">ERİŞİM SEVİYESİ</p></div>
+      <p class="m-hide" style="margin: 18px 0 0; color: #818797; font-size: 12.5px; line-height: 1.6; animation: ta-rise .9s .65s ease both;">Ücretsiz üye ol; deneme kredinle Studio'yu <strong style="color: #a9adba;">kart bilgisi vermeden</strong> dene.</p>
+      <div class="hero-stats" style="display: flex; flex-wrap: wrap; gap: 24px; margin-top: 30px; animation: ta-rise .9s .7s ease both;">
+        <div class="hero-stat"><p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 23px; font-weight: 800; color: #e6c478;">42</p><p style="margin: 3px 0 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">HAZIR VAKA DOSYASI</p></div>
+        <div class="hero-div" style="width: 1px; background: rgba(129,135,151,.25);"></div>
+        <div class="hero-stat"><p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 23px; font-weight: 800; color: #e6c478;">9</p><p style="margin: 3px 0 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">DERSLİK AKADEMİ</p></div>
+        <div class="hero-div" style="width: 1px; background: rgba(129,135,151,.25);"></div>
+        <div class="hero-stat"><p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 23px; font-weight: 800; color: #e6c478;">7/24</p><p style="margin: 3px 0 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">DİJİTAL ERİŞİM</p></div>
       </div>
     </div>
-    <div style="position: absolute; z-index: 2; bottom: 26px; left: 50%; transform: translateX(-50%); color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .28em; animation: ta-pulse 2.4s infinite;">DOSYAYI AÇMAK İÇİN KAYDIR ↓</div>
+    <div style="position: absolute; z-index: 2; bottom: 26px; left: 50%; transform: translateX(-50%); color: #868da0; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .28em; animation: ta-pulse 2.4s infinite;">DOSYAYI AÇMAK İÇİN KAYDIR ↓</div>
   </section>
 
-  <!-- DOSYALAR / ÜRÜNLER -->
-  <section id="dosyalar" data-screen-label="Dosyalar" style="width: min(1340px, 92vw); margin: 0 auto; padding: 90px clamp(20px, 4vw, 40px) 30px;">
-    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">DOSYALAR · 001</p>
-    <h2 style="margin: 12px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.6vw, 44px); font-weight: 700;">Ajanın çalışma dosyaları</h2>
-    <div style="display: grid; gap: 16px; margin-top: 34px;">
-      <sc-for list="{{ products }}" as="p" hint-placeholder-count="0">
-        <div onClick="{{ p.go }}" style="{{ p.rowStyle }}">
-          <div style="position: relative; min-height: 340px; overflow: hidden; direction: ltr;">
-            <img src="{{ p.img }}" alt="{{ p.alt }}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.9) brightness(.85);">
-            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(3,5,11,.6), transparent 55%);"></div>
-            <span style="position: absolute; top: 18px; left: 18px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em; background: rgba(3,5,11,.75); border: 1px solid rgba(193,154,82,.4); padding: 6px 11px;">{{ p.tag }}</span>
-          </div>
-          <div style="padding: clamp(24px, 3vw, 40px); display: grid; gap: 12px; align-content: center; direction: ltr; text-align: left;">
-            <p style="margin: 0; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">{{ p.kicker }}</p>
-            <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(22px, 2.4vw, 30px); font-weight: 700;">{{ p.title }}</h3>
-            <p style="margin: 0; color: #9aa0ad; line-height: 1.5; font-size: 14px;">{{ p.desc }}</p>
-            <div style="display: flex; align-items: center; gap: 18px; margin-top: 10px; flex-wrap: wrap;">
-              <sc-if value="{{ p.buyable }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ p.open }}" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12.5px; letter-spacing: .16em; padding: 14px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35); transform: translateY(-1px);">{{ p.cta }}</button>
-                <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 14px; letter-spacing: .06em;">{{ p.priceLabel }}</span>
-              </sc-if>
-              <sc-if value="{{ p.linkOnly }}" hint-placeholder-val="{{ false }}">
-                <a href="{{ p.href }}" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12.5px; letter-spacing: .16em; padding: 14px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35); transform: translateY(-1px);">{{ p.cta }}</a>
-              </sc-if>
-            </div>
-          </div>
-        </div>
-      </sc-for>
-    </div>
-  </section>
-
-  <!-- ÜRÜNLER -->
-  <section id="urunler" data-screen-label="Ürünler" style="width: min(1340px, 92vw); margin: 0 auto; padding: 80px clamp(20px, 4vw, 40px) 30px;">
-    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">ÜRÜNLER · 002</p>
-    <h2 style="margin: 12px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.6vw, 44px); font-weight: 700;">Ajan teçhizatı</h2>
-    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin: 14px 0 24px;">
-      <p style="margin: 0; color: #a4a9b5; max-width: 560px; line-height: 1.65;">E-kitap dosyaları, hazır içerik paketleri, eğitimler ve Studio kredileri — dijital raf önde.</p>
-      <span style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <a href="/ekitap" style="text-decoration: none; border: 1px solid rgba(193,154,82,.55); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 20px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">E-KİTAPLAR →</a>
-        <a href="/urunler" style="text-decoration: none; border: 1px solid rgba(193,154,82,.55); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 20px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">TÜM ÜRÜNLER →</a>
-      </span>
-    </div>
-    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px;">
-      <sc-for list="{{ shopCats }}" as="c" hint-placeholder-count="5">
-        <button onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button>
-      </sc-for>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px;">
-      <sc-for list="{{ shopItems }}" as="it" hint-placeholder-count="6">
-        <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; display: flex; flex-direction: column; overflow: hidden;" style-hover="border-color: rgba(193,154,82,.55);">
-          <div style="position: relative; aspect-ratio: 16/10; overflow: hidden;">
-            <img src="{{ it.img }}" alt="{{ it.title }}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.9) brightness(.85);">
-            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(3,5,11,.55), transparent 50%);"></div>
-            <span style="position: absolute; top: 12px; left: 12px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .18em; background: rgba(3,5,11,.8); border: 1px solid rgba(193,154,82,.4); padding: 5px 9px;">{{ it.cat }}</span>
-          </div>
-          <div style="padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1;">
-            <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; line-height: 1.3;">{{ it.title }}</h3>
-            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.55; flex: 1;">{{ it.blurb }}</p>
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px;">
-              <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">{{ it.price }} TL</span>
-              <button onClick="{{ it.open }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .16em; padding: 11px 18px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">İNCELE</button>
-            </div>
-          </div>
-        </div>
-      </sc-for>
-    </div>
-  </section>
-
-  <!-- VİTRİN (editoryal, farklı tarz) -->
-  <section data-screen-label="Vitrin" style="position: relative; background: #0a0d15; border-top: 1px solid rgba(193,154,82,.18); border-bottom: 1px solid rgba(193,154,82,.18); padding: clamp(40px, 5vw, 70px) 0; overflow: hidden;">
-    <div style="position: absolute; inset: 0; background: radial-gradient(circle 520px at 78% 30%, rgba(230,196,120,.10), transparent 60%);"></div>
-    <div style="position: relative; z-index: 2; width: min(1340px, 92vw); margin: 0 auto; padding: 0 clamp(20px, 4vw, 40px);">
-      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 26px;">
-        <div>
-          <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .26em;">VİTRİN · SEÇİLİ DOSYALAR</p>
-          <h2 style="margin: 8px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(26px, 3.4vw, 40px); font-weight: 700; color: #f2ecd9;">Öne çıkanlar</h2>
-        </div>
-        <div style="font-family: 'Special Elite', monospace; font-size: 13px; letter-spacing: .1em; color: #818797;"><span style="color: #e6c478; font-size: 22px;">{{ carNum }}</span> / 03</div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(20px, 3vw, 44px); align-items: stretch;" class="vitrin-grid">
-        <!-- büyük görsel -->
-        <div style="position: relative; aspect-ratio: 16/10; overflow: hidden; border: 1px solid rgba(193,154,82,.35);">
-          <sc-for list="{{ slides }}" as="sl" hint-placeholder-count="3">
-            <img src="{{ sl.img }}" alt="" style="{{ sl.imgStyle }}">
-          </sc-for>
-          <div style="position: absolute; left: 16px; top: 14px; z-index: 3; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em; color: #f2ecd9; background: rgba(3,5,11,.7); border: 1px solid rgba(193,154,82,.4); padding: 6px 12px;">{{ carTag }}</div>
-        </div>
-        <!-- metin -->
-        <div style="display: flex; flex-direction: column; justify-content: center;">
-          <p style="margin: 0; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .24em;">{{ carKicker }}</p>
-          <h3 style="margin: 12px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(26px, 2.8vw, 38px); font-weight: 800; line-height: 1.12; color: #f5efe0;">{{ carTitle }}</h3>
-          <p style="margin: 16px 0 0; color: #b6bcc9; font-size: 15.5px; line-height: 1.7;">{{ carDesc }}</p>
-          <div style="margin-top: 26px; display: flex; align-items: center; gap: 16px;">
-            <a href="{{ carHref }}" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12.5px; letter-spacing: .12em; padding: 15px 26px;" style-hover="box-shadow: 0 12px 40px rgba(230,196,120,.35);">{{ carCta }} →</a>
-            <div style="display: flex; gap: 8px;">
-              <button onClick="{{ carPrev }}" aria-label="Önceki" style="width: 42px; height: 42px; border: 1px solid rgba(230,196,120,.4); background: transparent; color: #e6c478; font-size: 18px; cursor: pointer;" style-hover="background: rgba(193,154,82,.14);">‹</button>
-              <button onClick="{{ carNext }}" aria-label="Sonraki" style="width: 42px; height: 42px; border: 1px solid rgba(230,196,120,.4); background: transparent; color: #e6c478; font-size: 18px; cursor: pointer;" style-hover="background: rgba(193,154,82,.14);">›</button>
-            </div>
-          </div>
-          <!-- filmstrip -->
-          <div style="display: flex; gap: 12px; margin-top: 28px;">
-            <sc-for list="{{ slides }}" as="sl" hint-placeholder-count="3">
-              <button onClick="{{ sl.go }}" aria-label="Vitrin" style="{{ sl.thumbStyle }}"><img src="{{ sl.img }}" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block;"></button>
-            </sc-for>
-          </div>
-        </div>
+  <!-- ÜÇ YOL · nereden başlarsın (Studio / Arşiv / Akademi seçimi) -->
+  <section data-screen-label="Üç Yol" style="position: relative; background: transparent; padding: var(--sp-sm) 0 clamp(18px,2.4vw,28px);">
+    <div style="width: min(1520px, 94vw); margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px);">
+      <div class="yol3-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;">
+        <a href="/studio" style="display:flex;flex-direction:column;gap:9px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(160deg, rgba(16,13,9,.55), rgba(9,7,5,.4));padding:18px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-3px);border-color:rgba(230,196,120,.55);box-shadow:0 18px 44px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;color:#e6c478;"><rect x="3.5" y="8" width="17" height="11.5" rx="1.5"/><path d="M3.7 8l3-3.6h4l-3 3.6M11 8l3-3.6h4l-3 3.6"/><path d="M10.4 11.8v4.6l4-2.3z" fill="currentColor" stroke="none"/></svg>
+          <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">01 · KENDİN ÜRET</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:18px;font-weight:800;color:#f2ecd9;">Studio ile üret</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:12.5px;line-height:1.5;">Konunu yaz; senaryo, seslendirme ve sahne planın oluşsun.</p>
+          <span style="margin-top:auto;padding-top:6px;color:#e6c478;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.14em;">STUDIO'YU DENE &rarr;</span>
+        </a>
+        <a href="/arsiv" style="display:flex;flex-direction:column;gap:9px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(160deg, rgba(16,13,9,.55), rgba(9,7,5,.4));padding:18px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-3px);border-color:rgba(230,196,120,.55);box-shadow:0 18px 44px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;color:#e6c478;"><rect x="3.5" y="4.8" width="17" height="4.8" rx="1"/><path d="M5 9.6v8.6c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V9.6"/><path d="M9.6 13.4h4.8"/></svg>
+          <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">02 · HAZIR İÇERİKLE BAŞLA</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:18px;font-weight:800;color:#f2ecd9;">Arşivden başla</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:12.5px;line-height:1.5;">Araştırılmış 42 vaka dosyasından birini seç, üretime hemen geç.</p>
+          <span style="margin-top:auto;padding-top:6px;color:#e6c478;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.14em;">ARŞİVİ AÇ &rarr;</span>
+        </a>
+        <a href="/egitim" style="display:flex;flex-direction:column;gap:9px;text-decoration:none;border:1px solid rgba(193,154,82,.28);background:linear-gradient(160deg, rgba(16,13,9,.55), rgba(9,7,5,.4));padding:18px 22px;transition:transform .2s, border-color .2s, box-shadow .2s;" style-hover="transform:translateY(-3px);border-color:rgba(230,196,120,.55);box-shadow:0 18px 44px -24px rgba(0,0,0,.85);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;color:#e6c478;"><path d="M12 5 21.5 9 12 13 2.5 9 12 5Z"/><path d="M6 11v4.4c0 1.3 2.7 2.5 6 2.5s6-1.2 6-2.5V11"/><path d="M21.5 9v4.4"/></svg>
+          <span style="font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.18em;color:#c19a52;">03 · SİSTEMİ ÖĞREN</span>
+          <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:18px;font-weight:800;color:#f2ecd9;">Akademide öğren</h3>
+          <p style="margin:0;color:#9aa0ad;font-size:12.5px;line-height:1.5;">Kanalını ve üretim düzenini 9 derslik programla kur.</p>
+          <span style="margin-top:auto;padding-top:6px;color:#e6c478;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.14em;">AKADEMİYE GİR &rarr;</span>
+        </a>
       </div>
     </div>
   </section>
+
+  <!-- AJAN AKADEMİSİ CANLI DEMO -->
+  <section id="akademi-demo" data-screen-label="Ajan Akademisi"><div id="akademi-demo-mount"></div></section>
+
+  <!-- NASIL ÇALIŞIR · ince operasyon şeridi (kısa, sade; sayfayla kaynaşan geçiş) -->
+  <section id="nasil-calisir" data-screen-label="Nasıl Çalışır" style="width: 100%; background: transparent;">
+    <style>
+      #nasil-calisir .op-wrap{position:relative;width:min(1180px,92vw);margin:0 auto;padding:clamp(18px,2.2vw,28px) clamp(20px,4vw,40px)}
+      #nasil-calisir .op-grid{position:relative;z-index:1;display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(28px,4vw,60px);align-items:center}
+      #nasil-calisir .op-eyebrow{margin:0 0 14px;color:#c19a52;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.28em;display:flex;align-items:center;gap:9px}
+      #nasil-calisir .op-eyebrow b{width:6px;height:6px;border-radius:50%;background:#c19a52}
+      #nasil-calisir .op-eyebrow.op-center{position:relative;z-index:1;justify-content:center;margin:0 0 16px;font-size:10px;letter-spacing:.3em}
+      #nasil-calisir .op-h2{margin:0;font-family:'Playfair Display',serif;font-size:clamp(28px,3.4vw,46px);font-weight:800;line-height:1.03;letter-spacing:-.018em;color:#f6efe0}
+      #nasil-calisir .op-h2 .g{background:linear-gradient(102deg,#b18742,#e6c478 42%,#fff0b1 52%,#a5762f);-webkit-background-clip:text;background-clip:text;color:transparent}
+      #nasil-calisir .op-sub{margin:16px 0 0;color:#b3b9c6;font-size:14.5px;line-height:1.62;max-width:36ch}
+      #nasil-calisir .op-btn{margin-top:22px;display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(193,154,82,.5);color:#e6c478;font-family:'Special Elite',monospace;font-size:12.5px;letter-spacing:.14em;padding:15px 26px;text-decoration:none;transition:background .2s,box-shadow .2s}
+      #nasil-calisir .op-btn:hover{background:rgba(193,154,82,.12);box-shadow:0 14px 42px -16px rgba(230,196,120,.5)}
+      #nasil-calisir .op-line{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(16px,2.4vw,36px)}
+      #nasil-calisir .op-rail{position:absolute;top:19px;left:6%;right:6%;height:1px;z-index:0;background:linear-gradient(90deg,transparent,rgba(193,154,82,.4) 10%,rgba(193,154,82,.4) 90%,transparent)}
+      #nasil-calisir .op-node{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px}
+      #nasil-calisir .op-ring{flex:0 0 auto;width:38px;height:38px;border-radius:50%;border:1px solid rgba(193,154,82,.45);background:#0a0906;display:grid;place-items:center;color:#e6c478;box-shadow:0 0 0 6px #040509}
+      #nasil-calisir .op-ring svg{width:17px;height:17px}
+      #nasil-calisir .op-n{color:#c19a52;font-family:'Special Elite',monospace;font-size:10px;letter-spacing:.16em;margin-right:7px}
+      #nasil-calisir .op-k{margin:0;font-family:'Playfair Display',serif;font-size:14.5px;font-weight:700;color:#f2ecd9;letter-spacing:-.005em;background:#040509;padding:2px 4px}
+      #nasil-calisir .op-d{margin:-3px 0 0;color:#8b909d;font-size:11.5px;line-height:1.45;max-width:22ch}
+      #nasil-calisir .op-foot{position:relative;z-index:1;margin-top:clamp(28px,3vw,44px);display:flex;align-items:center;justify-content:center;gap:16px;color:#8a8271;font-family:'Special Elite',monospace;font-size:10.5px;letter-spacing:.24em;text-align:center}
+      #nasil-calisir .op-foot .ln{height:1px;flex:1;max-width:140px;background:linear-gradient(90deg,transparent,rgba(193,154,82,.4))}
+      #nasil-calisir .op-foot .ln.r{background:linear-gradient(90deg,rgba(193,154,82,.4),transparent)}
+      @media(max-width:1000px){#nasil-calisir .op-grid{grid-template-columns:1fr;gap:34px}#nasil-calisir .op-sub{max-width:56ch}}
+      @media(max-width:760px){#nasil-calisir .op-line{grid-template-columns:1fr 1fr;gap:14px 10px}#nasil-calisir .op-rail{display:none}#nasil-calisir .op-node{justify-content:flex-start}}
+    </style>
+    <div class="op-wrap">
+      <p class="op-eyebrow op-center">OPERASYON AKIŞI · NASIL ÇALIŞIR</p>
+      <div class="op-line">
+        <span class="op-rail"></span>
+        <div class="op-node"><span class="op-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.4c0-.8.6-1.4 1.4-1.4h3.8c.4 0 .8.2 1.1.5L11 7h6.6c.8 0 1.4.6 1.4 1.4"/><path d="M3 8.8h17.2c.6 0 1 .5.9 1.1l-1.3 7.2c-.1.6-.6 1-1.2 1H4.6c-.6 0-1.1-.4-1.2-1L2 8.8"/></svg></span><p class="op-k"><span class="op-n">01</span>Materyali İncele</p></div>
+        <div class="op-node"><span class="op-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6.5C5.7 3 5 3.7 5 4.5v15c0 .8.7 1.5 1.5 1.5H12"/><path d="M14 3l4 4M14 3v4h4"/><path d="M8.5 9h5M8.5 12.5h3.5"/><path d="M20.4 13.6l1.9 1.9-5.1 5.1-2.4.5.5-2.4 5.1-5.1Z"/></svg></span><p class="op-k"><span class="op-n">02</span>Üretime Başla</p></div>
+        <div class="op-node"><span class="op-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5V4.2"/><path d="M7.5 8.2 12 3.7l4.5 4.5"/><path d="M5 13.5v4.8c0 .7.6 1.2 1.2 1.2h11.6c.6 0 1.2-.5 1.2-1.2v-4.8"/></svg></span><p class="op-k"><span class="op-n">03</span>Hikâyeni Yayınla</p></div>
+        <div class="op-node"><span class="op-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V6"/><path d="M4 20h16"/><path d="M7.5 20v-5M12 20v-8M16.5 20v-4"/><path d="M5.5 12.5 10 8.5l3.5 2.5L20 6"/><path d="M16.6 6H20v3.4"/></svg></span><p class="op-k"><span class="op-n">04</span>Sonuçları İzle</p></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- köprü -->
+  <div class="ta-kopru"><span class="ln"></span><p>Akışı gördün. İlk adım: hazır bir <em>dosya seç.</em></p></div>
+
+  <!-- ARŞİV CANLI DEMO -->
+  <section id="arsiv-demo" data-screen-label="Arşiv Demo"><div id="arsiv-demo-mount"></div></section>
+
+
+  <!-- köprü -->
+  <div class="ta-kopru"><span class="ln"></span><p>Hazır dosyayı denedin. Şimdi <em>kendi konunu üret.</em></p></div>
+
+  <!-- STUDIO CANLI DEMO -->
+  <section id="studio-demo" data-screen-label="Canlı Demo"><div id="studio-demo-mount"></div></section>
+
+
+  <!-- köprü -->
+  <div class="ta-kopru"><span class="ln"></span><p>Üretmek ilk adım. Bunu bir <em>gelir sistemine dönüştür.</em></p></div>
+
+  <!-- SENİ NE BEKLİYOR · KAZANÇ PROJEKSİYONU -->
+  <section id="kazanc-demo" data-screen-label="Seni Ne Bekliyor"><div id="kazanc-demo-mount"></div></section>
 
   <!-- SEVİYELER -->
-  <section id="seviyeler" data-screen-label="Seviyeler" style="width: min(1340px, 92vw); margin: 0 auto; padding: 80px clamp(20px, 4vw, 40px) 30px;">
-    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">AYLIK ÜYELİK · 003</p>
-    <h2 style="margin: 12px 0 8px; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.6vw, 44px); font-weight: 700;">Ajanlık seviyeni seç</h2>
-    <p style="margin: 0 0 24px; color: #a4a9b5; max-width: 560px; line-height: 1.65;">Tüm içeriğe abonelikle eriş: hazır hikâye arşivi, dijital kitaplar ve Studio kullanımı dahil. Aylık üyelik, tek tıkla iptal; yıllıkta 2 ay hediye.</p>
+  <section id="seviyeler" data-screen-label="Seviyeler" style="position: relative; overflow: hidden; width: 100%; margin: 0 auto; padding: var(--sp) max(calc((100% - 1300px) / 2), clamp(20px, 4vw, 40px)) var(--sp);">
+    <img src="assets/real-studio.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.22) saturate(.35); z-index: -1;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4,5,9,.92) 0%, rgba(4,5,9,.8) 45%, rgba(4,5,9,.95) 100%); z-index: -1;"></div>
+    <div style="position: absolute; inset: 0; background: radial-gradient(circle 900px at 50% 12%, rgba(230,196,120,.06), transparent 60%); z-index: -1;"></div>
+    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">AYLIK ÜYELİK</p>
+    <h2 style="margin: 12px 0 32px; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.6vw, 44px); font-weight: 700;">Ajanlık seviyeni <span style="color: #e6c478;">seç</span></h2>
+
     <div style="display: inline-flex; gap: 4px; margin-bottom: 40px; border: 1px solid rgba(193,154,82,.35); padding: 4px; background: #070a12;">
       <button onClick="{{ setBillingAy }}" style="{{ billAyStyle }}">AYLIK</button>
       <button onClick="{{ setBillingYil }}" style="{{ billYilStyle }}">YILLIK · 2 AY HEDİYE</button>
@@ -324,11 +449,12 @@
       <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="3">
         <div style="{{ t.cardStyle }}">
           <sc-if value="{{ t.popular }}" hint-placeholder-val="{{ false }}">
-            <span style="position: absolute; top: -32px; left: 50%; transform: translateX(-50%); width: 62px; height: 62px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c0392b, #7c1f16 70%); box-shadow: 0 6px 20px rgba(0,0,0,.6), inset 0 2px 6px rgba(255,255,255,.25), inset 0 -3px 8px rgba(0,0,0,.4); display: grid; place-items: center; color: #f4e4c1; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 24px; border: 3px solid #8e2a1d;">A</span>
+            <span style="position: absolute; top: 20px; left: -6px; transform: rotate(-11deg); background: linear-gradient(#c0392b, #8e2a1d); color: #f4e4c1; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .22em; padding: 6px 16px; box-shadow: 0 5px 16px rgba(120,20,15,.5); white-space: nowrap;">EN POPÜLER</span>
+            <span style="position: absolute; top: -32px; left: 50%; transform: translateX(-50%) rotate(-6deg); width: 66px; height: 66px; border-radius: 50%; background: radial-gradient(circle at 40% 30%, #d24b38, #a62f22 46%, #7c1f16 82%); box-shadow: 0 12px 26px rgba(0,0,0,.55), inset 0 3px 7px rgba(255,255,255,.3), inset 0 -5px 11px rgba(0,0,0,.48), 0 0 0 3px rgba(124,31,22,.55), 0 0 0 6px rgba(124,31,22,.28); display: grid; place-items: center; color: #f7e6c6; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 28px; text-shadow: 0 1px 2px rgba(0,0,0,.55);">A</span>
           </sc-if>
           <p style="{{ t.clearanceStyle }}">{{ t.clearance }}</p>
           <h3 style="{{ t.nameStyle }}">{{ t.name }}</h3>
-          <p style="{{ t.priceStyle }}"><span style="font-size: 13px; letter-spacing: .16em;">{{ t.periodLabel }} </span><span style="font-size: 40px;">{{ t.price }}</span><span style="font-size: 14px; letter-spacing: .12em;"> TL{{ t.perLabel }}</span></p>
+          <p style="{{ t.priceStyle }}"><span style="font-size: 12px; letter-spacing: .16em; opacity: .8;">{{ t.periodLabel }} </span><br><span style="font-size: 56px; font-weight: 800; font-family: 'Playfair Display', serif;">{{ t.price }}</span><span style="font-size: 15px; letter-spacing: .1em; font-weight: 700;"> TL{{ t.perLabel }}</span></p>
           <div style="{{ t.ruleStyle }}"></div>
           <ul style="margin: 0 0 24px; padding: 0; list-style: none; display: grid; gap: 12px; flex: 1;">
             <sc-for list="{{ t.features }}" as="f" hint-placeholder-count="4">
@@ -341,44 +467,52 @@
     </div>
   </section>
 
-  <!-- BÜLTEN ARA-BANNER -->
-  <section data-screen-label="Bülten" style="width: 100%; margin: 40px auto; padding: 0 clamp(20px, 5vw, 70px);">
-    <div style="position: relative; overflow: hidden; border: 1px solid rgba(193,154,82,.3); background: linear-gradient(100deg, #070a12 0%, #0b0f18 100%);">
-      <div style="position: absolute; inset: 0; background: radial-gradient(circle 300px at 88% 50%, rgba(230,196,120,.12), transparent 70%);"></div>
-      <div style="position: relative; z-index: 2; display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: center; padding: clamp(26px, 3.5vw, 40px) clamp(22px, 4vw, 44px);">
-        <div>
-          <p style="margin: 0 0 8px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .26em;">GİZLİ HAT · BÜLTEN</p>
-          <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(22px, 2.6vw, 32px); font-weight: 700; line-height: 1.15;">İlk senin haberin olsun.</h2>
-          <p style="margin: 10px 0 0; color: #9aa0ad; font-size: 14px; line-height: 1.6; max-width: 42ch;">Yeni vaka dosyaları, e-kitaplar ve indirimler önce e-postana düşer. Spam yok, sadece dosya.</p>
-        </div>
-        <div>
-          <sc-if value="{{ nlSent }}" hint-placeholder-val="{{ false }}">
-            <div style="border: 1px solid rgba(123,191,138,.4); background: rgba(123,191,138,.08); padding: 18px 20px;">
-              <p style="margin: 0; color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .04em;">✓ Kaydın alındı, ajan.</p>
-              <p style="margin: 6px 0 0; color: #7c8393; font-size: 13px;">İlk dosya düştüğünde haberin olacak.</p>
-            </div>
-          </sc-if>
-          <sc-if value="{{ nlOpen }}" hint-placeholder-val="{{ true }}">
-            <div style="display: flex; align-items: stretch; border: 1px solid rgba(193,154,82,.45); background: rgba(2,4,10,.6);">
-              <input value="{{ nlEmail }}" onChange="{{ onNlEmail }}" type="email" placeholder="e-posta adresin" style="flex: 1; min-width: 0; border: 0; background: transparent; color: #e9dfc8; font-family: inherit; font-size: 14px; padding: 15px 16px; outline: none;">
-              <button onClick="{{ sendNewsletter }}" disabled="{{ nlSending }}" style="flex-shrink: 0; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11.5px; letter-spacing: .1em; padding: 0 20px;">{{ nlBtnLabel }}</button>
-            </div>
-            <sc-if value="{{ nlErr }}" hint-placeholder-val="{{ false }}">
-              <p style="margin: 8px 0 0; color: #e08a80; font-size: 12.5px;">{{ nlErr }}</p>
-            </sc-if>
-          </sc-if>
-        </div>
+  <!-- ÜRÜNLER -->
+  <section id="urunler" data-screen-label="Ürünler" style="width: min(1340px, 92vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 40px) var(--sp);">
+    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">ÜRÜNLER</p>
+    <h2 style="margin: 20px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.6vw, 44px); font-weight: 700;">Ajan <span style="color: #e6c478;">teçhizatı</span></h2>
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 20px; margin: 24px 0 28px;">
+      <div class="shop-cats" style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <sc-for list="{{ shopCats }}" as="c" hint-placeholder-count="5">
+          <button onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button>
+        </sc-for>
       </div>
+      <span style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="/ekitap" style="text-decoration: none; border: 1px solid rgba(193,154,82,.55); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 11px 18px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">E-KİTAPLAR →</a>
+        <a href="/urunler" style="text-decoration: none; border: 1px solid rgba(193,154,82,.55); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 11px 18px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">TÜM ÜRÜNLER →</a>
+      </span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;" class="vitrin-grid">
+      <sc-for list="{{ shopItems }}" as="it" hint-placeholder-count="6">
+        <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; display: flex; flex-direction: column; overflow: hidden;" style-hover="border-color: rgba(193,154,82,.55);">
+          <div style="position: relative; aspect-ratio: 4/3; overflow: hidden;">
+            <img src="{{ it.img }}" alt="{{ it.title }}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.9) brightness(.85);">
+            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(3,5,11,.55), transparent 50%);"></div>
+            <span style="position: absolute; top: 12px; left: 12px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .18em; background: rgba(3,5,11,.8); border: 1px solid rgba(193,154,82,.4); padding: 5px 9px;">{{ it.cat }}</span>
+          </div>
+          <div style="padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1;">
+            <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; line-height: 1.3;">{{ it.title }}</h3>
+            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.55; flex: 1;">{{ it.blurb }}</p>
+            <div style="margin-top: 12px; padding-top: 14px; border-top: 1px solid rgba(129,135,151,.16); display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+              <span style="color: #e2d3a6; font-family: 'Special Elite', monospace; font-size: 20px; font-weight: 400; letter-spacing: .04em;">{{ it.price }} <span style="font-size: 13px; color: #8f8a70;">TL</span></span>
+              <button onClick="{{ it.open }}" style="border: 1px solid rgba(193,154,82,.5); cursor: pointer; background: transparent; color: #d8c79b; font-family: 'Special Elite', monospace; font-weight: 400; font-size: 11.5px; letter-spacing: .16em; padding: 11px 20px; display: inline-flex; align-items: center; gap: 7px;" style-hover="background: rgba(193,154,82,.1); color: #eadfc6;">İNCELE <span style="font-size: 13px;">→</span></button>
+            </div>
+          </div>
+        </div>
+      </sc-for>
     </div>
   </section>
 
   <!-- ZAMAN HATLARI · YouTube arşivi -->
-  <section id="zaman-hatlari" data-screen-label="Zaman Hatları" style="width: 100%; margin: 0 auto; padding: 80px clamp(20px, 5vw, 70px) 30px;">
-    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">ZAMAN HATLARI · 004</p>
-    <h2 style="margin: 12px 0 8px; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.6vw, 44px); font-weight: 700;">Gizemlerin zaman tüneli</h2>
+  <section id="zaman-hatlari" data-screen-label="Zaman Hatları" style="position: relative; overflow: hidden; width: 100%; margin: 0 auto; padding: var(--sp) clamp(20px, 5vw, 70px) var(--sp);">
+    <img src="assets/chalkboard-map.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .13; filter: brightness(.6) saturate(.7); pointer-events: none; z-index: -1;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,7,13,.86), rgba(7,8,16,.9)); pointer-events: none; z-index: -1;"></div>
+    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">ZAMAN HATLARI</p>
+    <h2 style="margin: 12px 0 8px; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.6vw, 44px); font-weight: 700;">Zaman <span style="color: #e6c478;">Tüneli</span></h2>
     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin: 0 0 34px;">
       <p style="margin: 0; color: #a4a9b5; max-width: 560px; line-height: 1.65;">Zaman çizgisinde dolaş; bir durağı seç, vakanın videosuna YouTube'da devam et.</p>
-      <a href="/zaman-tuneli" style="text-decoration: none; border: 1px solid rgba(193,154,82,.55); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 20px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">◈ 3B TÜNELE GİR</a>
+      <a href="/zaman-tuneli" style="text-decoration: none; border: 1px solid rgba(193,154,82,.55); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 20px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">3B TÜNELE GİR</a>
+      <a href="/oyun/sayi-tahmin/" style="text-decoration: none; border: 1px solid rgba(193,154,82,.55); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 20px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">ZAMAN GÖREVİ · OYNA</a>
     </div>
 
     <div style="display: flex; align-items: flex-start; gap: 12px;">
@@ -398,7 +532,7 @@
       <button onClick="{{ tlNext }}" style="flex-shrink: 0; margin-top: 4px; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 17px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">→</button>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); border: 1px solid rgba(193,154,82,.25); background: #070a12; margin-top: 34px; overflow: hidden;">
+    <div class="tl-detail" style="display: grid; grid-template-columns: 1.05fr .95fr; border: 1px solid rgba(193,154,82,.25); background: #070a12; margin-top: 34px; overflow: hidden;">
       <div style="padding: clamp(26px, 4vw, 44px); display: grid; gap: 12px; align-content: center;">
         <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 13px; letter-spacing: .16em;">{{ tlYear }}</p>
         <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(24px, 2.6vw, 32px); font-weight: 700;">{{ tlTitle }}</h3>
@@ -408,112 +542,193 @@
           <a href="/vaka-dosyalari" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; border: 1px solid rgba(193,154,82,.5); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .14em; padding: 15px 24px;" style-hover="background: rgba(193,154,82,.12);">DOSYA NOTLARINI OKU</a>
         </div>
       </div>
-      <div style="position: relative; min-height: 280px;">
-        <img src="{{ tlImg }}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.9) brightness(.8);">
-        <div style="position: absolute; inset: 0; background: linear-gradient(to right, #070a12, transparent 40%);"></div>
-      </div>
+      <a href="{{ tlHref }}" target="_blank" style="position: relative; min-height: 280px; display: block; text-decoration: none; overflow: hidden;" style-hover="">
+        <img src="{{ tlImg }}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.9) brightness(.7);">
+        <div style="position: absolute; inset: 0; background: linear-gradient(to right, #070a12, transparent 45%), radial-gradient(circle 200px at 60% 50%, rgba(0,0,0,.35), transparent);"></div>
+        <div style="position: absolute; inset: 0; display: grid; place-items: center;">
+          <span style="display: grid; place-items: center; width: 74px; height: 74px; border-radius: 50%; border: 2px solid rgba(230,196,120,.85); background: rgba(3,5,11,.55); backdrop-filter: blur(3px); color: #e6c478; font-size: 26px; padding-left: 5px; box-shadow: 0 8px 30px rgba(0,0,0,.5);">▶</span>
+        </div>
+        <span style="position: absolute; bottom: 16px; right: 16px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em; background: rgba(3,5,11,.7); border: 1px solid rgba(193,154,82,.4); padding: 6px 11px;">VİDEOYU İZLE ↗</span>
+      </a>
     </div>
   </section>
 
-  <!-- SSS -->
-  <section id="sss" data-screen-label="SSS" style="width: min(1240px, 92vw); margin: 0 auto; padding: 80px clamp(20px, 4vw, 40px) 40px;">
-    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">SORGU ODASI · 005</p>
-    <h2 style="margin: 12px 0 30px; font-family: 'Playfair Display', serif; font-size: clamp(30px, 3.6vw, 44px); font-weight: 700;">Sıkça sorulanlar</h2>
-    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: clamp(20px, 3vw, 44px); align-items: start;" class="sss-grid">
+  <!-- NELER YAPTIK · YAYIN ARŞİVİ (kapak kartları; otomatik kaydırma: bant.js) -->
+  <section id="yayin-arsivi" data-screen-label="Yayın Arşivi" style="width: min(1340px, 92vw); margin: 0 auto; padding: var(--sp) 0 var(--sp);">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-bottom: 20px;">
+      <div>
+        <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em;">SAHADAN GÖRÜNTÜLER · YAYIN ARŞİVİ</p>
+        <h2 style="margin: 8px 0 0; color: #f2ecd9; font-family: 'Playfair Display', serif; font-size: clamp(26px, 3.4vw, 38px); font-weight: 800;">Neler <span style="color: #e6c478;">yaptık?</span></h2>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="https://www.youtube.com/@TarihAjani" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; text-decoration: none; background: rgba(3,5,11,.5);" style-hover="background: rgba(193,154,82,.12); border-color: rgba(230,196,120,.6);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="3.4"></rect><path d="M10.2 9.3 15 12l-4.8 2.7z" fill="currentColor" stroke="none"></path></svg>YOUTUBE</a>
+        <a href="https://www.instagram.com/tarih.ajani" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; text-decoration: none; background: rgba(3,5,11,.5);" style-hover="background: rgba(193,154,82,.12); border-color: rgba(230,196,120,.6);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4.6"></rect><circle cx="12" cy="12" r="3.9"></circle><circle cx="17.2" cy="6.8" r="1.15" fill="currentColor" stroke="none"></circle></svg>INSTAGRAM</a>
+      </div>
+    </div>
+    <div id="ya-ray" style="display: flex; gap: 14px; overflow-x: auto; padding: 4px 4px 16px; scrollbar-width: thin; -webkit-overflow-scrolling: touch;">
+      <a href="https://www.youtube.com/@TarihAjani" target="_blank" rel="noopener" style="flex: 0 0 226px; text-decoration: none; border: 1px solid rgba(193,154,82,.22); background: #0a0c14; transition: border-color .25s, transform .25s;" style-hover="border-color: rgba(230,196,120,.55); transform: translateY(-3px);">
+        <div style="height: 8px; background: repeating-linear-gradient(90deg, rgba(193,154,82,.32) 0 6px, transparent 6px 14px);"></div>
+        <div style="position: relative; height: 130px; overflow: hidden;"><img src="assets/haber/sezar-suikasti.jpg" alt="Sezar suikasti videosu kapağı" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; filter: sepia(.22) brightness(.82) saturate(.92);"><span style="position: absolute; top: 8px; left: 8px; padding: 3px 8px; background: rgba(3,5,11,.85); border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">▶ VİDEO</span></div>
+        <div style="padding: 12px 13px 13px;"><p style="margin: 0; color: #eadfc6; font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">Sezar'ın Son Günü: Senatoda 23 Bıçak Darbesi</p><span style="display: inline-block; margin-top: 9px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">İZLE →</span></div>
+      </a>
+      <a href="https://www.youtube.com/@TarihAjani" target="_blank" rel="noopener" style="flex: 0 0 226px; text-decoration: none; border: 1px solid rgba(193,154,82,.22); background: #0a0c14; transition: border-color .25s, transform .25s;" style-hover="border-color: rgba(230,196,120,.55); transform: translateY(-3px);">
+        <div style="height: 8px; background: repeating-linear-gradient(90deg, rgba(193,154,82,.32) 0 6px, transparent 6px 14px);"></div>
+        <div style="position: relative; height: 130px; overflow: hidden;"><img src="assets/haber/vezuv-pompeii.jpg" alt="Pompeii shorts kapağı" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; filter: sepia(.22) brightness(.82) saturate(.92);"><span style="position: absolute; top: 8px; left: 8px; padding: 3px 8px; background: rgba(3,5,11,.85); border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">▮ SHORTS</span></div>
+        <div style="padding: 12px 13px 13px;"><p style="margin: 0; color: #eadfc6; font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">Pompeii'de Zamanın Durduğu An</p><span style="display: inline-block; margin-top: 9px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">İZLE →</span></div>
+      </a>
+      <a href="https://www.instagram.com/tarih.ajani" target="_blank" rel="noopener" style="flex: 0 0 226px; text-decoration: none; border: 1px solid rgba(193,154,82,.22); background: #0a0c14; transition: border-color .25s, transform .25s;" style-hover="border-color: rgba(230,196,120,.55); transform: translateY(-3px);">
+        <div style="height: 8px; background: repeating-linear-gradient(90deg, rgba(193,154,82,.32) 0 6px, transparent 6px 14px);"></div>
+        <div style="position: relative; height: 130px; overflow: hidden;"><img src="assets/haber/istanbul-fethi.jpg" alt="1453 reels kapağı" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; filter: sepia(.22) brightness(.82) saturate(.92);"><span style="position: absolute; top: 8px; left: 8px; padding: 3px 8px; background: rgba(3,5,11,.85); border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">◉ REELS</span></div>
+        <div style="padding: 12px 13px 13px;"><p style="margin: 0; color: #eadfc6; font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">Gemiler Karadan: 1453'ün Sır Gecesi</p><span style="display: inline-block; margin-top: 9px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">İZLE →</span></div>
+      </a>
+      <a href="https://www.youtube.com/@TarihAjani" target="_blank" rel="noopener" style="flex: 0 0 226px; text-decoration: none; border: 1px solid rgba(193,154,82,.22); background: #0a0c14; transition: border-color .25s, transform .25s;" style-hover="border-color: rgba(230,196,120,.55); transform: translateY(-3px);">
+        <div style="height: 8px; background: repeating-linear-gradient(90deg, rgba(193,154,82,.32) 0 6px, transparent 6px 14px);"></div>
+        <div style="position: relative; height: 130px; overflow: hidden;"><img src="assets/haber/grek-atesi.jpg" alt="Grek ateşi videosu kapağı" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; filter: sepia(.22) brightness(.82) saturate(.92);"><span style="position: absolute; top: 8px; left: 8px; padding: 3px 8px; background: rgba(3,5,11,.85); border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">▶ VİDEO</span></div>
+        <div style="padding: 12px 13px 13px;"><p style="margin: 0; color: #eadfc6; font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">Grek Ateşi: Kaybolan Süper Silahın Peşinde</p><span style="display: inline-block; margin-top: 9px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">İZLE →</span></div>
+      </a>
+      <a href="https://www.instagram.com/tarih.ajani" target="_blank" rel="noopener" style="flex: 0 0 226px; text-decoration: none; border: 1px solid rgba(193,154,82,.22); background: #0a0c14; transition: border-color .25s, transform .25s;" style-hover="border-color: rgba(230,196,120,.55); transform: translateY(-3px);">
+        <div style="height: 8px; background: repeating-linear-gradient(90deg, rgba(193,154,82,.32) 0 6px, transparent 6px 14px);"></div>
+        <div style="position: relative; height: 130px; overflow: hidden;"><img src="assets/haber/otzi.jpg" alt="Ötzi reels kapağı" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; filter: sepia(.22) brightness(.82) saturate(.92);"><span style="position: absolute; top: 8px; left: 8px; padding: 3px 8px; background: rgba(3,5,11,.85); border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">◉ REELS</span></div>
+        <div style="padding: 12px 13px 13px;"><p style="margin: 0; color: #eadfc6; font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">Buz Adam Ötzi: 5300 Yıllık Cinayet Dosyası</p><span style="display: inline-block; margin-top: 9px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">İZLE →</span></div>
+      </a>
+      <a href="https://www.youtube.com/@TarihAjani" target="_blank" rel="noopener" style="flex: 0 0 226px; text-decoration: none; border: 1px solid rgba(193,154,82,.22); background: #0a0c14; transition: border-color .25s, transform .25s;" style-hover="border-color: rgba(230,196,120,.55); transform: translateY(-3px);">
+        <div style="height: 8px; background: repeating-linear-gradient(90deg, rgba(193,154,82,.32) 0 6px, transparent 6px 14px);"></div>
+        <div style="position: relative; height: 130px; overflow: hidden;"><img src="assets/haber/tutankamun-hancer.jpg" alt="Tutankhamun shorts kapağı" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; filter: sepia(.22) brightness(.82) saturate(.92);"><span style="position: absolute; top: 8px; left: 8px; padding: 3px 8px; background: rgba(3,5,11,.85); border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">▮ SHORTS</span></div>
+        <div style="padding: 12px 13px 13px;"><p style="margin: 0; color: #eadfc6; font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">Tutankhamun'un Göktaşından Dövülen Hançeri</p><span style="display: inline-block; margin-top: 9px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">İZLE →</span></div>
+      </a>
+      <a href="https://www.youtube.com/@TarihAjani" target="_blank" rel="noopener" style="flex: 0 0 226px; text-decoration: none; border: 1px solid rgba(193,154,82,.22); background: #0a0c14; transition: border-color .25s, transform .25s;" style-hover="border-color: rgba(230,196,120,.55); transform: translateY(-3px);">
+        <div style="height: 8px; background: repeating-linear-gradient(90deg, rgba(193,154,82,.32) 0 6px, transparent 6px 14px);"></div>
+        <div style="position: relative; height: 130px; overflow: hidden;"><img src="assets/haber/kara-olum.jpg" alt="Kara ölüm videosu kapağı" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; filter: sepia(.22) brightness(.82) saturate(.92);"><span style="position: absolute; top: 8px; left: 8px; padding: 3px 8px; background: rgba(3,5,11,.85); border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">▶ VİDEO</span></div>
+        <div style="padding: 12px 13px 13px;"><p style="margin: 0; color: #eadfc6; font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">Kara Ölüm: Avrupa'yı Boşaltan Salgın</p><span style="display: inline-block; margin-top: 9px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">İZLE →</span></div>
+      </a>
+      <a href="https://www.instagram.com/tarih.ajani" target="_blank" rel="noopener" style="flex: 0 0 226px; text-decoration: none; border: 1px solid rgba(193,154,82,.22); background: #0a0c14; transition: border-color .25s, transform .25s;" style-hover="border-color: rgba(230,196,120,.55); transform: translateY(-3px);">
+        <div style="height: 8px; background: repeating-linear-gradient(90deg, rgba(193,154,82,.32) 0 6px, transparent 6px 14px);"></div>
+        <div style="position: relative; height: 130px; overflow: hidden;"><img src="assets/haber/termopylae.jpg" alt="Termopylae reels kapağı" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; filter: sepia(.22) brightness(.82) saturate(.92);"><span style="position: absolute; top: 8px; left: 8px; padding: 3px 8px; background: rgba(3,5,11,.85); border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">◉ REELS</span></div>
+        <div style="padding: 12px 13px 13px;"><p style="margin: 0; color: #eadfc6; font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">300 Spartalı: Termopylae'nin Gerçek Hikâyesi</p><span style="display: inline-block; margin-top: 9px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">İZLE →</span></div>
+      </a>
+      <a href="https://www.youtube.com/@TarihAjani" target="_blank" rel="noopener" style="flex: 0 0 226px; text-decoration: none; border: 1px solid rgba(193,154,82,.22); background: #0a0c14; transition: border-color .25s, transform .25s;" style-hover="border-color: rgba(230,196,120,.55); transform: translateY(-3px);">
+        <div style="height: 8px; background: repeating-linear-gradient(90deg, rgba(193,154,82,.32) 0 6px, transparent 6px 14px);"></div>
+        <div style="position: relative; height: 130px; overflow: hidden;"><img src="assets/haber/vasa.jpg" alt="Vasa shorts kapağı" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; filter: sepia(.22) brightness(.82) saturate(.92);"><span style="position: absolute; top: 8px; left: 8px; padding: 3px 8px; background: rgba(3,5,11,.85); border: 1px solid rgba(193,154,82,.4); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em;">▮ SHORTS</span></div>
+        <div style="padding: 12px 13px 13px;"><p style="margin: 0; color: #eadfc6; font-size: 13px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">Vasa: 20 Dakikada Batan Kraliyet Gururu</p><span style="display: inline-block; margin-top: 9px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">İZLE →</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- AJANLAR NE DİYOR · yorumlar -->
+  <section data-screen-label="Yorumlar" style="position: relative; overflow: hidden; width: min(1240px, 94vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 40px);">
+    <img src="assets/evidence-board.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .1; filter: brightness(.55) saturate(.7); pointer-events: none; z-index: -1;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(6,7,13,.88), rgba(6,7,13,.92)); pointer-events: none; z-index: -1;"></div>
+    <!-- Gerçek sosyal kanıt: canlı sayaçlar + onaylı kullanıcı yorumları (sosyal-kanit.js doldurur) -->
+    <div id="ta-sosyal-kanit" style="min-height: 120px;">
+      <p style="margin: 0; text-align: center; color: #818797; font-size: 13.5px;">Değerlendirmeler yükleniyor…</p>
+    </div>
+  </section>
+
+  <!-- SSS · Sorgu Tutanağı -->
+  <section id="sss" data-screen-label="SSS" style="position: relative; overflow: hidden; background: linear-gradient(180deg, transparent, rgba(10,9,8,.5) 30%);">
+    <img src="assets/real-wall.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .12; filter: saturate(.6) brightness(.7);">
+    <div style="position: absolute; inset: 0; background: radial-gradient(circle 760px at 50% 12%, rgba(7,9,15,.5), #07090f 84%);"></div>
+    <div style="position: relative; z-index: 2; width: min(1240px, 94vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 40px); display: grid; grid-template-columns: .82fr 1.18fr; gap: clamp(32px, 5vw, 64px); align-items: start;" class="sss-grid">
+      <div style="align-self: center;">
+        <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .26em;">SORGU ODASI · DOSYA 47-A/2026</p>
+        <h2 style="margin: 12px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(26px, 3vw, 38px); font-weight: 800; line-height: 1.05;">Sorgu <span style="color: #e6c478;">Tutanağı</span></h2>
+        <div style="width: 58px; height: 2px; margin: 16px 0 0; background: linear-gradient(90deg, #c19a52, transparent);"></div>
+        <p style="margin: 18px 0 0; color: #a4a9b5; font-size: 14.5px; line-height: 1.65; max-width: 34ch;">En çok merak edilen sorular ve net cevapları. Aradığını bulamazsan bize yaz — aynı gün dönüş yapılır.</p>
+      </div>
       <div style="display: grid; gap: 10px;">
         <sc-for list="{{ faqs }}" as="q" hint-placeholder-count="5">
-          <div style="border: 1px solid rgba(129,135,151,.2); background: #070a12;">
-            <button onClick="{{ q.toggle }}" style="width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 14px; background: transparent; border: 0; color: #e9dfc8; text-align: left; padding: 18px 22px; font-size: 15.5px; font-weight: 600; cursor: pointer;" style-hover="color: #e6c478;">
-              <span>{{ q.q }}</span><span style="color: #c19a52; font-family: 'Special Elite', monospace;">{{ q.mark }}</span>
+          <div style="border-bottom: 1px solid rgba(193,154,82,.18);">
+            <button onClick="{{ q.toggle }}" style="width: 100%; display: flex; align-items: center; gap: 16px; background: transparent; border: 0; color: #e9dfc8; text-align: left; padding: 15px 6px; font-size: 14.5px; font-weight: 600; cursor: pointer;" style-hover="color: #e6c478;">
+              <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11.5px; flex-shrink: 0;">{{ q.no }}</span>
+              <span style="flex: 1;">{{ q.q }}</span>
+              <span style="color: #c19a52; font-family: 'Playfair Display', serif; font-size: 18px; line-height: 1;">{{ q.mark }}</span>
             </button>
             <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}">
-              <p style="margin: 0; padding: 0 22px 20px; color: #a4a9b5; line-height: 1.7; font-size: 14.5px;">{{ q.a }}</p>
+              <p style="margin: 0; padding: 0 6px 18px 38px; color: #a4a9b5; line-height: 1.7; font-size: 13.5px;">{{ q.a }}</p>
             </sc-if>
           </div>
         </sc-for>
       </div>
-      <div style="position: sticky; top: 100px; border: 1px solid rgba(193,154,82,.35); background: linear-gradient(160deg, #0b0f18, #070a12); padding: clamp(28px, 3vw, 40px); overflow: hidden; text-align: center;">
-        <div style="position: absolute; inset: 0; background: radial-gradient(circle 300px at 50% 0%, rgba(230,196,120,.14), transparent 62%); pointer-events: none;"></div>
-        <div style="position: relative;">
-          <img src="assets/logo-mark.png" alt="Tarih Ajanı" style="height: 78px; width: auto; margin: 0 auto; display: block; filter: drop-shadow(0 6px 20px rgba(0,0,0,.5));">
-          <p style="margin: 20px 0 0; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .26em; color: #c19a52;">DOSYA KOD ADI · GÖLGE</p>
-          <h3 style="margin: 12px 0 10px; font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 800; line-height: 1.2; color: #f5efe0;">Tarih saklar,<br>ajan bulur.</h3>
-          <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.65;">Her iddia en az iki bağımsız belgeyle sınanır. Söylenti değil, kanıt.</p>
-          <div style="margin-top: 22px; border-top: 1px solid rgba(129,135,151,.15); padding-top: 18px; display: grid; gap: 12px; text-align: left;">
-            <div style="display: flex; align-items: center; gap: 10px; color: #cfc8b4; font-size: 13px;"><span style="color: #c19a52;">◆</span> Güvenli ödeme · Shopier / Havale</div>
-            <div style="display: flex; align-items: center; gap: 10px; color: #cfc8b4; font-size: 13px;"><span style="color: #c19a52;">◆</span> Dijital ürünlerde anında erişim</div>
-            <div style="display: flex; align-items: center; gap: 10px; color: #cfc8b4; font-size: 13px;"><span style="color: #c19a52;">◆</span> Fiziki üründe Türkiye içi ücretsiz kargo</div>
-          </div>
+    </div>
+  </section>
+
+  <!-- AJAN KADROSUNA KATIL · tek bütün, enine -->
+  <section data-screen-label="Ajan Kadrosu" style="position: relative; overflow: hidden;">
+    <img src="assets/real-banner-seal.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.5) saturate(.95);">
+    <div style="position: absolute; inset: 0; background: linear-gradient(105deg, rgba(3,5,11,.94) 0%, rgba(3,5,11,.82) 44%, rgba(3,5,11,.42) 100%), linear-gradient(to bottom, #03050b, transparent 18%, transparent 82%, #06070c);"></div>
+    <div style="position: relative; z-index: 2; width: min(1340px, 94vw); margin: 0 auto; padding: var(--sp) clamp(20px, 4vw, 48px); display: grid; grid-template-columns: 1fr 1fr; gap: clamp(36px, 5vw, 72px); align-items: center;" class="sss-grid">
+      <div style="display: grid; gap: 18px; align-content: center;">
+        <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .28em;">GÖREV ÇAĞRISI</p>
+        <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(26px, 3vw, 38px); font-weight: 800; line-height: 1.05;">Ajan kadrosuna<br><span style="color: #e6c478;">katıl</span></h2>
+        <p style="margin: 0; color: #cbd0da; max-width: 44ch; line-height: 1.72; font-size: 15.5px;">İlk dosyanı bu gece aç; senaryo, seslendirme ve yayın paketi dakikalar içinde masanda.<span class="m-hide"> Soruların, projelerin ve iş birlikleri için de aynı yerden yaz — aynı gün dönüş yapılır.</span></p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
+          <a href="/uyelik" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .12em; padding: 16px 28px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.4); transform: translateY(-2px);">AJAN OL →</a>
+          <a href="/studio" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; border: 1px solid rgba(193,154,82,.5); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 13px; letter-spacing: .12em; padding: 16px 28px; background: rgba(3,5,11,.5);" style-hover="background: rgba(193,154,82,.14);">STUDIO'YA GİR</a>
+          <a href="https://www.youtube.com/@TarihAjani" target="_blank" aria-label="YouTube" style="display: inline-flex; align-items: center; justify-content: center; width: 52px; text-decoration: none; border: 1px solid rgba(193,154,82,.5); color: #e6c478; font-size: 16px; background: rgba(3,5,11,.5);" style-hover="background: rgba(193,154,82,.14);">▶</a>
+          <a href="https://www.instagram.com/tarih.ajani" target="_blank" aria-label="Instagram" style="display: inline-flex; align-items: center; justify-content: center; width: 52px; text-decoration: none; border: 1px solid rgba(193,154,82,.5); color: #e6c478; font-size: 16px; background: rgba(3,5,11,.5);" style-hover="background: rgba(193,154,82,.14);">◉</a>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- GÖREV BAŞLIYOR · kompakt CTA -->
-  <section data-screen-label="Görev Başlıyor" style="position: relative; margin-top: 40px; overflow: hidden;">
-    <img src="assets/books.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.38) saturate(.9);">
-    <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, #03050b, rgba(3,5,11,.35) 35%, rgba(3,5,11,.35) 65%, #03050b);"></div>
-    <div style="position: relative; z-index: 2; text-align: center; padding: clamp(80px, 10vw, 130px) 24px;">
-      <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .26em;">GÖREV BAŞLIYOR</p>
-      <h2 style="margin: 12px auto 8px; font-family: 'Playfair Display', serif; font-size: clamp(28px, 3.4vw, 42px); font-weight: 800; max-width: 20ch; line-height: 1.1;">İlk dosyanı bu gece aç</h2>
-      <p style="margin: 0 auto; color: #b6bcc9; max-width: 480px; line-height: 1.65; font-size: 15px;">Fikrini yaz; senaryo, seslendirme ve yayın paketi dakikalar içinde masanda.</p>
-      <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 24px;">
-        <a href="/studio" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 14px; letter-spacing: .05em; padding: 18px 30px; white-space: nowrap;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.4); transform: translateY(-2px);">STUDIO'YA GİR →</a>
-        <a href="https://www.youtube.com/@TarihAjani" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; border: 1px solid rgba(129,135,151,.45); color: #d7dbe4; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 14px; letter-spacing: .05em; padding: 18px 30px; white-space: nowrap; background: rgba(3,5,11,.55); backdrop-filter: blur(6px);" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">▶ YOUTUBE</a>
-        <a href="https://www.instagram.com/tarih.ajani" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; border: 1px solid rgba(129,135,151,.45); color: #d7dbe4; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 14px; letter-spacing: .05em; padding: 18px 30px; white-space: nowrap; background: rgba(3,5,11,.55); backdrop-filter: blur(6px);" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">◉ INSTAGRAM</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- GÖREV ÇAĞRISI · iletişim formu -->
-  <section data-screen-label="Görev Çağrısı" style="width: min(1080px, 100%); margin: 30px auto 0; padding: 40px clamp(20px, 4vw, 40px) 70px;">
-    <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); overflow: hidden;">
-      <div style="padding: clamp(28px, 4vw, 46px); display: grid; gap: 10px; align-content: center; border-right: 1px solid rgba(193,154,82,.12);">
-        <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .26em;">GÖREV ÇAĞRISI</p>
-        <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(24px, 2.8vw, 34px); font-weight: 800;">Ajan kadrosuna katıl</h2>
-        <p style="margin: 0; color: #a4a9b5; font-size: 14.5px; line-height: 1.65; max-width: 46ch;">Dosyalar açık, masa hazır. İş birlikleri, projeler ve sorular için mesaj bırak — aynı gün dönüş yapılır.</p>
-        <p style="margin: 10px 0 0; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">E-POSTA</p>
-        <a href="mailto:iletisim@tarihajani.com" style="color: #e6c478; font-size: 15px; text-decoration: none; border-bottom: 1px solid rgba(193,154,82,.4); width: fit-content; padding-bottom: 2px;" style-hover="border-color: #e6c478;">iletisim@tarihajani.com</a>
-        <p style="margin: 14px 0 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .22em;">SINIFLANDIRMA: ÇOK GİZLİ · DOSYA KOD ADI: GÖLGE</p>
-      </div>
-      <div style="padding: clamp(28px, 4vw, 46px); display: grid; gap: 13px; align-content: start;">
-        <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .26em;">MESAJ GÖNDERİN</p>
+      <div style="border: 1px solid rgba(193,154,82,.3); background: rgba(6,8,15,.82); backdrop-filter: blur(6px); padding: clamp(26px, 3vw, 40px); display: grid; gap: 12px;">
+        <p style="margin: 0 0 2px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .16em;">DOĞRUDAN HAT</p>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <input value="{{ cName }}" onChange="{{ onCName }}" placeholder="Ad Soyad" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 14px; font-size: 14px; font-family: inherit;">
-          <input value="{{ cEmail }}" onChange="{{ onCEmail }}" type="email" placeholder="E-posta" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 14px; font-size: 14px; font-family: inherit;">
+          <input value="{{ cName }}" onChange="{{ onCName }}" placeholder="Ad Soyad" style="border: 1px solid rgba(129,135,151,.3); background: rgba(2,4,10,.75); color: #fff; padding: 14px; font-size: 14px; font-family: inherit;">
+          <input value="{{ cEmail }}" onChange="{{ onCEmail }}" type="email" placeholder="E-posta" style="border: 1px solid rgba(129,135,151,.3); background: rgba(2,4,10,.75); color: #fff; padding: 14px; font-size: 14px; font-family: inherit;">
         </div>
-        <input value="{{ cSubject }}" onChange="{{ onCSubject }}" placeholder="Konu" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 14px; font-size: 14px; font-family: inherit;">
-        <textarea value="{{ cMsg }}" onChange="{{ onCMsg }}" placeholder="Mesajın" rows="5" style="border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 14px; font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
-        <button onClick="{{ sendMsg }}" disabled="{{ cSending }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 15px; letter-spacing: .18em; padding: 19px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.4); transform: translateY(-1px);">{{ sendBtnLabel }}</button>
+        <input value="{{ cSubject }}" onChange="{{ onCSubject }}" placeholder="Konu" style="border: 1px solid rgba(129,135,151,.3); background: rgba(2,4,10,.75); color: #fff; padding: 14px; font-size: 14px; font-family: inherit;">
+        <textarea value="{{ cMsg }}" onChange="{{ onCMsg }}" placeholder="Mesajın" rows="4" style="border: 1px solid rgba(129,135,151,.3); background: rgba(2,4,10,.75); color: #fff; padding: 14px; font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
+        <button onClick="{{ sendMsg }}" disabled="{{ cSending }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 14px; letter-spacing: .16em; padding: 17px;" style-hover="box-shadow: 0 10px 45px rgba(230,196,120,.4); transform: translateY(-1px);">{{ sendBtnLabel }}</button>
         <sc-if value="{{ cSent }}" hint-placeholder-val="{{ false }}">
           <p style="margin: 0; color: #7bbf8a; font-size: 13.5px; font-family: 'Special Elite', monospace; letter-spacing: .04em;">✓ Mesajın ulaştı — en kısa sürede dönüş yapılacak.</p>
         </sc-if>
         <sc-if value="{{ cErr }}" hint-placeholder-val="{{ false }}">
           <p style="margin: 0; color: #e08a80; font-size: 13.5px; line-height: 1.5;">{{ cErr }}</p>
         </sc-if>
+        <p style="margin: 2px 0 0; color: #818797; font-size: 12.5px;">veya doğrudan: <a href="mailto:iletisim@tarihajani.com" style="color: #e6c478; text-decoration: none;">iletisim@tarihajani.com</a></p>
       </div>
     </div>
   </section>
 
   <!-- FOOTER -->
-  <footer style="border-top: 1px solid rgba(193,154,82,.15); padding: 30px clamp(20px, 4vw, 40px); display: grid; gap: 16px;">
-    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;">
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 40px; width: auto;">
-        <span style="color: #676d7c; font-size: 12.5px;">© 2026 Tarih Ajanı</span>
+  <footer style="border-top: 1px solid rgba(193,154,82,.15); background: #06070c; padding: clamp(48px, 6vw, 80px) clamp(20px, 4vw, 40px) 32px;">
+    <div style="width: min(1340px, 92vw); margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: clamp(28px, 4vw, 56px);">
+      <div style="display: grid; gap: 14px; align-content: start;">
+        <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 50px; width: auto;">
+        <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.7; max-width: 30ch;">Tarih saklar, ajan bulur. Tarihi dedektif titizliğiyle araştıran ve öğreten bir içerik stüdyosu.</p>
+        <div style="display: flex; gap: 10px; margin-top: 4px;">
+          <a href="https://www.youtube.com/@TarihAjani" target="_blank" aria-label="YouTube" style="display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1px solid rgba(193,154,82,.35); color: #c19a52; text-decoration: none; font-size: 14px;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.7);">▶</a>
+          <a href="https://www.instagram.com/tarih.ajani" target="_blank" aria-label="Instagram" style="display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1px solid rgba(193,154,82,.35); color: #c19a52; text-decoration: none; font-size: 14px;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.7);">◉</a>
+        </div>
       </div>
-      <div style="display: flex; gap: 18px; flex-wrap: wrap;">
-        <a href="/studio" style="color: #818797; font-size: 12.5px; text-decoration: none; letter-spacing: .06em;" style-hover="color: #e6c478;">Studio</a>
-        <a href="/zaman-tuneli" style="color: #818797; font-size: 12.5px; text-decoration: none; letter-spacing: .06em;" style-hover="color: #e6c478;">Zaman Tüneli</a>
-        <a href="https://www.youtube.com/@TarihAjani" target="_blank" style="color: #818797; font-size: 12.5px; text-decoration: none; letter-spacing: .06em;" style-hover="color: #e6c478;">YouTube</a>
-        <a href="https://www.instagram.com/tarih.ajani" target="_blank" style="color: #818797; font-size: 12.5px; text-decoration: none; letter-spacing: .06em;" style-hover="color: #e6c478;">Instagram @tarih.ajani</a>
-        <a href="mailto:iletisim@tarihajani.com" style="color: #818797; font-size: 12.5px; text-decoration: none; letter-spacing: .06em;" style-hover="color: #e6c478;">iletisim@tarihajani.com</a>
+      <div style="display: grid; gap: 13px; align-content: start;">
+        <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em;">ARŞİV</p>
+        <a href="/urunler" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Dijital Dosyalar</a>
+        <a href="/urunler#studio" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Prompt Sistemleri</a>
+        <a href="/studio" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Stüdyo Erişimi</a>
+        <a href="/egitim" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Çalışma Yöntemi</a>
+      </div>
+      <div style="display: grid; gap: 13px; align-content: start;">
+        <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em;">DESTEK</p>
+        <a href="#sss" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Sorgu Tutanağı (SSS)</a>
+        <a href="/kvkk/" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">KVKK Aydınlatma</a>
+        <a href="/mesafeli-satis/" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Mesafeli Satış Sözleşmesi</a>
+        <a href="/on-bilgilendirme/" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Ön Bilgilendirme Formu</a>
+        <a href="/iade/" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">İade ve İptal Koşulları</a>
+        <a href="/gizlilik/" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Gizlilik &amp; Çerez</a>
+      </div>
+      <div style="display: grid; gap: 13px; align-content: start;">
+        <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em;">İLETİŞİM</p>
+        <a href="mailto:iletisim@tarihajani.com" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">iletisim@tarihajani.com</a>
+        <a href="https://www.instagram.com/tarih.ajani" target="_blank" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Instagram · @tarih.ajani</a>
+        <a href="https://www.youtube.com/@TarihAjani" target="_blank" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">YouTube · Tarih Ajanı</a>
       </div>
     </div>
-    <div style="display: flex; flex-wrap: wrap; gap: 16px; border-top: 1px solid rgba(129,135,151,.12); padding-top: 14px;">
-      <sc-for list="{{ legalLinks }}" as="l" hint-placeholder-count="3">
-        <button onClick="{{ l.open }}" style="border: 0; background: transparent; color: #676d7c; font-size: 11.5px; letter-spacing: .05em; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px;" style-hover="color: #e6c478;">{{ l.label }}</button>
-      </sc-for>
+    <div style="width: min(1340px, 92vw); margin: clamp(34px, 4vw, 48px) auto 0; border-top: 1px solid rgba(129,135,151,.12); padding-top: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
+      <span style="color: #5a6070; font-size: 12px;">© 2026 Tarih Ajanı · Tüm hakları saklıdır.</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+        <sc-for list="{{ legalLinks }}" as="l" hint-placeholder-count="3">
+          <button onClick="{{ l.open }}" style="border: 0; background: transparent; color: #5a6070; font-size: 11px; letter-spacing: .04em; cursor: pointer; padding: 0;" style-hover="color: #c19a52;">{{ l.label }}</button>
+        </sc-for>
+      </div>
     </div>
   </footer>
 
@@ -548,7 +763,7 @@
               <div style="display: flex; flex-wrap: wrap; gap: 14px; margin-top: 20px; color: #8b91a8; font-size: 12px;">
                 <span>✓ Teslim: e-posta ile erişim linki</span><span>✓ Süre: ödeme onayı sonrası aynı gün</span>
               </div>
-              <button onClick="{{ closeCheckout }}" style="margin-top: 12px; width: 100%; border: 0; background: transparent; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11.5px; letter-spacing: .2em; cursor: pointer;" style-hover="color: #a4a9b5;">ŞİMDİLİK VAZGEÇ</button>
+              <button onClick="{{ closeCheckout }}" style="margin-top: 12px; width: 100%; border: 0; background: transparent; color: #868da0; font-family: 'Special Elite', monospace; font-size: 11.5px; letter-spacing: .2em; cursor: pointer;" style-hover="color: #a4a9b5;">ŞİMDİLİK VAZGEÇ</button>
             </div>
           </div>
         </sc-if>
@@ -747,8 +962,8 @@ class Component extends DCLogic {
       {
         kicker: 'DİJİTAL KİTAPLAR', tag: 'KAYIT 01', title: 'Gizli Uygarlıklar — E-Kitap Seti', img: 'assets/product-ebooks.webp',
         alt: 'Lacivert ciltli Osmanlı kitap serisi ve tablette eski harita', price: '279', kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
-        desc: '4 dijital kitap — Etrüskler, Sümerler, Truva ve İbn Fadlan dosyaları.',
-        detail: 'Etrüsklerden Sümerlere, ders kitaplarının kenarında kalan uygarlıkları kaynaklarıyla inceleyen dijital dosya koleksiyonu. Tek seferlik erişim; gelecek güncellemeler dahildir.',
+        desc: 'Dört kapatılmamış dosya — Etrüskler, Sümerler, Truva ve İbn Fadlan.',
+        detail: 'Resmî tarihin dipnotlarında kalmış dört uygarlığın dosyası. Her iddia dönem kaynaklarıyla karşılaştırılıp izine kadar sürülür; arşivden yeni çıkmış bir tutanak gibi, ama bugünün okuru için düzenlenmiş. Tek seferlik erişim; ileride eklenen belgeler dosyana otomatik düşer.',
         features: ['Etrüskler: Roma’nın Gizli Öğretmeni', 'Sümerlerin Sırrı: 5.000 Yıldır Çözülemedi', 'Truva Savaşı Gerçek miydi?', 'İbn Fadlan: Türkler ve Vikingler Notları'],
         cta: 'DOSYAYI İNCELE', buyable: true, flip: false, nav: '/ekitap', sellSlug: 'gizli-uygarliklar'
       },
@@ -799,13 +1014,13 @@ class Component extends DCLogic {
       },
       {
         clearance: 'GELİŞMİŞ ERİŞİM', name: 'Ajan', monthly: 1299, popular: true,
-        features: ['Tüm dijital kitap arşivi', 'Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri'],
-        detail: 'Üret ve yayınla: tüm dijital kitaplar, hazır arşivin tamamı, aylık 5.000 Studio kredisiyle orta ölçekli üretim ve eğitim modülleri. Tek tıkla iptal.'
+        features: ['Üyelere özel e-kitap hediyeleri', 'Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri'],
+        detail: 'Üret ve yayınla: hazır arşivin tamamı, aylık 5.000 Studio kredisiyle orta ölçekli üretim ve eğitim modülleri. Tek tıkla iptal.'
       },
       {
         clearance: 'ÜST DÜZEY ERİŞİM', name: 'Başmüfettiş', monthly: 1999, popular: false,
         features: ['Ajan içeriğinin tamamı', 'Aylık 15.000 Studio kredisi', 'Üst düzey / öncelikli üretim', 'Birebir mentorluk görüşmesi'],
-        detail: 'Sınırsıza yakın üret: tüm dijital kitaplar, hazır arşiv, aylık 15.000 Studio kredisiyle üst düzey üretim ve birebir mentorluk. Tek tıkla iptal.'
+        detail: 'Sınırsıza yakın üret: hazır arşiv, aylık 15.000 Studio kredisiyle üst düzey üretim ve birebir mentorluk. Tek tıkla iptal.'
       }
     ];
 
@@ -827,10 +1042,10 @@ class Component extends DCLogic {
         open: () => { const bs = billing === 'yil' ? '-yil' : ''; window.location.href = '/satis#uyelik-' + (t.name === 'Gözlemci' ? 'gozlemci' : t.name === 'Ajan' ? 'ajan' : 'basmufettis') + bs; },
         cardStyle: {
           position: 'relative', display: 'flex', flexDirection: 'column',
-          border: cream ? '1px solid ' + gold : '1px solid rgba(129,135,151,.3)',
-          background: cream ? '#efe6d0' : '#070a12',
-          boxShadow: cream ? '0 24px 80px rgba(0,0,0,.55)' : 'none',
-          padding: '42px 28px 28px', marginTop: cream ? '0' : '18px'
+          border: cream ? '1px solid #c9a25a' : '1px solid rgba(129,135,151,.3)',
+          background: cream ? 'linear-gradient(158deg, #f4ecd8 0%, #ece0c4 55%, #dccaa4 100%)' : '#070a12',
+          boxShadow: cream ? '0 26px 80px rgba(0,0,0,.6), inset 0 0 0 1px rgba(142,42,29,.22), inset 0 0 70px rgba(142,42,29,.07)' : 'none',
+          padding: cream ? '52px 30px 30px' : '42px 28px 28px', marginTop: cream ? '0' : '18px'
         },
         clearanceStyle: {
           margin: 0, textAlign: 'center', fontFamily: "'Special Elite', monospace",
@@ -862,12 +1077,12 @@ class Component extends DCLogic {
       { cat: 'E-KİTAP', title: '5’li Hikâye — Dijital Kitap', price: '49', img: 'assets/books.jpg',
         blurb: 'Tek dosyada 5 kısa tarih hikâyesi; ilk adım için ideal.',
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
-        detail: 'Beş kısa vaka hikâyesini bir arada sunan giriş seviyesi dijital kitap. Tek seferlik erişim; anında e-posta ile teslim.',
+        detail: 'Arşivin giriş rafı: beş kısa vaka, sadeleştirilmiş ama kaynağına sadık. İlk dosyanı aç, izi sürmeye buradan başla — anında e-posta ile teslim.',
         features: ['5 kısa tarih hikâyesi', 'Mobil ve tarayıcıda okuma', 'Anında e-posta teslimi'] },
       { cat: 'E-KİTAP', title: 'Gizli Uygarlıklar — E-Kitap Seti', price: '279', img: 'assets/product-ebooks.webp',
         blurb: '4 kapsamlı dijital kitap; kaynakça ve ileri okuma listesiyle.',
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
-        detail: 'Etrüsklerden Sümerlere, ders kitaplarının kenarında kalan uygarlıkları kaynaklarıyla inceleyen dijital dosya koleksiyonu.',
+        detail: 'Resmî tarihin dipnotlarında kalmış dört uygarlığın dosyası; her iddia dönem kaynaklarıyla karşılaştırılıp izine kadar sürülür. Arşivden yeni çıkmış bir tutanak gibi, bugünün okuru için düzenlenmiş.',
         features: ['Etrüskler: Roma’nın Gizli Öğretmeni', 'Sümerlerin Sırrı: 5.000 Yıldır Çözülemedi', 'Truva Savaşı Gerçek miydi?', 'İbn Fadlan: Türkler ve Vikingler Notları'] },
       { cat: 'E-KİTAP', title: 'Tarih Anlatıcılığı — Stüdyo Rehberi', price: '349', img: 'assets/product-studio-guide.webp',
         blurb: 'Araştırmadan mikrofona: üretim zinciri ve kontrol listeleri.',
@@ -877,7 +1092,7 @@ class Component extends DCLogic {
       { cat: 'HAZIR İÇERİK', title: 'Hazır Hikâye Arşivi — 5 Dosya', price: '499', img: 'assets/product-casefiles.webp',
         blurb: 'Yayınlanan 5 vakanın eksiksiz üretim dosyaları: senaryo, promptlar, yayın paketi.',
         kind: 'HAZIR İÇERİK DOSYASI', priceKind: 'TEK SEFERLİK ERİŞİM',
-        detail: 'Yayınlanmış 5 vakanın senaryosu, seslendirme metni, kapak ve sahne promptları, video promptları ve YouTube + Instagram yayın paketi — kopyalamaya ve düzenlemeye hazır.',
+        detail: 'Yayına girmiş beş vakanın tam tutanağı: senaryo, seslendirme metni, kapak ve sahne promptları, video promptları, YouTube + Instagram yayın paketi. Mühürü açılmış, çoğaltmaya hazır dosyalar.',
         features: ['5 eksiksiz üretim dosyası', 'Kopyalanabilir görsel/video promptları', 'YouTube + Instagram yayın paketleri', 'Kredi harcamadan sınırsız açma'] },
       { cat: 'EĞİTİM', title: 'Belgeden Hikâyeye — Eğitim Programı', price: '999', img: 'assets/product-course.webp',
         blurb: 'Kaynak doğrulama, arşiv tarama ve sinematik anlatı kurma.',
@@ -1001,16 +1216,16 @@ class Component extends DCLogic {
     });
 
     const tlDefs = [
-      { year: 'M.Ö. 1200', title: 'Tunç Çağı Çöküşü', img: 'assets/evidence-board.jpg',
-        desc: 'Doğu Akdeniz uygarlıklarının aynı yüzyılda art arda susmasına dair kanıt zinciri: yanmış saraylar, kesilen yazışmalar, deniz kavimleri.' },
-      { year: 'M.S. 476', title: "Roma'nın Sonu", img: 'assets/hero-desk.jpg',
-        desc: "Batı Roma İmparatorluğu'nun çöküşüne dair kayıp arşiv belgeleri ve sınır boylarındaki lejyonerlerin son emirleri." },
-      { year: 'M.S. 1453', title: "İstanbul'un Fethi", img: 'assets/books.jpg',
-        desc: 'Surların ardındaki son gece: kuşatma günlükleri, gemilerin karadan yürütülüşü ve şehrin el değiştirdiği saatlerin kayıtları.' },
-      { year: 'M.S. 1915', title: 'Çanakkale Telsizleri', img: 'assets/study-wall.jpg',
-        desc: 'Cephe hattından geçen şifreli telsiz kayıtları ve iki tarafın arşivlerinde birbirini doğrulayan tanıklıklar.' },
-      { year: 'M.S. 1969', title: 'Ay İnişi Arşivi', img: 'assets/cta-dark.jpg',
-        desc: 'Görev kayıtları, basına yansımayan telemetri notları ve komplo iddialarının belgelerle yüzleştirilmesi.' }
+      { year: 'MÖ 3300', title: 'Ötzi', img: 'assets/chalkboard-map.jpg',
+        desc: 'Alpler’de bulunan 5300 yıllık buz mumyası Ötzi — sırtındaki ok ucu, tarihin en eski cinayet dosyasını açıyor.' },
+      { year: 'MÖ 1323', title: 'Tutankhamun', img: 'assets/dossier-bundle.jpg',
+        desc: 'Firavunla gömülen hançer sıradan bir demir değildi: meteor çeliğinden — yani gökten düşen bir bıçak.' },
+      { year: 'MÖ 44', title: "Sezar'ın Sonu", img: 'assets/study-wall.jpg',
+        desc: "Mart’ın 15’i, Senato: 23 hançer darbesi ve tarihin en ünlü ihaneti — 'Sen de mi Brutus?'" },
+      { year: 'M.S. 672', title: 'Grek Ateşi', img: 'assets/hero-desk.jpg',
+        desc: 'Bizans’ın suda sönmeyen sır silahı. Formülü o kadar iyi saklandı ki bugün hâlâ tam bilinmiyor.' },
+      { year: 'Orta Çağ', title: 'Şam Çeliği', img: 'assets/books.jpg',
+        desc: 'Şam çeliği kılıçlarındaki su gibi akan desen ve olağanüstü keskinlik — kayıp bir nano-yapı sırrı.' }
     ];
     const ytChannel = this.props.youtubeUrl ?? 'https://www.youtube.com/@TarihAjani';
     const tlCur = tlDefs[s.tlIndex] || tlDefs[0];
@@ -1024,18 +1239,18 @@ class Component extends DCLogic {
           border: on ? '1px solid #e6c478' : '1px solid rgba(193,154,82,.5)',
           background: on ? 'linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52)' : '#070a12',
           color: on ? '#171207' : '#a4a9b5', fontSize: '13px', fontWeight: 700,
-          boxShadow: on ? '0 0 26px rgba(230,196,120,.5)' : 'none'
+          boxShadow: on ? '0 0 14px rgba(230,196,120,.4)' : 'none'
         },
         yearStyle: {
           marginTop: '4px', fontFamily: "'Special Elite', monospace", fontSize: '14px', letterSpacing: '.06em',
-          color: on ? '#e6c478' : '#c19a52', textShadow: on ? '0 0 18px rgba(230,196,120,.6)' : 'none'
+          color: on ? '#e6c478' : '#c19a52', textShadow: on ? '0 0 10px rgba(230,196,120,.45)' : 'none'
         }
       };
     });
 
     return {
       true: true,
-      methods, products, tiers,
+      methods, products: products.slice(0, 2), tiers,
       setBillingAy: () => this.setState({ billing: 'ay' }),
       setBillingYil: () => this.setState({ billing: 'yil' }),
       billAyStyle: { cursor: 'pointer', border: 0, fontFamily: "'Special Elite', monospace", fontWeight: 700, fontSize: '11px', letterSpacing: '.14em', padding: '11px 18px', background: billing === 'ay' ? 'linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52)' : 'transparent', color: billing === 'ay' ? '#171207' : '#a4a9b5' },
@@ -1139,6 +1354,7 @@ class Component extends DCLogic {
       },
       faqs: faqData.map((f, i) => ({
         q: f.q, a: f.a,
+        no: 'S.0' + (i + 1),
         open: s.openFaq === i,
         mark: s.openFaq === i ? '−' : '+',
         toggle: () => this.setState({ openFaq: s.openFaq === i ? -1 : i })
@@ -1156,7 +1372,7 @@ class Component extends DCLogic {
           padding: '9px 16px', cursor: 'pointer'
         }
       })),
-      shopItems: shopDefs.filter(it => s.shopCat === 'TÜMÜ' || it.cat === s.shopCat).map(it => {
+      shopItems: shopDefs.filter(it => s.shopCat === 'TÜMÜ' || it.cat === s.shopCat).slice(0, 6).map(it => {
         const slug = this.slugFor(it.title);
         const price = ovPrice(slug, it.price);
         return { ...it, price, open: () => { window.location.href = '/satis#' + slug; } };
@@ -1206,6 +1422,9 @@ class Component extends DCLogic {
       dekontMail: 'mailto:iletisim@tarihajani.com?subject=' + encodeURIComponent('Dekont — ' + (co.title || '')) + '&body=' + encodeURIComponent('Merhaba, ' + (co.title || '') + ' siparişim için dekontu ekte iletiyorum.\n\nAd Soyad: ' + s.fName),
 
       // legal
+      openKvkk: () => this.setState({ legal: 'kvkk' }),
+      openSatis: () => this.setState({ legal: 'satis' }),
+      openIade: () => this.setState({ legal: 'iade' }),
       legalLinks: [
         { label: 'İletişim', open: () => this.setState({ legal: 'iletisim' }) },
         { label: 'Gizlilik Politikası', open: () => this.setState({ legal: 'gizlilik' }) },

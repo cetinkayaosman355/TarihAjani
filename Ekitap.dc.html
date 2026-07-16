@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/png" href="/assets/logo-mark.png">
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/ta-logo-32.png"><link rel="icon" type="image/png" sizes="64x64" href="/assets/ta-logo-64.png"><link rel="apple-touch-icon" href="/assets/ta-logo-180.png">
 <meta name="description" content="Tarihin gizli dosyalarını vaka formatında anlatan e-kitaplar. Etrüsklerden Truva'ya, belgeye dayalı hikâye koleksiyonları ve okuma odası.">
 <link rel="canonical" href="https://tarihajani.com/ekitap">
 <meta property="og:type" content="website">
@@ -17,7 +17,23 @@
 <meta name="twitter:title" content="E-Kitaplar · Tarih Ajanı">
 <meta name="twitter:description" content="Tarihin gizli dosyalarını vaka formatında anlatan e-kitaplar. Etrüsklerden Truva'ya, belgeye dayalı hikâye koleksiyonları ve okuma odası.">
 <meta name="twitter:image" content="https://tarihajani.com/assets/books.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"ItemList","name":"Tarih Ajanı Dijital Ürünler","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"Product","name":"5'li Hikâye — Dijital Kitap","url":"https://tarihajani.com/urun/5li-hikaye/","offers":{"@type":"Offer","price":"49","priceCurrency":"TRY","availability":"https://schema.org/InStock"}}},{"@type":"ListItem","position":2,"item":{"@type":"Product","name":"Gizli Uygarlıklar — E-Kitap Seti","url":"https://tarihajani.com/urun/gizli-uygarliklar/","offers":{"@type":"Offer","price":"279","priceCurrency":"TRY","availability":"https://schema.org/InStock"}}},{"@type":"ListItem","position":3,"item":{"@type":"Product","name":"Tarih Anlatıcılığı — Stüdyo Rehberi","url":"https://tarihajani.com/urun/studio-rehberi/","offers":{"@type":"Offer","price":"349","priceCurrency":"TRY","availability":"https://schema.org/InStock"}}},{"@type":"ListItem","position":4,"item":{"@type":"Product","name":"Hazır Hikâye Arşivi — 5 Dosya","url":"https://tarihajani.com/urun/hazir-arsiv/","offers":{"@type":"Offer","price":"499","priceCurrency":"TRY","availability":"https://schema.org/InStock"}}},{"@type":"ListItem","position":5,"item":{"@type":"Product","name":"Belgeden Hikâyeye — Eğitim Programı","url":"https://tarihajani.com/urun/egitim/","offers":{"@type":"Offer","price":"999","priceCurrency":"TRY","availability":"https://schema.org/InStock"}}}]}
+</script>
 <script src="./support.js"></script>
+<script src="/uye-nav.js" defer></script>
+<script src="/canli-sohbet.js" defer></script>
+<script src="/mobil-nav.js" defer></script>
+<script src="/ara.js" defer></script>
+<script src="/tema.js" defer></script>
+<script src="/alt-bilgi.js" defer></script>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#06070d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tarih Ajanı">
+<script src="/pwa.js" defer></script>
 </head>
 <body>
 <x-dc>
@@ -59,6 +75,7 @@
 </style>
   <script>window.__taFadeBg='#06070d';</script>
   <script src="page-transition.js"></script>
+  <script src="analytics.js"></script>
 </helmet>
 
 <div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
@@ -68,12 +85,15 @@
     <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
       <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 42px; width: auto;">
     </a>
-    <nav style="display: flex; align-items: center; gap: 4px;">
-      <a href="/" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ANA SAYFA</a>
-      <a href="/ekitap" style="color: #e6c478; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; font-weight: 700;">E-KİTAP</a>
-      <a href="/urunler" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ÜRÜNLER</a>
-      <a href="/egitim" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">EĞİTİM</a>
-      <a href="/studio" style="color: #171207; font-weight: 800; font-size: 12.5px; letter-spacing: .1em; text-decoration: none; padding: 11px 18px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 8px;" style-hover="box-shadow: 0 6px 30px rgba(230,196,120,.35);">STUDIO'YA GİR</a>
+    <nav style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+      <a href="/" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ANA SAYFA</a>
+      <a href="/urunler" style="color: #e6c478; font-weight: 700; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; border-bottom: 1px solid rgba(193,154,82,.6);">ÜRÜNLER</a>
+      <a href="/uyelik" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ÜYELİK</a>
+      <a href="/egitim" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">AKADEMİ</a>
+      <a href="/arsiv" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ARŞİV</a>
+      <a href="/studio" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">STUDIO</a>
+      <a href="/zaman-tuneli" style="color: #171207; font-weight: 700; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 10px 16px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 22px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">OYUN TÜNELİ</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12px; letter-spacing: .12em; text-decoration: none; padding: 10px 18px; border: 1px solid rgba(193,154,82,.55); margin-left: 8px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">AJAN GİRİŞİ</a>
     </nav>
   </header>
 

@@ -1,0 +1,31 @@
+{
+  "name": "Tarih Ajanı — Tarihin Gizli Dosyaları",
+  "short_name": "Tarih Ajanı",
+  "description": "Tarihe dedektif gözüyle bakan içerik stüdyosu: vaka dosyaları, AI destekli Studio, canlı tarih haberleri ve içerik üretim akademisi.",
+  "lang": "tr",
+  "dir": "ltr",
+  "start_url": "/?src=pwa",
+  "scope": "/",
+  "id": "/?src=pwa",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#06070d",
+  "theme_color": "#06070d",
+  "categories": ["education", "news", "entertainment"],
+  "icons": [
+    { "src": "/assets/pwa-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/pwa-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/pwa-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "/assets/ekran-1-anasayfa.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Ana sayfa — tarih videolarını dakikalar içinde üret" },
+    { "src": "/assets/ekran-2-haber.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Tarih Ajanı Haber — tarihin canlı yayını" },
+    { "src": "/assets/ekran-3-arsiv.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Hikâye Arşivi — 42 vaka dosyası" }
+  ],
+  "shortcuts": [
+    { "name": "Haber", "short_name": "Haber", "url": "/haber/", "icons": [{ "src": "/assets/pwa-icon-192.png", "sizes": "192x192" }] },
+    { "name": "Studio", "short_name": "Studio", "url": "/studio", "icons": [{ "src": "/assets/pwa-icon-192.png", "sizes": "192x192" }] },
+    { "name": "Arşiv", "short_name": "Arşiv", "url": "/arsiv", "icons": [{ "src": "/assets/pwa-icon-192.png", "sizes": "192x192" }] }
+  ]
+}

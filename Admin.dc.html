@@ -3,10 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/png" href="/assets/logo-mark.png">
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/ta-logo-32.png"><link rel="icon" type="image/png" sizes="64x64" href="/assets/ta-logo-64.png"><link rel="apple-touch-icon" href="/assets/ta-logo-180.png">
 <title>Yönetim · Tarih Ajanı</title>
 <meta name="robots" content="noindex, nofollow">
 <script src="./support.js"></script>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#06070d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tarih Ajanı">
+<script src="/pwa.js" defer></script>
 </head>
 <body>
 <x-dc>
@@ -168,19 +175,90 @@
           </div>
         </section>
 
+        <!-- CANLI SOHBET -->
+        <section style="margin-top: 40px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px;">
+            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Canlı Sohbet</h2>
+            <button onClick="{{ chatRefresh }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; padding: 10px 14px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1);">{{ chatRefreshLabel }}</button>
+          </div>
+          <p style="margin: 0 0 14px; color: #818797; font-size: 13px;">Sitedeki Canlı Hat mesajları. 🤖 işaretliler Ajan Asistan'ın (yapay zekâ) cevapları. Sen yanıt yazınca asistan o konuşmada 10 dakika susar — konuşmayı devralmış olursun.</p>
+          <div style="border: 1px solid rgba(129,135,151,.18);">
+            <sc-for list="{{ chatRows }}" as="c" hint-placeholder-count="2">
+              <div style="border-bottom: 1px solid rgba(129,135,151,.1);">
+                <div onClick="{{ c.open }}" style="cursor: pointer; display: grid; grid-template-columns: 1.4fr 2.4fr .9fr; gap: 10px; align-items: center; padding: 13px 16px;" style-hover="background: rgba(193,154,82,.04);">
+                  <span style="font-size: 13px; color: #e9dfc8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.who }}</span>
+                  <span style="font-size: 12.5px; color: #a9adba; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.preview }}</span>
+                  <span style="text-align: right; font-family: 'Special Elite', monospace; font-size: 10px; color: #676d7c;">{{ c.when }}</span>
+                </div>
+                <sc-if value="{{ c.openNow }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 4px 16px 16px; background: #04060c;">
+                    <sc-for list="{{ chatMsgRows }}" as="m" hint-placeholder-count="3">
+                      <div style="{{ m.rowStyle }}"><span style="{{ m.bubbleStyle }}">{{ m.text }}</span></div>
+                    </sc-for>
+                    <div style="display: flex; gap: 10px; margin-top: 12px;">
+                      <input value="{{ chatReply }}" onChange="{{ onChatReply }}" onKeyDown="{{ onChatReplyKey }}" placeholder="Yanıtını yaz…" style="flex: 1; border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 12px; font-size: 13px; font-family: inherit; min-width: 0;">
+                      <button onClick="{{ sendChatReply }}" disabled="{{ chatBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .1em; padding: 12px 16px;">{{ chatSendLabel }}</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noChats }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 26px 16px; text-align: center; color: #676d7c; font-size: 13px;">Henüz sohbet yok.</div>
+            </sc-if>
+          </div>
+        </section>
+
+        <!-- YORUM MODERASYONU -->
+        <section style="margin-top: 40px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px;">
+            <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Yorumlar <span style="{{ pendingBadgeStyle }}">{{ pendingCount }}</span></h2>
+            <button onClick="{{ reviewRefresh }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; padding: 10px 14px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1);">{{ reviewRefreshLabel }}</button>
+          </div>
+          <p style="margin: 0 0 14px; color: #818797; font-size: 13px;">Ziyaretçilerin bıraktığı gerçek değerlendirmeler. Onayla dersen ana sayfada yayınlanır; öne çıkardıkların en başta gösterilir. Uygunsuz olanları sil.</p>
+          <div style="border: 1px solid rgba(129,135,151,.18);">
+            <sc-for list="{{ reviewRows }}" as="rv" hint-placeholder-count="2">
+              <div style="border-bottom: 1px solid rgba(129,135,151,.1); padding: 14px 16px; display: grid; gap: 8px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                  <span style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="color: #e6c478; font-size: 13px; letter-spacing: 2px;">{{ rv.stars }}</span>
+                    <span style="font-size: 13px; color: #e9dfc8;">{{ rv.who }}</span>
+                    <span style="{{ rv.statusStyle }}">{{ rv.statusLabel }}</span>
+                  </span>
+                  <span style="font-family: 'Special Elite', monospace; font-size: 10px; color: #676d7c;">{{ rv.when }}</span>
+                </div>
+                <p style="margin: 0; color: #cfc8b4; font-size: 13.5px; line-height: 1.6;">{{ rv.body }}</p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <sc-if value="{{ rv.showApprove }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ rv.approve }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg,#5a7d4f,#7aa874 55%,#5a7d4f); color: #0c130a; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10px; letter-spacing: .08em; padding: 8px 13px;">✓ ONAYLA & YAYINLA</button>
+                  </sc-if>
+                  <sc-if value="{{ rv.showFeature }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ rv.toggleFeature }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .08em; padding: 8px 13px; cursor: pointer;">{{ rv.featureLabel }}</button>
+                  </sc-if>
+                  <button onClick="{{ rv.del }}" style="border: 1px solid rgba(192,57,43,.5); background: transparent; color: #e08a80; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .08em; padding: 8px 13px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12);">🗑 SİL</button>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noReviews }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 26px 16px; text-align: center; color: #676d7c; font-size: 13px;">Henüz yorum yok. (SQL çalıştırıldı mı? 20260712_sosyal_kanit.sql)</div>
+            </sc-if>
+          </div>
+        </section>
+
         <!-- ÜRÜNLER & FİYATLAR -->
         <section style="margin-top: 40px;">
           <h2 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Ürünler & Fiyatlar</h2>
-          <p style="margin: 0 0 14px; color: #818797; font-size: 13px;">Ürün adını ve fiyatını değiştirip Kaydet'e bas. Değişiklik satış sayfasına yansır.</p>
+          <p style="margin: 0 0 14px; color: #818797; font-size: 13px;">Ürün adını, fiyatını ve Shopier ödeme linkini değiştirip Kaydet'e bas. Link doluysa kart seçen müşteri sipariş sonrası doğrudan ödeme sayfasına yönlendirilir; boşsa link e-posta ile elle gönderilir.</p>
           <div style="border: 1px solid rgba(129,135,151,.18); overflow-x: auto;">
             <div style="min-width: 720px;">
-              <div style="display: grid; grid-template-columns: 2.4fr .9fr .8fr; gap: 12px; padding: 12px 16px; background: #070a12; border-bottom: 1px solid rgba(129,135,151,.18); color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">
-                <span>ÜRÜN ADI</span><span>FİYAT (TL)</span><span style="text-align: right;">İŞLEM</span>
+              <div style="display: grid; grid-template-columns: 1.8fr .6fr 1.5fr .7fr; gap: 12px; padding: 12px 16px; background: #070a12; border-bottom: 1px solid rgba(129,135,151,.18); color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">
+                <span>ÜRÜN ADI</span><span>FİYAT (TL)</span><span>ÖDEME LİNKİ (SHOPIER)</span><span style="text-align: right;">İŞLEM</span>
               </div>
               <sc-for list="{{ productRows }}" as="p" hint-placeholder-count="4">
-                <div style="display: grid; grid-template-columns: 2.4fr .9fr .8fr; gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid rgba(129,135,151,.1);">
+                <div style="display: grid; grid-template-columns: 1.8fr .6fr 1.5fr .7fr; gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid rgba(129,135,151,.1);">
                   <input value="{{ p.titleVal }}" onChange="{{ p.onTitle }}" style="border: 1px solid rgba(129,135,151,.25); background: #02040a; color: #e9dfc8; padding: 11px 12px; font-size: 13.5px; font-family: inherit;">
                   <input value="{{ p.priceVal }}" onChange="{{ p.onPrice }}" style="border: 1px solid rgba(129,135,151,.25); background: #02040a; color: #e6c478; padding: 11px 12px; font-size: 13.5px; font-family: 'Special Elite', monospace;">
+                  <input value="{{ p.payVal }}" onChange="{{ p.onPay }}" placeholder="https://www.shopier.com/…" style="border: 1px solid rgba(129,135,151,.25); background: #02040a; color: #9ed3a8; padding: 11px 12px; font-size: 12.5px; font-family: inherit;">
                   <span style="text-align: right;"><button onClick="{{ p.save }}" style="{{ p.saveStyle }}">{{ p.saveLabel }}</button></span>
                 </div>
               </sc-for>
@@ -254,12 +332,16 @@ class Component extends DCLogic {
     profiles: [], orders: [], products: [], expenses: [], productDrafts: {},
     expTitle: '', expAmount: '', expNote: '',
     search: '', refreshing: false, busyId: null, toast: '',
-    memberMeta: {}, tierDefs: null
+    memberMeta: {}, tierDefs: null,
+    chats: [], chatThread: null, chatMsgs: [], chatReply: '', chatBusy: false, chatRefreshing: false,
+    reviews: [], reviewsRefreshing: false
   };
 
   FN_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/admin';
   CREDITS_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/credits';
   SEND_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/send-emails';
+  CHAT_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/chat';
+  REVIEWS_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/sosyal-kanit';
   ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
 
   componentDidMount() {
@@ -291,6 +373,8 @@ class Component extends DCLogic {
     if (data.ok) {
       try { sessionStorage.setItem('ta_admin_pass', pass); } catch (e) {}
       this.setState({ authed: true, loading: false, profiles: data.profiles || [], orders: data.orders || [], products: data.products || [], expenses: data.expenses || [] });
+      this.loadChats();
+      this.loadReviews();
     } else {
       this.setState({ loading: false, authed: false, err: silent ? '' : (data.error || 'Giriş başarısız.') });
     }
@@ -301,6 +385,73 @@ class Component extends DCLogic {
     const { data } = await this.call({ password: this.state.pass, action: 'list' });
     if (data.ok) this.setState({ profiles: data.profiles || [], orders: data.orders || [], products: data.products || [], expenses: data.expenses || [], refreshing: false });
     else this.setState({ refreshing: false });
+    this.loadChats();
+    this.loadReviews();
+  }
+
+  /* ── canlı sohbet ── */
+  async chatCall(payload) {
+    const r = await fetch(this.CHAT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.ANON },
+      body: JSON.stringify({ password: this.state.pass, ...payload })
+    });
+    return r.json().catch(() => ({ ok: false }));
+  }
+
+  async loadChats() {
+    this.setState({ chatRefreshing: true });
+    const d = await this.chatCall({ action: 'threads' });
+    this.setState({ chats: (d && d.ok && d.threads) || [], chatRefreshing: false });
+  }
+
+  /* ── yorum moderasyonu ── */
+  async reviewsCall(payload) {
+    const r = await fetch(this.REVIEWS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.ANON },
+      body: JSON.stringify({ password: this.state.pass, ...payload })
+    });
+    return r.json().catch(() => ({ ok: false }));
+  }
+  async loadReviews() {
+    this.setState({ reviewsRefreshing: true });
+    const d = await this.reviewsCall({ action: 'pending' });
+    this.setState({ reviews: (d && d.ok && d.reviews) || [], reviewsRefreshing: false });
+  }
+  async moderateReview(id, approve) {
+    const d = await this.reviewsCall({ action: 'moderate', id, approve });
+    if (d && d.ok) { this.flash(approve ? 'Yorum onaylandı.' : 'Yorum silindi.'); this.loadReviews(); }
+    else this.flash('İşlem başarısız: ' + ((d && d.error) || 'hata'));
+  }
+  async featureReview(id, on) {
+    const d = await this.reviewsCall({ action: 'feature', id, on });
+    if (d && d.ok) this.loadReviews();
+    else this.flash('İşlem başarısız: ' + ((d && d.error) || 'hata'));
+  }
+
+  async openChat(thread) {
+    if (this.state.chatThread === thread) { this.setState({ chatThread: null, chatMsgs: [] }); return; }
+    this.setState({ chatThread: thread, chatMsgs: [] });
+    const d = await this.chatCall({ action: 'messagesOf', thread });
+    if (d && d.ok) this.setState({ chatMsgs: d.messages || [] });
+  }
+
+  async sendChatReply() {
+    const s = this.state;
+    const text = (s.chatReply || '').trim();
+    if (!text || !s.chatThread || s.chatBusy) return;
+    this.setState({ chatBusy: true });
+    const d = await this.chatCall({ action: 'reply', thread: s.chatThread, text });
+    if (d && d.ok) {
+      this.setState(st => ({
+        chatBusy: false, chatReply: '',
+        chatMsgs: [...st.chatMsgs, { id: d.id, sender: 'ajan', text, created_at: new Date().toISOString() }]
+      }));
+    } else {
+      this.setState({ chatBusy: false });
+      this.flash('Yanıt gönderilemedi: ' + ((d && d.error) || 'hata'));
+    }
   }
 
   async toggleAccess(id, current) {
@@ -316,7 +467,7 @@ class Component extends DCLogic {
   defaultTiers() {
     return {
       gozlemci: { name: 'GÖZLEMCİ', fiyat: '599', kota: '1000', icerik: 'Hazır hikâye arşivine erişim\nAylık 1.000 Studio kredisi\nAylık yeni vaka dosyası' },
-      ajan: { name: 'AJAN', fiyat: '1299', kota: '5000', icerik: 'Tüm dijital kitap arşivi\nHazır hikâye arşivinin tamamı\nAylık 5.000 Studio kredisi\nEğitim programı modülleri' },
+      ajan: { name: 'AJAN', fiyat: '1299', kota: '5000', icerik: 'Hazır hikâye arşivinin tamamı\nAylık 5.000 Studio kredisi\nEğitim programı modülleri\nÜyelere özel e-kitap hediyeleri' },
       basmufettis: { name: 'BAŞMÜFETTİŞ', fiyat: '1999', kota: '15000', icerik: 'Ajan içeriğinin tamamı\nAylık 15.000 Studio kredisi\nÖncelikli üretim\nBirebir mentorluk' }
     };
   }
@@ -516,12 +667,13 @@ class Component extends DCLogic {
     const d = this.state.productDrafts[p.slug] || {};
     const title = (d.title != null ? d.title : p.title);
     const price = parseFloat(d.price != null ? d.price : p.price) || 0;
+    const pay_url = String(d.pay_url != null ? d.pay_url : (p.pay_url || '')).trim();
     this.setState({ busyId: 'prod-' + p.slug });
-    const { data } = await this.call({ password: this.state.pass, action: 'updateProduct', slug: p.slug, title, price });
+    const { data } = await this.call({ password: this.state.pass, action: 'updateProduct', slug: p.slug, title, price, pay_url });
     if (data.ok) {
       this.setState(st => ({
         busyId: null,
-        products: st.products.map(x => x.slug === p.slug ? { ...x, title, price } : x),
+        products: st.products.map(x => x.slug === p.slug ? { ...x, title, price, pay_url } : x),
         productDrafts: { ...st.productDrafts, [p.slug]: undefined }
       }));
       this.flash('✓ Ürün güncellendi: ' + title);
@@ -748,16 +900,76 @@ class Component extends DCLogic {
       noOrders: orderRows.length === 0,
       toast: s.toast,
 
+      // canlı sohbet
+      chatRefresh: () => this.loadChats(),
+      chatRefreshLabel: s.chatRefreshing ? 'YENİLENİYOR…' : '↻ SOHBETLERİ YENİLE',
+      chatRows: (s.chats || []).map(c => ({
+        who: (c.name || 'Ziyaretçi') + (c.email ? ' · ' + c.email : ''),
+        preview: (c.lastSender === 'ajan' ? 'Sen: ' : '') + String(c.last || '').slice(0, 90),
+        when: c.lastAt ? new Date(c.lastAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '',
+        open: () => this.openChat(c.thread),
+        openNow: s.chatThread === c.thread
+      })),
+      noChats: (s.chats || []).length === 0,
+      chatMsgRows: (s.chatMsgs || []).map(m => ({
+        text: (m.sender === 'ajan' && m.name === 'ASISTAN' ? '🤖 ' : '') + m.text,
+        rowStyle: { display: 'flex', margin: '6px 0', justifyContent: m.sender === 'ajan' ? 'flex-end' : 'flex-start' },
+        bubbleStyle: {
+          maxWidth: '78%', padding: '9px 12px', fontSize: '13px', lineHeight: 1.5,
+          border: m.sender === 'ajan' ? '1px solid rgba(193,154,82,.4)' : '1px solid rgba(129,135,151,.3)',
+          background: m.sender === 'ajan' ? 'rgba(193,154,82,.13)' : '#0b0e18',
+          color: m.sender === 'ajan' ? '#e9dfc8' : '#cfc8b4'
+        }
+      })),
+      chatReply: s.chatReply,
+      onChatReply: e => this.setState({ chatReply: e.target.value }),
+      onChatReplyKey: e => { if (e.key === 'Enter') this.sendChatReply(); },
+      sendChatReply: () => this.sendChatReply(),
+      chatBusy: s.chatBusy,
+      chatSendLabel: s.chatBusy ? '…' : 'YANITLA',
+
+      // yorum moderasyonu
+      reviewRefresh: () => this.loadReviews(),
+      reviewRefreshLabel: s.reviewsRefreshing ? 'YENİLENİYOR…' : '↻ YORUMLARI YENİLE',
+      pendingCount: (s.reviews || []).filter(r => !r.approved).length,
+      pendingBadgeStyle: {
+        display: (s.reviews || []).filter(r => !r.approved).length ? 'inline-block' : 'none',
+        marginLeft: '8px', verticalAlign: 'middle', fontFamily: "'Special Elite', monospace", fontSize: '11px',
+        letterSpacing: '.08em', color: '#171207', background: 'linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52)', padding: '2px 9px'
+      },
+      reviewRows: (s.reviews || []).map(r => ({
+        who: (r.name || 'Ajan') + (r.tier ? ' · ' + r.tier : ''),
+        stars: '★★★★★☆☆☆☆☆'.slice(5 - (r.rating || 0), 10 - (r.rating || 0)),
+        body: r.body,
+        when: r.created_at ? new Date(r.created_at).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '',
+        statusLabel: r.approved ? (r.featured ? 'YAYINDA · ÖNE ÇIKAN' : 'YAYINDA') : 'ONAY BEKLİYOR',
+        statusStyle: {
+          fontFamily: "'Special Elite', monospace", fontSize: '9.5px', letterSpacing: '.1em', padding: '3px 8px',
+          border: '1px solid ' + (r.approved ? 'rgba(122,168,116,.5)' : 'rgba(193,154,82,.5)'),
+          color: r.approved ? '#a8c8a2' : '#e6c478', whiteSpace: 'nowrap'
+        },
+        approve: () => this.moderateReview(r.id, true),
+        del: () => this.moderateReview(r.id, false),
+        toggleFeature: () => this.featureReview(r.id, !r.featured),
+        showApprove: !r.approved,
+        featureLabel: r.featured ? '☆ ÖNE ÇIKARMA' : '★ ÖNE ÇIKAR',
+        showFeature: !!r.approved
+      })),
+      noReviews: (s.reviews || []).length === 0,
+
       // ürün & fiyat düzenleme
       productRows: (s.products || []).map(p => {
         const d = s.productDrafts[p.slug] || {};
-        const dirty = (d.title != null && d.title !== p.title) || (d.price != null && String(d.price) !== String(p.price));
+        const dirty = (d.title != null && d.title !== p.title) || (d.price != null && String(d.price) !== String(p.price))
+          || (d.pay_url != null && d.pay_url !== (p.pay_url || ''));
         return {
           slug: p.slug,
           titleVal: d.title != null ? d.title : p.title,
           priceVal: d.price != null ? d.price : String(p.price),
+          payVal: d.pay_url != null ? d.pay_url : (p.pay_url || ''),
           onTitle: e => this.draft(p.slug, 'title', e.target.value),
           onPrice: e => this.draft(p.slug, 'price', e.target.value),
+          onPay: e => this.draft(p.slug, 'pay_url', e.target.value),
           save: () => this.saveProduct(p),
           saveLabel: s.busyId === ('prod-' + p.slug) ? '…' : 'KAYDET',
           saveStyle: {

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/ta-logo-32.png"><link rel="icon" type="image/png" sizes="64x64" href="/assets/ta-logo-64.png"><link rel="apple-touch-icon" href="/assets/ta-logo-180.png">
+<link rel="canonical" href="https://tarihajani.com/arsiv">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./support.js"></script>
+<script src="/uye-nav.js" defer></script>
+<script src="/canli-sohbet.js" defer></script>
+<script src="/mobil-nav.js" defer></script>
+<script src="/ara.js" defer></script>
+<script src="/tema.js" defer></script>
+<script src="/alt-bilgi.js" defer></script>
+<script src="/hos-geldin.js" defer></script>
+<script src="analytics.js"></script>
+<script src="/arsiv-slugs.js"></script>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#06070d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tarih Ajanı">
+<script src="/pwa.js" defer></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Hikâye Arşivi · Tarih Ajanı</title>
+  <meta name="description" content="Asur'dan Roma'ya, Mısır'dan Bizans'a — çözülmemiş tarih sırlarının hikâye arşivi. Her vaka dosyasını oku; senaryo, sahne promptları ve yayın paketiyle Studio'da videoya dönüştür.">
+  <link rel="canonical" href="https://tarihajani.com/arsiv">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/ta-logo-32.png"><link rel="icon" type="image/png" sizes="64x64" href="/assets/ta-logo-64.png"><link rel="apple-touch-icon" href="/assets/ta-logo-180.png">
+  <style>
+    html, body { margin: 0; padding: 0; background: #06070d; }
+    body { background-image: radial-gradient(circle 900px at 15% 8%, rgba(20,24,40,.4), transparent 55%), radial-gradient(circle 1100px at 92% 30%, rgba(18,22,38,.4), transparent 60%); background-attachment: fixed; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    a { color: #e6c478; }
+    a:hover { color: #f2ecd9; }
+    header nav > a { font-family: 'Special Elite', monospace !important; font-weight: 400 !important; letter-spacing: .08em !important; font-size: 12px !important; }
+    header nav a:hover { color: #e6c478 !important; }
+    *, a, button, [style*="cursor: pointer"] { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='11' cy='11' r='7' fill='rgba(20,14,5,0.12)' stroke='%23b0894d' stroke-width='2'/%3E%3Ccircle cx='11' cy='11' r='7' fill='none' stroke='%23ecce8a' stroke-width='0.8'/%3E%3Cline x1='16' y1='16' x2='25' y2='25' stroke='%235c3f18' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='16' y1='16' x2='25' y2='25' stroke='%23b0894d' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") 11 11, auto !important; }
+    input { cursor: text !important; }
+    ::selection { background: rgba(193,154,82,.35); }
+    input:focus { outline: 1px solid rgba(193,154,82,.6); }
+    @keyframes ta-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes ta-modalin { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .arsiv-scroll::-webkit-scrollbar { width: 9px; }
+    .arsiv-scroll::-webkit-scrollbar-thumb { background: rgba(193,154,82,.35); }
+    @media (max-width: 820px) {
+      header { height: auto !important; min-height: 58px; flex-wrap: wrap !important; padding: 10px 14px !important; }
+      header nav { flex-wrap: wrap !important; gap: 2px !important; justify-content: flex-end; }
+      header nav a { margin-left: 0 !important; }
+      /* dosya penceresi telefonda ekrana sabitlenir; uzun prompt satırları
+         (İngilizce, kesintisiz) sağa taşıyordu → kelime kır, taşmayı kilitle */
+      .arsiv-scroll { width: calc(100vw - 32px) !important; max-width: calc(100vw - 32px) !important; overflow-x: hidden !important; }
+      .arsiv-scroll * { max-width: 100%; min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+    }
+  </style>
+  <script>window.__taFadeBg='#06070d';window.__taNoIntroFade=true;</script>
+  <script src="arsiv-data.js"></script>
+  <script src="page-transition.js"></script>
+  <script src="analytics.js"></script>
+  <script src="/uye-nav.js" defer></script>
+<script src="/canli-sohbet.js" defer></script>
+<script src="/mobil-nav.js" defer></script>
+<script src="/ara.js" defer></script>
+<script src="/tema.js" defer></script>
+<script src="/hos-geldin.js" defer></script>
+</helmet>
+
+<div style="min-height: 100vh; background: transparent; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 500;">
+
+  <!-- HEADER -->
+  <header style="position: fixed; z-index: 30; top: 0; left: 0; right: 0; height: 84px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(18px, 4vw, 40px); background: #03050b;">
+    <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
+      <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 50px; width: auto;">
+    </a>
+    <nav style="display: flex; align-items: center; flex: 1; gap: 10px;">
+      <a href="/" style="margin-left: auto; color: #d6d0c2; text-decoration: none; padding: 9px 13px;">ANA SAYFA</a>
+      <a href="/urunler" style="color: #d6d0c2; text-decoration: none; padding: 9px 13px;">ÜRÜNLER</a>
+      <a href="/uyelik" style="color: #d6d0c2; text-decoration: none; padding: 9px 13px;">ÜYELİK</a>
+      <a href="/egitim" style="color: #d6d0c2; text-decoration: none; padding: 9px 13px;">AKADEMİ</a>
+      <a href="/arsiv" style="color: #e6c478; text-decoration: none; padding: 9px 13px; border-bottom: 1px solid rgba(193,154,82,.6);">HİKÂYE ARŞİVİ</a>
+      <a href="/studio" style="color: #d6d0c2; text-decoration: none; padding: 9px 13px;">STUDIO</a>
+      <a href="/zaman-tuneli" style="color: #171207; font-weight: 700; letter-spacing: .1em; text-decoration: none; padding: 10px 16px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 24px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">OYUN TÜNELİ</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; letter-spacing: .12em; text-decoration: none; padding: 10px 18px; border: 1px solid rgba(193,154,82,.55); margin-left: 8px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">AJAN GİRİŞİ</a>
+    </nav>
+  </header>
+
+  <!-- AJAN ARŞİVİ · BAŞLIK -->
+  <section data-screen-label="Ajan Arşivi Başlık" style="position: relative; overflow: hidden; padding: 150px clamp(20px, 5vw, 60px) 46px; border-bottom: 1px solid rgba(193,154,82,.15);">
+    <img src="assets/real-studio.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.42) saturate(.92);">
+    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,7,13,.62) 0%, rgba(5,7,13,.5) 45%, rgba(6,7,13,.9) 100%), linear-gradient(100deg, rgba(4,6,12,.85) 0%, rgba(4,6,12,.3) 60%, transparent 100%);"></div>
+    <div style="position: absolute; inset: 0; background: radial-gradient(circle 460px at 20% 30%, rgba(230,196,120,.14), transparent 60%);"></div>
+    <div style="position: relative; z-index: 2; width: min(1180px, 92vw); margin: 0 auto;">
+      <p style="margin: 0; color: #d8b26a; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .32em; animation: ta-rise .7s .05s ease both;">TARİH AJANI · HİKÂYE ARŞİVİ</p>
+      <h1 style="margin: 12px 0 0; font-family: 'Playfair Display', serif; font-weight: 800; font-size: clamp(44px, 6.6vw, 88px); line-height: .98; animation: ta-rise .8s .16s ease both;">Hikâye <span style="background: linear-gradient(105deg, #b18742 0%, #e6c478 40%, #fff0b1 50%, #d6ad5b 62%, #9d7536 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">Arşivi</span></h1>
+      <p style="margin: 20px 0 0; color: #d3d8e2; font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(15px, 1.2vw, 18px); line-height: 1.6; max-width: 620px; animation: ta-rise .8s .3s ease both;">Asur'dan Roma'ya, Mısır'dan Bizans'a — çözülmemiş sırların hikâye arşivi. Her dosyayı oku; istersen Studio'da videoya dönüştür. <a href="/vaka-dosyalari" style="color: #e6c478; font-style: normal; text-decoration: none; border-bottom: 1px solid rgba(230,196,120,.4);">Okumalık e-kitap vakaları →</a></p>
+      <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 32px; animation: ta-rise .8s .44s ease both;">
+        <div style="display: flex; align-items: center; gap: 10px; border: 1px solid rgba(193,154,82,.4); background: rgba(2,4,10,.66); padding: 13px 16px; min-width: 280px; flex: 1; max-width: 440px; backdrop-filter: blur(4px);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c19a52" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+          <input value="{{ q }}" onInput="{{ onSearch }}" type="text" placeholder="dosyalarda ara — Sezar, Mısır, çelik…" style="flex: 1; min-width: 0; border: 0; background: transparent; color: #e9dfc8; font-family: inherit; font-size: 14px; outline: none;">
+        </div>
+        <span style="color: #b3b8c4; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; white-space: nowrap;">{{ shown }} / {{ count }} DOSYA</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOG ipucu şeridi: her dosya hikâye olarak okunur (ayrı günlük sayfası yok) -->
+  <section style="width: min(1340px, 92vw); margin: 0 auto; padding: 26px clamp(20px, 4vw, 40px) 0;">
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; border: 1px solid rgba(193,154,82,.25); background: linear-gradient(100deg, rgba(193,154,82,.07), rgba(8,7,12,.3)); padding: 15px 20px;">
+      <span style="font-size: 22px;">📖</span>
+      <span style="color: #cfd3dc; font-size: 14px; line-height: 1.5;">Her dosyayı açıp <strong style="color:#e6c478;">hikâye olarak okuyabilirsin</strong> — çözülmemiş sırların blog tarzı anlatıları, doğrudan arşivin içinde. Dilersen Studio'da videoya dönüştür.</span>
+    </div>
+  </section>
+
+  <!-- ARŞİV IZGARA -->
+  <section data-screen-label="Arşiv Izgara" style="width: min(1340px, 92vw); margin: 0 auto; padding: 32px clamp(20px, 4vw, 40px) 80px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+      <sc-for list="{{ list }}" as="d" hint-placeholder-count="9">
+        <div onClick="{{ d.open }}" style="position: relative; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; gap: 11px; border: 1px solid rgba(193,154,82,.2); background: linear-gradient(160deg, rgba(15,13,19,.92), rgba(8,7,12,.96)); padding: 22px 22px 24px; transition: border-color .2s, transform .2s;" style-hover="border-color: rgba(193,154,82,.55); transform: translateY(-3px);">
+          <span style="position: absolute; top: -6px; right: 6px; font-family: 'Playfair Display', serif; font-size: 92px; font-weight: 800; line-height: .8; color: rgba(193,154,82,.06); pointer-events: none;">{{ d.num }}</span>
+          <div style="display: flex; align-items: center; gap: 9px;">
+            <span style="color: #e08a80; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .2em; border: 1px solid rgba(224,138,128,.5); padding: 4px 8px; transform: rotate(-3deg);">GİZLİ</span>
+            <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .12em;">{{ d.fileNo }}</span>
+          </div>
+          <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .18em;">{{ d.era }}</p>
+          <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; line-height: 1.28; color: #efe6cf;">{{ d.title }}</h3>
+          <p style="margin: 0; color: #8f95a2; font-size: 12.5px; line-height: 1.55; flex: 1;">{{ d.teaser }}</p>
+          <span style="margin-top: 4px; display: inline-flex; align-items: center; gap: 7px; color: #d8c79b; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .14em;">DOSYAYI AÇ →</span>
+        </div>
+      </sc-for>
+    </div>
+    <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+      <p style="text-align: center; color: #818797; font-family: 'Special Elite', monospace; font-size: 13px; letter-spacing: .1em; padding: 40px 0;">Bu aramaya uygun dosya bulunamadı.</p>
+    </sc-if>
+  </section>
+
+  <!-- DOSYA DETAY · üyelik korumalı -->
+  <sc-if value="{{ selOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ close }}" style="position: fixed; inset: 0; z-index: 80; display: grid; place-items: start center; padding: 5vh 16px; background: rgba(3,4,9,.82); backdrop-filter: blur(6px); overflow-y: auto;">
+      <div onClick="{{ stop }}" class="arsiv-scroll" style="position: relative; width: min(820px, 96vw); max-height: 90vh; overflow-y: auto; border: 1px solid rgba(193,154,82,.4); background: linear-gradient(180deg, #0c0a12 0%, #08070d 100%); box-shadow: 0 40px 120px rgba(0,0,0,.7); animation: ta-modalin .3s ease both;">
+        <button onClick="{{ close }}" style="position: absolute; top: 14px; right: 14px; z-index: 6; width: 40px; height: 40px; border: 1px solid rgba(193,154,82,.35); background: rgba(3,5,11,.7); color: #e6c478; font-size: 16px; cursor: pointer;" style-hover="background: rgba(193,154,82,.15);">✕</button>
+        <div style="position: relative; overflow: hidden; padding: 34px clamp(22px, 4vw, 40px) 26px; border-bottom: 1px solid rgba(193,154,82,.2);">
+          <img src="assets/texture-aged.png" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .5;">
+          <div style="position: relative; z-index: 2;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+              <span style="color: #e08a80; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .2em; border: 1px solid rgba(224,138,128,.5); padding: 4px 9px; transform: rotate(-3deg);">GİZLİ</span>
+              <span style="color: #a7adba; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .14em;">{{ selFileNo }}</span>
+            </div>
+            <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em;">{{ selEra }}</p>
+            <h2 style="margin: 8px 0 0; font-family: 'Playfair Display', serif; font-size: clamp(24px, 3.2vw, 36px); font-weight: 700; color: #f4eedf; line-height: 1.15;">{{ selTitle }}</h2>
+            <sc-if value="{{ selHasRead }}" hint-placeholder-val="{{ true }}">
+              <a href="{{ selReadHref }}" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; text-decoration: none; border: 1px solid rgba(193,154,82,.55); background: rgba(193,154,82,.1); color: #e6c478; padding: 11px 18px; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .12em;" style-hover="background: rgba(193,154,82,.2);">📖 HİKÂYEYİ OKU →</a>
+            </sc-if>
+          </div>
+        </div>
+        <div style="padding: 26px clamp(22px, 4vw, 40px) 34px;">
+          <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">DOSYA ÖZETİ</p>
+          <p style="margin: 0 0 26px; color: #cfd3dc; font-size: 15px; line-height: 1.75;">{{ selOzet }}</p>
+
+          <sc-if value="{{ member }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: -8px 0 22px;">
+              <a href="{{ uretHref }}" style="text-decoration: none; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px 18px; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.35);">◈ STUDIO'DA ÜRET →</a>
+              <button onClick="{{ ekitap }}" style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); color: #e6c478; padding: 11px 18px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="background: rgba(193,154,82,.16);">📖 E-KİTAP / PDF</button>
+              <button onClick="{{ copyAllSel }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 11px 18px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ copyAllSelLabel }}</button>
+            </div>
+            <div style="display: grid; gap: 26px;">
+              <sc-for list="{{ selSections }}" as="sec" hint-placeholder-count="0">
+                <div style="border-left: 2px solid rgba(193,154,82,.5); padding-left: 18px;">
+                  <h3 style="margin: 0 0 14px; font-family: 'Special Elite', monospace; font-size: 13px; letter-spacing: .18em; color: #e6c478;">{{ sec.ad }}</h3>
+                  <div style="display: grid; gap: 16px;">
+                    <sc-for list="{{ sec.bloklar }}" as="b" hint-placeholder-count="0">
+                      <div style="border: 1px solid rgba(193,154,82,.16); background: rgba(8,11,19,.55); padding: 14px 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px;">
+                          <p style="margin: 0; color: #b7a06a; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em;">{{ b.k }}</p>
+                          <button onClick="{{ b.copy }}" style="flex-shrink: 0; border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ b.copyLabel }}</button>
+                        </div>
+                        <p style="margin: 0; color: #c3c8d3; font-size: 13.5px; line-height: 1.7; white-space: pre-line;">{{ b.t }}</p>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ locked }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <p style="margin: 0 0 12px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">DOSYA İÇERİĞİ</p>
+              <div style="display: grid; gap: 8px; margin-bottom: 26px;">
+                <sc-for list="{{ selSectionNames }}" as="nm" hint-placeholder-count="5">
+                  <div style="display: flex; align-items: center; gap: 12px; border: 1px solid rgba(129,135,151,.18); background: rgba(10,12,20,.5); padding: 14px 16px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8a7a52" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="1.5"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+                    <span style="color: #aeb3c0; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: .08em; flex: 1;">{{ nm }}</span>
+                    <span style="color: #6b7180; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .12em;">KİLİTLİ</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="position: relative; overflow: hidden; border: 1px solid rgba(193,154,82,.4); background: linear-gradient(120deg, #0a0d16 0%, #0e1220 100%); padding: 28px clamp(20px, 3vw, 32px);">
+                <div style="position: absolute; inset: 0; background: radial-gradient(circle 260px at 85% 50%, rgba(230,196,120,.14), transparent 70%); pointer-events: none;"></div>
+                <div style="position: relative; z-index: 2; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; justify-content: space-between;">
+                  <div style="max-width: 42ch;">
+                    <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(19px, 2.4vw, 24px); font-weight: 700; color: #f2ecd9;">Bu dosya ajanlara özel.</h3>
+                    <p style="margin: 8px 0 0; color: #9aa0ad; font-size: 13.5px; line-height: 1.6;">Tam senaryo, sahne &amp; video promptları ve yayın paketi paralı üyeliklere özeldir. <span style="color: #c19a52;">Gözlemci seviyesinden itibaren açılır</span> — ücretsiz üye deneme kredisiyle Studio'yu deneyebilir. Her dosyayı <strong style="color: #e6c478;">hikâye olarak ücretsiz okuyabilirsin</strong>.</p>
+                  </div>
+                  <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="/uyelik" style="text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .12em; padding: 15px 24px; white-space: nowrap;" style-hover="box-shadow: 0 10px 34px rgba(230,196,120,.4);">AJAN GİRİŞİ</a>
+                    <a href="/uyelik#seviyeler" style="text-decoration: none; border: 1px solid rgba(193,154,82,.5); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .12em; padding: 15px 24px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">ÜYE OL</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ALT CTA -->
+  <section data-screen-label="Alt CTA" style="position: relative; overflow: hidden; border-top: 1px solid rgba(193,154,82,.2); border-bottom: 1px solid rgba(193,154,82,.2); background: linear-gradient(100deg, #070a12 0%, #0b0f18 100%);">
+    <div style="position: absolute; inset: 0; background: radial-gradient(circle 340px at 85% 50%, rgba(230,196,120,.12), transparent 70%);"></div>
+    <div style="position: relative; z-index: 2; width: min(1180px, 92vw); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; padding: clamp(32px, 4vw, 48px) clamp(20px, 4vw, 40px);">
+      <div>
+        <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: clamp(24px, 3vw, 36px); font-weight: 700; color: #f2ecd9;">Kendi dosyanı üretmek ister misin?</h2>
+        <p style="margin: 10px 0 0; color: #9aa0ad; font-size: 14px; line-height: 1.6; max-width: 52ch;">Studio ile arşivden konu al, saniyeler içinde kendi vaka dosyanı ve videonu üret.</p>
+      </div>
+      <a href="/studio" style="flex-shrink: 0; text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12.5px; letter-spacing: .12em; padding: 16px 26px;" style-hover="box-shadow: 0 10px 40px rgba(230,196,120,.4);">STUDIO'YA GİR →</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="border-top: 1px solid rgba(193,154,82,.15); background: #06070c; padding: clamp(40px, 5vw, 64px) clamp(20px, 4vw, 40px) 30px;">
+    <div style="width: min(1180px, 92vw); margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px;">
+      <a href="/" style="display: flex; align-items: center; text-decoration: none;"><img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 46px; width: auto;"></a>
+      <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+        <a href="/urunler" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Ürünler</a>
+        <a href="/studio" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Studio</a>
+        <a href="/egitim" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Akademi</a>
+        <a href="/uyelik" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;" style-hover="color: #e6c478;">Üyelik</a>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="https://www.youtube.com/@TarihAjani" target="_blank" aria-label="YouTube" style="display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1px solid rgba(193,154,82,.35); color: #c19a52; text-decoration: none; font-size: 14px;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.7);">▶</a>
+        <a href="https://www.instagram.com/tarih.ajani" target="_blank" aria-label="Instagram" style="display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1px solid rgba(193,154,82,.35); color: #c19a52; text-decoration: none; font-size: 14px;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.7);">◉</a>
+      </div>
+    </div>
+    <div style="width: min(1180px, 92vw); margin: 28px auto 0; border-top: 1px solid rgba(129,135,151,.12); padding-top: 18px;">
+      <span style="color: #5a6070; font-size: 12px;">© 2026 Tarih Ajanı · Tüm hakları saklıdır.</span>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { q: '', all: [], sel: null, mem: false, copied: {} };
+  componentDidMount() {
+    const load = () => {
+      if (window.__ARSIV__ && window.__ARSIV__.length) this.setState({ all: window.__ARSIV__ });
+      else setTimeout(load, 80);
+    };
+    load();
+    this._esc = (e) => { if (e.key === 'Escape') this.setState({ sel: null }); };
+    window.addEventListener('keydown', this._esc);
+    this.initAuth();
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this._esc); }
+
+  // Arşiv kilidi PARALI seviyeye bağlı: yalnız gozlemci/ajan/basmufettis açar.
+  // Ücretsiz üye (uye) giriş yapmış olsa bile arşiv kilitli kalır.
+  initAuth(tries) {
+    tries = tries || 0;
+    if (!window.supabase || !window.supabase.createClient) {
+      if (tries < 40) setTimeout(() => this.initAuth(tries + 1), 150);
+      return;
+    }
+    const SB = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const sb = window.supabase.createClient(SB, KEY);
+    const PAID = ['gozlemci', 'ajan', 'basmufettis'];
+    const apply = (on) => {
+      try { window.__TA_UYE__ = on; localStorage.setItem('ta_uye', on ? '1' : '0'); } catch (e) {}
+      this.setState({ mem: on });
+    };
+    const check = (session) => {
+      if (!session || !session.user) { apply(false); return; }
+      // Seviyeyi sunucudan doğrula (yalnız paralı seviye arşivi açar)
+      fetch(SB + '/functions/v1/credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+        body: JSON.stringify({ action: 'balance' })
+      }).then((r) => r.json()).then((d) => {
+        apply(!!(d && d.ok && PAID.indexOf(d.tier) >= 0));
+      }).catch(() => apply(false));
+    };
+    sb.auth.getSession().then(({ data }) => check(data && data.session));
+    sb.auth.onAuthStateChange((_e, s) => check(s));
+  }
+  isMember() { return this.state.mem === true; }
+  // Başlıkları okunur hâle getir: TÜMÜ BÜYÜK kelimeleri Başlık Düzenine çevir
+  dispTitle(s) {
+    return String(s || '').split(/(\s+)/).map(w => {
+      const letters = w.replace(/[^A-Za-zÇĞİıÖŞÜçğıöşü]/g, '');
+      if (letters.length > 1 && w === w.toLocaleUpperCase('tr') && /[A-ZÇĞİÖŞÜ]/.test(w)) {
+        const lc = w.toLocaleLowerCase('tr');
+        return lc.replace(/[A-Za-zÇĞİıÖŞÜçğıöşü]/, c => c.toLocaleUpperCase('tr'));
+      }
+      return w;
+    }).join('');
+  }
+  renderVals() {
+    const raw = this.state.all || [];
+    const q = (this.state.q || '').toLocaleLowerCase('tr');
+    const list = raw
+      .map((a, i) => ({ a, i }))
+      .filter(({ a }) => {
+        if (!q) return true;
+        const hay = (a.baslik + ' ' + a.era + ' ' + a.teaser + ' ' + a.fileNo).toLocaleLowerCase('tr');
+        return hay.includes(q);
+      })
+      .map(({ a, i }) => {
+        const m = String(a.no || '').match(/\d+/);
+        const slug = ((typeof window !== 'undefined' && window.__ARSIV_SLUGS__) || [])[i] || '';
+        return {
+          num: m ? String(m[0]).padStart(2, '0') : '•',
+          era: a.era, fileNo: a.fileNo, title: this.dispTitle(a.baslik), teaser: a.teaser,
+          readHref: slug ? ('/arsiv/' + slug + '/') : '',
+          hasRead: !!slug,
+          open: () => this.setState({ sel: i }),
+        };
+      });
+    const sel = (this.state.sel != null) ? raw[this.state.sel] : null;
+    const member = this.isMember();
+    return {
+      list,
+      count: raw.length,
+      shown: list.length,
+      empty: raw.length > 0 && list.length === 0,
+      q: this.state.q,
+      onSearch: (e) => this.setState({ q: e.target.value }),
+      // detay
+      selOpen: !!sel,
+      close: () => this.setState({ sel: null }),
+      stop: (e) => { e.stopPropagation(); },
+      member,
+      locked: !!sel && !member,
+      selEra: sel ? sel.era : '',
+      selFileNo: sel ? sel.fileNo : '',
+      uretHref: sel ? ('/studio?uret=' + encodeURIComponent(sel.fileNo || '')) : '/studio',
+      selReadHref: (sel && ((window.__ARSIV_SLUGS__ || [])[this.state.sel])) ? ('/arsiv/' + window.__ARSIV_SLUGS__[this.state.sel] + '/') : '',
+      selHasRead: !!(sel && ((window.__ARSIV_SLUGS__ || [])[this.state.sel])),
+      selTitle: sel ? this.dispTitle(sel.baslik) : '',
+      selOzet: sel ? sel.ozet : '',
+      selSections: sel ? (sel.sections || []).map((sec, si) => ({
+        ad: sec.ad,
+        bloklar: (sec.bloklar || []).map((b, bi) => {
+          const key = si + '_' + bi;
+          return {
+            k: b.k, t: b.t,
+            copy: () => this.copyBlok(key, b.t),
+            copyLabel: (this.state.copied || {})[key] ? '✓ KOPYALANDI' : 'KOPYALA'
+          };
+        })
+      })) : [],
+      selSectionNames: sel ? (sel.sections || []).map(s => s.ad) : [],
+      ekitap: () => sel && this.ekitapOpen(sel),
+      copyAllSel: () => {
+        if (!sel) return;
+        const t = (sel.sections || []).map(s => '=== ' + s.ad + ' ===\n\n' + (s.bloklar || []).map(b => (b.k ? b.k + '\n' : '') + b.t).join('\n\n')).join('\n\n\n');
+        this.copyBlok('__all', t);
+      },
+      copyAllSelLabel: (this.state.copied || {})['__all'] ? '✓ KOPYALANDI' : 'TÜMÜNÜ KOPYALA',
+    };
+  }
+
+  copyBlok(key, text) {
+    try { navigator.clipboard.writeText(text || ''); } catch (e) {}
+    this.setState({ copied: { ...(this.state.copied || {}), [key]: true } });
+    setTimeout(() => this.setState({ copied: { ...(this.state.copied || {}), [key]: false } }), 1600);
+  }
+
+  // Studio ile AYNI e-kitap formatı: kapak + bölümler, baskıya hazır (PDF olarak kaydet)
+  ekitapOpen(d) {
+    const esc = t => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const chapters = (d.sections || []).map(s => ({ ad: s.ad, bloklar: s.bloklar }));
+    const chapHtml = chapters.map((c, i) => (
+      '<section class="chap' + (i === 0 ? ' first' : '') + '">' +
+      '<div class="chapno">BÖLÜM ' + String(i + 1).padStart(2, '0') + '</div>' +
+      '<h2>' + esc(c.ad) + '</h2>' +
+      (c.bloklar || []).map(b => (
+        (b.k ? '<h3>' + esc(b.k) + '</h3>' : '') +
+        '<div class="body">' + esc(b.t) + '</div>'
+      )).join('') +
+      '</section>'
+    )).join('');
+    const html = '<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>' + esc(d.baslik) + ' · Tarih Ajanı</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400&family=Hanken+Grotesk:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">' +
+      '<style>' +
+      '@page{size:A4;margin:22mm 18mm;}' +
+      '*{box-sizing:border-box;}body{margin:0;font-family:"Hanken Grotesk",sans-serif;color:#1d1a14;background:#f4efe4;}' +
+      '.page{max-width:760px;margin:0 auto;padding:40px 34px;}' +
+      '.cover{min-height:92vh;display:flex;flex-direction:column;justify-content:center;text-align:center;page-break-after:always;border:1px solid #b99b5e;margin:24px;padding:60px 40px;background:linear-gradient(160deg,#f7f2e7,#efe6d2);}' +
+      '.cover .marka{font-family:"Special Elite",monospace;letter-spacing:.35em;font-size:12px;color:#8a6d3b;}' +
+      '.cover h1{font-family:"Playfair Display",serif;font-weight:800;font-size:44px;line-height:1.12;margin:26px 0 14px;color:#211c12;}' +
+      '.cover .sub{font-family:"Playfair Display",serif;font-style:italic;font-size:17px;color:#5c5342;max-width:52ch;margin:0 auto;line-height:1.6;}' +
+      '.cover .rule{width:90px;height:2px;background:#b99b5e;margin:30px auto;}' +
+      '.cover .foot{font-family:"Special Elite",monospace;font-size:10.5px;letter-spacing:.22em;color:#8a6d3b;margin-top:40px;}' +
+      '.chap{page-break-before:always;padding-top:10px;}.chap.first{page-break-before:auto;}' +
+      '.chapno{font-family:"Special Elite",monospace;font-size:10.5px;letter-spacing:.3em;color:#8a6d3b;}' +
+      '.chap h2{font-family:"Playfair Display",serif;font-size:27px;font-weight:700;margin:8px 0 4px;color:#211c12;border-bottom:2px solid #b99b5e;padding-bottom:10px;}' +
+      '.chap h3{font-family:"Special Elite",monospace;font-size:12px;letter-spacing:.14em;color:#6d5c39;margin:22px 0 6px;}' +
+      '.body{white-space:pre-wrap;line-height:1.75;font-size:13.5px;color:#2a251b;}' +
+      '.pfoot{text-align:center;font-family:"Special Elite",monospace;font-size:10px;letter-spacing:.24em;color:#8a6d3b;padding:30px 0 20px;}' +
+      '@media print{.cover{min-height:auto;margin:0;}body{background:#fff;}.noprint{display:none;}}' +
+      '.noprint{position:fixed;top:14px;right:14px;background:#211c12;color:#e6c478;border:0;padding:12px 20px;font-family:"Special Elite",monospace;font-size:11px;letter-spacing:.14em;cursor:pointer;}' +
+      '</style></head><body>' +
+      '<button class="noprint" onclick="window.print()">🖨 PDF OLARAK KAYDET</button>' +
+      '<div class="cover"><div class="marka">TARİH AJANI · GİZLİ ARŞİV</div><h1>' + esc(d.baslik) + '</h1>' +
+      (d.ozet ? '<p class="sub">' + esc(d.ozet) + '</p>' : '') +
+      '<div class="rule"></div><div class="foot">' + esc(d.fileNo || 'VAKA DOSYASI') + ' · tarihajani.com</div></div>' +
+      '<div class="page">' + chapHtml + '<div class="pfoot">TARİH SAKLAR, AJAN BULUR · © TARİH AJANI</div></div>' +
+      '</body></html>';
+    const w = window.open('', '_blank');
+    if (!w) { alert('Tarayıcı yeni pencereyi engelledi; pop-up izni ver.'); return; }
+    w.document.write(html); w.document.close();
+  }
+}
+</script>
+</body>
+</html>

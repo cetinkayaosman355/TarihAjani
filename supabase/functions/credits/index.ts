@@ -56,7 +56,8 @@ Deno.serve(async (req) => {
         .from("tier_defs").select("quota").eq("id", tier).single();
       if (defErr || !def) return json({ ok: false, error: "Geçersiz seviye: " + tier }, 400);
 
-      const expires = tier === "gozlemci"
+      // Tüm paralı seviyeler (gozlemci dahil) süreye bağlıdır; dolunca ücretsiz 'uye'ye düşer.
+      const expires = tier === "uye"
         ? null
         : new Date(Date.now() + (billing === "yil" ? 365 : 30) * 86400_000).toISOString();
       const { error } = await admin.from("profiles").update({

@@ -14,3 +14,11 @@
 
 /oyunlar/*
   Cache-Control: public, max-age=3600
+
+# PWA — service worker ve manifest hep taze kalsın (güncellemeler anında yayılsın)
+/sw.js
+  Cache-Control: no-cache
+/manifest.json
+  Cache-Control: no-cache
+/pwa.js
+  Cache-Control: no-cache

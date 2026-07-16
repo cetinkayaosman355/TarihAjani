@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/png" href="/assets/logo-mark.png">
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/ta-logo-32.png"><link rel="icon" type="image/png" sizes="64x64" href="/assets/ta-logo-64.png"><link rel="apple-touch-icon" href="/assets/ta-logo-180.png">
 <meta name="description" content="Tarih Ajanı dijital ürünleri: vaka dosyası paketleri, video promptları, üretim rehberleri ve koleksiyon setleri. Shopier ile güvenli ödeme.">
 <link rel="canonical" href="https://tarihajani.com/urunler">
 <meta property="og:type" content="website">
@@ -18,6 +18,20 @@
 <meta name="twitter:description" content="Tarih Ajanı dijital ürünleri: vaka dosyası paketleri, video promptları, üretim rehberleri ve koleksiyon setleri. Shopier ile güvenli ödeme.">
 <meta name="twitter:image" content="https://tarihajani.com/assets/dossier-bundle.jpg">
 <script src="./support.js"></script>
+<script src="/uye-nav.js" defer></script>
+<script src="/canli-sohbet.js" defer></script>
+<script src="/mobil-nav.js" defer></script>
+<script src="/ara.js" defer></script>
+<script src="/tema.js" defer></script>
+<script src="/alt-bilgi.js" defer></script>
+<script src="/hos-geldin.js" defer></script>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#06070d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tarih Ajanı">
+<script src="/pwa.js" defer></script>
 </head>
 <body>
 <x-dc>
@@ -63,6 +77,7 @@
 </style>
   <script>window.__taFadeBg='#06070d';</script>
   <script src="page-transition.js"></script>
+  <script src="analytics.js"></script>
 </helmet>
 
 <div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
@@ -72,13 +87,15 @@
     <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
       <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 42px; width: auto;">
     </a>
-    <nav style="display: flex; align-items: center; gap: 4px;">
-      <a href="/" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ANA SAYFA</a>
-      <a href="/ekitap" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">E-KİTAP</a>
-      <a href="/urunler" style="color: #e6c478; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; font-weight: 700;">ÜRÜNLER</a>
-      <a href="/egitim" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">EĞİTİM</a>
-      <a href="/uyelik" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ÜYELİK</a>
-      <a href="/studio" style="color: #171207; font-weight: 800; font-size: 12.5px; letter-spacing: .1em; text-decoration: none; padding: 11px 18px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 8px;" style-hover="box-shadow: 0 6px 30px rgba(230,196,120,.35);">STUDIO'YA GİR</a>
+    <nav style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+      <a href="/" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ANA SAYFA</a>
+      <a href="/urunler" style="color: #e6c478; font-weight: 700; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; border-bottom: 1px solid rgba(193,154,82,.6);">ÜRÜNLER</a>
+      <a href="/uyelik" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ÜYELİK</a>
+      <a href="/egitim" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">AKADEMİ</a>
+      <a href="/arsiv" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ARŞİV</a>
+      <a href="/studio" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">STUDIO</a>
+      <a href="/zaman-tuneli" style="color: #171207; font-weight: 700; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 10px 16px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 22px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">OYUN TÜNELİ</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12px; letter-spacing: .12em; text-decoration: none; padding: 10px 18px; border: 1px solid rgba(193,154,82,.55); margin-left: 8px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">AJAN GİRİŞİ</a>
     </nav>
   </header>
 
@@ -106,7 +123,13 @@
     </aside>
 
     <div>
-      <p style="margin: 0 0 16px; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">{{ resultLine }}</p>
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 16px;">
+        <div style="display: flex; align-items: center; gap: 9px; border: 1px solid rgba(193,154,82,.35); background: rgba(6,9,16,.8); padding: 11px 14px; flex: 1; min-width: 220px; max-width: 420px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c19a52" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+          <input id="urunAra" value="{{ q }}" onChange="{{ onQ }}" placeholder="Ürün ara — ör. kredi, e-kitap, defter…" style="flex: 1; border: 0; background: transparent; color: #f2ecd9; font-size: 14px; font-family: inherit; outline: none;">
+        </div>
+        <p style="margin: 0; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">{{ resultLine }}</p>
+      </div>
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px;">
         <sc-for list="{{ items }}" as="it" hint-placeholder-count="0">
           <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; display: flex; flex-direction: column; overflow: hidden; animation: ta-rise .4s ease both;" style-hover="border-color: rgba(193,154,82,.55);">
@@ -251,25 +274,56 @@
 <script type="text/x-dc" data-dc-script data-props="{&quot;supabaseUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://ddyuopqcvpzaysnfavqc.supabase.co&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;supabaseAnonKey&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Supabase&quot;}, &quot;iban&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;TR06 0004 6002 6388 8000 0717 57&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}, &quot;accountHolder&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Tarih Ajanı&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}, &quot;shopierUrl&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://www.shopier.com/tarihajani&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Ödeme&quot;}}">
 class Component extends DCLogic {
   state = {
-    cat: 'TÜMÜ',
+    cat: 'TÜMÜ', q: '',
     checkout: null, stage: 'detail', payMethod: 'iban',
     fName: '', fEmail: '', fPhone: '', fConsent: false,
-    formError: '', ibanCopied: false
+    formError: '', ibanCopied: false, priceOv: {}
   };
+
+  // slug ↔ başlık eşlemesi (deep-link + admin fiyat senkronu ortak kullanır)
+  slugMap() {
+    return {
+      'gizli-uygarliklar': 'gizli uygarl', 'studio-rehberi': 'stüdyo rehber', 'egitim': 'belgeden hikâye',
+      '5li-hikaye': '5’li hikâye', 'hazir-arsiv': 'hazır hikâye', 'vaka-defteri': 'ajan vaka defteri',
+      'koleksiyon': 'dosya kutusu', 'studio-5': 'ajan paketi', 'studio-15': 'saha paketi', 'studio-40': 'arşiv paketi'
+    };
+  }
+  productSlug(title) {
+    const t = (title || '').toLowerCase();
+    const m = this.slugMap();
+    for (const slug in m) { if (t.indexOf(m[slug]) !== -1) return slug; }
+    return null;
+  }
+  // Admin'in düzenlediği fiyatları products tablosundan çek (ana sayfayla aynı kaynak)
+  async loadProducts() {
+    try {
+      const url = (this.props.supabaseUrl || '').trim();
+      const key = (this.props.supabaseAnonKey || '').trim();
+      if (!url || !key) return;
+      const r = await fetch(url + '/rest/v1/products?select=slug,title,price', {
+        headers: { apikey: key, Authorization: 'Bearer ' + key }
+      });
+      if (!r.ok) return;
+      const rows = await r.json();
+      const ov = {};
+      (rows || []).forEach(p => { ov[p.slug] = { title: p.title, price: String(p.price) }; });
+      this.setState({ priceOv: ov });
+    } catch (e) {}
+  }
 
   componentDidMount() {
     this.initSupabase(0);
+    this.loadProducts();
+    try {
+      const qp = new URLSearchParams(location.search);
+      if (qp.get('q') || qp.get('ara')) setTimeout(() => { const el = document.getElementById('urunAra'); if (el) el.focus(); }, 400);
+    } catch (e) {}
     const h = (location.hash || '').toLowerCase();
     const map = { '#egitim': 'EĞİTİM', '#ekitap': 'E-KİTAP', '#studio': 'STUDIO KREDİ' };
     // Ürün derin bağlantısı: /urunler#u-<slug>  → ilgili ürünü aç
     if (h.indexOf('#u-') === 0) {
       const slug = h.slice(3);
-      const slugMap = {
-        'gizli-uygarliklar': 'gizli uygarl', 'studio-rehberi': 'st\u00fcdyo rehber', 'egitim': 'belgeden hik\u00e2ye',
-        '5li-hikaye': '5\u2019li hik\u00e2ye', 'hazir-arsiv': 'haz\u0131r hik\u00e2ye', 'vaka-defteri': 'ajan vaka defteri',
-        'koleksiyon': 'dosya kutusu', 'studio-5': 'ajan paketi', 'studio-15': 'saha paketi', 'studio-40': 'ar\u015fiv paketi'
-      };
-      const needle = slugMap[slug];
+      const needle = this.slugMap()[slug];
       if (needle) {
         const it = this.shopDefs().find(d => d.title.toLowerCase().indexOf(needle) !== -1);
         if (it) { this.setState({ cat: 'TÜMÜ', checkout: { ...it, features: it.features.map(t => ({ t })) }, stage: 'detail', payMethod: 'iban', formError: '' }); return; }
@@ -326,26 +380,26 @@ class Component extends DCLogic {
         kind: 'EĞİTİM PROGRAMI', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Kaynak doğrulama, arşiv tarama ve sinematik anlatı kurma üzerine yapılandırılmış kapsamlı eğitim programı. Teknik ön koşul yoktur.',
         features: ['Kaynak doğrulama sistemi', 'Hikâyeleştirme ve senaryo modülleri', 'Görsel ve ses üretim şablonları', 'Uygulamalı proje çalışma dosyası'] },
-      { cat: 'STUDIO KREDİ', title: 'Studio — Ajan Paketi · 5 Kredi', price: '299', img: 'assets/product-studio-guide.webp',
-        blurb: '5 eksiksiz üretim dosyası: senaryo, ses, yayın paketi.',
+      { cat: 'STUDIO KREDİ', title: 'Studio — Ajan Paketi · 500 Kredi', price: '199', img: 'assets/product-studio-guide.webp',
+        blurb: '500 kredi ≈ 5 eksiksiz üretim dosyası: senaryo, ses, yayın paketi.',
         kind: 'STUDIO KREDİSİ', priceKind: 'TEK SEFERLİK',
-        detail: 'Studio üretim sisteminde 5 eksiksiz dosya hakkı: senaryo, seslendirme ayarları, kapak ve sahne promptları, YouTube + Instagram yayın paketi.',
-        features: ['5 üretim kredisi', 'Tüm çıktı sekmelerine erişim', 'Üretim geçmişi kaydı'] },
-      { cat: 'STUDIO KREDİ', title: 'Studio — Saha Paketi · 15 Kredi', price: '699', img: 'assets/study-wall.jpg',
-        blurb: '15 dosya; düzenli üretim yapanlar için avantajlı paket.',
+        detail: '500 Studio kredisi — yaklaşık 5 eksiksiz dosya (senaryo, seslendirme ayarları, kapak ve sahne promptları, YouTube + Instagram yayın paketi). Krediler hesabına anında tanımlanır.',
+        features: ['500 üretim kredisi (≈ 5 dosya)', 'Tüm çıktı sekmelerine erişim', 'Üretim geçmişi kaydı'] },
+      { cat: 'STUDIO KREDİ', title: 'Studio — Saha Paketi · 1.500 Kredi', price: '449', img: 'assets/study-wall.jpg',
+        blurb: '1.500 kredi ≈ 15 dosya; düzenli üretim yapanlar için avantajlı paket.',
         kind: 'STUDIO KREDİSİ', priceKind: 'TEK SEFERLİK',
-        detail: 'Studio üretim sisteminde 15 dosya hakkı. Düzenli video üretenler için kredi başına en dengeli paket.',
-        features: ['15 üretim kredisi', 'Öncelikli üretim kuyruğu', 'Üretim geçmişi kaydı'] },
+        detail: '1.500 Studio kredisi — yaklaşık 15 dosya. Düzenli video üretenler için kredi başına en dengeli paket (%25 daha uygun).',
+        features: ['1.500 üretim kredisi (≈ 15 dosya)', 'Öncelikli üretim kuyruğu', 'Üretim geçmişi kaydı'] },
       { cat: 'HAZIR İÇERİK', title: 'Hazır Hikâye Arşivi — 5 Dosya', price: '499', img: 'assets/product-casefiles.webp',
         blurb: 'Yayınlanan 5 vakanın eksiksiz üretim dosyaları, kopyalamaya hazır.',
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Studio içindeki Hazır Arşiv paketinin kalıcı erişimi: yayınlanmış 5 vakanın senaryosu, seslendirme metni, kapak ve sahne promptları, video promptları ve YouTube + Instagram yayın paketi — kopyalamaya ve düzenlemeye hazır.',
         features: ['5 eksiksiz üretim dosyası', 'Kopyalanabilir görsel/video promptları', 'YouTube + Instagram yayın paketleri', 'Kredi harcamadan sınırsız açma'] },
-      { cat: 'STUDIO KREDİ', title: 'Studio — Arşiv Paketi · 40 Kredi', price: '1.490', img: 'assets/dossier-bundle.jpg',
-        blurb: '40 dosya; yoğun üretim ve ekip kullanımı için.',
+      { cat: 'STUDIO KREDİ', title: 'Studio — Arşiv Paketi · 4.000 Kredi', price: '999', img: 'assets/dossier-bundle.jpg',
+        blurb: '4.000 kredi ≈ 40 dosya; yoğun üretim ve ekip kullanımı için.',
         kind: 'STUDIO KREDİSİ', priceKind: 'TEK SEFERLİK',
-        detail: 'Studio üretim sisteminde 40 dosya hakkı. Yoğun üretim temposu ve ekip kullanımı için en kapsamlı paket.',
-        features: ['40 üretim kredisi', 'Öncelikli üretim kuyruğu', 'Ekip kullanımına uygun'] },
+        detail: '4.000 Studio kredisi — yaklaşık 40 dosya. Yoğun üretim temposu ve ekip kullanımı için en kapsamlı, kredi başına en uygun paket.',
+        features: ['4.000 üretim kredisi (≈ 40 dosya)', 'Öncelikli üretim kuyruğu', 'Ekip kullanımına uygun'] },
       { cat: 'FİZİKİ ÜRÜN', title: 'Ajan Vaka Defteri', price: '599', img: 'assets/product-notebook.webp',
         blurb: 'Sert kapaklı, mühür baskılı fiziki soruşturma defteri. Ön sipariş.',
         kind: 'FİZİKİ ÜRÜN · ÖN SİPARİŞ', priceKind: 'KARGO DAHİL',
@@ -365,9 +419,16 @@ class Component extends DCLogic {
     const iban = this.props.iban ?? 'TR06 0004 6002 6388 8000 0717 57';
     const accountHolder = this.props.accountHolder ?? 'Tarih Ajanı';
     const shopierUrl = this.props.shopierUrl ?? 'https://www.shopier.com/tarihajani';
-    const defs = this.shopDefs();
+    const ov = s.priceOv || {};
+    const defs = this.shopDefs().map(d => {
+      const slug = this.productSlug(d.title);
+      const o = slug && ov[slug];
+      return (o && o.price != null && o.price !== '') ? { ...d, price: String(o.price) } : d;
+    });
     const catNames = ['TÜMÜ', 'E-KİTAP', 'HAZIR İÇERİK', 'EĞİTİM', 'STUDIO KREDİ', 'FİZİKİ ÜRÜN'];
-    const filtered = defs.filter(d => s.cat === 'TÜMÜ' || d.cat === s.cat);
+    const ql = (s.q || '').toLocaleLowerCase('tr');
+    const filtered = defs.filter(d => (s.cat === 'TÜMÜ' || d.cat === s.cat) &&
+      (!ql || (d.title + ' ' + d.blurb + ' ' + d.cat).toLocaleLowerCase('tr').includes(ql)));
     const co = s.checkout || {};
     const validEmail = /.+@.+\..+/.test(s.fEmail);
     const payBtn = (on) => ({
@@ -399,9 +460,20 @@ class Component extends DCLogic {
       }),
       items: filtered.map(it => ({
         ...it,
-        open: () => this.setState({ checkout: { ...it, features: it.features.map(t => ({ t })) }, stage: 'detail', payMethod: 'iban', formError: '' })
+        // Ürüne tıklayınca doğrudan satış sayfasına git (popup değil);
+        // satış sayfası karşılığı olmayan ürün için eski popup yedek kalır.
+        open: () => {
+          const slug = this.productSlug(it.title);
+          // SEO ürün detay sayfası olanlar oraya (indekslenebilir); üyelik vb. satışa
+          const SEO = ['egitim', 'gizli-uygarliklar', 'studio-rehberi', '5li-hikaye', 'hazir-arsiv', 'vaka-defteri', 'koleksiyon', 'studio-5', 'studio-15', 'studio-40'];
+          if (slug && SEO.indexOf(slug) >= 0) { location.href = '/urun/' + slug + '/'; return; }
+          if (slug) { location.href = '/satis#' + slug; return; }
+          this.setState({ checkout: { ...it, features: it.features.map(t => ({ t })) }, stage: 'detail', payMethod: 'iban', formError: '' });
+        }
       })),
-      resultLine: filtered.length + ' ÜRÜN · ' + s.cat,
+      q: s.q,
+      onQ: e => this.setState({ q: e.target.value }),
+      resultLine: filtered.length + ' ÜRÜN · ' + (s.q ? '"' + s.q + '"' : s.cat),
 
       hasCheckout: !!s.checkout,
       coItem: co,

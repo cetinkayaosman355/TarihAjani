@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/png" href="/assets/logo-mark.png">
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/ta-logo-32.png"><link rel="icon" type="image/png" sizes="64x64" href="/assets/ta-logo-64.png"><link rel="apple-touch-icon" href="/assets/ta-logo-180.png">
 <meta name="description" content="Tarih içeriği üretmeyi öğren: kaynak doğrulama, vaka kurgusu, senaryo yazımı, seslendirme ve yayın stratejisi. 9 derslik ajan eğitimi.">
 <link rel="canonical" href="https://tarihajani.com/egitim">
 <meta property="og:type" content="website">
@@ -21,6 +21,20 @@
 {"@context":"https://schema.org","@type":"Course","name":"Tarih Ajanı Eğitim Akademisi","description":"Kaynak doğrulama, vaka kurgusu, senaryo yazımı, seslendirme ve yayın stratejisi üzerine 9 derslik içerik üretim eğitimi.","url":"https://tarihajani.com/egitim","inLanguage":"tr","provider":{"@type":"Organization","name":"Tarih Ajanı","url":"https://tarihajani.com/"}}
 </script>
 <script src="./support.js"></script>
+<script src="/uye-nav.js" defer></script>
+<script src="/canli-sohbet.js" defer></script>
+<script src="/mobil-nav.js" defer></script>
+<script src="/ara.js" defer></script>
+<script src="/tema.js" defer></script>
+<script src="/alt-bilgi.js" defer></script>
+<script src="/hos-geldin.js" defer></script>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#06070d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tarih Ajanı">
+<script src="/pwa.js" defer></script>
 </head>
 <body>
 <x-dc>
@@ -64,6 +78,7 @@
 </style>
   <script>window.__taFadeBg='#06070d';</script>
   <script src="page-transition.js"></script>
+  <script src="analytics.js"></script>
 </helmet>
 
 <div style="min-height: 100vh; background: #03050b; color: #e9dfc8; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
@@ -74,18 +89,15 @@
       <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 42px; width: auto;">
       <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">AKADEMİ</span>
     </a>
-    <nav style="display: flex; align-items: center; gap: 4px;">
-      <a href="/" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ANA SAYFA</a>
-      <a href="/ekitap" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">E-KİTAP</a>
-      <a href="/urunler" style="color: #a4a9b5; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #e6c478;">ÜRÜNLER</a>
-      <a href="/egitim" style="color: #e6c478; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; font-weight: 700;">EĞİTİM</a>
-      <sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
-        <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; padding: 9px 13px;">{{ userName }}</span>
-        <button onClick="{{ logout }}" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; font-size: 11px; letter-spacing: .1em; padding: 9px 14px; cursor: pointer;" style-hover="color: #e6c478;">ÇIKIŞ</button>
-      </sc-if>
-      <sc-if value="{{ guest }}" hint-placeholder-val="{{ true }}">
-        <button onClick="{{ openLogin }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 11px; letter-spacing: .12em; padding: 11px 18px; margin-left: 8px; cursor: pointer;" style-hover="box-shadow: 0 6px 30px rgba(230,196,120,.35);">EĞİTİME GİR →</button>
-      </sc-if>
+    <nav style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+      <a href="/" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ANA SAYFA</a>
+      <a href="/urunler" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ÜRÜNLER</a>
+      <a href="/uyelik" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ÜYELİK</a>
+      <a href="/egitim" style="color: #e6c478; font-weight: 700; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; border-bottom: 1px solid rgba(193,154,82,.6);">AKADEMİ</a>
+      <a href="/arsiv" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ARŞİV</a>
+      <a href="/studio" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">STUDIO</a>
+      <a href="/zaman-tuneli" style="color: #171207; font-weight: 700; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 10px 16px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 22px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">OYUN TÜNELİ</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12px; letter-spacing: .12em; text-decoration: none; padding: 10px 18px; border: 1px solid rgba(193,154,82,.55); margin-left: 8px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">AJAN GİRİŞİ</a>
     </nav>
   </header>
 
@@ -457,12 +469,14 @@ class Component extends DCLogic {
     } catch (e) {}
   }
 
-  // profiles.has_access kontrolü — erişim kilidi
+  // Erişim kilidi: Ajan/Başmüfettiş üyeliği eğitimi KAPSAR (üyelikte yazdığı gibi),
+  // ya da tek seferlik satın alım için profiles.has_access = true.
   async loadAccess(userId) {
     if (!this.sb || !userId) { this.setState({ accessChecked: true }); return; }
     try {
-      const { data, error } = await this.sb.from('profiles').select('has_access').eq('id', userId).maybeSingle();
-      const ok = !error && data && data.has_access === true;
+      const { data, error } = await this.sb.from('profiles').select('has_access,tier').eq('id', userId).maybeSingle();
+      const tierOk = data && (data.tier === 'ajan' || data.tier === 'basmufettis');
+      const ok = !error && data && (data.has_access === true || tierOk);
       this.setState({ hasAccess: !!ok, accessChecked: true });
     } catch (e) {
       this.setState({ hasAccess: false, accessChecked: true });
@@ -521,7 +535,7 @@ class Component extends DCLogic {
       openLogin: () => this.setState({ loginOpen: true, loginError: '' }),
       closeLogin: () => this.setState({ loginOpen: false }),
       buyOpen: s.buyOpen,
-      openBuy: () => this.setState({ buyOpen: true, ibanCopied: false }),
+      openBuy: () => { if (!s.user) { this.setState({ loginOpen: true, loginError: 'Eğitimi satın almak için önce üye ol / giriş yap — erişim hesabına tanımlanır.' }); return; } this.setState({ buyOpen: true, ibanCopied: false }); },
       closeBuy: () => this.setState({ buyOpen: false }),
       iban: this.props.iban ?? 'TR06 0004 6002 6388 8000 0717 57',
       accountHolder: this.props.accountHolder ?? 'Tarih Ajanı',

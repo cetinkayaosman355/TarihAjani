@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/png" href="/assets/logo-mark.png">
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/ta-logo-32.png"><link rel="icon" type="image/png" sizes="64x64" href="/assets/ta-logo-64.png"><link rel="apple-touch-icon" href="/assets/ta-logo-180.png">
 <title>Üyelik · Tarih Ajanı</title>
 <meta name="description" content="Tarih Ajanı üyelik paketleri: Gözlemci, Ajan ve Başmüfettiş. Aylık kredi, Studio erişimi ve eğitimlerle tarihin gizli dosyalarını üret.">
 <link rel="canonical" href="https://tarihajani.com/uyelik">
@@ -18,7 +18,24 @@
 <meta name="twitter:title" content="Üyelik · Tarih Ajanı">
 <meta name="twitter:description" content="Tarih Ajanı üyelik paketleri: Gözlemci, Ajan ve Başmüfettiş. Aylık kredi, Studio erişimi ve eğitimlerle tarihin gizli dosyalarını üret.">
 <meta name="twitter:image" content="https://tarihajani.com/assets/evidence-board.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://tarihajani.com/#org","name":"Tarih Ajanı","url":"https://tarihajani.com/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Ana Sayfa","item":"https://tarihajani.com/"},{"@type":"ListItem","position":2,"name":"Üyelik","item":"https://tarihajani.com/uyelik"}]},{"@type":"Product","name":"Gözlemci Üyeliği","description":"Aylık 1.000 Studio kredisi, hazır hikâye arşivine erişim ve aylık yeni vaka dosyası.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"599","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}},{"@type":"Product","name":"Ajan Üyeliği","description":"Aylık 5.000 Studio kredisi, hazır hikâye arşivinin tamamı, eğitim programı modülleri ve üyelere özel e-kitap hediyeleri.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"1299","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}},{"@type":"Product","name":"Başmüfettiş Üyeliği","description":"Aylık 15.000 Studio kredisi, öncelikli üretim ve birebir mentorluk görüşmesi.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"1999","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}}]}
+</script>
 <script src="./support.js"></script>
+<script src="/uye-nav.js" defer></script>
+<script src="/canli-sohbet.js" defer></script>
+<script src="/mobil-nav.js" defer></script>
+<script src="/ara.js" defer></script>
+<script src="/tema.js" defer></script>
+<script src="/alt-bilgi.js" defer></script>
+<script src="/hos-geldin.js" defer></script>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#06070d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tarih Ajanı">
+<script src="/pwa.js" defer></script>
 </head>
 <body>
 <x-dc>
@@ -37,6 +54,7 @@
   @keyframes ta-pulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
 </style>
 <script src="page-transition.js"></script>
+  <script src="analytics.js"></script>
 </helmet>
 
 <div style="min-height: 100vh; background: #06070d; color: #e9dfc8; font-family: 'Hanken Grotesk', sans-serif;" data-screen-label="Üyelik">
@@ -47,17 +65,22 @@
       <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 42px; width: auto;">
       <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ÜYELİK</span>
     </a>
-    <nav style="display: flex; align-items: center; gap: clamp(10px, 2vw, 22px);">
-      <a href="/" style="color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; text-decoration: none;" style-hover="color: #e6c478;">ANA SAYFA</a>
-      <a href="/studio" style="color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; text-decoration: none;" style-hover="color: #e6c478;">STUDIO</a>
-      <a href="/egitim" style="color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; text-decoration: none;" style-hover="color: #e6c478;">EĞİTİM</a>
+    <nav style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+      <a href="/" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ANA SAYFA</a>
+      <a href="/urunler" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ÜRÜNLER</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px; border-bottom: 1px solid rgba(193,154,82,.6);">ÜYELİK</a>
+      <a href="/egitim" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">AKADEMİ</a>
+      <a href="/arsiv" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">ARŞİV</a>
+      <a href="/studio" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;" style-hover="color: #f2ecd9;">STUDIO</a>
+      <a href="/zaman-tuneli" style="color: #171207; font-weight: 700; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 10px 16px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 22px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">OYUN TÜNELİ</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12px; letter-spacing: .12em; text-decoration: none; padding: 10px 18px; border: 1px solid rgba(193,154,82,.55); margin-left: 8px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">AJAN GİRİŞİ</a>
     </nav>
   </header>
 
   <main style="max-width: 1060px; margin: 0 auto; padding: clamp(28px, 5vw, 60px) clamp(18px, 4vw, 48px) 80px;">
 
     <!-- GİRİŞ / KAYIT -->
-    <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
       <div style="max-width: 460px; margin: 40px auto 0; animation: ta-rise .5s ease both;">
         <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .2em; text-align: center;">AJAN KİMLİK KONTROLÜ</p>
         <h1 style="margin: 10px 0 6px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 800; text-align: center;">{{ loginTitle }}</h1>
@@ -87,13 +110,13 @@
             <p style="margin: 0; color: #e08a80; font-size: 13px;">{{ formError }}</p>
           </sc-if>
           <button onClick="{{ submitForm }}" style="border: 0; cursor: pointer; margin-top: 4px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12.5px; letter-spacing: .16em; padding: 15px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ submitLabel }}</button>
-          <p style="margin: 4px 0 0; color: #676d7c; font-size: 12px; line-height: 1.6; text-align: center;">Üyeliğin yoksa kayıt ol; onaylanan hesaba Gözlemci demo erişimi tanımlanır.</p>
+          <p style="margin: 4px 0 0; color: #676d7c; font-size: 12px; line-height: 1.6; text-align: center;">Üyeliğin yoksa ücretsiz kayıt ol; hesabına 30 deneme kredisi tanımlanır. Arşiv ve tam Studio için paralı seviye seçebilirsin.</p>
         </div>
       </div>
     </sc-if>
 
     <!-- HESAP GÖRÜNÜMÜ -->
-    <sc-if value="{{ showAccount }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ showAccount }}" hint-placeholder-val="{{ false }}">
       <div style="animation: ta-rise .5s ease both; display: grid; gap: 34px;">
 
         <!-- kimlik kartı + kredi -->
@@ -107,6 +130,9 @@
               <span style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.12); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em; padding: 7px 14px;">{{ tierName }}</span>
               <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .12em;">{{ sinceLabel }}</span>
             </div>
+            <sc-if value="{{ hasExpiry }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 12px 0 0; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em;">{{ expiryLabel }}</p>
+            </sc-if>
             <button onClick="{{ logout }}" style="margin-top: 18px; border: 1px solid rgba(129,135,151,.35); background: transparent; color: #818797; font-size: 11.5px; letter-spacing: .1em; padding: 8px 14px; cursor: pointer;" style-hover="color: #e08a80; border-color: rgba(224,138,128,.5);">ÇIKIŞ YAP</button>
           </div>
 
@@ -115,11 +141,11 @@
               <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">STUDIO KREDİSİ</p>
               <a href="/studio" style="font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .12em; text-decoration: none;">STUDIO'YA GİT →</a>
             </div>
-            <p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 800; line-height: 1;">{{ credits }} <span style="font-size: 15px; color: #676d7c; font-family: 'Special Elite', monospace;">/ {{ quota }} AYLIK</span></p>
+            <p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 800; line-height: 1;">{{ credits }} <span style="font-size: 15px; color: #676d7c; font-family: 'Special Elite', monospace;">{{ quotaSuffix }}</span></p>
             <div style="height: 6px; background: rgba(129,135,151,.18); overflow: hidden;">
               <div style="{{ quotaBarStyle }}"></div>
             </div>
-            <p style="margin: 0; color: #676d7c; font-size: 12.5px; line-height: 1.6;">Kredin her ayın 1'inde {{ quota }} olarak yenilenir. Ek kredi paketleri Studio içinden alınır.</p>
+            <p style="margin: 0; color: #676d7c; font-size: 12.5px; line-height: 1.6;">{{ renewNote }}</p>
           </div>
         </section>
 
@@ -158,25 +184,132 @@
               <button onClick="{{ setBillYil }}" style="{{ billYilStyle }}">YILLIK · 2 AY HEDİYE</button>
             </div>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: stretch; margin-top: 46px;">
             <sc-for list="{{ tierList }}" as="tr" hint-placeholder-count="3">
               <div style="{{ tr.cardStyle }}">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .18em;">{{ tr.name }}</span>
-                  <span style="{{ tr.tagStyle }}">{{ tr.tag }}</span>
-                </div>
-                <p style="margin: 12px 0 2px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 800;">{{ tr.price }} <span style="font-size: 14px; color: #676d7c; font-family: 'Special Elite', monospace;">TL{{ tr.per }}</span></p>
-                <ul style="margin: 12px 0 16px; padding: 0; list-style: none; display: grid; gap: 8px;">
+                <sc-if value="{{ tr.showSeal }}" hint-placeholder-val="{{ false }}">
+                  <span style="position: absolute; top: 20px; left: -6px; transform: rotate(-11deg); background: linear-gradient(#c0392b, #8e2a1d); color: #f4e4c1; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .22em; padding: 6px 16px; box-shadow: 0 5px 16px rgba(120,20,15,.5); white-space: nowrap;">EN POPÜLER</span>
+                  <span style="position: absolute; top: -32px; left: 50%; transform: translateX(-50%) rotate(-6deg); width: 66px; height: 66px; border-radius: 50%; background: radial-gradient(circle at 40% 30%, #d24b38, #a62f22 46%, #7c1f16 82%); box-shadow: 0 12px 26px rgba(0,0,0,.55), inset 0 3px 7px rgba(255,255,255,.3), inset 0 -5px 11px rgba(0,0,0,.48), 0 0 0 3px rgba(124,31,22,.55), 0 0 0 6px rgba(124,31,22,.28); display: grid; place-items: center; color: #f7e6c6; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 28px; text-shadow: 0 1px 2px rgba(0,0,0,.55);">{{ tr.seal }}</span>
+                </sc-if>
+                <sc-if value="{{ tr.showCur }}" hint-placeholder-val="{{ false }}">
+                  <span style="{{ tr.curRibbonStyle }}">MEVCUT SEVİYEN</span>
+                </sc-if>
+                <p style="{{ tr.clearanceStyle }}">{{ tr.clearance }}</p>
+                <h3 style="{{ tr.nameStyle }}">{{ tr.name }}</h3>
+                <p style="{{ tr.priceStyle }}"><span style="font-size: 12px; letter-spacing: .16em; opacity: .8;">{{ tr.periodLabel }} </span><br><span style="font-size: 54px; font-weight: 800; font-family: 'Playfair Display', serif;">{{ tr.price }}</span><span style="font-size: 15px; letter-spacing: .1em; font-weight: 700;"> TL{{ tr.perLabel }}</span></p>
+                <div style="{{ tr.ruleStyle }}"></div>
+                <ul style="margin: 0 0 24px; padding: 0; list-style: none; display: grid; gap: 12px; flex: 1;">
                   <sc-for list="{{ tr.features }}" as="ft" hint-placeholder-count="4">
-                    <li style="display: flex; gap: 9px; color: #cfd3e0; font-size: 13px; line-height: 1.5;"><span style="color: #c19a52; font-size: 10px; margin-top: 3px;">◆</span><span>{{ ft.t }}</span></li>
+                    <li style="{{ tr.featStyle }}"><span style="{{ tr.diamondStyle }}">◆</span><span>{{ ft.t }}</span></li>
                   </sc-for>
                 </ul>
-                <button onClick="{{ tr.act }}" style="{{ tr.btnStyle }}">{{ tr.btnLabel }}</button>
+                <button onClick="{{ tr.act }}" style="{{ tr.btnStyle }}" style-hover="transform: translateY(-1px); box-shadow: 0 8px 34px rgba(230,196,120,.3);">{{ tr.btnLabel }}</button>
               </div>
             </sc-for>
           </div>
           <p style="margin: 16px 0 0; color: #676d7c; font-size: 12.5px; line-height: 1.6;">Her seviyede Studio erişimi ve hazır hikâye arşivi vardır. Eğitim Akademisi ve e-kitap arşivi Ajan seviyesiyle birlikte gelir — ayrıca satın almana gerek kalmaz. Tek seferlik ürünler <a href="/urunler">Ürünler</a> sayfasında.</p>
+
+          <!-- Tek karşılaştırma tablosu -->
+          <div style="margin-top: 40px;">
+            <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">TEK BAKIŞTA</p>
+            <h3 style="margin: 0 0 16px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Seviyeler neyi kapsıyor?</h3>
+            <div style="overflow-x: auto; border: 1px solid rgba(193,154,82,.22);">
+              <table style="width: 100%; min-width: 520px; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: #0a0d16;">
+                    <th style="padding: 13px 14px; text-align: left; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #a4a9b5;">ÖZELLİK</th>
+                    <th style="padding: 13px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #c19a52;">GÖZLEMCİ</th>
+                    <th style="padding: 13px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #e6c478;">AJAN</th>
+                    <th style="padding: 13px 12px; text-align: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; color: #c19a52;">BAŞMÜFETTİŞ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ compareRows }}" as="cr" hint-placeholder-count="8">
+                    <tr>
+                      <td style="padding: 11px 14px; text-align: left; font-size: 12.5px; color: #cfd3e0; border-top: 1px solid rgba(193,154,82,.14);">{{ cr.label }}</td>
+                      <td style="{{ cr.gStyle }}">{{ cr.g }}</td>
+                      <td style="{{ cr.aStyle }}">{{ cr.a }}</td>
+                      <td style="{{ cr.bStyle }}">{{ cr.b }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- İptal / yenileme / otomatik ödeme -->
+          <div style="margin-top: 40px;">
+            <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">SIKÇA SORULANLAR</p>
+            <h3 style="margin: 0 0 16px; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;">Kredi, yenileme ve iptal</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Kredi ne işe yarar?</h4>
+                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Studio kredisi; senaryo, seslendirme ve görsel üretiminde harcanır. Kabaca <span style="color: #cfd3e0;">1.000 kredi ≈ 30 kısa video</span> demektir. Krediler her ayın başında planına göre yenilenir.</p>
+              </div>
+              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Krediler devreder mi?</h4>
+                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Aylık kredi o ay içinde kullanılmak içindir; kullanılmayan kredi bir sonraki aya devretmez. Daha fazlasına ihtiyaç duyarsan Studio içinden ek kredi paketi alabilirsin.</p>
+              </div>
+              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Otomatik yenileme &amp; iptal</h4>
+                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Üyelik seçtiğin dönemde (aylık/yıllık) otomatik yenilenir. Dilediğin an <a href="mailto:destek@tarihajani.com?subject=Üyelik İptali" style="color: #c19a52;">tek e-postayla</a> iptal edebilirsin; iptalde dönem sonuna kadar erişimin sürer, sonraki tahsilat yapılmaz.</p>
+              </div>
+              <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
+                <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Yıllık ödemenin avantajı</h4>
+                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Yıllık planda <span style="color: #a8c8a2;">2 ay bedava</span> — yani 12 ay yerine 10 ay ödersin (~%17 tasarruf). Seviyeni istediğin zaman yükseltebilir, kalan sürenin farkını mahsup ederek geçebilirsin.</p>
+              </div>
+            </div>
+          </div>
         </section>
+    </div>
+
+    <!-- ÜYELİK AVANTAJLARI — neden üye olmalısın (herkese görünür) -->
+    <div id="avantajlar" style="margin-top: 44px; animation: ta-rise .5s ease both;">
+      <section>
+        <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .2em;">NEDEN ÜYE OLMALISIN?</p>
+        <h2 style="margin: 0 0 8px; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700;">Üyelik avantajları</h2>
+        <p style="margin: 0 0 22px; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 640px;">Tarih Ajanı üyeliği; tarihi bir dedektif titizliğiyle araştıran bir üretim ekibini cebine koyar. Fikirden yayına hazır dosyaya kadar her adımı üyelik içinde çözersin.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;">
+
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
+            <div style="font-size: 24px; margin-bottom: 10px;">🎬</div>
+            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">AI Üretim Stüdyosu</h3>
+            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">Konuyu yaz, seç ve üret: senaryo, seslendirme metni, sahne sahne görsel & video promptları ve YouTube/Reels yayın paketi tek dosyada gelir. Süreyi seçersin — 30 sn'den 8-12 dk'ya, sahne sayısı ve kredi ona göre.</p>
+          </div>
+
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
+            <div style="font-size: 24px; margin-bottom: 10px;">⚡</div>
+            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Her Ay Yenilenen Kredi</h3>
+            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">Seviyene göre aylık Studio kredin her ayın 1'inde otomatik yenilenir. Biterse Studio içinden ek kredi paketi alabilirsin — kredi asla kaybolmaz.</p>
+          </div>
+
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
+            <div style="font-size: 24px; margin-bottom: 10px;">📚</div>
+            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Hazır Dosya Arşivi</h3>
+            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">Yayınladığımız vakaların eksiksiz üretim dosyaları: senaryo, seslendirme, kapak ve sahne promptları. Aç, kopyala ya da kendine göre düzenle — arşivden dosya açmak kredi harcamaz.</p>
+          </div>
+
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
+            <div style="font-size: 24px; margin-bottom: 10px;">🎓</div>
+            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Eğitim Akademisi</h3>
+            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">Kanalı büyütmenin, araştırmanın ve anlatının inceliklerini adım adım anlatan video eğitimler. <span style="color: #c19a52;">Ajan seviyesiyle birlikte gelir</span> — ayrıca satın almana gerek kalmaz.</p>
+          </div>
+
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
+            <div style="font-size: 24px; margin-bottom: 10px;">📖</div>
+            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">E-Kitap Hediyeleri</h3>
+            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">E-kitaplar tek seferlik satın alınır. <span style="color: #c19a52;">Ajan ve üstü üyelere</span> zaman zaman e-kitap hediye edilir; dilediğini ayrıca alıp arşivine ekleyebilirsin.</p>
+          </div>
+
+          <div style="border: 1px solid rgba(193,154,82,.28); background: linear-gradient(135deg, #0a0d16, #070a12); padding: 22px;">
+            <div style="font-size: 24px; margin-bottom: 10px;">🚀</div>
+            <h3 style="margin: 0 0 6px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;">Öncelik & Mentorluk</h3>
+            <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">En yoğun anlarda bile öncelikli üretim ve birebir mentorluk görüşmesi. <span style="color: #c19a52;">Başmüfettiş seviyesine</span> özel — projeni doğrudan bizimle konuşarak ilerletirsin.</p>
+          </div>
+
+        </div>
+        <p style="margin: 20px 0 0; color: #676d7c; font-size: 12.5px; line-height: 1.6;">Aşağıdan sana uygun seviyeyi seç; hesabın anında tanımlanır ve avantajlar açılır.</p>
+      </section>
     </div>
   </main>
 </div>
@@ -189,19 +322,28 @@ class Component extends DCLogic {
     try { st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}'); } catch (e) {}
     try { acc = JSON.parse(localStorage.getItem('ta_account_v1') || '{}'); } catch (e) {}
     this.state = {
-      loggedIn: !!(st.agent || acc.name),
+      loggedIn: false,   // görünümü yalnız gerçek Supabase oturumu açar (bayat kayıt değil)
       name: st.agent || acc.name || '',
       email: st.email || acc.email || '',
       credits: typeof st.credits === 'number' ? st.credits : 0,
-      tier: acc.tier || (this.props.varsayilanSeviye ?? 'gozlemci'),
+      tier: acc.tier || (this.props.varsayilanSeviye ?? 'uye'),
       since: acc.since || '',
+      expiresAt: null,
       billing: 'ay',
       mode: 'giris', fName: '', fEmail: '', fPass: '', formError: '', busy: false
     };
     this.sb = null;
   }
 
-  componentDidMount() { this.initSupabase(); }
+  componentDidMount() {
+    try {
+      const qp = new URLSearchParams(location.search);
+      this._next = qp.get('next') || '';
+      const em = qp.get('email');
+      if (em) this.setState({ fEmail: em, mode: 'kayit' });   // satın almadan geldiyse kayıt sekmesi
+    } catch (e) {}
+    this.initSupabase();
+  }
 
   initSupabase(tries = 0) {
     const url = (this.props.supabaseUrl || '').trim();
@@ -235,13 +377,15 @@ class Component extends DCLogic {
       delete st.agent; delete st.email;
       localStorage.setItem('ta_studio_v5', JSON.stringify(st));
     } catch (e) {}
-    if (this.state.loggedIn) this.setState({ loggedIn: false, name: '', email: '', credits: 0, tier: 'gozlemci' });
+    if (this.state.loggedIn) this.setState({ loggedIn: false, name: '', email: '', credits: 0, tier: 'uye' });
   }
 
   // Oturum açıldığında profili sunucudan (credits/balance) çek — gerçek kaynak burası
   async onSession(u) {
     const name = (u.user_metadata && u.user_metadata.full_name) || (u.email || '').split('@')[0];
     this.setState({ loggedIn: true, name, email: u.email }, () => this.saveAccount());
+    // Satın almadan yönlendirildiyse, giriş sonrası kaldığı yere dön
+    if (this._next) { const n = this._next; this._next = ''; setTimeout(() => { location.href = n; }, 700); }
     try {
       const r = await fetch((this.props.supabaseUrl || '').trim() + '/functions/v1/credits', {
         method: 'POST',
@@ -250,7 +394,7 @@ class Component extends DCLogic {
       });
       const d = await r.json();
       if (d && d.ok) {
-        this.setState({ tier: d.tier || 'gozlemci', credits: typeof d.credits === 'number' ? d.credits : 0 }, () => {
+        this.setState({ tier: d.tier || 'uye', credits: typeof d.credits === 'number' ? d.credits : 0, expiresAt: d.expires_at || null }, () => {
           this.saveAccount();
           try { const st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}'); st.credits = this.state.credits; localStorage.setItem('ta_studio_v5', JSON.stringify(st)); } catch (e) {}
         });
@@ -273,13 +417,19 @@ class Component extends DCLogic {
     return 'Hata: ' + raw;
   }
 
+  // Seviye görünen adı — ücretsiz 'uye' dahil (tiers() yalnız paralı seviyeleri döndürür)
+  tierDisplayName(id) {
+    return ({ uye: 'ÜYE (ÜCRETSİZ)', gozlemci: 'GÖZLEMCİ', ajan: 'AJAN', basmufettis: 'BAŞMÜFETTİŞ' })[id] || 'ÜYE';
+  }
+  isPaidTier(id) { return this.tiers().some(t => t.id === id); }
+
   tiers() {
     return [
-      { id: 'gozlemci', name: 'GÖZLEMCİ', ay: 599, kredi: 1000,
+      { id: 'gozlemci', name: 'GÖZLEMCİ', clearance: 'TEMEL ERİŞİM', ay: 599, kredi: 1000, videos: 30,
         features: ['Hazır hikâye arşivine erişim', 'Aylık 1.000 Studio kredisi', 'Aylık yeni vaka dosyası'] },
-      { id: 'ajan', name: 'AJAN', ay: 1299, kredi: 5000, populer: true,
-        features: ['Tüm dijital kitap arşivi', 'Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri'] },
-      { id: 'basmufettis', name: 'BAŞMÜFETTİŞ', ay: 1999, kredi: 15000,
+      { id: 'ajan', name: 'AJAN', clearance: 'GELİŞMİŞ ERİŞİM', ay: 1299, kredi: 5000, videos: 160, populer: true,
+        features: ['Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri', 'Üyelere özel e-kitap hediyeleri'] },
+      { id: 'basmufettis', name: 'BAŞMÜFETTİŞ', clearance: 'ÜST DÜZEY ERİŞİM', ay: 1999, kredi: 15000, videos: 500,
         features: ['Ajan içeriğinin tamamı', 'Aylık 15.000 Studio kredisi', 'Öncelikli üretim', 'Birebir mentorluk görüşmesi'] }
     ];
   }
@@ -299,11 +449,15 @@ class Component extends DCLogic {
     const s = this.state;
     const gold = '#c19a52';
     const fmtTL = n => n.toLocaleString('tr-TR');
+    const paid = this.isPaidTier(s.tier);           // gozlemci/ajan/basmufettis
+    const expDate = s.expiresAt ? new Date(s.expiresAt) : null;
+    const expDays = expDate ? Math.max(0, Math.ceil((expDate.getTime() - Date.now()) / 86400000)) : -1;
     const cur = this.tiers().find(t => t.id === s.tier) || this.tiers()[0];
-    const order = { gozlemci: 0, ajan: 1, basmufettis: 2 };
-    const hasAjan = order[s.tier] >= 1;
-    const hasBas = order[s.tier] >= 2;
-    const pct = Math.max(0, Math.min(100, (s.credits / cur.kredi) * 100));
+    const curQuota = paid ? cur.kredi : 0;           // ücretsiz üye: aylık kota yok
+    const order = { uye: -1, gozlemci: 0, ajan: 1, basmufettis: 2 };
+    const hasAjan = (order[s.tier] ?? -1) >= 1;
+    const hasBas = (order[s.tier] ?? -1) >= 2;
+    const pct = curQuota > 0 ? Math.max(0, Math.min(100, (s.credits / curQuota) * 100)) : (s.credits > 0 ? 100 : 0);
 
     const mkBadge = on => ({
       border: '1px solid ' + (on ? 'rgba(122,168,116,.55)' : 'rgba(129,135,151,.35)'),
@@ -315,9 +469,9 @@ class Component extends DCLogic {
       textDecoration: 'none', color: on ? '#e6c478' : '#818797'
     });
     const access = [
-      { name: 'Ajan Studio', on: true, desc: 'AI üretim stüdyosu — aylık kredi kotanla.', href: '/studio', go: 'STUDIO\'YA GİT →' },
-      { name: 'Hikâye Arşivi', on: true, desc: 'Yayınlanmış vakaların hazır üretim dosyaları.', href: '/studio', go: 'ARŞİVİ AÇ →' },
-      { name: 'E-Kitap Arşivi', on: hasAjan, desc: 'Tüm dijital kitaplar ve vaka koleksiyonları.', href: hasAjan ? '/ekitap' : '/satis#uyelik-ajan', go: hasAjan ? 'OKUMA ODASI →' : 'AJAN\'A YÜKSELT →' },
+      { name: 'Ajan Studio', on: true, desc: paid ? 'AI üretim stüdyosu — aylık kredi kotanla.' : 'AI üretim stüdyosu — 30 deneme kredinle dene.', href: '/studio', go: 'STUDIO\'YA GİT →' },
+      { name: 'Hikâye Arşivi', on: paid, desc: 'Yayınlanmış vakaların hazır üretim dosyaları.', href: paid ? '/arsiv' : '/uyelik#seviyeler', go: paid ? 'ARŞİVİ AÇ →' : 'ÜYELİĞE GEÇ →' },
+      { name: 'E-Kitap Hediyeleri', on: hasAjan, desc: 'E-kitaplar ayrıca satılır; Ajan+ üyelere dönemsel hediye edilir.', href: '/ekitap', go: hasAjan ? 'E-KİTAPLARA GÖZ AT →' : 'AJAN\'A YÜKSELT →' },
       { name: 'Eğitim Akademisi', on: hasAjan, desc: '9 derslik içerik üretim eğitimi.', href: hasAjan ? '/egitim' : '/satis#uyelik-ajan', go: hasAjan ? 'DERSLERE GİT →' : 'AJAN\'A YÜKSELT →' },
       { name: 'Birebir Mentorluk', on: hasBas, desc: 'Aylık birebir üretim görüşmesi.', href: hasBas ? 'mailto:destek@tarihajani.com?subject=Mentorluk Randevusu' : '/satis#uyelik-basmufettis', go: hasBas ? 'RANDEVU AL →' : 'BAŞMÜFETTİŞ\'E YÜKSELT →' }
     ].map(a => ({
@@ -334,36 +488,86 @@ class Component extends DCLogic {
     }));
 
     const yil = s.billing === 'yil';
+    // Kartlar ana sayfadaki "Ajanlık seviyeni seç" bölümüyle aynı dilde:
+    // popüler (Ajan) = krem kart + kırmızı "A" mührü; mevcut seviye = yeşil şerit.
     const tierList = this.tiers().map(t => {
       const isCur = s.loggedIn && t.id === s.tier;
+      const cream = !!t.populer && !isCur;
       const up = order[t.id] > order[s.tier];
+      const yearlyTotal = t.ay * 10;
       return {
         name: t.name,
-        price: fmtTL(yil ? t.ay * 10 : t.ay),
-        per: yil ? ' / yıl' : ' / ay',
+        clearance: t.clearance || '',
+        seal: (t.name || 'A').charAt(0),
+        price: fmtTL(yil ? yearlyTotal : t.ay),
+        periodLabel: yil ? 'YILLIK' : 'AYLIK',
+        perLabel: yil ? ' / yıl' : ' / ay',
         features: t.features.map(x => ({ t: x })),
-        tag: isCur ? 'MEVCUT SEVİYEN' : (t.populer ? 'EN POPÜLER' : ''),
-        tagStyle: {
-          fontFamily: "'Special Elite', monospace", fontSize: '9px', letterSpacing: '.14em', padding: isCur || t.populer ? '4px 8px' : 0,
-          border: isCur ? '1px solid rgba(122,168,116,.55)' : (t.populer ? '1px solid rgba(193,154,82,.5)' : '0'),
-          color: isCur ? '#a8c8a2' : '#e6c478'
+        showSeal: cream,
+        showCur: isCur,
+        curRibbonStyle: {
+          position: 'absolute', top: '20px', left: '-6px', transform: 'rotate(-11deg)', whiteSpace: 'nowrap',
+          background: 'linear-gradient(#3f6a34, #2c4f24)', color: '#eaf3e6',
+          fontFamily: "'Special Elite', monospace", fontSize: '9.5px', letterSpacing: '.22em', padding: '6px 16px',
+          boxShadow: '0 5px 16px rgba(20,50,20,.5)'
         },
         cardStyle: {
-          border: isCur ? '1px solid rgba(122,168,116,.5)' : '1px solid rgba(193,154,82,.28)',
-          background: '#070a12', padding: '24px', display: 'grid', alignContent: 'start',
-          boxShadow: t.populer && !isCur ? '0 0 30px rgba(193,154,82,.1)' : 'none'
+          position: 'relative', display: 'flex', flexDirection: 'column',
+          border: cream ? '1px solid #c9a25a' : (isCur ? '1px solid rgba(122,168,116,.6)' : '1px solid rgba(129,135,151,.3)'),
+          background: cream ? 'linear-gradient(158deg, #f4ecd8 0%, #ece0c4 55%, #dccaa4 100%)'
+                    : (isCur ? 'linear-gradient(180deg, rgba(18,26,16,.5), #070a12 60%)' : '#070a12'),
+          boxShadow: cream ? '0 26px 80px rgba(0,0,0,.6), inset 0 0 0 1px rgba(142,42,29,.22), inset 0 0 70px rgba(142,42,29,.07)'
+                   : (isCur ? '0 18px 44px rgba(0,0,0,.4)' : 'none'),
+          padding: cream ? '52px 30px 30px' : '42px 28px 28px', marginTop: cream ? '0' : '18px'
         },
-        btnLabel: isCur ? 'AKTİF SEVİYE' : (!s.loggedIn ? 'BU SEVİYEYİ SEÇ →' : (up ? 'YÜKSELT →' : 'BU SEVİYEYE GEÇ')),
+        clearanceStyle: {
+          margin: 0, textAlign: 'center', fontFamily: "'Special Elite', monospace",
+          fontSize: '11px', letterSpacing: '.22em', color: cream ? '#8e2a1d' : (isCur ? '#8fbf84' : gold)
+        },
+        nameStyle: {
+          margin: '12px 0 8px', textAlign: 'center', fontFamily: "'Playfair Display', serif",
+          fontSize: '32px', fontWeight: 700, color: cream ? '#1d1812' : '#f2ecd9'
+        },
+        priceStyle: {
+          margin: '0 0 20px', textAlign: 'center', fontFamily: "'Special Elite', monospace",
+          color: cream ? '#1d1812' : '#e9dfc8'
+        },
+        ruleStyle: { height: '1px', background: cream ? 'rgba(29,24,18,.2)' : 'rgba(129,135,151,.25)', margin: '0 0 20px' },
+        featStyle: { display: 'flex', gap: '11px', fontSize: '14px', lineHeight: 1.5, color: cream ? '#3a3226' : '#cfc8b4' },
+        diamondStyle: { color: cream ? '#8e2a1d' : gold, fontSize: '11px', marginTop: '3px' },
+        btnLabel: isCur ? '✓ AKTİF SEVİYE' : (!s.loggedIn ? 'SEVİYENİ SEÇ' : (up ? 'YÜKSELT →' : 'BU SEVİYEYE GEÇ')),
         btnStyle: {
-          border: isCur ? '1px solid rgba(122,168,116,.5)' : 0,
-          cursor: isCur ? 'default' : 'pointer', padding: '13px',
-          fontFamily: "'Special Elite', monospace", fontWeight: 700, fontSize: '11.5px', letterSpacing: '.14em',
-          background: isCur ? 'transparent' : 'linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52)',
-          color: isCur ? '#a8c8a2' : '#171207'
+          border: cream ? '0' : (isCur ? '1px solid rgba(122,168,116,.5)' : '1px solid rgba(193,154,82,.5)'),
+          cursor: isCur ? 'default' : 'pointer', width: '100%',
+          background: cream ? 'linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52)' : (isCur ? 'rgba(122,168,116,.12)' : 'transparent'),
+          color: cream ? '#171207' : (isCur ? '#a8c8a2' : '#e6c478'),
+          fontFamily: "'Special Elite', monospace", fontWeight: 700, fontSize: '13px', letterSpacing: '.2em', padding: '16px'
         },
         act: () => { if (!isCur) window.location.href = '/satis#uyelik-' + t.id + (yil ? '-yil' : ''); }
       };
     });
+
+    // Tek karşılaştırma tablosu — plan farkları net görünsün (analiz raporu 2.3 / 3.4)
+    const cmp = [
+      { label: 'Aylık Studio kredisi', g: '1.000', a: '5.000', b: '15.000' },
+      { label: 'Yaklaşık kısa video / ay', g: '~30', a: '~160', b: '~500' },
+      { label: 'Hazır hikâye arşivi', g: 'Kısmi', a: 'Tam', b: 'Tam' },
+      { label: 'Aylık yeni vaka dosyası', g: '✓', a: '✓', b: '✓' },
+      { label: 'Eğitim Akademisi (9 ders)', g: '—', a: '✓', b: '✓' },
+      { label: 'Üyeye özel e-kitap hediyeleri', g: '—', a: '✓', b: '✓' },
+      { label: 'Öncelikli üretim', g: '—', a: '—', b: '✓' },
+      { label: 'Birebir mentorluk görüşmesi', g: '—', a: '—', b: '✓' }
+    ];
+    const cellStyle = v => ({
+      padding: '11px 12px', textAlign: 'center', fontFamily: "'Special Elite', monospace", fontSize: '12px',
+      borderTop: '1px solid rgba(193,154,82,.14)',
+      color: v === '✓' ? '#a8c8a2' : (v === '—' ? '#565b68' : '#e6c478')
+    });
+    const compareRows = cmp.map(r => ({
+      label: r.label,
+      g: r.g, a: r.a, b: r.b,
+      gStyle: cellStyle(r.g), aStyle: cellStyle(r.a), bStyle: cellStyle(r.b)
+    }));
 
     const tabStyle = on => ({
       border: 0, cursor: 'pointer', padding: '14px',
@@ -422,6 +626,14 @@ class Component extends DCLogic {
               const { error: e2 } = await this.sb.auth.signInWithPassword({ email, password: s.fPass });
               if (e2) { this.setState({ busy: false, formError: 'Kayıt alındı. E-postanı doğrulayıp giriş yapabilirsin.' , mode: 'giris' }); return; }
             }
+            // hoş geldin maili — sunucu tek seferlik olduğunu garanti eder (welcomed_at)
+            try {
+              fetch((this.props.supabaseUrl || '').trim() + '/functions/v1/posta', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (this.props.supabaseAnonKey || '').trim() },
+                body: JSON.stringify({ action: 'welcome', email })
+              });
+            } catch (e) {}
           } else {
             const { error } = await this.sb.auth.signInWithPassword({ email, password: s.fPass });
             if (error) { this.setState({ busy: false, formError: this.authErrTr(error) }); return; }
@@ -442,21 +654,29 @@ class Component extends DCLogic {
           localStorage.setItem('ta_studio_v5', JSON.stringify(st));
         } catch (e) {}
         this._session = null;
-        this.setState({ loggedIn: false, name: '', email: '', fPass: '', credits: 0, tier: 'gozlemci' });
+        this.setState({ loggedIn: false, name: '', email: '', fPass: '', credits: 0, tier: 'uye' });
       },
 
       name: s.name, email: s.email,
-      tierName: 'SEVİYE · ' + cur.name,
+      tierName: 'SEVİYE · ' + this.tierDisplayName(s.tier),
       sinceLabel: s.since ? 'ÜYELİK BAŞLANGICI · ' + s.since.toUpperCase() : '',
+      hasExpiry: paid && !!expDate,
+      expiryLabel: (paid && expDate)
+        ? ('ÜYELİK BİTİŞİ · ' + expDate.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase() + (expDays >= 0 ? ' · ' + expDays + ' GÜN KALDI' : ''))
+        : '',
       credits: s.credits.toLocaleString('tr-TR'),
-      quota: cur.kredi.toLocaleString('tr-TR'),
+      quotaSuffix: paid ? '/ ' + curQuota.toLocaleString('tr-TR') + ' AYLIK' : 'DENEME KREDİSİ',
+      renewNote: paid
+        ? ('Kredin her ayın 1\'inde ' + curQuota.toLocaleString('tr-TR') + ' olarak yenilenir. Ek kredi paketleri Studio içinden alınır.')
+        : 'Bu tek seferlik deneme kredisidir; yenilenmez. Üretime devam ve arşiv için aşağıdan bir üyelik seviyesi seç.',
       quotaBarStyle: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #a77d35, #e6c478)', transition: 'width .6s ease' },
 
       accessList: access,
       tierList,
+      compareRows,
       tierKicker: s.loggedIn ? 'SEVİYENİ YÖNET' : 'ÜYELİKLE NELER AÇILIR?',
       tierTitle: s.loggedIn ? 'Erişim seviyeleri' : 'Tek üyelik, tüm arşiv',
-      tierDesc: s.loggedIn ? '' : 'Studio kredileri, hazır hikâye arşivi, e-kitaplar, eğitim ve mentorluk — hepsi tek üyelikte. Seviye yükseldikçe kapılar açılır; ayrı ayrı satın almana gerek yok.',
+      tierDesc: s.loggedIn ? '' : 'Studio kredileri, hazır hikâye arşivi, eğitim ve mentorluk — hepsi tek üyelikte. Seviye yükseldikçe kapılar açılır. (E-kitaplar ayrıca satılır; üyelere zaman zaman hediye edilir.)',
       setBillAy: () => this.setState({ billing: 'ay' }),
       setBillYil: () => this.setState({ billing: 'yil' }),
       billAyStyle: billStyle(!yil),
