@@ -52,25 +52,43 @@ Aşağıdaki bölümleri Türkçe, eksiksiz ve doğrudan kullanılabilir şekild
 ${sections}`;
 }
 
+// ChatGPT kalitesi = güncel model. Önce gpt-5 denenir (ChatGPT'nin sunduğu
+// nesil); hesapta yoksa gpt-4o'ya düşer. gpt-5 farklı parametre ister
+// (max_completion_tokens, temperature yok) — ikisi de doğru şekilde çağrılır.
+const OPENAI_MODELS = ["gpt-5", "gpt-4o"];
 async function callOpenAI(prompt: string, maxTokens?: number, jsonMode?: boolean): Promise<string> {
   const key = Deno.env.get("OPENAI_API_KEY");
   if (!key) throw new Error("OPENAI_API_KEY secret eksik.");
-  const payload: Record<string, unknown> = {
-    model: "gpt-4o",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.8,
-    max_tokens: maxTokens || 4000,
-  };
-  // Üretimde OpenAI'yi katı JSON moduna zorla (prompt "JSON" içerdiği için geçerli)
-  if (jsonMode) payload.response_format = { type: "json_object" };
-  const r = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!r.ok) throw new Error("OpenAI: " + (await r.text()));
-  const d = await r.json();
-  return d.choices?.[0]?.message?.content ?? "";
+  let lastErr = "";
+  for (const model of OPENAI_MODELS) {
+    const isG5 = model.startsWith("gpt-5");
+    const payload: Record<string, unknown> = {
+      model,
+      messages: [{ role: "user", content: prompt }],
+    };
+    if (isG5) payload.max_completion_tokens = maxTokens || 4000;
+    else { payload.max_tokens = maxTokens || 4000; payload.temperature = 0.8; }
+    // Üretimde OpenAI'yi katı JSON moduna zorla (prompt "JSON" içerdiği için geçerli)
+    if (jsonMode) payload.response_format = { type: "json_object" };
+    const r = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (r.ok) {
+      const d = await r.json();
+      const txt = d.choices?.[0]?.message?.content ?? "";
+      if (txt) return txt;
+      lastErr = "boş yanıt (" + model + ")";
+      continue;
+    }
+    lastErr = await r.text();
+    // model bu hesapta yok / parametre reddi → sıradaki modele geç; başka hata → fırlat
+    if (!/model|max_tokens|max_completion_tokens|temperature|not.?found|unsupported/i.test(lastErr)) {
+      throw new Error("OpenAI: " + lastErr);
+    }
+  }
+  throw new Error("OpenAI: " + lastErr);
 }
 
 // Üretim çıktısını JSON'a çevirmeyi dene (client ile aynı temizleme); olmazsa null.
@@ -371,6 +389,7 @@ async function researchBrief(topic: string): Promise<string> {
 Güvenilir kaynaklara dayanarak KISA ama YOĞUN bir araştırma dosyası çıkar:
 - Doğrulanmış temel gerçekler (kişi, yer, tarih, sayı — mümkünse kaynak adıyla)
 - Az bilinen çarpıcı ayrıntılar ve şaşırtıcı açılar (güçlü kanca potansiyeli)
+- Dönemin duyusal dokusu: kokular, sesler, giysiler, yemekler, gündelik nesneler (anlatıya can katar)
 - Yaygın efsane ↔ gerçek ayrımı
 - Anlatıyı zenginleştirecek 4-6 somut sahne/görsel fikri
 Türkçe, madde madde yaz. UYDURMA yok; emin olmadığını "rivayete göre" diye işaretle.`;
@@ -392,9 +411,9 @@ Türkçe, madde madde yaz. UYDURMA yok; emin olmadığını "rivayete göre" diy
           headers: { "x-api-key": aKey, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
           body: JSON.stringify({
             model: a.model,
-            max_tokens: 1400,
+            max_tokens: 1800,
             messages: [{ role: "user", content: q }],
-            tools: [{ type: a.tool, name: "web_search", max_uses: 3 }],
+            tools: [{ type: a.tool, name: "web_search", max_uses: 4 }],
           }),
         }, 22_000);
         if (r.ok) {

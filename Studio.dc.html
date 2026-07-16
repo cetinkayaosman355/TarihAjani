@@ -2297,6 +2297,8 @@ BU ÜRETİMİN PARAMETRELERİ:
 
 KALİTE BARI (EN KRİTİK — zayıf çıktı geçersizdir):
 - SESLENDİRME (senaryo[].metin): O bölümün TAM, kelimesi kelimesine okunacak metni. Somut isim/tarih/yer/sayı geçir; duyusal ve sinematik dil kur; her bölüm mikro-kanca ile açılıp merak bırakarak bitsin. Toplam kelime ${wmin}-${wmax} aralığında KALMALI: ${wmin} altına düşme, ${wmax} üstüne ÇIKMA (süre kilidi kesindir). Dolgu, klişe, "tarih boyunca insanlar…" tarzı genel cümle YASAK — kısalık kaliteyi düşürmez, netleştirir.
+- 🎙 SESLİ OKUMA KURALI (metin bir anlatıcı tarafından OKUNACAK): tüm sayı, tarih ve rakamları YAZIYLA yaz — "1453" değil "bin dört yüz elli üç", "II. Mehmed" değil "İkinci Mehmed", "%40" değil "yüzde kırk". Parantez, tire içi ara cümle, madde işareti, kısaltma KULLANMA; her cümle yüksek sesle doğal okunabilsin.
+- ANLATIM ZANAATİ: Cümle ritmini dönüşümlü kur — kısa vurucu cümlelerle uzun akan cümleleri karıştır; art arda cümleler aynı kelime/kalıpla BAŞLAMASIN. Göster, anlatma: soyut yargı ("çok korkunçtu") yerine sahne ve duyu ("etin yanık kokusu surlara kadar ulaşıyordu"). Şu yapay-zekâ klişeleri KESİNLİKLE YASAK: "adeta", "âdeta", "tarihin tozlu sayfaları", "yolculuğumuz", "asla unutmayacaktı", "hayal edin" (bölüm başına en fazla 1 kez), "günümüzde bile", "kim bilir belki de".
 - KANCA: İlk 3 saniye maksimum merak; ilk cümle bir soru, çelişki ya da çarpıcı iddia olsun.
 - YOUTUBE AÇIKLAMASI (aciklama): EN AZ 3 dolu paragraf — 1) merak açan giriş, 2) videoda ne var/neyi kanıtlıyoruz, 3) abonelik + kaynak/uyarı çağrısı. Ardından "00:00 Giriş" biçiminde EN AZ 3 zaman damgası, sonra 5-8 arama-dostu anahtar kelime. Kısa/tek paragraf KABUL EDİLMEZ.
 - INSTAGRAM (aciklama): 1 vurucu hook satırı + 2 kısa paragraf + net CTA (izleyiciye yorumda soru sordur). Emoji ölçülü.
@@ -2539,7 +2541,14 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     // metne değil) → paralel yazılabilir. Kalite aynı; bekleme süresi kısalır.
     const total = secs.length || 1;
     const replies = await this.runPool(secs, (secItem) =>
-      this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secItem.bolum || '') + '" bölümünün TAM seslendirme metnini yaz: KESİN ' + words + ' kelime (bu aralığı AŞMA — süre kilidi), akıcı Türkçe, şu tonla: ' + tonStr + '. Somut isim/tarih/yer/sayı geçir; klişe ve dolgu YOK. Önceki bölümden doğal biçimde devral, bir sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver. YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + order + '\nBu bölümün özeti: ' + (secItem.metin || ''), 2500),
+      this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secItem.bolum || '') + '" bölümünün TAM seslendirme metnini yaz: KESİN ' + words + ' kelime (bu aralığı AŞMA — süre kilidi), akıcı Türkçe, şu tonla: ' + tonStr + '.\n' +
+        'YAZIM KURALLARI (profesyonel yayın standardı):\n' +
+        '1) SESLİ OKUMA: metin bir anlatıcı tarafından okunacak — tüm sayı ve tarihleri YAZIYLA yaz ("1453" değil "bin dört yüz elli üç", "II. Mehmed" değil "İkinci Mehmed", "%40" değil "yüzde kırk"). Parantez, madde işareti, kısaltma yok.\n' +
+        '2) RİTİM: kısa vurucu cümlelerle uzun akan cümleleri dönüşümlü kullan; art arda cümleler aynı kelimeyle başlamasın.\n' +
+        '3) GÖSTER, ANLATMA: soyut yargı yerine sahne, ayrıntı, duyu (koku, ses, doku).\n' +
+        '4) YASAK KLİŞELER: "adeta", "tarihin tozlu sayfaları", "yolculuğumuz", "asla unutmayacaktı", "günümüzde bile", "kim bilir belki de".\n' +
+        '5) Somut isim/tarih/yer/sayı geçir; dolgu yok. Önceki bölümden doğal devral, sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver.\n' +
+        'YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + order + '\nBu bölümün özeti: ' + (secItem.metin || ''), 2500),
       3,
       (fin) => this.setState({ genMsg: 'BÖLÜM ' + fin + ' / ' + total + ' KALEME ALINIYOR…', genPct: 45 + Math.round((fin / total) * 38) })
     );
@@ -3458,7 +3467,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     this.setState({ shortBusy: true });
     try {
       const full = (s.result.senaryo || []).map(x => x.metin).join('\n\n');
-      const reply = await this.askAI('Aşağıdaki tarih videosu senaryosunun 30 saniyelik dikey Shorts versiyonunu yaz. Kurallar: ilk 3 saniyede kilitleyen bir kanca; tek nefeste akan, kısa vurucu cümleler; toplam 55-75 kelime; sonda açık bir merak sorusuyla bitir (marka sloganı/kanal adı YOK). YALNIZCA seslendirme metnini döndür; açıklama veya başlık ekleme.\n\n' + full.slice(0, 6000), 900);
+      const reply = await this.askAI('Aşağıdaki tarih videosu senaryosunun 30 saniyelik dikey Shorts versiyonunu yaz. Kurallar: ilk 3 saniyede kilitleyen bir kanca; tek nefeste akan, kısa vurucu cümleler; toplam 55-75 kelime; sonda açık bir merak sorusuyla bitir (marka sloganı/kanal adı YOK). Metin SESLİ OKUNACAK: tüm sayı ve tarihleri yazıyla yaz ("1453" değil "bin dört yüz elli üç"). YALNIZCA seslendirme metnini döndür; açıklama veya başlık ekleme.\n\n' + full.slice(0, 6000), 900);
       const r = JSON.parse(JSON.stringify(s.result));
       r.senaryo = [...(r.senaryo || []), { bolum: 'Shorts — 30 sn Versiyon', sure: '0:00–0:30', metin: reply.trim() }];
       this.setState({ result: r, shortBusy: false });
