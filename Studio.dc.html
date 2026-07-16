@@ -485,7 +485,10 @@
             <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ADIM 1 / 4 · VAKA TALEBİ</p>
             <h2 style="margin: 10px 0 8px; font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 700; line-height: 1.1;">Hangi dosyayı açalım?</h2>
             <p style="margin: 0 0 22px; color: #a4a9b5; line-height: 1.65;">Bir olay, kişi, dönem ya da soru yaz. Ajan arşivi tarar; senaryodan yayın paketine kadar her şeyi hazırlar.</p>
-            <textarea value="{{ idea }}" onChange="{{ onIdea }}" rows="4" placeholder="ör. Fatih'in ölümünün ardındaki zehir şüphesi… ya da Enigma'yı kıran görünmez kadınlar…" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 18px; font-size: 17px; line-height: 1.6; min-height: 130px;"></textarea>
+            <textarea value="{{ idea }}" onChange="{{ onIdea }}" disabled="{{ writeLocked }}" rows="4" placeholder="{{ ideaPlaceholder }}" style="{{ ideaBoxStyle }}"></textarea>
+            <sc-if value="{{ writeLocked }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 10px 0 0; color: #c19a52; font-size: 12.5px; line-height: 1.6; display: flex; align-items: center; gap: 7px;"><span style="font-size: 14px;">🔒</span><span>Kendi konunu yazmak <strong style="color: #e6c478;">üyelere özel</strong>. Hemen denemek için aşağıdan <strong style="color: #e6c478;">SEN ÖNER</strong>'e bas — ajan senin için bir vaka seçsin. Üye olunca kendi konunu da yazarsın.</span></p>
+            </sc-if>
             <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;">
               <button onClick="{{ suggestIdea }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 8px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">◈ {{ suggestLabel }}</button>
               <button onClick="{{ openArsivPick }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 8px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">🗂 ARŞİVDEN HİKÂYE BUL</button>
@@ -1522,22 +1525,30 @@ class Component extends DCLogic {
   arsivTitles() {
     return this.arsivRaw().map(a => ({ title: a.baslik || a.teaser || '', era: a.era || '' })).filter(x => x.title);
   }
-  // Fikir önerileri havuzu (arşiv başlıkları + sabit kancalar) — her açılışta 3'ü döner
+  // Fikir önerileri havuzu — ARŞİVDEN BAĞIMSIZ, özenle seçilmiş, gerçekten
+  // "bunu nasıl bilmiyordum" dedirten, somut ve araştırılabilir konular. Arşiv
+  // başlıkları KARIŞTIRILMAZ (öneriler hep yeni/farklı olsun). Her açılışta 3'ü döner.
   _ideaPool() {
-    const base = [
-      'Titanic\'te hayatta kalan Osmanlı yolcusu var mıydı?',
-      'Mimar Sinan\'ın gizli imzaları',
-      'İstanbul\'un kayıp yeraltı şehri',
-      'Kanuni\'yi zehirlediği söylenen mektup',
-      'Piri Reis haritasındaki imkânsız ayrıntı',
-      'Endülüs\'ün son gecesi',
-      'Timur\'un satranç saplantısı',
-      'Truva gerçekten yandı mı?',
-      'Bizans\'ın kayıp Grek ateşi formülü',
-      'Vikinglerin İstanbul\'a bıraktığı yazıt'
+    return [
+      'Hezârfen gerçekten uçtu mu? Boğaz’ı geçen adamın belge yüzü',
+      'II. Abdülhamid’in kurduğu gizli istihbarat: Yıldız arşivinin sırrı',
+      'Selçuklu hastanelerinde müzikle ve suyla tedavi edilen hastalar',
+      'Kâtip Çelebi’nin haritasında olmayan ama gerçek olan ada',
+      'Evliya Çelebi gördüklerini abarttı mı, yoksa haklı mıydı?',
+      'Fatih’in İtalyan ressamı Bellini’nin kaybolan İstanbul defterleri',
+      'Yeniçeriler isyan ederken neden kazan devirirdi?',
+      'Bizans sarayını koruyan Viking muhafızlar: Varang Muhafızları',
+      'Kanuni’nin Fransa kralıyla kurduğu şaşırtan ittifak',
+      'Osmanlı’da vebayı ilk kim, nasıl karantinaya aldı?',
+      'IV. Murat’ın kılık değiştirip gece dolaştığı İstanbul',
+      'Barbaros’un Akdeniz’de kullandığı şifreli haberleşme ağı',
+      'Takiyüddin’in İstanbul Rasathanesi neden bir gecede yıkıldı?',
+      'Osmanlı elçisinin Paris’te gördüğü ve inanamadığı icatlar',
+      'Endülüs’ten kaçırılıp saklanan yasak kütüphaneler',
+      'Ölümünden yıllar sonra tahtta olduğu sanılan hükümdar',
+      'Bir Osmanlı denizcisinin çizdiği, olmaması gereken kıyı haritası',
+      'Sultan Cem’in Avrupa’da rehin geçen esrarengiz yılları'
     ];
-    const arsiv = this.arsivRaw().map(a => a.baslik).filter(Boolean);
-    return base.concat(arsiv);
   }
   _pickChips(n = 3) {
     const pool = this._ideaPool();
@@ -3103,7 +3114,21 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       }),
 
       idea: s.idea,
-      onIdea: e => this.setState({ idea: e.target.value }),
+      // Ücretsiz (üye olmayan) kullanıcıda KENDİ KONUNU YAZMA kilitli — kaynak
+      // israfını önler. SEN ÖNER ve öneri çipleri çalışır: kullanıcı önerilerden
+      // deneyebilir. Üye olunca (isPaidUser) serbest yazma açılır.
+      writeLocked: !this.isPaidUser(),
+      ideaPlaceholder: this.isPaidUser()
+        ? "ör. Fatih'in ölümünün ardındaki zehir şüphesi… ya da Enigma'yı kıran görünmez kadınlar…"
+        : "🔒 Kendi konunu yazmak üyelere özel — aşağıdan SEN ÖNER'e bas, ajan senin için seçsin.",
+      ideaBoxStyle: {
+        width: '100%', resize: 'vertical', border: '1px solid rgba(193,154,82,.3)',
+        background: this.isPaidUser() ? '#060910' : '#0a0c12',
+        color: this.isPaidUser() ? '#f2ecd9' : '#8a8f9c',
+        padding: '18px', fontSize: '17px', lineHeight: '1.6', minHeight: '130px',
+        cursor: this.isPaidUser() ? 'text' : 'not-allowed'
+      },
+      onIdea: e => { if (this.isPaidUser()) this.setState({ idea: e.target.value }); },
       ideaEmpty: !s.idea.trim(),
       ideaShort: s.idea.length > 70 ? s.idea.slice(0, 70) + '…' : s.idea,
       ideaChips: ((s.chipSeed && s.chipSeed.length) ? s.chipSeed : chips).map(c => ({ text: c, use: () => this.setState({ idea: c }) })),
@@ -3461,7 +3486,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     if (this.state.suggestBusy) return;
     this.setState({ suggestBusy: true });
     try {
-      const reply = await this.askAI('Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan bir editörsün. Az bilinen, "bunu nasıl bilmiyordum" dedirten, ilk cümlede kilitleyen, görsel açıdan zengin, klişe olmayan tek bir video konusu öner (dedektif/vaka tonu). Somut bir olay/kişi/nesne olsun, jenerik olmasın. YALNIZCA o tek cümlelik konu başlığını döndür; tırnak, açıklama veya önek ekleme.', 300);
+      const reply = await this.askAI('Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan kıdemli bir editörsün. GERÇEK, doğrulanabilir bir tarihî olay/kişi/nesne üzerine, az bilinen ama kaynaklarda izi olan, "bunu nasıl bilmiyordum" dedirten, ilk cümlede kilitleyen TEK bir video konusu öner. KURALLAR: (1) somut ve spesifik olsun — belirli bir kişi, yer, tarih ya da nesne içersin; (2) klişe/genel olmasın ("tarihin gizemleri" gibi değil); (3) uydurma/komplo değil, araştırılabilir bir çekirdeği olsun; (4) tercihen Türk-İslam ya da dünya tarihinden sıra dışı bir vaka. YALNIZCA o tek cümlelik konu başlığını döndür; tırnak, açıklama veya önek ekleme.', 300);
       this.setState({ idea: reply.trim().replace(/^["']|["']$/g, ''), suggestBusy: false });
     } catch (e) {
       this.setState({ suggestBusy: false, idea: this.state.idea || '', genError: '' });
