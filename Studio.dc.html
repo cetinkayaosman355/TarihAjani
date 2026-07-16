@@ -531,6 +531,12 @@
                 <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">DOSYA AÇILDI · {{ fileNo }}</p>
                 <h2 style="margin: 8px 0 6px; font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; line-height: 1.15;">{{ resTitle }}</h2>
                 <p style="margin: 0; color: #a4a9b5; max-width: 640px; line-height: 1.6;">{{ resLogline }}</p>
+                <sc-if value="{{ genWarn }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top: 14px; max-width: 660px; border: 1px solid rgba(230,196,120,.5); background: rgba(120,90,20,.14); color: #ecd9a6; padding: 12px 14px; font-size: 13px; line-height: 1.5; display: flex; gap: 10px; align-items: flex-start;">
+                    <span style="flex: 1;">{{ genWarn }}</span>
+                    <button onClick="{{ dismissGenWarn }}" aria-label="Kapat" style="border: 0; background: transparent; color: #c19a52; cursor: pointer; font-size: 16px; line-height: 1;">×</button>
+                  </div>
+                </sc-if>
               </div>
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <sc-if value="{{ fromArsiv }}" hint-placeholder-val="{{ false }}">
@@ -1022,7 +1028,7 @@ class Component extends DCLogic {
       idea: '',
       fromArsiv: false, arsivPick: false, chipSeed: this._pickChips(),
       tone: 'merak', voice: 'erkek', style: 'sinematik', duration: 'dk4', model: 'claude', aspect: 'yatay', regenKey: null,
-      generating: false, genMsg: '', genError: '', genPct: 0,
+      generating: false, genMsg: '', genError: '', genPct: 0, genWarn: '',
       result: null, fileNo: '',
       tab: 'senaryo',
       tier: saved.tier || 'uye',
@@ -2278,23 +2284,32 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
       let result = JSON.parse(clean);
       result = this.qualityFix(result);
-      if (twoStage) {
-        result = await this.expandActs(result, wordsHint);
+      // Taslak (senaryo) hazır ve kredi bu noktada düştü. Bundan SONRAKİ aşamalar
+      // (bölüm metinleri + sahne promptları) yavaş/ağdır; biri patlarsa dosyayı ASLA
+      // çöpe atma — eldeki dosyayı teslim et, eksik kısmı sonradan tamamlatılabilir yap.
+      let partial = false;
+      try {
+        if (twoStage) {
+          result = await this.expandActs(result, wordsHint);
+        }
+        // Sahne promptları HER süre için ayrı, dayanıklı aşamada (bölüm bölüm,
+        // yeniden deneme + geri dönüş) → görsel/video promptları asla boş kalmaz.
+        this.setState({ genMsg: 'SAHNE PROMPTLARI ÜRETİLİYOR…', genPct: 88 });
+        result = await this.genScenePrompts(result);
+      } catch (stageErr) {
+        partial = true;   // taslak var; ek aşama tamamlanamadı — dosya yine de teslim edilir
       }
-      // Sahne promptları HER süre için ayrı, dayanıklı aşamada (bölüm bölüm,
-      // yeniden deneme + geri dönüş) → görsel/video promptları asla boş kalmaz.
-      this.setState({ genMsg: 'SAHNE PROMPTLARI ÜRETİLİYOR…', genPct: 88 });
-      result = await this.genScenePrompts(result);
       clearInterval(this._mt);
       const no = 'TA-' + new Date().getFullYear() + '-' + String(Math.floor(100 + Math.random() * 900));
       const entry = {
         title: result.baslik || this.state.idea.slice(0, 60),
         date: new Date().toLocaleDateString('tr-TR'),
-        fileNo: no, result, idea: this.state.idea,
+        fileNo: no, result, idea: this.state.idea, partial,
         picks: { tone: this.state.tone, voice: this.state.voice, style: this.state.style, duration: this.state.duration, model: this.state.model }
       };
       this.setState(st => ({
         generating: false, genPct: 100, result, fileNo: no, step: 4, tab: 'senaryo', fromArsiv: false,
+        genWarn: partial ? 'Dosyan hazır ve kaydedildi — ama sahne promptları tamamlanamadı. Görsel Promptları sekmesinden “Sahne promptlarını üret” ile ek kredi olmadan tamamlayabilirsin.' : '',
         history: [entry, ...st.history].slice(0, 12), audioUrl: '', ttsError: '', sysAudioUrl: '', sysTtsError: ''
       }), () => this.persist());
       // Kredi düşme: yeni studio-generate sunucuda düştüyse dönen bakiyeyi kullan;
@@ -2764,7 +2779,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       durInfo: (() => { const f = this.fmtFor(this.durationSec()); return f.sahne + ' sahne (kapak hariç) · ' + f.kredi + ' kredi · ~' + f.kelime + ' kelime seslendirme · ' + f.bolum; })(),
       onDur: e => this.setState({ duration: 's' + e.target.value }),
       pickSummary: this.find('model', s.model).name + ' · ' + this.find('tone', s.tone).name + ' · ' + this.find('voice', s.voice).name + ' · ' + this.find('style', s.style).name + ' · ' + this.find('aspect', s.aspect).name,
-      genMsg: s.genMsg, genError: s.genError,
+      genMsg: s.genMsg, genError: s.genError, genWarn: s.genWarn,
+      dismissGenWarn: () => this.setState({ genWarn: '' }),
       genBarStyle: { height: '100%', width: s.genPct + '%', background: 'linear-gradient(90deg, #a77d35, #e6c478)', transition: 'width 1s ease' },
 
       fileNo: s.fileNo,
