@@ -23,6 +23,8 @@
 /oyun/satranc-1402 /oyun/satranc-1402/index.html 200
 /oyun/mangala      /oyun/mangala/index.html      200
 /arsiv             /Arsiv.dc.html             200
+/kitaplik          /kitaplik.html             200
+/kutuphane         /kitaplik.html             200
 # Vaka Günlüğü arşive taşındı → tek hub /arsiv (hikâyeler /arsiv/<slug>/)
 /vaka-gunlugu      /arsiv                     301!
 /vaka-gunlugu/     /arsiv                     301!
