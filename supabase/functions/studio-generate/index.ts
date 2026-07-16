@@ -14,6 +14,7 @@
 // Yanıt: { ok:true, result, text, charged:boolean, credits:number }
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { Image } from "npm:imagescript@1.3.0";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -431,6 +432,32 @@ function dataUriToBytes(uri: string): { bytes: Uint8Array; type: string } | null
   } catch { return null; }
 }
 
+// Model 9:16 / 16:9 ÜRETEMEZ (en dikey/yatay boyutu 2:3 / 3:2) — ChatGPT de
+// sessizce 2:3 verir. Biz tam isteneni teslim ederiz: merkezden kırparak
+// KESİN orana getir (9:16 → 864×1536, 16:9 → 1536×864). Hata olursa orijinal döner.
+async function cropToAspect(dataUri: string, size: string): Promise<string> {
+  const target = size === "9:16" ? 9 / 16 : size === "16:9" ? 16 / 9 : 0;
+  if (!target) return dataUri;                       // 1:1 zaten kare üretiliyor
+  const parsed = dataUriToBytes(dataUri);
+  if (!parsed) return dataUri;
+  try {
+    const img = await Image.decode(parsed.bytes);
+    const cur = img.width / img.height;
+    if (Math.abs(cur - target) < 0.01) return dataUri;
+    let w = img.width, h = img.height, x = 0, y = 0;
+    if (cur > target) { w = Math.round(img.height * target); x = Math.floor((img.width - w) / 2); }
+    else { h = Math.round(img.width / target); y = Math.floor((img.height - h) / 2); }
+    const out = img.crop(x, y, w, h);
+    const jpg = await out.encodeJPEG(90);
+    let bin = "";
+    for (let i = 0; i < jpg.length; i += 32768) bin += String.fromCharCode(...jpg.subarray(i, i + 32768));
+    return "data:image/jpeg;base64," + btoa(bin);
+  } catch (e) {
+    console.error("cropToAspect: " + String(e).slice(0, 150));
+    return dataUri;
+  }
+}
+
 // Gerçek görsel DÜZENLEME — OpenAI /images/edits (gpt-image-1). Mevcut görseli
 // korur, yalnız istenen değişikliği uygular (sıfırdan yeni görsel ÜRETMEZ).
 const EDIT_COST = 8;
@@ -538,7 +565,8 @@ Deno.serve(async (req) => {
 
     // GÖRSEL ÜRETİMİ — metin üretiminden ayrı akış (başarılıysa kredi düşer)
     if (String(b.action || "") === "image") {
-      const url = await generateImage(String(b.prompt || ""), String(b.size || ""));
+      let url = await generateImage(String(b.prompt || ""), String(b.size || ""));
+      if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
       logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "uretilemedi" });
       if (!url) return json({ ok: false, error: "Görsel üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       if (cost > 0 && admin && userId) {
