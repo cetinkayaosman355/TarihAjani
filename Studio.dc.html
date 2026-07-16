@@ -2057,7 +2057,7 @@ class Component extends DCLogic {
   toggleEditBox(id) {
     this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, editOpen: !x.editOpen, editErr: '' } : x) }));
   }
-  async editServer(imageUri, prompt, arKey, free) {
+  async editServer(imageUri, prompt, arKey) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey] || '16:9';
@@ -2065,7 +2065,7 @@ class Component extends DCLogic {
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'edit', image: imageUri, prompt, size: aspect, free: !!free })
+      body: JSON.stringify({ action: 'edit', image: imageUri, prompt, size: aspect })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
@@ -2078,9 +2078,7 @@ class Component extends DCLogic {
     if (!text || item.editBusy) return;
     // yalnız data URI (sistemde üretilmiş) görseller düzenlenebilir
     if (!/^data:image\//.test(item.url || '')) { this.setImgItem(item.id, { editErr: 'Bu görsel düzenlenemiyor (bağlantı süreli). Yeni görsel üretip düzenleyebilirsin.' }); return; }
-    const free = !item.editUsedFree;
-    const cost = free ? 0 : 8;
-    if (!free && this.state.credits < cost) { this.setState({ creditModal: true }); return; }
+    // Ücret sunucuda belirlenir: günde ilk 3 düzenleme ücretsiz, sonrası 8 kredi.
     // Talimatı, orijinali koruyacak tam bir düzenleme promptuna çevir — böylece
     // "kısa yazınca alakasız görsel" sorunu yerine SADECE istenen değişir.
     const base = this.stripAspect(item.prompt || '');
@@ -2090,8 +2088,8 @@ class Component extends DCLogic {
       'Apply ONLY the following change and modify nothing else: ' + text + '. ' +
       'Render in ' + this.aspectPhrase(item.ar) + '.';
     this.setImgItem(item.id, { editBusy: true, editErr: '' });
-    this.editServer(item.url, editPrompt, item.ar, free).then(url => {
-      this.setImgItem(item.id, { url, editBusy: false, editOpen: false, editText: '', editUsedFree: true });
+    this.editServer(item.url, editPrompt, item.ar).then(url => {
+      this.setImgItem(item.id, { url, editBusy: false, editOpen: false, editText: '' });
       this.saveImg({ id: 'edit' + Date.now() + Math.floor(Math.random() * 1000), prompt: item.prompt || '', ar: item.ar, url, ts: Date.now() });
     }).catch(e => {
       const msg = e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Düzenlenemedi: ' + e.message);
@@ -2216,7 +2214,7 @@ class Component extends DCLogic {
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
     if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Ses üretilemedi');
     if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
-    return data.url;
+    return { url: data.url, truncated: !!data.truncated };
   }
   makeTts() {
     const text = (this.voiceText() || '').trim();
@@ -2224,10 +2222,12 @@ class Component extends DCLogic {
     const cost = this.ttsCost();
     if (this.state.credits < cost) { this.setState({ creditModal: true }); return; }
     this.setState({ sysTtsBusy: true, sysTtsError: '' });
-    this.ttsServer(text).then(url => {
+    this.ttsServer(text).then(res => {
+      const url = res.url;
       // K-02: ödenen ses dosya kaydına da yazılır — sayfa yenilense de kaybolmaz
       this.setState(st => ({
         sysTtsBusy: false, sysAudioUrl: url,
+        sysTtsError: res.truncated ? 'Uyarı: metin çok uzundu; ses ilk ~11.500 karakteri kapsıyor. Kalanı için metni bölüp tekrar seslendir.' : '',
         history: (st.history || []).map(h => (h.fileNo && h.fileNo === st.fileNo) ? { ...h, audioUrl: url } : h)
       }), () => this.persist());
     }).catch(e => {
@@ -2999,8 +2999,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           onEditText: e => this.setImgItem(x.id, { editText: e.target.value }),
           runEdit: () => this.runEdit(x),
           editBusy: !!x.editBusy,
-          editRunLabel: x.editBusy ? 'DÜZENLENİYOR… (~20 sn)' : (x.editUsedFree ? '✎ UYGULA · 8 KR' : '✎ UYGULA · ÜCRETSİZ'),
-          editHint: x.editUsedFree ? 'Sonraki düzenlemeler 8 kredi' : 'İlk düzenleme ücretsiz',
+          editRunLabel: x.editBusy ? 'DÜZENLENİYOR… (~20 sn)' : '✎ UYGULA',
+          editHint: 'Günde ilk 3 düzenleme ücretsiz, sonrası 8 KR',
           editErr: x.editErr || ''
         };
       }),
