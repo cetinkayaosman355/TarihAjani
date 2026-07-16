@@ -3023,7 +3023,26 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       } else {
         const ctx = s.result ? 'Aktif dosya: "' + (s.result.baslik || '') + '" — ' + (s.result.logline || '') + '\n\n' : '';
         const transcript = msgs.map(m => (m.role === 'user' ? 'KULLANICI: ' : 'AJAN: ') + m.content).join('\n\n');
-        prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır, senaryo taslakları, başlıklar, fikirler üretir ve soruları kaynak bilinciyle yanıtlarsın. Türkçe, net ve yoğun cevap ver; gerektiğinde madde kullan.\n\n' + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
+        // Hesap durumu — asistan somut cevap verebilsin diye
+        const durum = 'KULLANICI DURUMU: ' + (this.hasSession() ? 'giriş yapılmış' : 'giriş YAPILMAMIŞ (kredi/geçmiş için giriş şart)') +
+          ' · bakiye: ' + (typeof s.credits === 'number' ? s.credits + ' kredi' : 'bilinmiyor') +
+          ' · üyelik: ' + (s.tier || 'uye') + '\n\n';
+        // Sistem & kredi bilgisi — asistan "müşteri desteğine başvurun" demek yerine
+        // BURADA çözüm üretsin; burası zaten resmî destek/yardım hattıdır.
+        const bilgi =
+          'SEN AYNI ZAMANDA TARİH AJANI STUDIO\'NUN RESMÎ YARDIM/DESTEK HATTISIN. Kredi, hata, hesap, ' +
+          'nasıl çalışır türü sorularda kullanıcıyı ASLA "başka bir müşteri desteğine başvur" diye savma — ' +
+          'burası desteğin ta kendisidir. Sorunu anlayışla karşıla, nedenini açıkla ve somut çözüm/sonraki adımı ver.\n' +
+          'DOĞRULANMIŞ SİSTEM BİLGİSİ (bunlara dayan, uydurma):\n' +
+          '• Kredi YALNIZCA işlem BAŞARILI olduğunda düşer. Görsel/seslendirme hata verirse kredi DÜŞMEZ; tekrar denenebilir.\n' +
+          '• Görsel üretimi hata verirse sistem otomatik 3 kez dener; yine olmazsa kredi iade/hiç düşülmez — kullanıcı tekrar deneyebilir.\n' +
+          '• Dosya üretim maliyeti süreye göre: ~60 sn 35 kredi, 4 dk 80, 8 dk 140, 10 dk 170 kredi (formül: max(30, yuvarla((20+saniye/4)/5)*5)).\n' +
+          '• Görsel: ilk 20 sahne görseli 12 kredi, 21. sahneden itibaren 8 kredi. Seslendirme: her 1000 karakter ~5 kredi (taban 10). Sahne yenileme: 5 kredi.\n' +
+          '• Geçmiş (üretilen dosyalar) artık hesaba bağlıdır ve cihazlar arası senkronlanır: aynı hesapla giriş yapıldığında mobilde ve webde üretilenler birlikte görünür. Görünmüyorsa: aynı hesapla giriş yapıldığından ve internetin bağlı olduğundan emin ol, sayfayı yenile.\n' +
+          '• "KREDİ GEÇMİŞİ" listesindeki eski kayıtlar bir süre sabit "-100" etiketi gösteriyordu; bu yalnızca ETİKET hatasıydı, gerçekte düşülen tutar yukarıdaki fiyatlardır. Güncellendi.\n' +
+          '• Yeni üyelere 30 kredi tanımlanır; AJAN10 kodu ile ilk alışverişte %10 indirim (tek sefer).\n' +
+          'Gerçekten çözülemeyen, hesaba özel bir bakiye uyuşmazlığı kalırsa (senin göremediğin sunucu kaydı gerekiyorsa) kullanıcıdan e-postasını al ve "ekip bakiyeni kontrol edip düzeltecek" de; savuşturma, sahiplen.\n\n';
+        prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanı VE resmî destek hattısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır; senaryo taslakları, başlıklar, fikirler üretir; kredi/hesap/teknik sorunları BURADA çözersin. Türkçe, net, sıcak ve çözüm odaklı cevap ver; gerektiğinde madde kullan.\n\n' + bilgi + durum + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
       }
       const reply = await this.askAI(prompt, 4000);
       this.setState(st => ({ chatMsgs: [...msgs, { role: 'assistant', content: reply.trim() }], chatBusy: false }));
