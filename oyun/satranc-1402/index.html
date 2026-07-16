@@ -48,19 +48,25 @@ body{overflow-x:hidden;background-image:radial-gradient(circle 800px at 20% 0%,r
 @keyframes rise{from{opacity:0;transform:translateY(20px);filter:blur(5px)}to{opacity:1;transform:none;filter:blur(0)}}
 
 /* ── SAYFA ── */
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px clamp(14px,3vw,34px)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(16px + env(safe-area-inset-top)) clamp(14px,3vw,34px) 16px}
 .top a.back{color:var(--ink);text-decoration:none;font:700 11px/1 'Special Elite',monospace;letter-spacing:.14em;padding:10px 13px;border:1px solid rgba(201,162,90,.4);background:rgba(3,5,11,.7)}
 .top a.back:hover{color:var(--gold);border-color:var(--gold)}
 .top .t{font-family:'Playfair Display',serif;font-weight:800;font-size:clamp(1.05rem,2.6vw,1.7rem);letter-spacing:.04em}
 .top .t em{font-style:normal;color:var(--gold)}
 .top .t .vs{color:#565b69;font-size:.7em}
 .top .t .bz{color:#d0716d}
-.wrap{display:grid;grid-template-columns:minmax(150px,220px) minmax(300px,640px) minmax(150px,220px);gap:clamp(10px,2vw,26px);justify-content:center;align-items:start;padding:6px clamp(10px,2.5vw,30px) 50px;max-width:1240px;margin:0 auto}
+.wrap{display:grid;grid-template-columns:minmax(150px,220px) minmax(300px,640px) minmax(150px,220px);gap:clamp(10px,2vw,26px);justify-content:center;align-items:start;padding:6px clamp(10px,2.5vw,30px) calc(50px + env(safe-area-inset-bottom));max-width:1240px;margin:0 auto}
 @media(max-width:900px){
   .wrap{grid-template-columns:1fr;max-width:640px}
   .stage{order:-1}
   .roster ul{max-height:none;display:flex;flex-wrap:wrap;gap:3px 12px}
   .roster li{border-bottom:0;width:auto;padding:2px 0}
+}
+/* dar ekran: başlık üstte tam satır, butonlar altında — üst üste binme yok */
+@media(max-width:720px){
+  .top{flex-wrap:wrap;justify-content:space-between;gap:8px 10px;row-gap:10px}
+  .top .t{order:-1;width:100%;text-align:center;font-size:1.02rem}
+  .top a.back{font-size:9.5px;padding:9px 11px}
 }
 
 /* ordu panelleri */
@@ -77,14 +83,14 @@ body{overflow-x:hidden;background-image:radial-gradient(circle 800px at 20% 0%,r
 
 /* tahta */
 .stage{position:relative}
-.board-frame{position:relative;border:2px solid rgba(201,162,90,.55);box-shadow:0 30px 90px rgba(0,0,0,.7),0 0 60px rgba(201,162,90,.08),inset 0 0 40px rgba(0,0,0,.5);background:linear-gradient(135deg,#151020,#0c0a14);padding:clamp(8px,1.6vw,18px)}
-.coords{position:absolute;color:#565b69;font-size:.5rem;letter-spacing:.1em;display:flex;justify-content:space-around;pointer-events:none}
+.board-frame{position:relative;border:2px solid rgba(201,162,90,.55);box-shadow:0 30px 90px rgba(0,0,0,.7),0 0 60px rgba(201,162,90,.08),inset 0 0 40px rgba(0,0,0,.5);background:linear-gradient(135deg,#1c1409,#0f0b05);padding:clamp(8px,1.6vw,18px)}
+.coords{position:absolute;color:#8a7448;font-size:.5rem;letter-spacing:.1em;display:flex;justify-content:space-around;pointer-events:none}
 .coords.files{left:clamp(8px,1.6vw,18px);right:clamp(8px,1.6vw,18px);bottom:2px}
 .coords.ranks{top:clamp(8px,1.6vw,18px);bottom:clamp(8px,1.6vw,18px);left:3px;flex-direction:column}
 #board{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);width:100%;aspect-ratio:1;user-select:none;-webkit-user-select:none}
 .sq{position:relative;display:grid;place-items:center;cursor:pointer;transition:box-shadow .15s}
-.sq.light{background:linear-gradient(135deg,#3a3049,#332a41)}
-.sq.dark{background:linear-gradient(135deg,#191424,#141020)}
+.sq.light{background:linear-gradient(135deg,#4c3c23,#42331c)}
+.sq.dark{background:linear-gradient(135deg,#261c10,#1e150b)}
 .sq.last{box-shadow:inset 0 0 0 2px rgba(230,196,120,.4)}
 .sq.sel{box-shadow:inset 0 0 0 2px var(--gold),inset 0 0 22px rgba(230,196,120,.25)}
 .sq.chk{animation:chkp 1s ease-in-out infinite}
@@ -119,7 +125,7 @@ body{overflow-x:hidden;background-image:radial-gradient(circle 800px at 20% 0%,r
 .nameplate .nm{font-family:'Playfair Display',serif;font-size:.95rem;color:var(--ink)}
 .nameplate .rl{color:#565b69;font-size:.55rem;letter-spacing:.2em;margin-left:auto}
 #log{margin-top:10px;max-height:130px;overflow:auto;border:1px solid rgba(129,135,151,.2);background:rgba(6,8,15,.7);padding:10px 14px;display:grid;gap:5px}
-#log p{margin:0;color:#8f8a7d;font-size:.58rem;line-height:1.5;letter-spacing:.03em}
+#log p{margin:0;color:#98937f;font-size:.63rem;line-height:1.55;letter-spacing:.03em}
 #log p b{color:var(--gold);font-weight:400}
 #log p .bz{color:#d0716d}
 #log p.sys{color:#4fd1e0}
@@ -137,7 +143,21 @@ body{overflow-x:hidden;background-image:radial-gradient(circle 800px at 20% 0%,r
 #moves .mvn{color:#565b69}
 #moves .mv{color:#e2cf9e}
 #moves .mv.b{color:#9aa3b5}
-@media(max-width:520px){.pc{width:86%;height:86%}}
+@media(max-width:520px){
+  .pc{width:86%;height:86%}
+  /* kontroller: düzenli iki sütunlu ızgara, ekranda hep görünür boyda */
+  .hud{gap:8px}
+  .turnchip{width:100%;justify-content:center}
+  .hud .btns{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .hbtn{padding:13px 8px;text-align:center}
+  #log p{font-size:.68rem}
+  #moves{font-size:.62rem}
+}
+/* Bayezid zaferi: kızıl başlık */
+.endcard h2.bz{background:linear-gradient(110deg,#7e2f2d,#c0524e 45%,#e8938f 55%,#6e2422);-webkit-background-clip:text;background-clip:text}
+@media (prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
 </style>
 </head>
 <body>
@@ -192,9 +212,9 @@ body{overflow-x:hidden;background-image:radial-gradient(circle 800px at 20% 0%,r
         <button class="hbtn gold" id="resetBtn">⟳ YENİDEN</button>
       </div>
     </div>
-    <div class="nameplate" id="nameplate"><span class="g">♟</span><span class="nm">Bir taşa dokun — adını ve rütbesini söylesin.</span><span class="rl"></span></div>
+    <div class="nameplate" id="nameplate"><span class="g" style="color:#EDD9A3"><svg viewBox="0 0 45 45" aria-hidden="true"><use href="#p-P"/></svg></span><span class="nm">Bir taşa dokun — adını ve rütbesini söylesin.</span><span class="rl"></span></div>
     <div id="moves"><span class="mvn">HAMLELER — notasyon burada listelenir.</span></div>
-    <div id="log"><p class="sys">SAVAŞ GÜNLÜĞÜ AÇILDI · ANKARA 1402</p></div>
+    <div id="log" aria-live="polite"><p class="sys">SAVAŞ GÜNLÜĞÜ AÇILDI · ANKARA 1402</p></div>
   </div>
   <aside class="roster bayezid"><h3>ORDU-YU BAYEZİD</h3><p class="sub">SİYAH · <span id="oppMode">YAPAY ZEKÂ</span></p><ul id="rosterB"></ul></aside>
 </div>
@@ -508,23 +528,46 @@ function doMove(from,to,silent){
 function endDraw(kicker,msg){
   over=true;snd.draw();
   var veil=document.getElementById('endveil');
+  document.getElementById('endh').classList.remove('bz');
   document.getElementById('endh').textContent='BERABERE';
   document.getElementById('endk').textContent='VAKA KAPANDI · '+kicker;
   document.getElementById('endp').textContent=msg;
   veil.classList.add('on');
 }
+function insufficient(){
+  // yalnız şahlar ya da şah + tek hafif taş (fil/at): mat imkânsız
+  var minor=0;
+  for(var i=0;i<64;i++){var p=board[i];if(!p||p.t==='K')continue;
+    if(p.t==='P'||p.t==='R'||p.t==='Q')return false;
+    if(++minor>1)return false;}
+  return true;
+}
 function checkEnd(){
   if(anyLegal(turn)){
     if(halfmove>=100){endDraw('50 HAMLE KURALI','Elli hamledir ne taş düştü ne asker ilerledi — meydan kilitlendi.');return;}
     if((repMap[posKey()]||0)>=3){endDraw('ÜÇ TEKRAR','Aynı mevzilenme üçüncü kez kuruldu — iki ordu da yol bulamıyor.');return;}
+    if(insufficient()){endDraw('YETERSİZ KUVVET','Meydanda mat verecek kuvvet kalmadı — iki hükümdar da geri çekildi.');return;}
     if(attacked(kingSq(turn,board),foe(turn),board))log((turn==='w'?'<b>Emir Timur</b>':'<b class="bz">Yıldırım Bayezid</b>')+' TEHDİT ALTINDA — şah!',true);return;}
   over=true;
   var mate=attacked(kingSq(turn,board),foe(turn),board);
   var veil=document.getElementById('endveil'),h=document.getElementById('endh'),k=document.getElementById('endk'),pp=document.getElementById('endp');
+  h.classList.remove('bz');
   if(!mate){h.textContent='PAT';k.textContent='VAKA KAPANDI · BERABERE';pp.textContent='İki ordu da tükendi. Çubuk Ovası sessiz.';snd.draw();}
   else if(turn==='b'){h.textContent='TİMUR KAZANDI';k.textContent='ŞAH MAT · ANKARA DÜŞTÜ';pp.textContent='Tarih tekerrür etti: Bayezid kafese... Tebrikler, Emir!';snd.win();}
-  else{h.textContent='BAYEZİD KAZANDI';k.textContent='ŞAH MAT · TARİH DEĞİŞTİ';pp.textContent='Bu sefer Yıldırım kazandı — tarih senin tahtanda yeniden yazıldı.';snd.lose();}
+  else{h.textContent='BAYEZİD KAZANDI';h.classList.add('bz');k.textContent='ŞAH MAT · TARİH DEĞİŞTİ';pp.textContent='Bu sefer Yıldırım kazandı — tarih senin tahtanda yeniden yazıldı.';snd.lose();}
   veil.classList.add('on');
+}
+/* YZ sırası geldiyse oynat — hamle sonrası, mod değişince ve geri al sonrası
+   aynı yoldan çağrılır; sıra siyahta kalıp oyunun kilitlenmesini önler */
+function maybeAI(){
+  if(over||!vsAI||turn!=='b'||thinking)return;
+  thinking=true;
+  setTimeout(function(){
+    if(over||!vsAI||turn!=='b'){thinking=false;return;}
+    var m=aiMove();
+    if(m)fly(m.from,m.to,function(){doMove(m.from,m.to);thinking=false;});
+    else{thinking=false;checkEnd();}
+  },320);
 }
 boardEl.addEventListener('click',function(e){
   if(over||thinking)return;
@@ -536,13 +579,8 @@ boardEl.addEventListener('click',function(e){
     thinking=true;
     fly(from,sq,function(){
       doMove(from,sq);
-      if(!over&&vsAI&&turn==='b'){
-        setTimeout(function(){
-          var m=aiMove();
-          if(m)fly(m.from,m.to,function(){doMove(m.from,m.to);thinking=false;});
-          else{thinking=false;checkEnd();}
-        },320);
-      }else thinking=false;
+      thinking=false;
+      maybeAI();
     });
     return;
   }
@@ -552,7 +590,9 @@ boardEl.addEventListener('click',function(e){
 });
 document.getElementById('undoBtn').addEventListener('click',function(){
   if(thinking||!hist.length)return;
-  var steps=(vsAI&&hist.length>=2)?2:1;
+  // YZ modunda çift geri al yalnızca sıra bizdeyken (YZ cevap vermişken);
+  // beyaz oynayıp YZ henüz oynamadıysa tek adım yeter — yoksa sıra YZ'de kalıp oyun kilitlenir
+  var steps=(vsAI&&turn==='w'&&hist.length>=2)?2:1;
   for(var s=0;s<steps&&hist.length;s++){
     var h=hist.pop();
     board=h.b;castle=h.castle;ep=h.ep;turn=h.turn;last=h.last;
@@ -561,12 +601,14 @@ document.getElementById('undoBtn').addEventListener('click',function(){
   }
   over=false;sel=-1;legal=[];document.getElementById('endveil').classList.remove('on');
   renderMoves();render();log('Zaman geri sarıldı — hamle iade edildi.',true);
+  maybeAI();
 });
 document.getElementById('modeBtn').addEventListener('click',function(){
   vsAI=!vsAI;
   this.textContent=vsAI?'RAKİP: BAYEZİD (YZ)':'RAKİP: 2 OYUNCU';
   document.getElementById('oppMode').textContent=vsAI?'YAPAY ZEKÂ':'2. OYUNCU';
   log(vsAI?'Bayezid ordusunun komutası yapay zekâya verildi.':'İki ordu da insan komutasında — aynı ekranda sırayla oynayın.',true);
+  maybeAI();
 });
 function reset(){newGame();sel=-1;legal=[];last=[-1,-1];thinking=false;moveList.length=0;renderMoves();document.getElementById('endveil').classList.remove('on');render(true);log('Ordular Çubuk Ovası\'nda dizildi. İlk hamle Timur\'un.',true);}
 document.getElementById('resetBtn').addEventListener('click',reset);
