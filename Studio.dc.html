@@ -75,6 +75,57 @@
       [style*="padding: 120px"] { padding-top: 130px !important; }
     }
 
+    /* ── K-05: yatay taşma kilidi ── */
+    html, body { overflow-x: hidden; }
+
+    /* ── K-01: mobil alt sekme çubuğu ── */
+    #ta-tabbar { display: none; }
+    @media (max-width: 840px) {
+      #ta-tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; display: flex;
+        background: rgba(4,6,12,.97); backdrop-filter: blur(14px);
+        border-top: 1px solid rgba(193,154,82,.3);
+        padding-bottom: env(safe-area-inset-bottom, 0); }
+      #ta-tabbar button { flex: 1; border: 0; background: transparent; cursor: pointer;
+        display: grid; gap: 2px; place-items: center; padding: 9px 2px 8px;
+        color: #676d7c; font-family: 'Special Elite', monospace; }
+      #ta-tabbar button .tb-ic { font-size: 17px; line-height: 1; }
+      #ta-tabbar button .tb-lb { font-size: 8.5px; letter-spacing: .1em; }
+      #ta-tabbar button.on { color: #e6c478; }
+      #ta-tabbar button.on .tb-ic { text-shadow: 0 0 14px rgba(230,196,120,.6); }
+      main { padding-bottom: 120px !important; }
+      /* tema düğmesi alt sekme çubuğuna binmesin */
+      #ta-tema-btn { bottom: calc(74px + env(safe-area-inset-bottom, 0)) !important; }
+    }
+
+    /* ── K-06: adım göstergesi — mobilde kompakt ── */
+    #ta-stepm { display: none; }
+    @media (max-width: 600px) {
+      .ta-steps { display: none !important; }
+      #ta-stepm { display: block; padding: 18px 20px 0; text-align: center; }
+      #ta-stepm .sm-t { font-family: 'Special Elite', monospace; font-size: 10.5px;
+        letter-spacing: .18em; color: #c19a52; }
+      #ta-stepm .sm-bar { height: 2px; background: rgba(129,135,151,.2); margin-top: 8px; }
+      #ta-stepm .sm-fill { height: 100%; background: linear-gradient(90deg, #a77d35, #e6c478); transition: width .3s; }
+    }
+
+    /* ── U-02: dosya sekmeleri — mobilde tek satır kaydırmalı ── */
+    @media (max-width: 600px) {
+      .ta-tabs { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; margin-left: -20px !important; margin-right: -20px !important;
+        padding: 0 20px 6px !important; }
+      .ta-tabs::-webkit-scrollbar { display: none; }
+      .ta-tabs button { white-space: nowrap; flex: 0 0 auto; }
+    }
+
+    /* ── U-03: AJANLA KONUŞ — mobilde yuvarlak FAB ── */
+    @media (max-width: 840px) {
+      .ta-chatfab { width: 54px; height: 54px; border-radius: 50% !important;
+        padding: 0 !important; justify-content: center !important;
+        bottom: calc(74px + env(safe-area-inset-bottom, 0)) !important; right: 14px !important;
+        font-size: 21px !important; }
+      .ta-chatfab .ta-fablabel { display: none; }
+    }
+
     /* ── BUTON & BAŞLIK DÜZELTMELERİ ── */
     a[style*="linear-gradient(110deg"], a[style*="border: 1px solid rgba(129,135,151"], a[style*="border: 1px solid rgba(193,154,82"] { display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap; }
     @media (max-width: 820px) {
@@ -199,8 +250,25 @@
         </nav>
       </header>
 
+      <!-- K-01: mobil alt sekme çubuğu (yalnız ≤840px görünür) -->
+      <div id="ta-tabbar">
+        <button onClick="{{ modeWizard }}" style="{{ tbWiz }}"><span class="tb-ic">◈</span><span class="tb-lb">SİHİRBAZ</span></button>
+        <button onClick="{{ modeGorsel }}" style="{{ tbGor }}"><span class="tb-ic">✦</span><span class="tb-lb">GÖRSEL</span></button>
+        <button onClick="{{ modeArsiv }}" style="{{ tbArs }}"><span class="tb-ic">🗂</span><span class="tb-lb">ARŞİV</span></button>
+        <button onClick="{{ modeHistory }}" style="{{ tbGec }}"><span class="tb-ic">↺</span><span class="tb-lb">GEÇMİŞ</span></button>
+        <button onClick="{{ openCredits }}" style="{{ tbKre }}"><span class="tb-ic">◉</span><span class="tb-lb">{{ credits }} KR</span></button>
+      </div>
+
+      <!-- K-06: adım göstergesi — mobil kompakt sürüm -->
+      <sc-if value="{{ showStepM }}" hint-placeholder-val="{{ false }}">
+        <div id="ta-stepm">
+          <div class="sm-t">ADIM {{ stepNo }} / 4 · {{ stepLabel }}</div>
+          <div class="sm-bar"><div class="sm-fill" style="{{ stepFillStyle }}"></div></div>
+        </div>
+      </sc-if>
+
       <!-- adım göstergesi -->
-      <div style="{{ stepRowStyle }}">
+      <div class="ta-steps" style="{{ stepRowStyle }}">
         <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
           <div onClick="{{ st.go }}" style="{{ st.wrapStyle }}">
             <div style="{{ st.dotStyle }}">{{ st.n }}</div>
@@ -226,6 +294,9 @@
                   <div>
                     <p style="margin: 0 0 4px; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">{{ h.meta }}</p>
                     <strong style="color: #f2ecd9; font-size: 15.5px; font-family: 'Playfair Display', serif;">{{ h.title }}</strong>
+                    <sc-if value="{{ h.isPartial }}" hint-placeholder-val="{{ false }}">
+                      <span style="display: inline-block; margin-left: 8px; border: 1px solid rgba(217,164,65,.55); color: #d9a441; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .1em; padding: 2px 7px; vertical-align: middle;">EKSİK SAHNELER</span>
+                    </sc-if>
                   </div>
                   <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
                     <sc-if value="{{ h.canOpen }}" hint-placeholder-val="{{ true }}">
@@ -480,6 +551,13 @@
                 </div>
                 <p style="margin: 12px 0 0; color: #a4a9b5; font-size: 13px; line-height: 1.55;">{{ durInfo }}</p>
               </div>
+              <!-- U-01: ince ayar — mobilde kapalı gelir, tek dokunuşla açılır -->
+              <button onClick="{{ toggleFine }}" style="{{ fineBtnStyle }}" style-hover="border-color: rgba(193,154,82,.6);">
+                <span style="display: flex; align-items: center; gap: 10px;"><span style="color: #e6c478; font-weight: 700; font-size: 14px; letter-spacing: .04em;">⚙ İnce Ayar</span><span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px;">{{ fineCaret }}</span></span>
+                <span style="color: #818797; font-size: 11.5px; line-height: 1.4; text-align: left;">{{ pickSummary }}</span>
+              </button>
+              <sc-if value="{{ fineOpen }}" hint-placeholder-val="{{ true }}">
+              <div style="display: grid; gap: 26px;">
               <sc-for list="{{ optionGroups }}" as="grp" hint-placeholder-count="4">
                 <div>
                   <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;">
@@ -501,6 +579,8 @@
                   </div>
                 </div>
               </sc-for>
+              </div>
+              </sc-if>
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 30px;">
               <button onClick="{{ toStep1 }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 14px 22px; font-size: 13px; letter-spacing: .1em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">← FİKRE DÖN</button>
@@ -552,7 +632,7 @@
             </div>
 
             <!-- sekmeler -->
-            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 20px 0 24px;">
+            <div class="ta-tabs" style="display: flex; flex-wrap: wrap; gap: 6px; margin: 20px 0 24px;">
               <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="5">
                 <button onClick="{{ tb.go }}" style="{{ tb.style }}">{{ tb.label }}</button>
               </sc-for>
@@ -601,6 +681,17 @@
                       <p style="margin: 7px 0 0; text-align: center; color: #676d7c; font-size: 11px;">{{ audioFileHint }}</p>
                     </sc-if>
                   </div>
+                  <!-- Ö-03: altyazı + zaman damgaları (ek AI maliyeti yok) -->
+                  <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12; padding: 18px 20px; display: grid; gap: 9px;">
+                    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">YAYIN YARDIMCILARI · ÜCRETSİZ</p>
+                    <button onClick="{{ dlSrt }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 11px; font-size: 12px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ ALTYAZI DOSYASI (.SRT) İNDİR</button>
+                    <button onClick="{{ copyChapters }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 11px; font-size: 12px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ chaptersLabel }}</button>
+                    <p style="margin: 0; color: #676d7c; font-size: 11px; line-height: 1.5;">Altyazı süreleri okuma hızından hesaplanır (~2,4 kelime/sn); zaman damgaları YouTube açıklamasına yapıştırılır.</p>
+                  </div>
+
+                  <!-- U-06: teknik ayarlar gelişmiş altında -->
+                  <button onClick="{{ toggleAdv }}" style="border: 1px dashed rgba(129,135,151,.35); background: transparent; color: #818797; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; padding: 11px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ advLabel }}</button>
+                  <sc-if value="{{ advOpen }}" hint-placeholder-val="{{ false }}">
                   <div style="border: 1px solid rgba(193,154,82,.35); background: rgba(193,154,82,.05); padding: 20px 22px;">
                     <p style="margin: 0 0 4px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">ELEVENLABS AYARLARI</p>
                     <div style="display: grid; gap: 8px; margin-top: 12px; font-size: 13.5px; color: #cfc8b4;">
@@ -624,6 +715,7 @@
                       <audio controls="{{ true }}" preload="none" src="{{ audioUrl }}" style="width: 100%; margin-top: 12px;"></audio>
                     </sc-if>
                   </div>
+                  </sc-if>
                 </div>
               </div>
             </sc-if>
@@ -634,9 +726,14 @@
                 <div style="border: 1px solid rgba(193,154,82,.25); background: rgba(193,154,82,.05); padding: 12px 16px; display: grid; gap: 10px;">
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.5; max-width: 62ch;">Aşağıda seçtiğin <strong style="color:#e6c478;">KADRAJ</strong> ve <strong style="color:#e6c478;">STİL</strong> her sahnenin <strong style="color:#e6c478;">GÖRSEL ÜRET</strong>'ine uygulanır (sihirbazda seçtiğin ayar hazır gelir). Üretilenler <strong style="color:#e6c478;">Görsel Stüdyo (Üretilenler)</strong> rafına eklenir; sekme değişmez, hepsini sırayla üretebilirsin. <strong style="color:#e6c478;">İlk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR.</strong></p>
-                    <sc-if value="{{ hasAnyOutput }}" hint-placeholder-val="{{ false }}">
-                      <button onClick="{{ goImgStudio }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;">ÜRETİLENLER ({{ outputCount }}) →</button>
+                    <span style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <sc-if value="{{ hasPendingScenes }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ genAll }}" disabled="{{ batchBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
                     </sc-if>
+                    <sc-if value="{{ hasAnyOutput }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ goImgStudio }}" style="border: 1px solid rgba(193,154,82,.5); cursor: pointer; background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">ÜRETİLENLER ({{ outputCount }}) →</button>
+                    </sc-if>
+                    </span>
                   </div>
                   <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                     <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">KADRAJ</span>
@@ -680,6 +777,9 @@
                           </span>
                         </div>
                         <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px; padding: 12px 14px;">{{ kp.prompt }}</code>
+                        <sc-if value="{{ kp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
+                          <img loading="lazy" src="{{ kp.img.url }}" alt="Kapak görseli" onClick="{{ kp.img.zoom }}" title="Büyütmek için tıkla" style="{{ kp.img.thumbStyle }}">
+                        </sc-if>
                         <span style="color: #e6c478; font-size: 12.5px; font-weight: 600;">Kapak üzerindeki yazı: “{{ kp.yazi }}”</span>
                         <span style="color: #676d7c; font-size: 12.5px;">{{ kp.not }}</span>
                         <sc-if value="{{ kp.img.done }}" hint-placeholder-val="{{ false }}">
@@ -724,6 +824,9 @@
                       </div>
                     </div>
                     <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px; padding: 12px 14px;">{{ gp.prompt }}</code>
+                    <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
+                      <img loading="lazy" src="{{ gp.img.url }}" alt="Sahne görseli" onClick="{{ gp.img.zoom }}" title="Büyütmek için tıkla" style="{{ gp.img.thumbStyle }}">
+                    </sc-if>
                     <sc-if value="{{ gp.img.done }}" hint-placeholder-val="{{ false }}">
 
                       <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: #9ed3a8; font-size: 11.5px; margin-top: 2px;">
@@ -927,7 +1030,7 @@
 
   <!-- AJANLA KONUŞ · YAN PANEL -->
   <sc-if value="{{ showStudio }}" hint-placeholder-val="{{ false }}">
-    <button onClick="{{ toggleChat }}" style="position: fixed; z-index: 55; bottom: 24px; right: 24px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(193,154,82,.6); background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 14px 20px; cursor: pointer; box-shadow: 0 12px 40px rgba(0,0,0,.6);" style-hover="box-shadow: 0 12px 50px rgba(230,196,120,.45); transform: translateY(-2px);">◈ AJANLA KONUŞ</button>
+    <button onClick="{{ toggleChat }}" class="ta-chatfab" style="position: fixed; z-index: 55; bottom: 24px; right: 24px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(193,154,82,.6); background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 14px 20px; cursor: pointer; box-shadow: 0 12px 40px rgba(0,0,0,.6);" style-hover="box-shadow: 0 12px 50px rgba(230,196,120,.45); transform: translateY(-2px);">◈<span class="ta-fablabel">&nbsp;AJANLA KONUŞ</span></button>
     <div style="{{ chatPanelStyle }}">
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid rgba(193,154,82,.25);">
         <div>
@@ -950,7 +1053,7 @@
           </span>
         </div>
       </sc-if>
-      <div style="flex: 1; display: grid; gap: 10px; align-content: start; padding: 16px 20px; overflow-y: auto;">
+      <div id="ta-chatlog" style="flex: 1; display: grid; gap: 10px; align-content: start; padding: 16px 20px; overflow-y: auto;">
         <sc-if value="{{ chatEmpty }}" hint-placeholder-val="{{ true }}">
           <p style="margin: 0; color: #676d7c; font-size: 13px; line-height: 1.7; text-align: center; padding: 30px 10px;">Fikir sor, senaryo taslağı iste ya da dosyandaki bir bölümün DÜZENLE tuşuna basıp buradan değiştir. Sohbet kredi harcamaz.</p>
         </sc-if>
@@ -973,7 +1076,7 @@
   <!-- KREDİ PAKETLERİ MODAL -->
   <!-- GÖRSEL BÜYÜTME (lightbox) -->
   <sc-if value="{{ hasZoom }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeZoom }}" style="position: fixed; inset: 0; z-index: 95; display: grid; place-items: center; align-content: center; gap: 14px; background: rgba(2,3,8,.94); padding: 20px; cursor: zoom-out;">
+    <div onClick="{{ closeZoom }}" style="position: fixed; inset: 0; z-index: 1295; display: grid; place-items: center; align-content: center; gap: 14px; background: rgba(2,3,8,.94); padding: 20px; cursor: zoom-out;">
       <img loading="lazy" src="{{ zoomUrl }}" alt="Üretilen görsel" style="max-width: 96vw; max-height: 80vh; object-fit: contain; border: 1px solid rgba(193,154,82,.4); box-shadow: 0 30px 90px rgba(0,0,0,.7);">
       <div style="display: flex; gap: 10px;">
         <button onClick="{{ zoomDl }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 11px; letter-spacing: .1em; padding: 12px 20px;">⬇ İNDİR</button>
@@ -983,7 +1086,7 @@
   </sc-if>
 
   <sc-if value="{{ showCreditModal }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeCredits }}" style="position: fixed; inset: 0; z-index: 50; background: rgba(2,3,8,.8); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 24px;">
+    <div onClick="{{ closeCredits }}" style="position: fixed; inset: 0; z-index: 1290; background: rgba(2,3,8,.8); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 24px;">
       <div onClick="{{ stopProp }}" style="width: min(680px, 100%); border: 1px solid rgba(193,154,82,.4); background: #05070d; padding: 34px; animation: ta-rise .4s ease both;">
         <div style="display: flex; justify-content: space-between; align-items: start;">
           <div>
@@ -1031,12 +1134,14 @@ class Component extends DCLogic {
       step: 1,
       idea: '',
       fromArsiv: false, arsivPick: false, chipSeed: this._pickChips(),
-      tone: 'merak', voice: 'erkek', style: 'sinematik', duration: 'dk4', model: 'claude', aspect: 'yatay', regenKey: null,
+      tone: 'merak', voice: 'kadir', style: 'sinematik', duration: 'dk4', model: 'claude', aspect: 'yatay', regenKey: null,
+      fineOpen: (typeof window === 'undefined') || window.innerWidth > 840,   // U-01: ince ayar mobilde kapalı gelir
+      advOpen: false, batchBusy: false, batchDone: 0, batchTotal: 0,
       generating: false, genMsg: '', genError: '', genPct: 0, genWarn: '',
       result: null, fileNo: '',
       tab: 'senaryo',
       tier: saved.tier || 'uye',
-      credits: typeof saved.credits === 'number' ? (saved.credits < 50 ? saved.credits * 100 : saved.credits) : (this.props.startCredits ?? 500),
+      credits: typeof saved.credits === 'number' ? saved.credits : (this.props.startCredits ?? 500),
       history: saved.history || [],
       creditModal: false,
       elKey: saved.elKey || '', ttsBusy: false, ttsError: '', audioUrl: '',
@@ -1091,6 +1196,7 @@ class Component extends DCLogic {
       const name = (u.user_metadata && u.user_metadata.full_name) || (u.email || '').split('@')[0];
       this.setState({ screen: 'studio', agentName: name, regEmail: u.email || this.state.regEmail }, () => this.persist());
       this.loadBalance();
+      this._loadHistoryFromServer();   // cihazlar arası: mobil+web geçmişini birleştir
     } else {
       // Gerçek oturum yok → eski localStorage kimliğiyle girilmiş olabilir, giriş kapısına düş
       this.setState({ screen: 'login' });
@@ -1143,6 +1249,54 @@ class Component extends DCLogic {
         agent: s.agentName, email: s.regEmail, credits: s.credits, tier: s.tier, history: s.history, elKey: s.elKey
       }));
     } catch (e) {}
+    this._syncHistoryToServer(s.history);   // cihazlar arası: geçmişi sunucuya da yaz (debounce'lı)
+  }
+
+  // İki geçmiş listesini birleştir (mobil + web): fileNo/ts anahtarıyla tekilleştir,
+  // en yeniden eskiye sırala, son 12'yi tut. Böylece her cihazda üretilenler görünür.
+  _mergeHistory(a, b) {
+    const seen = {}, out = [];
+    (a || []).concat(b || []).forEach(e => {
+      if (!e) return;
+      const key = e.fileNo || ('ts' + (e.ts || '')) || JSON.stringify(e).slice(0, 40);
+      if (seen[key]) return;
+      seen[key] = 1; out.push(e);
+    });
+    out.sort((x, y) => (y.ts || 0) - (x.ts || 0));
+    return out.slice(0, 12);
+  }
+
+  // Giriş yapılan cihazda: sunucudaki geçmişi çek, yereldekiyle birleştir, göster
+  // ve birleşimi sunucuya geri yaz (iki cihaz da senkronlanır).
+  async _loadHistoryFromServer() {
+    if (!this.sb || !this.hasSession() || !this._session.user) return;
+    try {
+      const uid = this._session.user.id;
+      const { data, error } = await this.sb.from('studio_state').select('history').eq('user_id', uid).maybeSingle();
+      if (error) return;   // tablo yoksa/erişilemezse sessizce yerelle devam
+      const remote = (data && Array.isArray(data.history)) ? data.history : [];
+      const merged = this._mergeHistory(this.state.history, remote);
+      const changed = JSON.stringify(merged) !== JSON.stringify(this.state.history);
+      if (changed) this.setState({ history: merged }, () => this.persist());
+      else this._syncHistoryToServer(merged, true);   // yerelde yeni olabilir → yine de yaz
+    } catch (e) {}
+  }
+
+  // Geçmişi sunucuya yaz — debounce'lı (persist çok sık çağrılır). force=anında.
+  _syncHistoryToServer(history, force) {
+    if (!this.sb || !this.hasSession() || !this._session.user) return;
+    const json = JSON.stringify(history || []);
+    if (json === this._lastSyncedHistory) return;   // değişmediyse yazma
+    const doUpsert = () => {
+      this._lastSyncedHistory = json;
+      try {
+        this.sb.from('studio_state')
+          .upsert({ user_id: this._session.user.id, history: history || [], updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
+          .then(() => {}, () => { this._lastSyncedHistory = null; });   // hata → sonra tekrar denenebilir
+      } catch (e) { this._lastSyncedHistory = null; }
+    };
+    clearTimeout(this._histT);
+    if (force) doUpsert(); else this._histT = setTimeout(doUpsert, 1500);
   }
 
   set(patch) { this.setState(patch, () => this.persist()); }
@@ -1176,9 +1330,30 @@ class Component extends DCLogic {
     this['_t' + key] = setTimeout(() => this.setState(s => ({ copied: { ...s.copied, [key]: false } })), 1600);
   }
 
+  // G-04: pano — modern API başarısızsa (uygulama içi tarayıcılar) eski yönteme düş;
+  // yalnız GERÇEKTEN kopyalanınca "KOPYALANDI ✓" göster.
+  _copyFb(text) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch (e) { return false; }
+  }
   copy(key, text) {
-    try { navigator.clipboard.writeText(text); } catch (e) {}
-    this.flash(key);
+    const done = () => this.flash(key);
+    const fb = () => { if (this._copyFb(text)) done(); else alert('Kopyalanamadı — metni basılı tutup elle kopyalayabilirsin.'); };
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done, fb);
+        return;
+      }
+    } catch (e) {}
+    fb();
   }
 
   optionData() {
@@ -1659,6 +1834,7 @@ class Component extends DCLogic {
         belgesel: 'kaynak odaklı, ölçülü ve otoriter; sakin ama etkileyici'
       },
       ses: {
+        kadir: 'derin, olgun, yumuşak profesyonel Türkçe anlatıcı; dengeli tempo, özel adlarda hafif duraklama',
         erkek: 'derin, güven veren klasik belgesel anlatımı; dengeli tempo',
         'erkek-gizemli': 'alçak tonlu, sır verir gibi; kısa cümleler, fısıltı ritmi',
         'kadin-belgesel': 'net, akıcı, profesyonel sunum; temiz ve bilgilendirici'
@@ -1707,21 +1883,35 @@ class Component extends DCLogic {
   // Kademeli fiyat: ilk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR
   // (uzun videoda çok görsel üretimini ucuzlatır). idx = sahne sırası (0 tabanlı).
   IMG_COST(idx) { return (typeof idx === 'number' && idx >= 20) ? 8 : 12; }
-  async imageServer(prompt, arKey, idx) {
+  async imageServer(prompt, arKey, idx, onAttempt) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect] || '16:9';
     const token = this._token() || SB_KEY;
-    const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0) })
-    });
-    const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
-    if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
-    if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Görsel üretilemedi');
-    if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
-    return data.url;
+    // Sunucu görseli YALNIZ başarıda ücretlendirir → geçici hatada tekrar denemek
+    // güvenli (çift kredi düşmez). Anlık 502/zaman aşımı görseli "hata"da bırakmasın:
+    // 3 deneme, artan bekleme. Yalnız YETERSIZ_KREDI'de hemen dur.
+    let lastErr = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0 && onAttempt) { try { onAttempt(attempt); } catch (_e) {} }
+      try {
+        const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0) })
+        });
+        const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
+        if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
+        if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Görsel üretilemedi');
+        if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
+        return data.url;
+      } catch (e) {
+        if (e.message === 'YETERSIZ_KREDI') throw e;   // krediyi tekrar deneme
+        lastErr = e;
+        if (attempt < 2) await new Promise(r => setTimeout(r, 1200 * (attempt + 1)));
+      }
+    }
+    throw lastErr || new Error('Görsel üretilemedi');
   }
   // Görseli indir: data URI ise dosya olarak, uzak URL ise yeni sekmede
   dlImage(url) {
@@ -1764,24 +1954,55 @@ class Component extends DCLogic {
     const sty = styleKey ? this.imgStylePhrase(styleKey) : '';
     return (clean ? clean + '. ' : '') + (sty ? sty + '. ' : '') + this.aspectPhrase(arKey) + '.';
   }
-  makeImage(promptRaw, idx) {
+  // Promise döndürür (toplu üretim kuyruğu bunun üstüne kurulu); sceneKey verilirse
+  // üretilen görsel sahne kartında satır içi gösterilir.
+  makeImage(promptRaw, idx, sceneKey) {
     const prompt = (promptRaw || '').trim();
-    if (!prompt) return;
+    if (!prompt) return Promise.resolve(false);
     const cost = this.IMG_COST(idx);
-    if (this.state.credits < cost) { this.setState({ creditModal: true }); return; }
+    if (this.state.credits < cost) { this.setState({ creditModal: true }); return Promise.resolve(false); }
     const ar = this.state.imgAspect || this.state.aspect;   // panelde seçilen kadraj öncelikli
     const sty = this.state.imgStyle || this.state.style;    // stil seçilmediyse sihirbazda seçilen stil
     const sendPrompt = this.withAspect(prompt, ar, sty);    // kadraj + stil prompta yerleşir
     const id = 'img' + Date.now() + Math.floor(Math.random() * 1000);
     this.setState(st => ({ imgQueue: [{ id, prompt, ar, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue].slice(0, 40) }));
-    this.imageServer(sendPrompt, ar, idx).then(url => {
+    const onAttempt = (n) => this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'TEKRAR DENENİYOR… (' + (n + 1) + '/3)' } : x) }));
+    return this.imageServer(sendPrompt, ar, idx, onAttempt).then(url => {
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url } : x) }));
+      if (sceneKey) this.setSceneImg(sceneKey, { url });   // satır içi önizleme
       this.saveImg({ id, prompt, ar, url, ts: Date.now() });   // kalıcı arşive (Önceki Üretimler)
+      return true;
     }).catch(e => {
       const msg = e.message === 'YETERSIZ_KREDI' ? 'YETERSİZ KREDİ' : ('HATA: ' + e.message);
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: msg } : x) }));
-      if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
+      if (e.message === 'YETERSIZ_KREDI') { this.setState({ creditModal: true }); this._batchStop = true; }
+      return false;
     });
+  }
+
+  // ── U-05: TÜM SAHNELERİ ÜRET — sıralı kuyruk (2 paralel), toplam maliyet onaylı ──
+  async genAllScenes() {
+    const s = this.state;
+    if (s.batchBusy || !s.result) return;
+    const scenes = (s.result.gorsel_promptlar || [])
+      .map((x, i) => ({ x, i, key: 'gp' + i }))
+      .filter(it => it.x && it.x.prompt && !(((s.sceneImgs || {})[it.key]) || {}).done);
+    if (!scenes.length) return;
+    const total = scenes.reduce((a, it) => a + this.IMG_COST(it.i), 0);
+    if (!window.confirm(scenes.length + ' sahne görseli üretilecek · toplam ' + total + ' KR.\nHata veren görsel için kredi düşmez. Devam?')) return;
+    if (s.credits < this.IMG_COST(scenes[0].i)) { this.setState({ creditModal: true }); return; }
+    this.setState({ batchBusy: true, batchDone: 0, batchTotal: scenes.length });
+    this._batchStop = false;
+    await this.runPool(scenes, async (it) => {
+      if (this._batchStop) return;                                        // kredi bitti → kalanları başlatma
+      if (this.state.credits < this.IMG_COST(it.i)) { this._batchStop = true; this.setState({ creditModal: true }); return; }
+      const ok = await this.makeImage(it.x.prompt, it.i, it.key);
+      if (ok) {
+        const si = (this.state.sceneImgs || {})[it.key] || {};
+        this.setSceneImg(it.key, { done: true, count: (si.count || 0) + 1 });
+      }
+    }, 2, (fin) => this.setState({ batchDone: fin }));
+    this.setState({ batchBusy: false });
   }
 
   // ── Kalıcı görsel arşivi (IndexedDB) — "Önceki Üretimler" ──
@@ -1836,7 +2057,7 @@ class Component extends DCLogic {
   toggleEditBox(id) {
     this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, editOpen: !x.editOpen, editErr: '' } : x) }));
   }
-  async editServer(imageUri, prompt, arKey, free) {
+  async editServer(imageUri, prompt, arKey) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey] || '16:9';
@@ -1844,7 +2065,7 @@ class Component extends DCLogic {
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'edit', image: imageUri, prompt, size: aspect, free: !!free })
+      body: JSON.stringify({ action: 'edit', image: imageUri, prompt, size: aspect })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
@@ -1857,9 +2078,7 @@ class Component extends DCLogic {
     if (!text || item.editBusy) return;
     // yalnız data URI (sistemde üretilmiş) görseller düzenlenebilir
     if (!/^data:image\//.test(item.url || '')) { this.setImgItem(item.id, { editErr: 'Bu görsel düzenlenemiyor (bağlantı süreli). Yeni görsel üretip düzenleyebilirsin.' }); return; }
-    const free = !item.editUsedFree;
-    const cost = free ? 0 : 8;
-    if (!free && this.state.credits < cost) { this.setState({ creditModal: true }); return; }
+    // Ücret sunucuda belirlenir: günde ilk 3 düzenleme ücretsiz, sonrası 8 kredi.
     // Talimatı, orijinali koruyacak tam bir düzenleme promptuna çevir — böylece
     // "kısa yazınca alakasız görsel" sorunu yerine SADECE istenen değişir.
     const base = this.stripAspect(item.prompt || '');
@@ -1869,8 +2088,8 @@ class Component extends DCLogic {
       'Apply ONLY the following change and modify nothing else: ' + text + '. ' +
       'Render in ' + this.aspectPhrase(item.ar) + '.';
     this.setImgItem(item.id, { editBusy: true, editErr: '' });
-    this.editServer(item.url, editPrompt, item.ar, free).then(url => {
-      this.setImgItem(item.id, { url, editBusy: false, editOpen: false, editText: '', editUsedFree: true });
+    this.editServer(item.url, editPrompt, item.ar).then(url => {
+      this.setImgItem(item.id, { url, editBusy: false, editOpen: false, editText: '' });
       this.saveImg({ id: 'edit' + Date.now() + Math.floor(Math.random() * 1000), prompt: item.prompt || '', ar: item.ar, url, ts: Date.now() });
     }).catch(e => {
       const msg = e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Düzenlenemedi: ' + e.message);
@@ -1890,10 +2109,13 @@ class Component extends DCLogic {
     const prompt = (promptRaw || '').trim();
     if (!prompt) return;
     if (this.state.credits < this.IMG_COST(idx)) { this.setState({ creditModal: true }); return; }
-    this.makeImage(prompt, idx);                        // imgQueue'ya ekler (kadraj: imgAspect||aspect)
     this.setState({ imgPrompt: prompt });               // Görsel Stüdyo bu sahnenin hikâyesini tutsun
-    const si = (this.state.sceneImgs || {})[key] || {};
-    this.setSceneImg(key, { done: true, count: (si.count || 0) + 1 });   // kalıcı "üretildi" durumu
+    // "Üretildi" işareti yalnız GERÇEK başarıda konur (eskiden hata da ✓ görünüyordu)
+    this.makeImage(prompt, idx, key).then(ok => {
+      if (!ok) return;
+      const si = (this.state.sceneImgs || {})[key] || {};
+      this.setSceneImg(key, { done: true, count: (si.count || 0) + 1 });
+    });
   }
   goImgStudio() { this.setState({ tab: 'imgstudio' }); }
   // Üretilen tüm görselleri (Üretilenler rafı) toplu indir
@@ -1916,9 +2138,13 @@ class Component extends DCLogic {
   sceneImgView(key) {
     const si = (this.state.sceneImgs || {})[key] || null;
     const done = !!(si && si.done);
+    const url = (si && si.url) || '';
     return {
       done, notDone: !done,
       count: (si && si.count) || 0,
+      url, hasUrl: !!url,
+      zoom: () => this.setState({ imgZoom: url }),
+      thumbStyle: { width: '100%', maxHeight: '38vh', objectFit: 'contain', background: '#05070d', display: 'block', cursor: 'zoom-in', border: '1px solid rgba(129,135,151,.2)', marginTop: '4px' },
       goStudio: () => this.goImgStudio()
     };
   }
@@ -1988,7 +2214,7 @@ class Component extends DCLogic {
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
     if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Ses üretilemedi');
     if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
-    return data.url;
+    return { url: data.url, truncated: !!data.truncated };
   }
   makeTts() {
     const text = (this.voiceText() || '').trim();
@@ -1996,8 +2222,14 @@ class Component extends DCLogic {
     const cost = this.ttsCost();
     if (this.state.credits < cost) { this.setState({ creditModal: true }); return; }
     this.setState({ sysTtsBusy: true, sysTtsError: '' });
-    this.ttsServer(text).then(url => {
-      this.setState({ sysTtsBusy: false, sysAudioUrl: url });
+    this.ttsServer(text).then(res => {
+      const url = res.url;
+      // K-02: ödenen ses dosya kaydına da yazılır — sayfa yenilense de kaybolmaz
+      this.setState(st => ({
+        sysTtsBusy: false, sysAudioUrl: url,
+        sysTtsError: res.truncated ? 'Uyarı: metin çok uzundu; ses ilk ~11.500 karakteri kapsıyor. Kalanı için metni bölüp tekrar seslendir.' : '',
+        history: (st.history || []).map(h => (h.fileNo && h.fileNo === st.fileNo) ? { ...h, audioUrl: url } : h)
+      }), () => this.persist());
     }).catch(e => {
       const msg = e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Ses üretilemedi: ' + e.message);
       this.setState({ sysTtsBusy: false, sysTtsError: msg });
@@ -2046,8 +2278,8 @@ class Component extends DCLogic {
     const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
     // Tarihî Gravür fotogerçekçi değildir; anti-artifact satırı stile göre değişir
     const antiArtifact = s.style === 'gravur'
-      ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
-      : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
+      ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects, no transparent or ghostly figures.'
+      : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces, no transparent or ghostly figures, no double exposure — every person fully solid and opaque.';
 
     const p = `Sen "Tarih Ajanı" adlı Türkçe tarih YouTube kanalının BAŞ senaristi, araştırmacısı ve yapım yönetmenisin. Kanal tarihi bir dedektif titizliğiyle işler: her iddia belgeye dayanır, anlatım bir vaka dosyası gibi kurgulanır, izleyici ilk saniyeden ipuçlarıyla sürüklenir. Çıktın PROFESYONEL yayın kalitesinde olmalı; yüzeysel, genel-geçer, "ansiklopedi özeti" gibi metinler KABUL EDİLMEZ.
 
@@ -2065,6 +2297,8 @@ BU ÜRETİMİN PARAMETRELERİ:
 
 KALİTE BARI (EN KRİTİK — zayıf çıktı geçersizdir):
 - SESLENDİRME (senaryo[].metin): O bölümün TAM, kelimesi kelimesine okunacak metni. Somut isim/tarih/yer/sayı geçir; duyusal ve sinematik dil kur; her bölüm mikro-kanca ile açılıp merak bırakarak bitsin. Toplam kelime ${wmin}-${wmax} aralığında KALMALI: ${wmin} altına düşme, ${wmax} üstüne ÇIKMA (süre kilidi kesindir). Dolgu, klişe, "tarih boyunca insanlar…" tarzı genel cümle YASAK — kısalık kaliteyi düşürmez, netleştirir.
+- 🎙 SESLİ OKUMA KURALI (metin bir anlatıcı tarafından OKUNACAK): tüm sayı, tarih ve rakamları YAZIYLA yaz — "1453" değil "bin dört yüz elli üç", "II. Mehmed" değil "İkinci Mehmed", "%40" değil "yüzde kırk". Parantez, tire içi ara cümle, madde işareti, kısaltma KULLANMA; her cümle yüksek sesle doğal okunabilsin.
+- ANLATIM ZANAATİ: Cümle ritmini dönüşümlü kur — kısa vurucu cümlelerle uzun akan cümleleri karıştır; art arda cümleler aynı kelime/kalıpla BAŞLAMASIN. Göster, anlatma: soyut yargı ("çok korkunçtu") yerine sahne ve duyu ("etin yanık kokusu surlara kadar ulaşıyordu"). Şu yapay-zekâ klişeleri KESİNLİKLE YASAK: "adeta", "âdeta", "tarihin tozlu sayfaları", "yolculuğumuz", "asla unutmayacaktı", "hayal edin" (bölüm başına en fazla 1 kez), "günümüzde bile", "kim bilir belki de".
 - KANCA: İlk 3 saniye maksimum merak; ilk cümle bir soru, çelişki ya da çarpıcı iddia olsun.
 - YOUTUBE AÇIKLAMASI (aciklama): EN AZ 3 dolu paragraf — 1) merak açan giriş, 2) videoda ne var/neyi kanıtlıyoruz, 3) abonelik + kaynak/uyarı çağrısı. Ardından "00:00 Giriş" biçiminde EN AZ 3 zaman damgası, sonra 5-8 arama-dostu anahtar kelime. Kısa/tek paragraf KABUL EDİLMEZ.
 - INSTAGRAM (aciklama): 1 vurucu hook satırı + 2 kısa paragraf + net CTA (izleyiciye yorumda soru sordur). Emoji ölçülü.
@@ -2080,6 +2314,7 @@ GÖRSEL & VİDEO PROMPT KURALLARI (tümü İngilizce — bu promptlar DOĞRUDAN 
 - UZUNLUK: her görsel promptu ~50-80 kelime, her video promptu ~30-50 kelime — yoğun ve katmanlı ama tekrarsız; gereksiz sıfat yığını yapma.
 - Her video promptu tek bir kamera hareketi/aksiyon (5-8 sn) tarif eder (ör. slow push-in, gentle pan left, subtle parallax) ve ŞU satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker."
 - Görsellerde yazı/logo/altyazı YOK. Aynı karakter birden çok sahnede geçiyorsa sabit kimlik tarifini (yaş, ten, saç, yüz, kıyafet, ayırt edici detay) her ilgili promptun başında BİREBİR tekrarla (tutarlı yüz için).
+- BENZERLİK KURALI: Tanınmış tarihî bir kişi geçiyorsa (padişah, kral, komutan, bilgin…) jenerik "a sultan" YAZMA — o kişinin BELGELENMİŞ görünümünü portre/minyatür kaynaklarına göre İngilizce tarif et: yüz şekli, burun, sakal/bıyık rengi ve biçimi, yaş, başlık ve kıyafet ayrıntısı (ör. Kanuni yaşlılığında: long gaunt pale face, prominent aquiline nose, thin grey drooping mustache, sparse white beard, enormous rounded white mucevveze turban). Kişi görünümü belgesizse dönem-doğru ama net bir kimlik kurgula ve sabit tut.
 - Tarihî doğruluk görselde de esas: dönem-dışı nesne, modern kıyafet, yanlış coğrafya kullanma.
 
 TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan; emin olmadığın ayrıntıyı UYDURMA, spekülasyonu işaretle; hassas konularda saygılı ol.
@@ -2124,8 +2359,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       stilStr: m.stil[s.style] || m.stil.sinematik,
       oran: { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal',
       anti: s.style === 'gravur'
-        ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
-        : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.',
+        ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects, no transparent or ghostly figures.'
+        : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces, no transparent or ghostly figures, no double exposure — every person fully solid and opaque.',
       vidTail: 'Stable face and anatomy, no warping, no morphing, no flicker.'
     };
   }
@@ -2147,6 +2382,27 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     return alloc;
   }
 
+  // Sınırlı eşzamanlılıkla iş havuzu — bağımsız çağrıları paralel çalıştırır
+  // (kaliteden ödün YOK; yalnız bekleme süresini kısaltır). Her işçi kendi
+  // hatasını yutar; sonuçlar giriş sırasında toplanır. onDone her tamamlanışta
+  // ilerleme yüzdesi için çağrılır.
+  async runPool(items, worker, concurrency, onDone) {
+    const results = new Array(items.length);
+    let next = 0, finished = 0;
+    const lanes = Math.max(1, Math.min(concurrency || 3, items.length));
+    const run = async () => {
+      while (next < items.length) {
+        const i = next++;
+        try { results[i] = await worker(items[i], i); }
+        catch (e) { results[i] = undefined; }
+        finished++;
+        if (onDone) { try { onDone(finished, items.length); } catch (_e) {} }
+      }
+    };
+    await Promise.all(Array.from({ length: lanes }, run));
+    return results;
+  }
+
   // TEK bölüm için k sahnelik görsel+video promptu — 2 deneme, sonra
   // deterministik geri dönüş (asla boş dönmez). Çağrılar küçük olduğu için
   // truncation/zaman aşımı olmaz; her biri ücretsiz ('scenes' aksiyonu).
@@ -2158,7 +2414,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       : '';
     const prompt = 'Bir Türkçe tarih belgeselinin "' + bolum + '" (bölüm ' + idx + '/' + totalSecs + ') kısmı için TAM ' + k + ' sahnelik GÖRSEL ve VİDEO promptu üret. Sahneler bu bölümün anlatısını SIRAYLA, sinematik biçimde görselleştirmeli; metindeki somut kişi/mekân/nesne/aksiyonu birebir yansıt (hikâyeyi tanı, jenerik sahne yazma).\n' +
       bibleLine +
-      'GÖRSEL PROMPT: İngilizce, "' + cfg.stilStr + '" ile BAŞLAR, "' + cfg.oran + '" içerir; ana özne+aksiyon, dönem-doğru mekân/kıyafet/nesne (anakronizm YOK), ışık/atmosfer, kompozisyon/kamera, renk/duygu, doku katmanları (~50-80 kelime), şu satırla BİTER: "' + cfg.anti + '".\n' +
+      'GÖRSEL PROMPT: İngilizce, "' + cfg.stilStr + '" ile BAŞLAR, "' + cfg.oran + '" içerir; ana özne+aksiyon, dönem-doğru mekân/kıyafet/nesne (anakronizm YOK), ışık/atmosfer, kompozisyon/kamera, renk/duygu, doku katmanları (~50-80 kelime), şu satırla BİTER: "' + cfg.anti + '". Tanınmış tarihî kişi geçiyorsa jenerik yazma: belgelenmiş görünümünü (yüz şekli, burun, sakal/bıyık, yaş, başlık/kıyafet) portre kaynaklarına göre tarif et.\n' +
       'VİDEO PROMPT: tek kamera hareketi/aksiyon 5-8 sn (~30-50 kelime), şu satırla biter: "' + cfg.vidTail + '". Bir karakter sahnede geçiyorsa yukarıdaki SABİT kimlik tarifini promptun başında birebir tekrarla (tutarlı yüz için).\n' +
       'ÇIKTI: SADECE geçerli tek JSON, ilk karakter { son karakter }. Şema: {"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","prompt":"İngilizce görsel"}],"video_promptlar":[{"sahne":"aynı sahne adı","prompt":"İngilizce video"}]}. Her dizi TAM ' + k + ' öğe.\n\nBÖLÜM METNİ:\n' + (metin || bolum);
     const maxTok = Math.min(4000, 800 + k * 260);
@@ -2212,20 +2468,29 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     if (!secs.length) secs = [{ bolum: result.baslik || this.state.idea || 'Bölüm', metin: result.logline || '' }];
     const alloc = this.allocScenes(secs, N);
     const CHUNK = 8;   // her çağrı en çok 8 sahne → küçük, hızlı, truncation'sız
-    const gorsel = [], video = [];
+    // Tüm sahne gruplarını (bölüm+ofset) düz bir iş listesine aç; her iş bağımsız
+    // olduğundan paralel çalıştırılabilir. Sıralama korunur: sonuçlar bölüm ve
+    // ofset sırasına göre birleştirilir → sahneler doğru sırada kalır.
+    const jobs = [];
     for (let i = 0; i < secs.length; i++) {
       let k = alloc[i] || 0;
       if (k <= 0) continue;
-      let done = 0;
-      while (done < k) {
-        const chunk = Math.min(CHUNK, k - done);
-        this.setState({ genMsg: 'SAHNE PROMPTLARI · BÖLÜM ' + (i + 1) + '/' + secs.length + '…', genPct: Math.min(98, 88 + Math.round((i / Math.max(1, secs.length)) * 9)) });
-        const part = await this.sceneBatch(secs[i], chunk, i + 1, secs.length, cfg, done);
-        part.gorsel.forEach(g => gorsel.push(g));
-        part.video.forEach(v => video.push(v));
-        done += chunk;
+      for (let done = 0; done < k; done += CHUNK) {
+        jobs.push({ i, done, chunk: Math.min(CHUNK, k - done) });
       }
     }
+    const total = jobs.length || 1;
+    const parts = await this.runPool(jobs, (j) =>
+      this.sceneBatch(secs[j.i], j.chunk, j.i + 1, secs.length, cfg, j.done),
+      3,
+      (fin) => this.setState({ genMsg: 'SAHNE PROMPTLARI · ' + fin + '/' + total + '…', genPct: Math.min(98, 88 + Math.round((fin / total) * 10)) })
+    );
+    const gorsel = [], video = [];
+    parts.forEach((part) => {
+      if (!part) return;
+      (part.gorsel || []).forEach(g => gorsel.push(g));
+      (part.video || []).forEach(v => video.push(v));
+    });
     if (gorsel.length) result.gorsel_promptlar = gorsel;
     if (video.length) result.video_promptlar = video;
     return this.qualityFix(result);
@@ -2272,13 +2537,23 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const sec = this.durationSec();
     const n = Math.max(1, secs.length);
     const words = Math.round(sec * 2.0 / n) + '-' + Math.round(sec * 2.6 / n);
-    for (let i = 0; i < secs.length; i++) {
-      this.setState({ genMsg: 'BÖLÜM ' + (i + 1) + ' / ' + secs.length + ' KALEME ALINIYOR…', genPct: 45 + Math.round((i / Math.max(1, secs.length)) * 38) });
-      try {
-        const reply = await this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secs[i].bolum || '') + '" bölümünün TAM seslendirme metnini yaz: KESİN ' + words + ' kelime (bu aralığı AŞMA — süre kilidi), akıcı Türkçe, şu tonla: ' + tonStr + '. Somut isim/tarih/yer/sayı geçir; klişe ve dolgu YOK. Önceki bölümden doğal biçimde devral, bir sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver. YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + secs.map(x => x.bolum).join(' | ') + '\nBu bölümün özeti: ' + (secs[i].metin || ''), 2500);
-        if (reply && reply.trim()) secs[i].metin = reply.trim();
-      } catch (e) { /* özetle devam et */ }
-    }
+    const order = secs.map(x => x.bolum).join(' | ');
+    // Her bölüm metni bağımsızdır (taslak özetinden yazılır, birbirinin ürettiği
+    // metne değil) → paralel yazılabilir. Kalite aynı; bekleme süresi kısalır.
+    const total = secs.length || 1;
+    const replies = await this.runPool(secs, (secItem) =>
+      this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secItem.bolum || '') + '" bölümünün TAM seslendirme metnini yaz: KESİN ' + words + ' kelime (bu aralığı AŞMA — süre kilidi), akıcı Türkçe, şu tonla: ' + tonStr + '.\n' +
+        'YAZIM KURALLARI (profesyonel yayın standardı):\n' +
+        '1) SESLİ OKUMA: metin bir anlatıcı tarafından okunacak — tüm sayı ve tarihleri YAZIYLA yaz ("1453" değil "bin dört yüz elli üç", "II. Mehmed" değil "İkinci Mehmed", "%40" değil "yüzde kırk"). Parantez, madde işareti, kısaltma yok.\n' +
+        '2) RİTİM: kısa vurucu cümlelerle uzun akan cümleleri dönüşümlü kullan; art arda cümleler aynı kelimeyle başlamasın.\n' +
+        '3) GÖSTER, ANLATMA: soyut yargı yerine sahne, ayrıntı, duyu (koku, ses, doku).\n' +
+        '4) YASAK KLİŞELER: "adeta", "tarihin tozlu sayfaları", "yolculuğumuz", "asla unutmayacaktı", "günümüzde bile", "kim bilir belki de".\n' +
+        '5) Somut isim/tarih/yer/sayı geçir; dolgu yok. Önceki bölümden doğal devral, sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver.\n' +
+        'YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + order + '\nBu bölümün özeti: ' + (secItem.metin || ''), 2500),
+      3,
+      (fin) => this.setState({ genMsg: 'BÖLÜM ' + fin + ' / ' + total + ' KALEME ALINIYOR…', genPct: 45 + Math.round((fin / total) * 38) })
+    );
+    replies.forEach((reply, i) => { if (reply && reply.trim()) secs[i].metin = reply.trim(); });
     return result;
   }
 
@@ -2291,9 +2566,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const msgs = ['ARŞİV BAĞLANTISI KURULUYOR…', 'KAYNAKLAR ÇAPRAZ SORGULANIYOR…', 'KANIT ZİNCİRİ KURULUYOR…', 'SENARYO KALEME ALINIYOR…', 'YAYIN PAKETİ MÜHÜRLENİYOR…'];
     let mi = 0;
     this.setState({ genMsg: msgs[0] });
+    // G-02: genel döngü yalnız TASLAK aşamasında koşar ve %40'ta durur; sonraki
+    // aşamalar kendi gerçek ilerlemesini yazar → yüzde asla geri gitmez.
     this._mt = setInterval(() => {
       mi = Math.min(mi + 1, msgs.length - 1);
-      this.setState(st => ({ genMsg: msgs[mi], genPct: Math.min(st.genPct + 16, 92) }));
+      this.setState(st => ({ genMsg: msgs[mi], genPct: Math.min(st.genPct + 7, 40) }));
     }, 3500);
     try {
       if (this.props.demoMode) { await new Promise(r => setTimeout(r, 4000)); throw new Error('DEMO'); }
@@ -2315,6 +2592,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
       let result = JSON.parse(clean);
       result = this.qualityFix(result);
+      clearInterval(this._mt);   // taslak hazır → genel mesaj döngüsü sussun, aşama mesajları ezilmesin
+      this.setState({ genMsg: 'TASLAK HAZIR — BÖLÜMLER YAZILIYOR…', genPct: 44 });
       // Taslak (senaryo) hazır ve kredi bu noktada düştü. Bundan SONRAKİ aşamalar
       // (bölüm metinleri + sahne promptları) yavaş/ağdır; biri patlarsa dosyayı ASLA
       // çöpe atma — eldeki dosyayı teslim et, eksik kısmı sonradan tamamlatılabilir yap.
@@ -2334,7 +2613,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       const no = 'TA-' + new Date().getFullYear() + '-' + String(Math.floor(100 + Math.random() * 900));
       const entry = {
         title: result.baslik || this.state.idea.slice(0, 60),
-        date: new Date().toLocaleDateString('tr-TR'),
+        date: new Date().toLocaleDateString('tr-TR'), ts: Date.now(), cost,
         fileNo: no, result, idea: this.state.idea, partial,
         picks: { tone: this.state.tone, voice: this.state.voice, style: this.state.style, duration: this.state.duration, model: this.state.model }
       };
@@ -2390,11 +2669,53 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     }
   }
 
+  // G-03: Shorts bölümü ana seslendirmeye KARIŞMAZ (ayrı içerik, ayrı ses)
   voiceText() {
     const r = this.state.result;
     if (!r || !r.senaryo) return '';
-    return r.senaryo.map(x => x.metin).join('\n\n');
+    return r.senaryo.filter(x => !/^shorts/i.test((x && x.bolum) || '')).map(x => x.metin).join('\n\n');
   }
+
+  // ── Ö-03: ALTYAZI (.SRT) + ZAMAN DAMGALARI — ek AI maliyeti yok ──
+  _fmtSrtTime(sec) {
+    const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = Math.floor(sec % 60), ms = Math.round((sec % 1) * 1000);
+    const p = (n, w) => String(n).padStart(w, '0');
+    return p(h, 2) + ':' + p(m, 2) + ':' + p(s, 2) + ',' + p(ms, 3);
+  }
+  // Cümlelere böl, süreyi kelime sayısına göre dağıt (~2.4 kelime/sn, min 1.2 sn)
+  srtText() {
+    const text = this.voiceText();
+    if (!text.trim()) return '';
+    const sentences = text.replace(/\n+/g, ' ').match(/[^.!?…]+[.!?…]+["'”»)]*|[^.!?…]+$/g) || [text];
+    let t = 0, i = 0, out = [];
+    for (const raw of sentences) {
+      const s = raw.trim();
+      if (!s) continue;
+      const words = s.split(/\s+/).length;
+      const dur = Math.max(1.2, words / 2.4);
+      out.push((++i) + '\n' + this._fmtSrtTime(t) + ' --> ' + this._fmtSrtTime(t + dur) + '\n' + s + '\n');
+      t += dur;
+    }
+    return out.join('\n');
+  }
+  dlSrt() {
+    const srt = this.srtText();
+    if (!srt) { alert('Önce bir dosya üret — altyazı senaryodan hesaplanır.'); return; }
+    const blob = new Blob(['﻿' + srt], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = this.slugTr((this.state.result || {}).baslik, 'tarih-ajani') + '-altyazi.srt';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  }
+  chaptersText() {
+    const secs = ((this.state.result || {}).senaryo || []).filter(x => !/^shorts/i.test((x && x.bolum) || ''));
+    return secs.map(x => {
+      const t = ((x.sure || '').match(/^\s*(\d+:\d+)/) || [])[1] || '0:00';
+      return t + ' ' + (x.bolum || '').replace(/^\d+\.\s*Bölüm\s*—\s*/, '');
+    }).join('\n');
+  }
+  copyChapters() { this.copy('chp', this.chaptersText()); }
 
   componentWillUnmount() { clearInterval(this._mt); clearTimeout(this._rt); }
 
@@ -2543,7 +2864,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         try { if (this.sb) await this.sb.auth.signOut(); } catch (e) {}
         this._session = null;
         try { localStorage.removeItem('ta_studio_v5'); localStorage.removeItem('ta_account_v1'); } catch (e) {}
-        this.setState({ userMenuOpen: false, screen: 'login', agentName: '', agentDraft: '', regEmail: '' });
+        // G-10: ortak cihazda gizlilik — üretilen görsel arşivi de temizlenir
+        try { this._imgDB = null; indexedDB.deleteDatabase('ta_studio_img'); } catch (e) {}
+        this.setState({ userMenuOpen: false, screen: 'login', agentName: '', agentDraft: '', regEmail: '', savedImgs: [], imgQueue: [], history: [] });
       },
 
       steps: stepDefs,
@@ -2623,8 +2946,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         openFile: () => this.setState({
           mode: 'wizard', step: 4, tab: 'senaryo',
           result: h.result, fileNo: h.fileNo || '', idea: h.idea || '',
+          // K-04: eski dosyanın sesi/uyarısı yeni dosyaya taşınmaz; bu dosyanın kayıtlı sesi geri gelir
+          sysAudioUrl: h.audioUrl || '', audioUrl: '', ttsError: '', sysTtsError: '', genWarn: '',
           ...(h.picks || {})
         }),
+        isPartial: !!h.partial,
         del: () => { if (window.confirm('Bu üretimi geçmişten silmek istediğine emin misin?')) this.deleteHistory(i); }
       })),
       toggleChat: () => this.setState(st => ({ chatOpen: !st.chatOpen })),
@@ -2634,7 +2960,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         background: '#05070d', borderLeft: '1px solid rgba(193,154,82,.4)',
         boxShadow: '-30px 0 80px rgba(0,0,0,.6)',
         transform: s.chatOpen ? 'translateX(0)' : 'translateX(110%)',
-        transition: 'transform .35s cubic-bezier(.2,.8,.2,1)'
+        visibility: s.chatOpen ? 'visible' : 'hidden',   // K-05: kapalıyken yerleşim/odak dışı
+        transition: 'transform .35s cubic-bezier(.2,.8,.2,1), visibility .35s'
       },
       hasEditTarget: !!s.editTarget,
       editLabel: s.editLabel,
@@ -2673,8 +3000,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           onEditText: e => this.setImgItem(x.id, { editText: e.target.value }),
           runEdit: () => this.runEdit(x),
           editBusy: !!x.editBusy,
-          editRunLabel: x.editBusy ? 'DÜZENLENİYOR… (~20 sn)' : (x.editUsedFree ? '✎ UYGULA · 8 KR' : '✎ UYGULA · ÜCRETSİZ'),
-          editHint: x.editUsedFree ? 'Sonraki düzenlemeler 8 kredi' : 'İlk düzenleme ücretsiz',
+          editRunLabel: x.editBusy ? 'DÜZENLENİYOR… (~20 sn)' : '✎ UYGULA',
+          editHint: 'Günde ilk 3 düzenleme ücretsiz, sonrası 8 KR',
           editErr: x.editErr || ''
         };
       }),
@@ -2883,16 +3210,57 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       copyIgLabel: s.copied['ig'] ? 'KOPYALANDI ✓' : 'KOPYALA',
       copyAll: () => this.copy('all', fullText()),
       copyAllLabel: s.copied['all'] ? 'KOPYALANDI ✓' : 'TÜMÜNÜ KOPYALA',
-      newFile: () => this.setState({ step: 1, idea: '', result: null, audioUrl: '', genError: '', fromArsiv: false, arsivPick: false }),
+      newFile: () => this.setState({ step: 1, idea: '', result: null, audioUrl: '', genError: '', fromArsiv: false, arsivPick: false, sysAudioUrl: '', sysTtsError: '', ttsError: '', genWarn: '', fileNo: '' }),
 
       credits: s.credits,
-      history: (s.history || []).map(h => ({ title: h.title, date: h.date, cost: '−' + (h.cost || 100) + ' KREDİ' })),
-      showHistory: s.step !== 3 && s.screen === 'studio' && (s.history || []).length > 0,
+      history: (s.history || []).map(h => ({ title: h.title, date: h.date, cost: (typeof h.cost === 'number') ? '−' + h.cost + ' KREDİ' : '—' })),
+      // U-06: kredi geçmişi her ekranın altında tekrar etmez — yalnız Geçmiş'te
+      showHistory: s.mode === 'history' && s.screen === 'studio' && (s.history || []).length > 0,
       openCredits: () => this.setState({ creditModal: true }),
       closeCredits: () => this.setState({ creditModal: false }),
       stopProp: e => e.stopPropagation(),
       showCreditModal: s.creditModal,
       packs,
+
+      // ── K-01: mobil alt sekme çubuğu ──
+      tbWiz: { color: s.mode === 'wizard' ? '#e6c478' : '#676d7c' },
+      tbGor: { color: s.mode === 'gorsel' ? '#e6c478' : '#676d7c' },
+      tbArs: { color: s.mode === 'arsiv' ? '#e6c478' : '#676d7c' },
+      tbGec: { color: s.mode === 'history' ? '#e6c478' : '#676d7c' },
+      tbKre: { color: '#c19a52' },
+
+      // ── K-06: mobil kompakt adım göstergesi ──
+      showStepM: s.mode === 'wizard',
+      stepNo: String(s.step),
+      stepLabel: (['FİKİR', 'SEÇENEKLER', 'ÜRETİM', 'DOSYA'][s.step - 1]) || '',
+      stepFillStyle: { width: Math.round(s.step / 4 * 100) + '%' },
+
+      // ── U-01: ince ayar aç/kapa ──
+      toggleFine: () => this.setState(st => ({ fineOpen: !st.fineOpen })),
+      fineOpen: s.fineOpen,
+      fineCaret: s.fineOpen ? '— GİZLE' : '+ AÇ',
+      fineBtnStyle: {
+        display: 'grid', gap: '6px', textAlign: 'left', cursor: 'pointer', padding: '15px 18px',
+        border: '1px solid ' + (s.fineOpen ? 'rgba(193,154,82,.5)' : 'rgba(129,135,151,.3)'),
+        background: s.fineOpen ? 'rgba(193,154,82,.06)' : 'rgba(8,11,19,.8)', width: '100%'
+      },
+
+      // ── U-06: gelişmiş ses ayarları ──
+      toggleAdv: () => this.setState(st => ({ advOpen: !st.advOpen })),
+      advOpen: s.advOpen,
+      advLabel: s.advOpen ? '— GELİŞMİŞ AYARLARI GİZLE' : '+ GELİŞMİŞ (ELEVENLABS · KENDİ ANAHTARIN)',
+
+      // ── Ö-03: altyazı + zaman damgaları ──
+      dlSrt: () => this.dlSrt(),
+      copyChapters: () => this.copyChapters(),
+      chaptersLabel: s.copied['chp'] ? '✓ KOPYALANDI' : '⧉ ZAMAN DAMGALARINI KOPYALA',
+
+      // ── U-05: toplu sahne üretimi ──
+      genAll: () => this.genAllScenes(),
+      batchBusy: s.batchBusy,
+      genAllLabel: s.batchBusy ? ('⟳ ÜRETİLİYOR ' + s.batchDone + '/' + s.batchTotal) : '◈ TÜM SAHNELERİ ÜRET',
+      hasPendingScenes: !!s.result && (r.gorsel_promptlar || []).some((x, i) => x && x.prompt && !((((s.sceneImgs || {})['gp' + i]) || {}).done)),
+
       true: true
     };
   }
@@ -2916,7 +3284,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const text = s.chatInput.trim();
     if (!text || s.chatBusy) return;
     const msgs = [...s.chatMsgs, { role: 'user', content: text }];
-    this.setState({ chatMsgs: msgs, chatInput: '', chatBusy: true });
+    this.setState({ chatMsgs: msgs, chatInput: '', chatBusy: true }, () => this._scrollChat());
     const modelName = this.find('model', s.model).name;
     try {
       let prompt;
@@ -2926,13 +3294,37 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       } else {
         const ctx = s.result ? 'Aktif dosya: "' + (s.result.baslik || '') + '" — ' + (s.result.logline || '') + '\n\n' : '';
         const transcript = msgs.map(m => (m.role === 'user' ? 'KULLANICI: ' : 'AJAN: ') + m.content).join('\n\n');
-        prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır, senaryo taslakları, başlıklar, fikirler üretir ve soruları kaynak bilinciyle yanıtlarsın. Türkçe, net ve yoğun cevap ver; gerektiğinde madde kullan.\n\n' + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
+        // Hesap durumu — asistan somut cevap verebilsin diye
+        const durum = 'KULLANICI DURUMU: ' + (this.hasSession() ? 'giriş yapılmış' : 'giriş YAPILMAMIŞ (kredi/geçmiş için giriş şart)') +
+          ' · bakiye: ' + (typeof s.credits === 'number' ? s.credits + ' kredi' : 'bilinmiyor') +
+          ' · üyelik: ' + (s.tier || 'uye') + '\n\n';
+        // Sistem & kredi bilgisi — asistan "müşteri desteğine başvurun" demek yerine
+        // BURADA çözüm üretsin; burası zaten resmî destek/yardım hattıdır.
+        const bilgi =
+          'SEN AYNI ZAMANDA TARİH AJANI STUDIO\'NUN RESMÎ YARDIM/DESTEK HATTISIN. Kredi, hata, hesap, ' +
+          'nasıl çalışır türü sorularda kullanıcıyı ASLA "başka bir müşteri desteğine başvur" diye savma — ' +
+          'burası desteğin ta kendisidir. Sorunu anlayışla karşıla, nedenini açıkla ve somut çözüm/sonraki adımı ver.\n' +
+          'DOĞRULANMIŞ SİSTEM BİLGİSİ (bunlara dayan, uydurma):\n' +
+          '• Kredi YALNIZCA işlem BAŞARILI olduğunda düşer. Görsel/seslendirme hata verirse kredi DÜŞMEZ; tekrar denenebilir.\n' +
+          '• Görsel üretimi hata verirse sistem otomatik 3 kez dener; yine olmazsa kredi iade/hiç düşülmez — kullanıcı tekrar deneyebilir.\n' +
+          '• Dosya üretim maliyeti süreye göre: ~60 sn 35 kredi, 4 dk 80, 8 dk 140, 10 dk 170 kredi (formül: max(30, yuvarla((20+saniye/4)/5)*5)).\n' +
+          '• Görsel: ilk 20 sahne görseli 12 kredi, 21. sahneden itibaren 8 kredi. Seslendirme: her 1000 karakter ~5 kredi (taban 10). Sahne yenileme: 5 kredi.\n' +
+          '• Geçmiş (üretilen dosyalar) artık hesaba bağlıdır ve cihazlar arası senkronlanır: aynı hesapla giriş yapıldığında mobilde ve webde üretilenler birlikte görünür. Görünmüyorsa: aynı hesapla giriş yapıldığından ve internetin bağlı olduğundan emin ol, sayfayı yenile.\n' +
+          '• "KREDİ GEÇMİŞİ" listesindeki eski kayıtlar bir süre sabit "-100" etiketi gösteriyordu; bu yalnızca ETİKET hatasıydı, gerçekte düşülen tutar yukarıdaki fiyatlardır. Güncellendi.\n' +
+          '• Yeni üyelere 30 kredi tanımlanır; AJAN10 kodu ile ilk alışverişte %10 indirim (tek sefer).\n' +
+          'Gerçekten çözülemeyen, hesaba özel bir bakiye uyuşmazlığı kalırsa (senin göremediğin sunucu kaydı gerekiyorsa) kullanıcıdan e-postasını al ve "ekip bakiyeni kontrol edip düzeltecek" de; savuşturma, sahiplen.\n\n';
+        prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanı VE resmî destek hattısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır; senaryo taslakları, başlıklar, fikirler üretir; kredi/hesap/teknik sorunları BURADA çözersin. Türkçe, net, sıcak ve çözüm odaklı cevap ver; gerektiğinde madde kullan.\n\n' + bilgi + durum + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
       }
       const reply = await this.askAI(prompt, 4000);
-      this.setState(st => ({ chatMsgs: [...msgs, { role: 'assistant', content: reply.trim() }], chatBusy: false }));
+      this.setState(st => ({ chatMsgs: [...msgs, { role: 'assistant', content: reply.trim() }], chatBusy: false }), () => this._scrollChat());
     } catch (e) {
-      this.setState({ chatMsgs: [...msgs, { role: 'assistant', content: 'Yanıt alınamadı: ' + e.message }], chatBusy: false });
+      this.setState({ chatMsgs: [...msgs, { role: 'assistant', content: 'Yanıt alınamadı: ' + e.message }], chatBusy: false }, () => this._scrollChat());
     }
+  }
+
+  // G-08: sohbet her yeni mesajda en alta kayar
+  _scrollChat() {
+    try { const el = document.getElementById('ta-chatlog'); if (el) el.scrollTop = el.scrollHeight; } catch (e) {}
   }
 
   editCurrentText() {
@@ -2996,15 +3388,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       const stilStr = m.stil[s.style] || m.stil.sinematik;
       const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
       const anti = s.style === 'gravur'
-        ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects.'
-        : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces.';
+        ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects, no transparent or ghostly figures.'
+        : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces, no transparent or ghostly figures, no double exposure — every person fully solid and opaque.';
       const tail = kind === 'vp' ? 'Stable face and anatomy, no warping, no morphing, no flicker.' : anti;
       const what = kind === 'gp' ? 'image-generation prompt' : 'video-generation prompt describing ONE camera move/action, 5-8 seconds';
       const reply = await this.askAI('Rewrite the following ' + what + ' for the scene "' + (item.sahne || '') + '" of a Turkish history-mystery YouTube video. Produce a NEW, improved variation (different composition or angle), in English. It MUST start with this exact style core: "' + stilStr + '", must include "' + oran + '", and must END with this exact line: "' + tail + '". Return ONLY the prompt text, no quotes or explanation.\n\nCurrent prompt:\n' + (item.prompt || ''), 600, 'regen');
       const r = JSON.parse(JSON.stringify(this.state.result));
       const tgt = kind === 'gp' ? r.gorsel_promptlar : r.video_promptlar;
       if (tgt && tgt[i]) tgt[i].prompt = reply.trim().replace(/^["']|["']$/g, '');
-      const entry = { title: 'Sahne yenileme — ' + (item.sahne || 'Sahne ' + (i + 1)), date: new Date().toLocaleDateString('tr-TR'), cost: 5 };
+      const entry = { title: 'Sahne yenileme — ' + (item.sahne || 'Sahne ' + (i + 1)), date: new Date().toLocaleDateString('tr-TR'), ts: Date.now(), cost: 5 };
       this.setState(st => ({ result: r, regenKey: null, history: [entry, ...st.history].slice(0, 12) }), () => this.persist());
       // Kredi: sunucu düştüyse dönen bakiye; değilse eski yöntem
       if (this._lastGen && this._lastGen.charged && typeof this._lastGen.credits === 'number') {
@@ -3076,7 +3468,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     this.setState({ shortBusy: true });
     try {
       const full = (s.result.senaryo || []).map(x => x.metin).join('\n\n');
-      const reply = await this.askAI('Aşağıdaki tarih videosu senaryosunun 30 saniyelik dikey Shorts versiyonunu yaz. Kurallar: ilk 3 saniyede kilitleyen bir kanca; tek nefeste akan, kısa vurucu cümleler; toplam 55-75 kelime; sonda açık bir merak sorusuyla bitir (marka sloganı/kanal adı YOK). YALNIZCA seslendirme metnini döndür; açıklama veya başlık ekleme.\n\n' + full.slice(0, 6000), 900);
+      const reply = await this.askAI('Aşağıdaki tarih videosu senaryosunun 30 saniyelik dikey Shorts versiyonunu yaz. Kurallar: ilk 3 saniyede kilitleyen bir kanca; tek nefeste akan, kısa vurucu cümleler; toplam 55-75 kelime; sonda açık bir merak sorusuyla bitir (marka sloganı/kanal adı YOK). Metin SESLİ OKUNACAK: tüm sayı ve tarihleri yazıyla yaz ("1453" değil "bin dört yüz elli üç"). YALNIZCA seslendirme metnini döndür; açıklama veya başlık ekleme.\n\n' + full.slice(0, 6000), 900);
       const r = JSON.parse(JSON.stringify(s.result));
       r.senaryo = [...(r.senaryo || []), { bolum: 'Shorts — 30 sn Versiyon', sure: '0:00–0:30', metin: reply.trim() }];
       this.setState({ result: r, shortBusy: false });
