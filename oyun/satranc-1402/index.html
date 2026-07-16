@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Satranç 1402 — Timur vs Bayezid · Tarih Ajanı</title>
-<meta name="description" content="Tarihin meydanlarında satranç: Timur vs Bayezid, Yavuz vs Şah İsmail, Scipio vs Hannibal, Wellington vs Napolyon, Tesla vs Edison. Her taşın bir adı, her hamlenin bir hikâyesi var.">
+<meta name="description" content="Tarihin meydanlarında satranç: Timur vs Bayezid, Yavuz vs Şah İsmail, Fatih vs Vlad Tepeş, Scipio vs Hannibal, Wellington vs Napolyon, Tesla vs Edison. Her taşın bir adı, her hamlenin bir hikâyesi var.">
 <link rel="canonical" href="https://tarihajani.com/oyun/satranc-1402">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3"><link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64.png?v=3"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
 <meta property="og:type" content="website">
@@ -219,6 +219,12 @@ body{overflow-x:hidden;background-image:radial-gradient(circle 800px at 20% 0%,r
         <span class="s-tag">Demir Dük × Geri Dönen Kartal</span>
         <span class="s-go">⚔ MEYDANA İN</span>
       </button>
+      <button class="s-card" data-m="targoviste">
+        <span class="s-date">TÂRGOVİŞTE · EFLAK · 1462</span>
+        <span class="s-names"><b class="gd">FATİH</b><i>vs</i><b class="cr">VLAD TEPEŞ</b></span>
+        <span class="s-tag">Çağ Açan Sultan × Kazıklı Voyvoda</span>
+        <span class="s-go">🌙 GECEYE GİR</span>
+      </button>
       <button class="s-card" data-m="akim">
         <span class="s-date">AKIM SAVAŞLARI · CHICAGO · 1893</span>
         <span class="s-names"><b class="gd">TESLA</b><i>vs</i><b class="cr">EDISON</b></span>
@@ -380,6 +386,31 @@ var MATCHES={
       bB:['Eski Muhafız','İmparatorluk Muhafızı'],
       bN:['General Milhaud','General Kellermann'],
       bP:['Grognard Pierre','Grognard Jean','Voltigeur Luc','Süvari Eri Henri','Grognard Marcel','Topçu Eri Claude','Voltigeur Antoine','Grognard François']
+    }
+  },
+  targoviste:{
+    yr:'1462',place:'TÂRGOVİŞTE · EFLAK · GECE BASKINI 1462',
+    w:'FATİH',b:'VLAD TEPEŞ',wF:'Fatih Sultan Mehmed',bF:'Vlad Tepeş',
+    wEp:'ÇAĞ AÇAN SULTAN',bEp:'KAZIKLI VOYVODA · DRAKULA',
+    sub:'Eflak gecesi zifiri, meşaleler yakın. Tahtı kim tutacak?',
+    armyW:'ORDU-YU FATİH',armyB:'ORDU-YU VLAD',
+    chipW:'HAMLE · FATİH ORDUSU',chipB:'HAMLE · VOYVODA ORDUSU',
+    logOpen:'SAVAŞ GÜNLÜĞÜ AÇILDI · TÂRGOVİŞTE 1462',
+    intro:'Ordugâh Eflak gecesinde kuruldu. İlk hamle Fatih\'in.',
+    winW:{h:'FATİH KAZANDI',k:'ŞAH MAT · EFLAK DÜŞTÜ',p:'Tarih tekerrür etti: Voyvoda tahtını kaybetti, Eflak diz çöktü.'},
+    winB:{h:'VLAD TEPEŞ KAZANDI',k:'ŞAH MAT · TARİH DEĞİŞTİ',p:'Bu sefer gece baskını tuttu — tarih senin tahtanda yeniden yazıldı.'},
+    names:{
+      // Radu Bey: Vlad'ın kardeşi, 1462 seferinde Fatih'in yanında savaştı
+      wK:['Fatih Sultan Mehmed'], wQ:['Mahmud Paşa'],
+      wR:['Rumeli Hisarı','Şahi Topu'],
+      wB:['Akıncı Beyi Mihaloğlu Ali','Akıncı Beyi Turahanoğlu'],
+      wN:['Radu Bey','Evrenosoğlu İsa'],
+      wP:['Yeniçeri Doğan','Yeniçeri Bali','Azap Kasım','Solak Mustafa','Yeniçeri Hamza','Azap Süleyman','Solak Murad','Yeniçeri Firuz'],
+      bK:['Vlad Tepeş'], bQ:['Baş Boyar Dragomir'],
+      bR:['Poenari Kalesi','Târgovişte Suru'],
+      bB:['Baskıncı Boyar Gales','Baskıncı Boyar Stoica'],
+      bN:['Süvari Mircea','Süvari Vintilă'],
+      bP:['Eflak Eri Ion','Eflak Eri Petru','Okçu Andrei','Eflak Eri Stefan','Okçu Nicolae','Eflak Eri Vasile','Okçu Matei','Eflak Eri Luca']
     }
   },
   akim:{
