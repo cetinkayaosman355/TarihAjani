@@ -22,6 +22,7 @@
 {"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://tarihajani.com/#org","name":"Tarih Ajanı","url":"https://tarihajani.com/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Ana Sayfa","item":"https://tarihajani.com/"},{"@type":"ListItem","position":2,"name":"Üyelik","item":"https://tarihajani.com/uyelik"}]},{"@type":"Product","name":"Gözlemci Üyeliği","description":"Aylık 1.000 Studio kredisi, hazır hikâye arşivine erişim ve aylık yeni vaka dosyası.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"599","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}},{"@type":"Product","name":"Ajan Üyeliği","description":"Aylık 5.000 Studio kredisi, hazır hikâye arşivinin tamamı, eğitim programı modülleri ve üyelere özel e-kitap hediyeleri.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"1299","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}},{"@type":"Product","name":"Başmüfettiş Üyeliği","description":"Aylık 15.000 Studio kredisi, öncelikli üretim ve birebir mentorluk görüşmesi.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"1999","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}}]}
 </script>
 <script src="./support.js"></script>
+<script src="/fiyat-cache.js"></script>
 <script src="/uye-nav.js" defer></script>
 <script src="/canli-sohbet.js" defer></script>
 <script src="/mobil-nav.js" defer></script>
@@ -330,6 +331,7 @@ class Component extends DCLogic {
       since: acc.since || '',
       expiresAt: null,
       billing: 'ay',
+      prices: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {},   // admin fiyatları (eskime yok)
       mode: 'giris', fName: '', fEmail: '', fPass: '', formError: '', busy: false
     };
     this.sb = null;
@@ -342,6 +344,7 @@ class Component extends DCLogic {
       const em = qp.get('email');
       if (em) this.setState({ fEmail: em, mode: 'kayit' });   // satın almadan geldiyse kayıt sekmesi
     } catch (e) {}
+    if (window.TAFiyat) window.TAFiyat.refresh(m => this.setState({ prices: m }));
     this.initSupabase();
   }
 
@@ -424,12 +427,16 @@ class Component extends DCLogic {
   isPaidTier(id) { return this.tiers().some(t => t.id === id); }
 
   tiers() {
+    // Aylık fiyat admin panelinden (products: uyelik-*) gelir; önbellek sayesinde
+    // eskide kalmaz. Gömülü değer yalnız hiç yüklenmezse yedektir.
+    const pr = (this.state && this.state.prices) || {};
+    const ayOf = (slug, def) => (pr[slug] && !isNaN(parseFloat(pr[slug].price))) ? parseFloat(pr[slug].price) : def;
     return [
-      { id: 'gozlemci', name: 'GÖZLEMCİ', clearance: 'TEMEL ERİŞİM', ay: 599, kredi: 1000, videos: 30,
+      { id: 'gozlemci', name: 'GÖZLEMCİ', clearance: 'TEMEL ERİŞİM', ay: ayOf('uyelik-gozlemci', 599), kredi: 1000, videos: 30,
         features: ['Hazır hikâye arşivine erişim', 'Aylık 1.000 Studio kredisi', 'Aylık yeni vaka dosyası'] },
-      { id: 'ajan', name: 'AJAN', clearance: 'GELİŞMİŞ ERİŞİM', ay: 1299, kredi: 5000, videos: 160, populer: true,
+      { id: 'ajan', name: 'AJAN', clearance: 'GELİŞMİŞ ERİŞİM', ay: ayOf('uyelik-ajan', 1299), kredi: 5000, videos: 160, populer: true,
         features: ['Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri', 'Üyelere özel e-kitap hediyeleri'] },
-      { id: 'basmufettis', name: 'BAŞMÜFETTİŞ', clearance: 'ÜST DÜZEY ERİŞİM', ay: 1999, kredi: 15000, videos: 500,
+      { id: 'basmufettis', name: 'BAŞMÜFETTİŞ', clearance: 'ÜST DÜZEY ERİŞİM', ay: ayOf('uyelik-basmufettis', 1999), kredi: 15000, videos: 500,
         features: ['Ajan içeriğinin tamamı', 'Aylık 15.000 Studio kredisi', 'Öncelikli üretim', 'Birebir mentorluk görüşmesi'] }
     ];
   }

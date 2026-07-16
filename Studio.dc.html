@@ -1144,6 +1144,7 @@ class Component extends DCLogic {
       credits: typeof saved.credits === 'number' ? saved.credits : (this.props.startCredits ?? 500),
       history: saved.history || [],
       creditModal: false,
+      prices: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {},   // fiyat önbelleği (flicker/eskime yok)
       elKey: saved.elKey || '', ttsBusy: false, ttsError: '', audioUrl: '',
       sysTtsBusy: false, sysTtsError: '', sysAudioUrl: '', audioDl: false,
       copied: {}
@@ -1156,6 +1157,8 @@ class Component extends DCLogic {
       .then(list => { if (Array.isArray(list) && list.length) this.setState({ arsivEk: list }); })
       .catch(() => {});
     this.initSupabase();
+    // Admin'in güncel fiyatlarını çek → kredi modalı asla eskide kalmaz
+    if (window.TAFiyat) window.TAFiyat.refresh(m => this.setState({ prices: m }));
     this.loadSavedImgs();   // kalıcı "Önceki Üretimler" galerisini yükle
     // /studio?uret=<fileNo> ile gelen hazır arşiv isteği
     try {
@@ -2818,10 +2821,14 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
 
     const yt = r.youtube || {};
     const ig = r.instagram || {};
+    // Fiyatlar admin panelinden (products) gelir; önbellek sayesinde ilk boyamada
+    // doğru değer çıkar, eskide kalmaz. Gömülü değer yalnız hiç yüklenmezse yedektir.
+    const pr = s.prices || {};
+    const priceOf = (slug, def) => (pr[slug] && pr[slug].price) ? pr[slug].price : def;
     const packs = [
-      { tier: 'AJAN', credits: '500', desc: '≈ 5 dosya · 199 TL', hl: false, buy: '/satis#studio-5' },
-      { tier: 'SAHA', credits: '1.500', desc: '≈ 15 dosya · öncelikli üretim · 449 TL', hl: true, buy: '/satis#studio-15' },
-      { tier: 'ARŞİV', credits: '4.000', desc: '≈ 40 dosya · ekip kullanımı · 999 TL', hl: false, buy: '/satis#studio-40' },
+      { tier: 'AJAN', credits: '500', desc: '≈ 5 dosya · ' + priceOf('studio-5', '199') + ' TL', hl: false, buy: '/satis#studio-5' },
+      { tier: 'SAHA', credits: '1.500', desc: '≈ 15 dosya · öncelikli üretim · ' + priceOf('studio-15', '449') + ' TL', hl: true, buy: '/satis#studio-15' },
+      { tier: 'ARŞİV', credits: '4.000', desc: '≈ 40 dosya · ekip kullanımı · ' + priceOf('studio-40', '999') + ' TL', hl: false, buy: '/satis#studio-40' },
       { tier: 'AYLIK', credits: '1.000/ay', desc: 'Aylık üyelikle · Gözlemci\'den itibaren', hl: false, buy: '/uyelik#seviyeler' }
     ].map(p => ({
       ...p,
@@ -3479,6 +3486,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
 }
 </script>
 <script src="/canli-sohbet.js" defer></script>
+<script src="/fiyat-cache.js"></script>
 <script src="/mobil-nav.js" defer></script>
 <script src="/ara.js" defer></script>
 <script src="/tema.js" defer></script>

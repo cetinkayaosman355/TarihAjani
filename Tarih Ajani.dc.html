@@ -41,6 +41,7 @@
 })();
 </script>
 <script src="./support.js"></script>
+<script src="/fiyat-cache.js"></script>
 <script src="/uye-nav.js" defer></script>
 <script src="/canli-sohbet.js" defer></script>
 <script src="/mobil-nav.js" defer></script>
@@ -888,7 +889,8 @@ class Component extends DCLogic {
     navMenu: null,
     tlIndex: 1,
     cName: '', cEmail: '', cSubject: '', cMsg: '', cSending: false, cSent: false, cErr: '',
-    nlEmail: '', nlSending: false, nlSent: false, nlErr: ''
+    nlEmail: '', nlSending: false, nlSent: false, nlErr: '',
+    priceOv: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {}
   };
 
   // Supabase Edge Function — iletişim gönderimi
@@ -911,13 +913,14 @@ class Component extends DCLogic {
 
   async loadProducts() {
     try {
-      const r = await fetch(this.SB_URL + '/rest/v1/products?select=slug,title,price', {
+      const r = await fetch(this.SB_URL + '/rest/v1/products?select=slug,title,price,pay_url', {
         headers: { apikey: this.SB_KEY, Authorization: 'Bearer ' + this.SB_KEY }
       });
       if (!r.ok) return;
       const rows = await r.json();
       const ov = {};
-      (rows || []).forEach(p => { ov[p.slug] = { title: p.title, price: String(p.price) }; });
+      (rows || []).forEach(p => { ov[p.slug] = { title: p.title, price: String(p.price), payUrl: (p.pay_url || '').trim() }; });
+      if (window.TAFiyat) window.TAFiyat.write(ov);
       this.setState({ priceOv: ov });
     } catch (e) {}
   }

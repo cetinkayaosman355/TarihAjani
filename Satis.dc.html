@@ -20,6 +20,7 @@
 <meta name="twitter:description" content="Tarih Ajanı ürünlerini satın al: e-kitaplar, vaka dosyası paketleri, eğitim ve koleksiyon setleri. Shopier ile güvenli ödeme.">
 <meta name="twitter:image" content="https://tarihajani.com/assets/dossier-bundle.jpg">
 <script src="./support.js"></script>
+<script src="/fiyat-cache.js"></script>
 <script src="/uye-nav.js" defer></script>
 <script src="/canli-sohbet.js" defer></script>
 <script src="/mobil-nav.js" defer></script>
@@ -208,7 +209,7 @@
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   state = {
-    slug: 'egitim', overrides: {},
+    slug: 'egitim', overrides: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {},
     fName: '', fEmail: '', fPhone: '', payMethod: 'iban',
     formOpen: true, ordered: false, sending: false, formError: '', cartLabel: 'SEPETE EKLE',
     added: false
@@ -264,6 +265,7 @@ class Component extends DCLogic {
       if (res.error || !data) return;
       const ov = {};
       data.forEach(p => { ov[p.slug] = { title: p.title, price: String(p.price), payUrl: (p.pay_url || '').trim() }; });
+      if (window.TAFiyat) window.TAFiyat.write(ov);   // tüm site için önbelleğe yaz (flicker/eskime yok)
       this.setState({ overrides: ov });
     } catch (e) {}
   }
