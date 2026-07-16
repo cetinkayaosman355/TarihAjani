@@ -67,6 +67,11 @@ body{overflow-x:hidden;background-image:radial-gradient(circle 800px at 20% 0%,r
 .s-go{display:inline-block;margin-top:15px;padding:10px 18px;border:1px solid rgba(230,196,120,.5);color:var(--gold);font-size:.55rem;letter-spacing:.24em;text-indent:.24em}
 .s-card:hover .s-go{background:rgba(193,154,82,.12)}
 .s-last{position:absolute;top:9px;right:9px;font-size:.45rem;letter-spacing:.18em;color:#4fd1e0;border:1px solid rgba(79,209,224,.4);padding:3px 7px}
+.s-card .s-tag,.s-card .s-date{text-shadow:0 1px 4px rgba(0,0,0,.9)}
+/* VS perdesi sinematik fon */
+.i-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.55;animation:ibgzoom 9s ease-out forwards}
+@keyframes ibgzoom{from{transform:scale(1)}to{transform:scale(1.09)}}
+.i-veil{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(3,4,10,.12),rgba(3,4,10,.88) 80%),linear-gradient(180deg,rgba(3,4,10,.6),transparent 32%,transparent 68%,rgba(3,4,10,.85))}
 
 /* ── SAYFA ── */
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(16px + env(safe-area-inset-top)) clamp(14px,3vw,34px) 16px}
@@ -290,6 +295,7 @@ function roleOf(t){return (M.roles&&M.roles[t])||ROLE[t];}
 var MATCHES={
   ankara:{
     yr:'1402',place:'ANKARA · ÇUBUK OVASI · 28 TEMMUZ 1402',
+    img:'https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_162622_63dff5ff-124c-4095-b496-f552bc4b9f73_min.webp',
     w:'TİMUR',b:'BAYEZİD',wF:'Emir Timur',bF:'Yıldırım Bayezid',
     wEp:'BOZKIRIN AKSAK KILICI',bEp:'RUMELİ’NİN YILDIRIMI',
     sub:'İki cihan hükümdarı. Tek tahta. Hükmü sen vereceksin.',
@@ -315,6 +321,7 @@ var MATCHES={
   },
   caldiran:{
     yr:'1514',place:'ÇALDIRAN OVASI · 23 AĞUSTOS 1514',
+    img:'https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_162626_510de448-0455-4146-aa67-d0f93f71edd9_min.webp',
     w:'YAVUZ',b:'ŞAH İSMAİL',wF:'Yavuz Sultan Selim',bF:'Şah İsmail',
     wEp:'DEVLETİN KESKİN KILICI',bEp:'KIZILBAŞLARIN ŞAHI · HATAYÎ',
     sub:'Osmanlı topu, Safevi süvarisi. Meydanın hükmü sende.',
@@ -340,6 +347,7 @@ var MATCHES={
   },
   zama:{
     yr:'MÖ 202',place:'ZAMA OVASI · KARTACA · MÖ 202',
+    img:'https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_162633_bec2512a-0ec7-42c4-96c0-41493dd10e86_min.webp',
     w:'SCIPIO',b:'HANNIBAL',wF:'Scipio Africanus',bF:'Hannibal Barca',
     wEp:'ROMA’NIN GENÇ KARTALI',bEp:'ALPLER’İ AŞAN ADAM',
     sub:'Roma lejyonu, Kartaca filleri. Akdeniz\'in kaderi tek tahtada.',
@@ -365,6 +373,7 @@ var MATCHES={
   },
   waterloo:{
     yr:'1815',place:'WATERLOO · BELÇİKA · 18 HAZİRAN 1815',
+    img:'https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_162637_92d41dc4-32e0-47eb-8785-34a8dd935718_min.webp',
     w:'WELLINGTON',b:'NAPOLYON',wF:'Wellington Dükü',bF:'Napolyon Bonapart',
     wEp:'DEMİR DÜK',bEp:'İMPARATOR — KARTAL GERİ DÖNDÜ',
     sub:'Yüz Gün bitti mi, yeni mi başlıyor? Karar senin tahtanda.',
@@ -390,6 +399,7 @@ var MATCHES={
   },
   targoviste:{
     yr:'1462',place:'TÂRGOVİŞTE · EFLAK · GECE BASKINI 1462',
+    img:'https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_162629_8139c8ad-e7cf-4561-9bda-59804d45e5a8_min.webp',
     w:'FATİH',b:'VLAD TEPEŞ',wF:'Fatih Sultan Mehmed',bF:'Vlad Tepeş',
     wEp:'ÇAĞ AÇAN SULTAN',bEp:'KAZIKLI VOYVODA · DRAKULA',
     sub:'Eflak gecesi zifiri, meşaleler yakın. Tahtı kim tutacak?',
@@ -415,6 +425,7 @@ var MATCHES={
   },
   akim:{
     yr:'1893',place:'AKIM SAVAŞLARI · CHICAGO DÜNYA FUARI · 1893',
+    img:'https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_162641_e2fbb9bf-a45f-4573-989a-a75f1038e3dd_min.webp',
     w:'TESLA',b:'EDISON',wF:'Nikola Tesla',bF:'Thomas Edison',
     wEp:'ŞİMŞEKLERİN EFENDİSİ',bEp:'MENLO PARK BÜYÜCÜSÜ',
     sub:'Alternatif akım mı, doğru akım mı? Şalteri sen indireceksin.',
@@ -853,7 +864,8 @@ function applyBattle(id){
   reset();
 }
 function showVs(){
-  intro.innerHTML='<div class="i-dust"></div>'
+  intro.innerHTML=(M.img?'<div class="i-bg" style="background-image:url(\''+M.img+'\')"></div><div class="i-veil"></div>':'')
+   +'<div class="i-dust"></div>'
    +'<div class="i-ring" style="width:140vmax;height:140vmax"></div>'
    +'<div class="i-ring r2" style="width:140vmax;height:140vmax"></div>'
    +'<div class="i-ring r3" style="width:140vmax;height:140vmax"></div>'
@@ -876,6 +888,13 @@ function markLast(){
   });
 }
 document.querySelectorAll('.s-card').forEach(function(c){
+  var mm=MATCHES[c.dataset.m];
+  if(mm&&mm.img){
+    // görsel yüklenemezse alttaki degrade görünür kalır (zarif düşüş)
+    c.style.backgroundImage='linear-gradient(105deg,rgba(230,196,120,.10) 0 49.5%,rgba(176,65,62,.13) 50.5% 100%),linear-gradient(rgba(4,5,12,.60),rgba(4,5,12,.85)),url("'+mm.img+'")';
+    c.style.backgroundSize='cover';
+    c.style.backgroundPosition='center';
+  }
   c.addEventListener('click',function(){
     applyBattle(this.dataset.m);
     selectEl.classList.add('done');
