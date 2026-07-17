@@ -266,6 +266,10 @@ audio{width:100%;margin-top:10px}
 /* sahne görseli — kutuya oturur, tıklanınca lightbox; dev açılmaz */
 .scene-img{display:block;width:100%;max-height:52vh;object-fit:contain;background:#05070d;border-radius:10px;margin-top:10px;border:1px solid var(--line);cursor:zoom-in}
 .gtag{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(193,154,82,.3);background:rgba(193,154,82,.06);color:#c9c2ae;font-size:11px;padding:6px 10px;border-radius:8px;margin:0 6px 6px 0}
+/* VİTRİN segmented mod seçici */
+.vsegbar{display:flex;gap:8px;padding:20px 16px 2px}
+.vseg{flex:1;border:1px solid rgba(193,154,82,.32);background:rgba(255,255,255,.015);color:#c9c2ae;font-size:12.5px;font-family:inherit;letter-spacing:.02em;padding:12px 8px;border-radius:12px;cursor:pointer;transition:all .15s}
+.vseg.on{background:linear-gradient(110deg,#a87f37,#e9c87e 60%,#c19a52);border-color:transparent;color:#171207;font-weight:800}
 /* GÖRSEL BÜYÜTME (lightbox) — sağa/sola ok ile galeri */
 #imglb{position:fixed;inset:0;z-index:1200;display:none;place-items:center;align-content:center;gap:12px;background:rgba(2,3,8,.95);padding:18px;cursor:zoom-out}
 #imglb.on{display:grid}
@@ -318,10 +322,12 @@ audio{width:100%;margin-top:10px}
     <div class="sit" data-oynat="/kitaplik" data-ad="Dijital Kitaplık"><span class="i">📚</span>Kitaplık</div>
     <div class="sit" data-go="oyun"><span class="i">♞</span>Oyun Tüneli</div>
   </div>
-  <div class="sbas">HESAP</div>
+  <div class="sbas">MAĞAZA</div>
   <div class="sgrid">
-    <div class="sit" data-go="paket"><span class="i">🛍</span>Mağaza &amp; Paketler</div>
-    <div class="sit" data-go="paket"><span class="i">🧮</span>Hesap Makinesi</div>
+    <div class="sit" data-oynat="/urunler" data-ad="Ürünler"><span class="i">🛒</span>Ürünler</div>
+    <div class="sit" data-oynat="/ekitap" data-ad="E-Kitaplar"><span class="i">📖</span>E-Kitaplar</div>
+    <div class="sit" data-oynat="/satis" data-ad="Satın Al"><span class="i">💳</span>Satın Al</div>
+    <div class="sit" data-go="paket"><span class="i">🪙</span>Krediler &amp; Paketler</div>
   </div>
 </div>
 <div id="uyepop" aria-hidden="true"></div>
@@ -546,6 +552,15 @@ function drawMasaMisafir() {
     '<span class="rz">📚</span><span class="m"><b>Dijital Kitaplık</b>' +
     '<span>Ajan Z’nin bürosu — tarih dosyaları, sayfa sayfa okunan dijital kitaplar.</span></span>' +
     '<span class="git">›</span></div></div>' +
+    '<div class="sh"><b>MAĞAZA</b><button data-oynat="/urunler" data-ad="Ürünler">tümü →</button></div>' +
+    '<div class="kart" data-oynat="/ekitap" data-ad="E-Kitaplar"><div class="krow">' +
+    '<span class="rz">📖</span><span class="m"><b>E-Kitaplar</b>' +
+    '<span>İndirilebilir tarih e-kitapları — hemen oku, cihazında sakla.</span></span>' +
+    '<span class="git">›</span></div></div>' +
+    '<div class="kart" data-oynat="/urunler" data-ad="Ürünler"><div class="krow">' +
+    '<span class="rz">🛒</span><span class="m"><b>Ürünler</b>' +
+    '<span>Baskılar, koleksiyon ürünleri ve dijital paketler.</span></span>' +
+    '<span class="git">›</span></div></div>' +
     '<div style="padding:20px 14px 0"><button class="cta" data-go="profil">ÜCRETSİZ ÜYE OL · HEMEN ÜRETMEYE BAŞLA →</button>' +
     '<button class="cta ghost" style="margin-top:10px" data-go="oyun">♞ Önce oyunlarla dene</button></div>' +
     '<p class="alt-not" style="margin-top:14px">Üyeliksiz de gez — üretmek için ücretsiz kayıt ol</p>';
@@ -704,14 +719,8 @@ function drawUret() {
     '<div class="h-row"><div><b>Yeni Dosya</b><span class="alt">KONU YAZ · TARZI SEÇ · ÜRET</span></div>' +
     '<span style="display:flex;gap:8px"><button class="kredi" data-sheet>☰</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
     '<div class="pad"><textarea id="u-konu" class="inp" rows="3" placeholder="Bir olay, kişi ya da soru yaz — ör. Kanuni’nin Zigetvar seferi">' + esc(uret.konu) + '</textarea>' +
-    '<button class="chip" id="u-oner" style="margin-top:9px">◈ SEN ÖNER</button></div>' +
-    // BİZİM TARZIMIZ — üretim öncesi örnek: görsel + anlatım + prompt (kafa karışmasın)
-    '<div class="sec ac" style="margin-top:12px"><div class="sbh"><b>◆ BİZİM TARZIMIZ · ÖRNEK</b><i>›</i></div><div class="ic">' +
-    '<p class="alt-not" style="margin:0 0 8px;text-align:left">Üretiminde tam olarak bunu alırsın: araştırılmış akıcı anlatım, sinematik sahne görseli ve hazır İngilizce prompt.</p>' +
-    '<img class="scene-img" style="cursor:default;max-height:34vh" src="/assets/haber/sezar-suikasti.jpg" alt="Örnek sahne görseli">' +
-    '<div class="blk"><div class="k">ÖRNEK ANLATIM (seslendirilecek metin)</div><div class="t" style="font-size:13px">Roma’nın en güçlü adamı, ölümüne yalnızca birkaç adım kala hiçbir şeyden şüphelenmiyordu. Senato salonuna girdiğinde, güvendiği yüzlerin ardında yirmi üç bıçak onu bekliyordu.</div></div>' +
-    '<div class="blk"><div class="k">ÖRNEK GÖRSEL PROMPTU (İngilizce)</div><div class="t" style="font-size:12px;color:#a8b2c2">Dark moody cinematic film still, Roman senate interior, Julius Caesar in white toga turning in shock as senators close in with daggers, low-key torchlight, 9:16 vertical. No modern text, no watermark, no distorted anatomy.</div></div>' +
-    '</div></div>' +
+    '<button class="chip" id="u-oner" style="margin-top:9px">◈ SEN ÖNER</button>' +
+    '<button class="chip" data-go="ornek" style="margin-top:9px;margin-left:8px;border-color:rgba(129,135,151,.3);color:#9aa0ae">✦ Vitrini keşfet — örnekler</button></div>' +
     '<div class="sh"><b>ANLATIM TONU</b></div><div class="opt-grid">' +
     TONLAR.map(function (t) { return '<button class="chip' + (uret.ton === t[0] ? ' on' : '') + '" data-ton="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
     '<div class="sh"><b>GÖRSEL STİL</b></div><div class="opt-grid">' +
@@ -1396,19 +1405,54 @@ var ORNEKLER = [
   ['vezuv', 'Pompeii — Son Saat', 'Vezüv uyanırken bir şehrin dondurulmuş hayatları.'],
   ['termopil', 'Termopylae — Üç Yüzün Yemini', 'Dar geçitte üç gün; tarihe kazınan son duruş.']
 ];
+// VİTRİN — üyeliksiz gezilir, oynanır örnek alanı. Aynı üretimin üç yüzü:
+// 🎙 Ses · 📝 Yazı (senaryo + prompt) · 🎨 Renk (aynı sahne, farklı stiller).
+var ornekMod = 'ses';
+var ORNEK_YAZI = {
+  baslik: 'Sezar — Mart’ın Ortasında',
+  metin: 'Roma’nın en güçlü adamı, ölümüne yalnızca birkaç adım kala hiçbir şeyden şüphelenmiyordu. Senato salonuna girdiğinde, güvendiği yüzlerin ardında yirmi üç bıçak onu bekliyordu. İlk darbe geldiğinde şaşkındı; ama son darbeyi vuran eli görünce, tarihe geçecek o cümleyi fısıldadı.',
+  prompt: 'Dark moody cinematic film still, Roman senate interior, Julius Caesar in white toga turning in shock as senators close in with concealed daggers, low-key torchlight carving figures from black shadow, 9:16 vertical. No modern text, no watermark, no distorted anatomy.'
+};
 function drawOrnek() {
   var el = $('#scr-ornek');
+  var seg = function (k, ad) { return '<button class="vseg' + (ornekMod === k ? ' on' : '') + '" data-vmod="' + k + '">' + ad + '</button>'; };
+  var panel;
+  if (ornekMod === 'yazi') {
+    panel =
+      '<div class="kart" style="margin-top:14px"><div style="padding:16px 16px 18px">' +
+      '<div class="k" style="font-size:9.5px;letter-spacing:.16em;color:var(--mut);margin-bottom:8px">SESLENDİRİLECEK ANLATIM</div>' +
+      '<p class="serif" style="margin:0;font-size:15px;line-height:1.85;color:#e7ecf4">' + esc(ORNEK_YAZI.metin) + '</p>' +
+      '<div class="k" style="font-size:9.5px;letter-spacing:.16em;color:var(--mut);margin:16px 0 6px">SAHNE GÖRSEL PROMPTU · İNGİLİZCE</div>' +
+      '<p style="margin:0;font-size:12px;line-height:1.7;color:#a8b2c2;font-family:ui-monospace,monospace">' + esc(ORNEK_YAZI.prompt) + '</p>' +
+      '</div></div>';
+  } else if (ornekMod === 'renk') {
+    panel =
+      '<p style="margin:16px 20px 2px;font-size:12.5px;line-height:1.6;color:var(--mut)">Tek cümle — “bin dört yüz elli üç gecesi, kızaklar üstünde Haliç’e çekilen kadırgalar” — beş farklı görsel dünyada. Sağa kaydır.</p>' +
+      '<div style="display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:14px 16px 4px">' +
+      NEDEN_IMGS.map(function (n) {
+        return '<div style="flex:none;width:200px"><img src="' + n[1] + '" alt="' + n[0] + '" loading="lazy" style="width:200px;height:270px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block">' +
+          '<div style="margin-top:8px;font-size:10px;letter-spacing:.16em;color:var(--brass);text-align:center">' + n[0] + '</div></div>';
+      }).join('') + '</div>';
+  } else {
+    panel =
+      '<div style="display:grid;gap:12px;padding:14px 16px 0">' +
+      ORNEKLER.map(function (o) {
+        return '<div class="kart" style="margin:0"><div style="padding:15px 16px 17px">' +
+          '<b class="serif" style="font-size:15.5px;color:#ede4cf">' + o[1] + '</b>' +
+          '<p style="margin:6px 0 11px;font-size:12px;line-height:1.6;color:var(--mut)">' + o[2] + '</p>' +
+          '<audio controls preload="none" src="/assets/ses/' + o[0] + '.mp3"></audio></div></div>';
+      }).join('') + '</div>';
+  }
   el.innerHTML =
-    '<div class="ust"><button class="geri" data-go="kesfet">‹</button><span>ÖRNEK STUDIO ÜRETİMİ</span></div>' +
-    '<div style="padding:2px 20px 10px"><h2 class="serif" style="margin:0;font-size:21px">Kulağınla test et</h2>' +
-    '<p style="margin:8px 0 0;font-size:13px;line-height:1.65;color:var(--mut)">Bunlar gerçek Studio çıktıları: araştırılmış senaryo + profesyonel seslendirme. Beğendiysen aynısını kendi konunla üretirsin.</p></div>' +
-    ORNEKLER.map(function (o) {
-      return '<div class="kart"><div style="padding:14px 15px">' +
-        '<b class="serif" style="font-size:15.5px;color:#ede4cf">' + o[1] + '</b>' +
-        '<p style="margin:5px 0 9px;font-size:12px;line-height:1.55;color:var(--mut)">' + o[2] + '</p>' +
-        '<audio controls preload="none" src="/assets/ses/' + o[0] + '.mp3"></audio></div></div>';
-    }).join('') +
-    '<div style="padding:18px 16px 0"><button class="cta" data-go="uret">◉ &nbsp;Kendi konunla üret</button></div>';
+    '<div class="ust"><button class="geri" data-go="kesfet">‹</button><span>VİTRİN</span></div>' +
+    '<div style="padding:10px 22px 2px"><p style="margin:0;font-size:10px;letter-spacing:.3em;color:var(--brass)">TARİH AJANI STÜDYOSU</p>' +
+    '<h2 class="serif" style="margin:8px 0 0;font-size:25px;line-height:1.22">Ne ürettiğimizi<br><em style="color:var(--gold)">gör, dinle, oku</em></h2>' +
+    '<p style="margin:14px 0 0;font-size:13.5px;line-height:1.75;color:var(--mut)">Üye olmana gerek yok — gez, dene, karar ver. Aşağıdaki her mod, aynı üretimin farklı bir yüzü.</p></div>' +
+    '<div class="vsegbar">' + seg('ses', '🎙 Ses') + seg('yazi', '📝 Yazı') + seg('renk', '🎨 Renk') + '</div>' +
+    panel +
+    '<div style="padding:26px 16px 0"><button class="cta" data-go="uret">◉ &nbsp;Kendi konunla üret</button>' +
+    '<p class="alt-not" style="margin-top:11px">Ücretsiz başla · 30 kredi hediye</p></div>';
+  el.querySelectorAll('[data-vmod]').forEach(function (b) { b.addEventListener('click', function () { ornekMod = b.getAttribute('data-vmod'); drawOrnek(); }); });
 }
 /* ── KARŞILAMA — girişsiz açılış ana sayfası ── */
 function drawHosgeldin() {
