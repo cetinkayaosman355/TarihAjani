@@ -164,6 +164,8 @@ body{overflow-x:hidden;background-image:radial-gradient(circle 800px at 20% 0%,r
 .endcard .k{margin:0;color:var(--brass);font-size:.6rem;letter-spacing:.4em;text-indent:.4em}
 .endcard h2{margin:14px 0 8px;font-family:'Playfair Display',serif;font-weight:800;font-size:clamp(2rem,6vw,3.6rem);background:linear-gradient(110deg,#B18742,#E6C478 45%,#FFF0B1 55%,#9D7536);-webkit-background-clip:text;background-clip:text;color:transparent}
 .endcard p{margin:0 0 24px;color:#b8b3a6;font-style:italic;font-family:'Playfair Display',serif}
+.endbtns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.endbtns .hbtn{position:relative}
 /* hamle listesi (notasyon) */
 #moves{margin-top:10px;max-height:76px;overflow-y:auto;border:1px solid rgba(129,135,151,.2);background:rgba(6,8,15,.7);padding:8px 12px;display:flex;flex-wrap:wrap;gap:3px 9px;font-family:'Special Elite',monospace;font-size:.56rem;letter-spacing:.06em;line-height:1.7}
 #moves .mvn{color:#565b69}
@@ -279,7 +281,10 @@ body{overflow-x:hidden;background-image:radial-gradient(circle 800px at 20% 0%,r
   <p class="k" id="endk">VAKA KAPANDI</p>
   <h2 id="endh">ZAFER</h2>
   <p id="endp"></p>
-  <button class="hbtn gold" id="againBtn">⟳ YENİDEN SAVAŞ</button>
+  <div class="endbtns">
+    <button class="hbtn gold" id="againBtn">⟳ YENİDEN SAVAŞ</button>
+    <button class="hbtn" id="endPickBtn">⚔ BAŞKA KARŞILAŞMA</button>
+  </div>
 </div></div>
 
 <script src="/analytics.js"></script>
@@ -901,11 +906,14 @@ document.querySelectorAll('.s-card').forEach(function(c){
     showVs();
   });
 });
-document.getElementById('battleBtn').addEventListener('click',function(){
+function openSelect(){
   closeIntro();
   markLast();
+  document.getElementById('endveil').classList.remove('on');   // bitiş perdesini kapat
   selectEl.classList.remove('done');
-});
+}
+document.getElementById('battleBtn').addEventListener('click',openSelect);
+document.getElementById('endPickBtn').addEventListener('click',openSelect);
 
 markLast();
 applyBattle(curBattle);
