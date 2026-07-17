@@ -60,9 +60,13 @@ Deno.serve(async (req) => {
       const expires = tier === "uye"
         ? null
         : new Date(Date.now() + (billing === "yil" ? 365 : 30) * 86400_000).toISOString();
+      // Paket alımı mevcut bakiyeyi EZMEZ, üstüne ekler (aydan aya devir yok;
+      // devri refresh_profile_credits aylık sıfırlamada kota'ya çeker).
+      const { data: cur } = await admin.from("profiles").select("credits").eq("id", id).single();
+      const newCredits = Math.max(0, Number(cur?.credits) || 0) + def.quota;
       const { error } = await admin.from("profiles").update({
         tier, monthly_quota: def.quota, billing,
-        expires_at: expires, credits: def.quota,
+        expires_at: expires, credits: newCredits,
         credits_reset_at: new Date().toISOString(),
       }).eq("id", id);
       if (error) return json({ ok: false, error: error.message }, 500);

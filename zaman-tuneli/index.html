@@ -40,10 +40,12 @@
     body:before{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(2,4,10,.7) 0%,rgba(2,4,10,.32) 28%,transparent 54%),radial-gradient(ellipse at center,transparent 32%,rgba(2,3,10,.14) 64%,rgba(0,0,4,.76) 115%),linear-gradient(180deg,rgba(3,5,12,.12),transparent 40%,rgba(3,5,12,.46));box-shadow:inset 0 0 190px rgba(0,0,0,.42)}
     body:after{content:"";position:fixed;inset:-50%;z-index:4;pointer-events:none;opacity:.032;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");transform:rotate(.01deg);mix-blend-mode:soft-light}
     #universe{position:fixed;inset:0;z-index:0;width:100%;height:100%;display:block}
-    .hero-art{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;perspective:1100px;transform-style:preserve-3d;will-change:opacity;transition:opacity .7s ease}.webgl-art-ready .hero-art{opacity:0!important}
+    .hero-art{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;perspective:1100px;transform-style:preserve-3d;will-change:opacity;transition:opacity .7s ease}
     .art-base,.art-depth{position:absolute;inset:-4%;background:url("/zaman-tuneli/assets/hero.webp") center center/cover no-repeat;will-change:transform;transform-origin:50% 50%}
     .art-base{filter:saturate(.88) contrast(1.07) brightness(.76);transform:scale(1.035)}
-    .art-depth{inset:-5%;filter:saturate(1.03) contrast(1.09) brightness(.93) drop-shadow(0 30px 50px rgba(0,0,0,.48));-webkit-mask-image:radial-gradient(ellipse 34% 47% at 50% 50%,#000 0%,#000 67%,transparent 93%);mask-image:radial-gradient(ellipse 34% 47% at 50% 50%,#000 0%,#000 67%,transparent 93%);transform:translateZ(45px) scale(1.045)}
+    .art-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+    .art-depth{inset:0;background:none;filter:none;transform:none}
+    .art-veil{position:absolute;inset:0;background:linear-gradient(100deg,rgba(3,5,11,.86) 0%,rgba(3,5,11,.42) 42%,rgba(3,5,11,.18) 62%,rgba(3,5,11,.5) 100%),linear-gradient(to top,rgba(3,5,11,.92) 0%,transparent 34%),linear-gradient(to bottom,rgba(3,5,11,.55) 0%,transparent 22%)}
     .art-glow{position:absolute;inset:0;background:radial-gradient(circle at 71% 2%,rgba(230,196,120,.18),transparent 31%),radial-gradient(circle at 50% 49%,rgba(79,209,224,.075),transparent 29%);mix-blend-mode:screen;opacity:.8}
     .art-scan{position:absolute;inset:0;background:linear-gradient(90deg,transparent 49.94%,rgba(79,209,224,.18) 50%,transparent 50.06%),linear-gradient(0deg,transparent 49.94%,rgba(79,209,224,.08) 50%,transparent 50.06%);opacity:.16;transform:scale(1.4) rotate(.01deg)}
     .hero{position:relative;z-index:2;min-height:170vh;display:flex;align-items:flex-start;justify-content:flex-start;text-align:left;padding:14vh 6vw 100px;pointer-events:none}
@@ -161,9 +163,8 @@
     @keyframes gold-sweep{0%,30%{background-position:100% center}75%,100%{background-position:-100% center}}
     @keyframes pulse-line{0%,100%{opacity:.25;transform:scaleY(.5);transform-origin:top}50%{opacity:1;transform:scaleY(1)}}
     @media(max-width:700px){body:before{background:linear-gradient(180deg,rgba(2,4,10,.6),transparent 38%),radial-gradient(ellipse at center,transparent 25%,rgba(0,0,4,.7) 110%)}.art-base,.art-depth{background-position:54% center}.art-base{filter:saturate(.84) contrast(1.06) brightness(.62)}.art-depth{-webkit-mask-image:radial-gradient(ellipse 58% 37% at 54% 51%,#000 0%,#000 64%,transparent 94%);mask-image:radial-gradient(ellipse 58% 37% at 54% 51%,#000 0%,#000 64%,transparent 94%)}.hero{padding:10vh 24px 80px;min-height:155vh}.content{width:min(360px,92vw)}.eyebrow{letter-spacing:.22em}.eyebrow:before{width:20px;margin-right:8px}h1{font-size:clamp(3rem,15vw,4.8rem);letter-spacing:.025em}.slogan{margin:16px 0 20px}.actions{gap:8px}.btn{min-width:min(230px,76vw);padding:13px 15px}.scroll-hint{top:88vh;letter-spacing:.16em;font-size:.54rem}.archive{height:250vh}.archive-head{top:7vh}.archive-sub{max-width:270px;margin:9px auto}.video-card{width:min(72vw,280px)}.video-title{font-size:.67rem}.video-meta{left:12px;right:45px;bottom:11px}.play{right:11px;bottom:11px;width:28px;height:28px}.channel-link{bottom:3.5vh}}
-    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition:none!important}}
-    /* ── ÇARK GİZLE + OYUN GİRİŞİ ── */
-    .hero-art{display:none!important}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition:none!important}.art-video{display:none}}
+    /* ── OYUN GİRİŞİ — tam ekran sinematik video zemin ── */
     .game-lead{margin:0 0 26px;color:#b8b3a6;font:400 clamp(.9rem,1.15vw,1.02rem)/1.7 'Special Elite',monospace;letter-spacing:.02em;max-width:40ch;opacity:0;animation:reveal .95s .78s ease forwards}
     .game-stat{display:flex;gap:26px;margin:0 0 24px;opacity:0;animation:reveal .95s .95s ease forwards}
     .game-stat div{text-align:left}.game-stat b{display:block;font:700 clamp(1.3rem,2vw,1.7rem)/1 'Playfair Display',serif;color:#e6c478}.game-stat span{color:#8a8578;font-size:.56rem;letter-spacing:.22em}
@@ -247,14 +248,13 @@
   </script>
   <a class="site-return" href="/">TA · ANA SAYFA</a>
   <canvas id="universe" aria-hidden="true"></canvas>
-  <div class="hero-art" aria-hidden="true"><div class="art-base"></div><div class="art-depth"></div><div class="art-glow"></div><div class="art-scan"></div></div>
+  <div class="hero-art" aria-hidden="true"><div class="art-base"><video class="art-video" autoplay muted loop playsinline preload="auto" poster="/zaman-tuneli/assets/hero.webp" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_095457_3e2e6c9a-7345-41e8-86be-6b47c73a862c.mp4"></video></div><div class="art-depth"></div><div class="art-veil"></div><div class="art-glow"></div><div class="art-scan"></div></div>
   <main>
     <section class="hero" aria-labelledby="title">
       <div class="content">
         <p class="eyebrow">SAHA GÖREVİ · SEVİYE TESPİTİ</p>
         <h1 id="title">ZAMAN <span>GÖREVİ</span></h1>
         <p class="slogan">Tarihi ne kadar tanıyorsun, ajan?</p>
-        <p class="game-lead">Rütbeni seç, zaman kapsüllerini çöz. Her doğru cevap seni saha ajanlığına bir adım yaklaştırır — sonunda kendi zaman sarmalın açılır.</p>
         <div class="game-stat"><div><b>3</b><span>SAHA OYUNU</span></div><div><b>100</b><span>SORU · TÜM ÇAĞLAR</span></div><div><b>1402</b><span>ANKARA · SATRANÇ</span></div></div>
         <div class="game-deck">
           <a class="gm-card" style="--c:0" href="/oyun/sayi-tahmin/">
