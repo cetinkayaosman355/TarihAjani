@@ -98,9 +98,15 @@ input,textarea{font-family:inherit}
 .posters::-webkit-scrollbar{display:none}
 .po{flex:none;width:118px;border-radius:14px;overflow:hidden;background:var(--panel2);border:1px solid rgba(193,154,82,.2);cursor:pointer}
 .po img{width:100%;height:86px;object-fit:cover;display:block}
-.po b{display:block;font-size:12px;font-weight:600;color:#e9e2d0;padding:8px 10px 3px;line-height:1.28}
+.po b{display:block;font-size:12px;font-weight:600;color:#e9e2d0;padding:8px 10px 3px;line-height:1.28;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .po span{display:block;font-size:9.5px;color:var(--dim);padding:0 10px 10px}
 .po:active{transform:scale(.97)}
+/* fotoğrafsız dosya kartı — görsel/başlık uyumsuzluğu OLMAZ, mühür estetiği */
+.po .muhur{height:86px;display:grid;place-items:center;background:
+  radial-gradient(90% 90% at 50% 10%,rgba(230,196,120,.14),transparent 70%),linear-gradient(160deg,#141726,#0b0d16)}
+.po .muhur b{display:block;padding:0;font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);-webkit-line-clamp:unset}
+.po .muhur span{padding:2px 0 0;font-size:8.5px;letter-spacing:.18em;color:#77705c}
 .minis{display:flex;gap:7px;padding:0 15px 13px}
 .minis span{flex:1;text-align:center;font-size:10px;color:#c9c2ae;border:1px solid rgba(129,135,151,.25);border-radius:9px;padding:8px 4px;background:rgba(255,255,255,.02)}
 /* ── ARŞİV ── */
@@ -236,14 +242,17 @@ var TABS = [
   { k: 'profil', label: 'Profil', d: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0' }
 ];
 var cur = '';
-function go(k, push) {
+function go(k, push, sessiz) {
   if (k === cur && k !== 'dosya') return;
+  var ifr = $('#scr-oynat'); if (ifr && k !== 'oynat') ifr.innerHTML = '';   // oynatıcıyı bırak
   document.querySelectorAll('.scr').forEach(function (s) { s.classList.remove('on', 'push'); });
   var el = $('#scr-' + k);
   if (!el) return;
   el.classList.add('on'); if (push) el.classList.add('push');
   el.scrollTop = 0;
   cur = k;
+  // SİSTEM GERİ TUŞU uygulama içinde gezinir, uygulamayı KAPATMAZ
+  if (!sessiz) { try { history.pushState({ k: k }, ''); } catch (e) {} }
   document.querySelectorAll('#tabbar button').forEach(function (b) {
     b.classList.toggle('on', b.getAttribute('data-k') === k);
   });
@@ -261,7 +270,20 @@ function oynat(url, ad) {
     '<iframe src="' + esc(url) + '" allow="autoplay; fullscreen"></iframe>';
   document.querySelectorAll('.scr').forEach(function (s) { s.classList.remove('on', 'push'); });
   el.classList.add('on', 'push'); cur = 'oynat';
+  try { history.pushState({ k: donus || 'masa' }, ''); } catch (e) {}
   $('#o-geri').addEventListener('click', function () { el.innerHTML = ''; cur = ''; go(donus || 'masa'); });
+  // Aynı origin: oyun sayfasının kendi site-menü linklerini uygulamada GİZLE —
+  // oynatıcıdan web görüntüsüne sızma olmasın (geri dönüş bizim ‹ barımız).
+  var fr = el.querySelector('iframe');
+  fr.addEventListener('load', function () {
+    try {
+      var doc = fr.contentDocument;
+      if (!doc) return;
+      var st = doc.createElement('style');
+      st.textContent = '.ta-return,header .back,a.site-return,a.home,header nav a[href="/"],header nav a[href^="/oyun"],header nav a[href="/zaman-tuneli"]{display:none!important}';
+      doc.head.appendChild(st);
+    } catch (e) { /* çapraz origin olursa dokunma */ }
+  });
 }
 $('#tabbar').innerHTML = TABS.map(function (t) {
   var ic = '<svg viewBox="0 0 24 24"><path d="' + t.d + '"/></svg>';
@@ -271,7 +293,12 @@ $('#tabbar').innerHTML = TABS.map(function (t) {
 $('#tabbar').addEventListener('click', function (e) {
   var b = e.target.closest('button'); if (b) go(b.getAttribute('data-k'));
 });
-window.addEventListener('popstate', function () { if (cur === 'dosya') go('arsiv'); });
+window.addEventListener('popstate', function (e) {
+  var st = e.state || {};
+  if (typeof st.d === 'number') { drawDosya(st.d, true); return; }
+  go(st.k || 'masa', false, true);
+});
+try { history.replaceState({ k: 'masa' }, ''); } catch (e) {}
 
 /* ── KREDİ ── */
 function krediYaz() {
@@ -294,7 +321,24 @@ function krediGetir(force) {
 }
 
 /* ── MASA ── */
-var HERO_IMGS = ['/assets/haber/sezar-suikasti.jpg','/assets/haber/vezuv-pompeii.jpg','/assets/haber/grek-atesi.jpg','/assets/haber/otzi.jpg','/assets/haber/tutankamun-hancer.jpg'];
+/* Görsel yalnız DOĞRU dosyayla eşleşirse kullanılır (slug eşlemesi) —
+   yanlış fotoğraf, yanlış başlıktan kötüdür. Eşleşme yoksa mühür kartı. */
+var SLUG_IMG = {
+  'sezar': '/assets/haber/sezar-suikasti.jpg', 'vezuv': '/assets/haber/vezuv-pompeii.jpg', 'pompei': '/assets/haber/vezuv-pompeii.jpg',
+  'grek-atesi': '/assets/haber/grek-atesi.jpg', 'otzi': '/assets/haber/otzi.jpg', 'tutankamun': '/assets/haber/tutankamun-hancer.jpg',
+  'bagdat': '/assets/haber/bagdat-1258.jpg'
+};
+var SLUGS = window.__ARSIV_SLUGS__ || [];
+function imgFor(i) {
+  var s = SLUGS[i] || '';
+  for (var k in SLUG_IMG) if (s.indexOf(k) !== -1) return SLUG_IMG[k];
+  return null;
+}
+var HERO_IDX = (function () {   // görseli olan dosyaların indeksleri (hero rotasyonu)
+  var out = [];
+  for (var i = 0; i < SLUGS.length; i++) if (imgFor(i)) out.push(i);
+  return out.length ? out : [0];
+})();
 function drawMasa() {
   var el = $('#scr-masa');
   var now = new Date(), sa = now.getHours();
@@ -303,13 +347,13 @@ function drawMasa() {
   var gun = ['PAZAR','PAZARTESİ','SALI','ÇARŞAMBA','PERŞEMBE','CUMA','CUMARTESİ'][now.getDay()];
   var ay = ['OCAK','ŞUBAT','MART','NİSAN','MAYIS','HAZİRAN','TEMMUZ','AĞUSTOS','EYLÜL','EKİM','KASIM','ARALIK'][now.getMonth()];
   var doy = Math.floor((now - new Date(now.getFullYear(),0,0)) / 86400000);
-  var hi = DATA.length ? doy % DATA.length : 0;
+  var hi = HERO_IDX[doy % HERO_IDX.length];            // görseli doğru eşleşen dosyalardan seç
   var hero = DATA[hi] || { baslik: 'Gizli Arşiv', era: '' };
   el.innerHTML =
     '<div class="h-row"><div><b>' + selam + ', ' + esc(ad) + '</b><span class="alt">' + gun + ' · ' + now.getDate() + ' ' + ay + '</span></div>' +
     '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
     '<div class="hero" data-dosya="' + hi + '">' +
-    '<img src="' + HERO_IMGS[doy % HERO_IMGS.length] + '" alt="">' +
+    '<img src="' + imgFor(hi) + '" alt="">' +
     '<span class="bd">GÜNÜN DOSYASI</span>' +
     '<span class="tt"><b>' + esc(hero.baslik) + '</b><span>' + esc(hero.era || 'TARİH DOSYASI') + ' — Dosyayı aç →</span></span></div>' +
     '<div class="kart" data-go="uret"><div class="krow" style="background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52)">' +
@@ -318,10 +362,14 @@ function drawMasa() {
     '<span class="git" style="color:#171207">›</span></div></div>' +
     '<div class="sh"><b>GİZLİ ARŞİV</b><button data-go="arsiv">' + DATA.length + ' dosya →</button></div>' +
     '<div class="posters">' +
-    [0,1,2,3,4].map(function (i) {
+    [0,1,2,3,4,5].map(function (i) {
       var di = (hi + 1 + i) % Math.max(1, DATA.length);
       var d = DATA[di] || {};
-      return '<div class="po" data-dosya="' + di + '"><img src="' + HERO_IMGS[(doy + i + 1) % HERO_IMGS.length] + '" alt="" loading="lazy"><b>' + esc((d.baslik || '').slice(0, 34)) + '</b><span>' + esc(d.era || '') + '</span></div>';
+      var im = imgFor(di);
+      var ust = im
+        ? '<img src="' + im + '" alt="" loading="lazy">'
+        : '<span class="muhur"><span><b>' + String(di + 1).padStart(2, '0') + '</b><span>' + esc((d.fileNo || 'DOSYA').slice(0, 14)) + '</span></span></span>';
+      return '<div class="po" data-dosya="' + di + '">' + ust + '<b>' + esc(d.baslik || '') + '</b><span>' + esc(d.era || '') + '</span></div>';
     }).join('') + '</div>' +
     '<div class="kart" data-go="oyun"><div class="krow"><span class="rz">♞</span>' +
     '<span class="m"><b>Oyun Tüneli</b><span>3 saha oyunu · rütbeni kanıtla</span></span><span class="git">›</span></div>' +
@@ -354,7 +402,7 @@ function drawArsiv() {
   ciz();
   krediGetir();
 }
-function drawDosya(i) {
+function drawDosya(i, sessiz) {
   var d = DATA[i]; if (!d) return;
   var el = $('#scr-dosya');
   el.innerHTML =
@@ -371,7 +419,7 @@ function drawDosya(i) {
     '<div style="padding:18px 14px 0"><button class="cta" data-uret-konu="' + esc(d.baslik) + '">◉ &nbsp;Bu dosyayı videoya dönüştür</button></div>';
   document.querySelectorAll('.scr').forEach(function (s) { s.classList.remove('on', 'push'); });
   el.classList.add('on', 'push'); el.scrollTop = 0; cur = 'dosya';
-  try { history.pushState({ d: i }, '', '#dosya-' + (i + 1)); } catch (e) {}
+  if (!sessiz) { try { history.pushState({ d: i }, '', '#dosya-' + (i + 1)); } catch (e) {} }
 }
 
 /* ── ÜRET: uygulamaya özel üretim akışı (Studio motoruyla) ── */
