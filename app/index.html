@@ -15,14 +15,14 @@
 /* ══ TARİH AJANI — GERÇEK UYGULAMA (sıfırdan SPA, web sayfası değil) ══ */
 :root{--bg:#06070d;--panel:#0d0f17;--panel2:#10121b;--line:rgba(193,154,82,.26);--gold:#e6c478;--brass:#c19a52;--ink:#f0ece2;--mut:#8a8f9c;--dim:#6b7080}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;height:100dvh;overscroll-behavior-y:none}
+html{background:var(--bg)}html,body{margin:0;height:100%;height:100dvh;overscroll-behavior-y:none}
 body{position:fixed;inset:0;background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;overflow:hidden}
 button{font-family:inherit}
 a{color:inherit;text-decoration:none}
 .serif{font-family:'Playfair Display',Georgia,serif}
 /* ── ekran sistemi: her ekran tam-ekran katman, geçişler native ── */
 .scr{position:fixed;inset:0;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:calc(14px + env(safe-area-inset-top,0px)) 0 calc(92px + env(safe-area-inset-bottom,0px));
+  padding:calc(14px + env(safe-area-inset-top,0px)) 0 calc(86px + env(safe-area-inset-bottom,0px));
   display:none}
 .scr.on{display:block;animation:scr-in .24s ease both}
 .scr.push{animation:scr-push .28s cubic-bezier(.3,.85,.35,1) both}
@@ -157,6 +157,34 @@ input,textarea{font-family:inherit}
 .mrow i{font-style:normal;color:#77705c;font-size:15px}
 .mrow:active{background:rgba(193,154,82,.06)}
 .alt-not{margin:4px 0 0;text-align:center;font-size:10px;letter-spacing:.14em;color:#4c515e}
+/* ── HABER: krem eskitme GAZETE teması (yalnız haber + makale ekranları) ── */
+#scr-haber,#scr-makale{background:#EDE2C6;color:#1d150a}
+#scr-haber::before,#scr-makale::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;z-index:0;
+  background:radial-gradient(120% 90% at 50% 0%,rgba(255,250,235,.9),transparent 55%),
+             radial-gradient(130% 110% at 50% 100%,rgba(120,95,50,.16),transparent 60%)}
+#scr-haber>*,#scr-makale>*{position:relative;z-index:1}
+#scr-haber .h-row{border-bottom:3px double rgba(90,79,56,.55);padding-bottom:12px;margin-bottom:4px}
+#scr-haber .h-row b,#scr-makale h1,#scr-makale .ust b{color:#1d150a}
+#scr-haber .h-row .alt{color:#8a7648}
+#scr-haber .kredi,#scr-makale .kredi{border-color:#a08040;background:rgba(166,47,34,.06);color:#7a5c1e}
+#scr-haber .chip{border:1.5px solid #b3a37e;background:#F6EDD6;color:#5a4f38;font-weight:700}
+#scr-haber .chip.on{background:linear-gradient(115deg,#7c1f16,#a62f22);border-color:#7c1f16;color:#f7ecd4}
+#scr-haber .hero{border:1.5px solid #9c8a5e;box-shadow:0 14px 34px rgba(90,70,30,.35)}
+#scr-haber .drow{border-top:1px solid rgba(90,79,56,.28)}
+#scr-haber .drow:active{background:rgba(166,47,34,.07)}
+#scr-haber .drow b{color:#241a0c}
+#scr-haber .drow .m>span{color:#8a7648}
+#scr-haber .drow img{border-color:#b3a37e;filter:sepia(.18)}
+#scr-haber .alt-not,#scr-makale .alt-not{color:#a08e60}
+#scr-makale .ust .geri{color:#a62f22}
+#scr-makale .ust span{color:#8a7648}
+#scr-makale img{border-color:#9c8a5e;filter:sepia(.12)}
+#scr-makale .serif{color:#1d150a}
+#scr-makale .sh b{color:#a62f22}
+#scr-makale .drow{border-top:1px solid rgba(90,79,56,.28)}
+#scr-makale .drow b{color:#241a0c}
+#scr-makale .drow .m>span{color:#8a7648}
+#scr-makale .git{color:#a62f22!important}
 /* uygulama içi oynatıcı (oyunlar/kitaplık) — web'e ÇIKMADAN tam ekran */
 #scr-oynat .obar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;background:rgba(8,10,16,.97);
   border-bottom:1px solid var(--line);padding:calc(6px + env(safe-area-inset-top,0px)) 10px 6px}
@@ -322,8 +350,11 @@ function krediGetir(force) {
     body: JSON.stringify({ action: 'balance' })
   }).then(function (r) { return r.json(); }).then(function (d) {
     if (d && typeof d.credits === 'number') { kredi = d.credits; krediYaz(); }
+    if (d && d.tier) { uyelik = { tier: d.tier, kota: d.monthly_quota, vade: d.expires_at }; if (cur === 'profil') drawProfil(); }
   }).catch(function () {});
 }
+var uyelik = null;
+var TIER_AD = { uye: 'Ücretsiz Üye', gozlemci: 'Gözlemci', ajan: 'Ajan', basmufettis: 'Başmüfettiş' };
 
 /* ── MASA ── */
 /* Görsel yalnız DOĞRU dosyayla eşleşirse kullanılır (slug eşlemesi) —
@@ -414,6 +445,7 @@ function drawArsiv() {
 }
 function drawDosya(i, sessiz) {
   var d = DATA[i]; if (!d) return;
+  if (!user) { toast('🔒 Dosyaları açmak için ücretsiz üye ol'); go('profil'); return; }
   var el = $('#scr-dosya');
   el.innerHTML =
     '<div class="ust"><button class="geri" data-geri>‹</button><span>' + esc(d.fileNo || '') + '</span></div>' +
@@ -742,7 +774,7 @@ function drawHaber() {
       var i = MAKALE.indexOf(a);
       return '<div class="drow" data-makale="' + i + '" style="align-items:flex-start">' +
         (a.img ? '<img src="' + a.img + '" alt="" loading="lazy" style="flex:none;width:92px;height:66px;object-fit:cover;border-radius:10px;border:1px solid rgba(193,154,82,.25)">' : '') +
-        '<span class="m"><span style="display:block;font-size:8.5px;letter-spacing:.16em;color:#c0706c;font-weight:800;margin-bottom:3px">' + esc(a.kat || '') + '</span>' +
+        '<span class="m"><span style="display:block;font-size:8.5px;letter-spacing:.16em;color:#a62f22;font-weight:800;margin-bottom:3px">' + esc(a.kat || '') + '</span>' +
         '<b style="white-space:normal;font-size:14.5px;line-height:1.3">' + esc(a.baslik) + '</b>' +
         '<span style="letter-spacing:.02em">' + esc((a.dl || '').replace(/—$/, '')) + '</span></span>' +
         '<span class="git" style="color:var(--brass)">›</span></div>';
@@ -763,11 +795,11 @@ function drawMakale(i, sessiz) {
     (a.img ? '<img src="' + a.img + '" alt="" style="display:block;width:calc(100% - 28px);margin:2px 14px 0;border-radius:14px;border:1px solid rgba(193,154,82,.25);aspect-ratio:16/10;object-fit:cover">' : '') +
     '<div style="padding:14px 20px 0">' +
     '<h1 class="serif" style="margin:0;font-size:23px;line-height:1.22;font-weight:800">' + esc(a.baslik) + '</h1>' +
-    (a.spot ? '<p class="serif" style="margin:10px 0 0;font-style:italic;font-size:15px;line-height:1.55;color:#cfc8b4">' + esc(a.spot) + '</p>' : '') +
-    '<p style="margin:12px 0 0;font-size:11px;letter-spacing:.12em;color:var(--brass)">' + esc(a.dl || '') + ' <span style="color:var(--dim)">MUHABİRİMİZDEN</span></p>' +
-    (a.lede ? '<p style="margin:14px 0 0;font-size:15px;line-height:1.75;color:#e4ddc9;font-weight:600">' + esc(a.lede) + '</p>' : '') +
+    (a.spot ? '<p class="serif" style="margin:10px 0 0;font-style:italic;font-size:15px;line-height:1.55;color:#5a4f38">' + esc(a.spot) + '</p>' : '') +
+    '<p style="margin:12px 0 0;font-size:11px;letter-spacing:.12em;color:#a62f22">' + esc(a.dl || '') + ' <span style="color:#8a7648">MUHABİRİMİZDEN</span></p>' +
+    (a.lede ? '<p style="margin:14px 0 0;font-size:15px;line-height:1.75;color:#241a0c;font-weight:600">' + esc(a.lede) + '</p>' : '') +
     (a.body || []).map(function (p) {
-      return '<p style="margin:13px 0 0;font-size:14.5px;line-height:1.78;color:#c9cdd6">' + esc(p) + '</p>';
+      return '<p style="margin:13px 0 0;font-size:14.5px;line-height:1.78;color:#3a3020">' + esc(p) + '</p>';
     }).join('') + '</div>' +
     '<div style="padding:20px 14px 0"><button class="cta" data-uret-konu="' + esc(a.baslik) + '">◉ &nbsp;Bu haberi videoya dönüştür</button></div>' +
     (ilgili.length ? '<div class="sh"><b>İLGİLİ HABERLER</b></div>' + ilgili.map(function (x) {
@@ -1009,7 +1041,9 @@ function drawProfil() {
   el.innerHTML =
     '<div class="h-row"><div><b>Profil</b><span class="alt">HESAP · KREDİ · AYARLAR</span></div></div>' +
     '<div class="kim"><span class="av">' + esc(ad.charAt(0).toUpperCase()) + '</span>' +
-    '<div><b>' + esc(ad) + '</b><span>' + (user ? esc(user.email) : 'Giriş yapılmadı') + '</span></div></div>' +
+    '<div><b>' + esc(ad) + '</b><span>' + (user ? esc(user.email) : 'Giriş yapılmadı') + '</span>' +
+    (user && uyelik ? '<span style="display:inline-flex;gap:6px;align-items:center;margin-top:6px;font-size:10.5px;letter-spacing:.08em;color:#171207;background:linear-gradient(110deg,#d8b26a,#e9c87e);padding:4px 10px;border-radius:8px;font-weight:800">' + esc((TIER_AD[uyelik.tier] || uyelik.tier).toUpperCase()) + (uyelik.kota ? ' · ' + uyelik.kota + ' KR/AY' : '') + '</span>' + (uyelik.vade ? '<span style="display:block;margin-top:4px;font-size:10px;color:#8a8f9c">Vade: ' + new Date(uyelik.vade).toLocaleDateString('tr-TR') + '</span>' : '') : '') +
+    '</div></div>' +
     (user
       ? '<div class="grup"><button class="mrow" data-go="paket"><svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5Zm0 10v10"/></svg><span>Kredi Bakiyem</span><b style="color:var(--gold)" data-kredi>…</b><i>›</i></button></div>' +
         '<div style="padding:0 16px"><button class="cta" data-go="paket">Üyelik &amp; Kredi Paketleri →</button></div>'
