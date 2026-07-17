@@ -3662,26 +3662,49 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     }), () => this._scrollChat());
   }
 
+  // SEN ÖNER — ANINDA cevap verir, ASLA hata göstermez.
+  // Öneri her zaman yereldeki seçkin havuzdan aynı saniyede gelir; yapay zekâ
+  // arka planda SESSİZCE havuza yeni konular ekler (başarısızsa kimse görmez).
+  // Eski akış AI'a bağımlıydı: sunucu nazlanınca buton 3-4 basışta ancak tutuyordu.
+  _suggestPool() {
+    if (!this._sgPool) {
+      let extra = [];
+      try { extra = JSON.parse(localStorage.getItem('ta_oneri_havuz') || '[]'); } catch (e) {}
+      this._sgPool = this._ideaPool().concat(Array.isArray(extra) ? extra : []);
+      // her oturumda farklı sıra
+      for (let i = this._sgPool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = this._sgPool[i]; this._sgPool[i] = this._sgPool[j]; this._sgPool[j] = t;
+      }
+      this._sgIdx = 0;
+    }
+    return this._sgPool;
+  }
   async suggestIdeaNow() {
     if (this.state.suggestBusy) return;
+    const pool = this._suggestPool();
+    const pick = pool[this._sgIdx % pool.length];
+    this._sgIdx++;
+    // kısa "düşünüyor" nefesi: his için, bekletmek için değil
     this.setState({ suggestBusy: true });
-    const ask = () => this.askAI('Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan kıdemli bir editörsün. GERÇEK, doğrulanabilir bir tarihî olay/kişi/nesne üzerine, az bilinen ama kaynaklarda izi olan, "bunu nasıl bilmiyordum" dedirten, ilk cümlede kilitleyen TEK bir video konusu öner. KURALLAR: (1) somut ve spesifik olsun — belirli bir kişi, yer, tarih ya da nesne içersin; (2) klişe/genel olmasın ("tarihin gizemleri" gibi değil); (3) uydurma/komplo değil, araştırılabilir bir çekirdeği olsun; (4) tercihen Türk-İslam ya da dünya tarihinden sıra dışı bir vaka. YALNIZCA o tek cümlelik konu başlığını döndür; tırnak, açıklama veya önek ekleme.', 300);
-    // Ücretsiz uç: sunucu/AI hıçkırığında otomatik 3 deneme — kullanıcı
-    // tekrar tekrar basmak zorunda kalmasın (aralarda kısa bekleme).
-    let lastErr = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const reply = await ask();
-        this.setState({ idea: reply.trim().replace(/^["']|["']$/g, ''), suggestBusy: false });
-        return;
-      } catch (e) {
-        lastErr = e;
-        if (e.message === 'YETERSIZ_KREDI') break;
-        await new Promise(r => setTimeout(r, 900 * (attempt + 1)));
-      }
-    }
-    this.setState({ suggestBusy: false, idea: this.state.idea || '', genError: '' });
-    alert('Öneri alınamadı: ' + (lastErr && lastErr.message || 'bilinmeyen hata') + ' — lütfen bir kez daha dene.');
+    setTimeout(() => this.setState({ idea: pick, suggestBusy: false, ideaWarn: '' }), 450);
+    // arka planda havuzu tazele (en çok dakikada bir; sonuç sessizce eklenir)
+    if (this._sgBg || (this._sgBgAt && Date.now() - this._sgBgAt < 60000)) return;
+    this._sgBg = true; this._sgBgAt = Date.now();
+    this.askAI('Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan kıdemli bir editörsün. GERÇEK, doğrulanabilir, az bilinen, ilk cümlede kilitleyen TEK bir video konusu öner: somut kişi/yer/tarih içersin, klişe olmasın, araştırılabilir olsun. YALNIZCA tek cümlelik konu başlığını döndür.', 200)
+      .then(r => {
+        const t = (r || '').trim().replace(/^["']|["']$/g, '');
+        if (t && t.length > 15 && pool.indexOf(t) === -1) {
+          pool.splice(this._sgIdx % pool.length, 0, t);   // sıradaki öneri taze olsun
+          try {
+            const extra = JSON.parse(localStorage.getItem('ta_oneri_havuz') || '[]');
+            extra.unshift(t);
+            localStorage.setItem('ta_oneri_havuz', JSON.stringify(extra.slice(0, 40)));
+          } catch (e) {}
+        }
+      })
+      .catch(() => { /* sessiz: kullanıcı asla hata görmez */ })
+      .finally(() => { this._sgBg = false; });
   }
 
   async addShortNow() {
