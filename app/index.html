@@ -232,12 +232,20 @@ body.oyun-modu #tabbar{display:none}
 .uyebtn{flex:none;border:0;background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:12px;letter-spacing:.04em;padding:11px 15px;border-radius:11px;cursor:pointer}
 .uyebtn:active{transform:scale(.95)}
 /* ── misafir vitrin ── */
-.mhero{margin:2px 14px 0;padding:26px 22px;border-radius:18px;border:1px solid var(--line);background:radial-gradient(120% 90% at 50% 0%,#1a2340,#0a0d16);text-align:center}
-.mhero .k{font-size:10px;letter-spacing:.28em;color:var(--brass)}
-.mhero h1{margin:10px 0 0;font-family:'Playfair Display',serif;font-size:25px;line-height:1.22;color:#f4ecd8}
+/* SİNEMATİK HERO — boş kutu değil; tam-kanlı tarih görseli + derin gradyan.
+   Ne ürettiğimizi ilk saniyede gösterir; premium/ustaca ilk izlenim. */
+.mhero{position:relative;margin:0 0 4px;padding:0;border:0;overflow:hidden;min-height:64vh;display:flex;flex-direction:column;justify-content:flex-end;text-align:left;isolation:isolate}
+.mhero .bg{position:absolute;inset:0;z-index:0}
+.mhero .bg img{width:100%;height:100%;object-fit:cover;filter:saturate(1.05) contrast(1.04)}
+.mhero .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,7,13,.28) 0%,rgba(6,7,13,.05) 26%,rgba(6,7,13,.72) 72%,#06070d 100%)}
+.mhero .bg::before{content:"";position:absolute;inset:0;z-index:1;box-shadow:inset 0 0 120px 20px rgba(0,0,0,.55)}
+.mhero .in{position:relative;z-index:2;padding:0 20px 26px}
+.mhero .k{display:inline-block;font-size:10px;letter-spacing:.26em;color:#f0d9a3;background:rgba(10,12,20,.55);border:1px solid rgba(193,154,82,.4);padding:7px 12px;border-radius:20px;backdrop-filter:blur(6px)}
+.mhero h1{margin:14px 0 0;font-family:'Playfair Display',serif;font-weight:800;font-size:33px;line-height:1.14;color:#fbf5e6;letter-spacing:-.01em;text-shadow:0 4px 30px rgba(0,0,0,.6)}
 .mhero h1 em{font-style:italic;color:var(--gold)}
-.mhero p{margin:11px auto 0;max-width:32ch;color:#a8aebc;font-size:13.5px;line-height:1.65}
-.mhero .go{display:block;width:100%;margin-top:18px;border:0;background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:13.5px;letter-spacing:.04em;padding:15px;border-radius:13px;cursor:pointer}
+.mhero p{margin:13px 0 0;max-width:34ch;color:#d3d7e0;font-size:14px;line-height:1.7;text-shadow:0 2px 16px rgba(0,0,0,.7)}
+.mhero .go{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:20px;border:0;background:linear-gradient(110deg,#a87f37,#f0cd82 55%,#c19a52);color:#171207;font-weight:800;font-size:14px;letter-spacing:.04em;padding:17px;border-radius:14px;cursor:pointer;box-shadow:0 12px 34px rgba(201,162,90,.28),0 0 0 1px rgba(240,205,130,.3) inset}
+.mhero .go:active{transform:scale(.985)}
 .adim{display:flex;gap:13px;align-items:flex-start;padding:11px 18px}
 .adim .n{flex:none;width:32px;height:32px;border-radius:50%;border:1px solid rgba(193,154,82,.5);display:grid;place-items:center;color:var(--gold);font-family:'Playfair Display',serif;font-weight:800;font-size:15px}
 .adim b{display:block;font-size:15px;color:#f0e8d4}
@@ -525,10 +533,11 @@ function drawMasaMisafir() {
   var el = $('#scr-masa');
   var haber = MAKALE.slice(0, 5);
   el.innerHTML = masaBar() +
-    '<div class="mhero"><p class="k">YAPAY ZEKÂ TARİH STÜDYOSU</p>' +
-    '<h1>Tarihi anlatan videoları<br><em>dakikalar içinde</em> üret</h1>' +
-    '<p>Bir konu yaz — araştırılmış senaryo, profesyonel seslendirme ve sinematik sahneler senin için hazırlansın.</p>' +
-    '<button class="go" data-go="profil">ÜCRETSİZ BAŞLA · 30 KREDİ →</button></div>' +
+    '<div class="mhero"><div class="bg"><img src="/assets/haber/istanbul-fethi.jpg" alt=""></div>' +
+    '<div class="in"><span class="k">YAPAY ZEKÂ TARİH STÜDYOSU</span>' +
+    '<h1>Tarihi anlatan videolar,<br><em>dakikalar içinde.</em></h1>' +
+    '<p>Bir konu yaz — araştırılmış senaryo, profesyonel seslendirme ve sinematik sahneler dakikalar içinde elinde.</p>' +
+    '<button class="go" data-go="profil">ÜCRETSİZ BAŞLA · 30 KREDİ →</button></div></div>' +
     '<div class="sh"><b>NASIL ÇALIŞIR?</b></div>' +
     '<div class="adim"><span class="n">1</span><span><b>Konuyu yaz</b><span>“Kanuni’nin Zigetvar seferi” — tek cümle yeter.</span></span></div>' +
     '<div class="adim"><span class="n">2</span><span><b>Ajan işi devralır</b><span>Kaynakları araştırır, senaryoyu yazar, seslendirir, sahneleri görselleştirir.</span></span></div>' +
@@ -1643,9 +1652,9 @@ function basla() {
     });
     sb.auth.onAuthStateChange(function (_e, s) { user = s && s.user || null; });
   }
-  // AÇILIŞ: her zaman normal Masa (girişsiz de gezilir); üyelik POP-UP olarak gelir
+  // AÇILIŞ: her zaman normal Masa (girişsiz de gezilir). Açılışta pop-up YOK —
+  // sinematik hero + kendi ÜYE OL çağrısı öne çıksın; üyelik yalnız gate'lerde gelir.
   go('masa');
-  if (!token()) setTimeout(function () { if (!user) uyeGoster('hos'); }, 1100);
 }
 basla();
 })();
