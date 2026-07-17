@@ -370,7 +370,13 @@ async function generateSpeech(text: string, voice: string): Promise<Uint8Array |
 }
 // ElevenLabs seslendirme — yalnızca izinli ses kimlikleri (istismarı önler; site
 // ELEVENLABS_API_KEY'ini kullanır). Türkçeyi doğru okuyan eleven_multilingual_v2.
-const ELEVEN_ALLOWED = new Set(["j82ax9yhzfYwq9lDvRWL"]); // Kadir Kayışcı
+const ELEVEN_ALLOWED = new Set([
+  "j82ax9yhzfYwq9lDvRWL", // Kadir Kayışçı (imza ses)
+  "pNInz6obpgDQGcFmaJgB", // Erkek · Anlatıcı
+  "TxGEqnHWrfWFTfGW9XjX", // Erkek · Net
+  "EXAVITQu4vr4xnSDxMaL", // Kadın · Belgesel
+  "21m00Tcm4TlvDq8ikWAM", // Kadın · Olgun
+]);
 async function generateSpeechEleven(text: string, voiceId: string): Promise<Uint8Array | null> {
   const key = Deno.env.get("ELEVENLABS_API_KEY");
   if (!key || !text.trim() || !ELEVEN_ALLOWED.has(voiceId)) return null;
@@ -384,7 +390,13 @@ async function generateSpeechEleven(text: string, voiceId: string): Promise<Uint
     rest = rest.slice(cut + 1).trim();
   }
   const parts: Uint8Array[] = [];
-  for (const c of chunks) {
+  // TON KAYMASINI ÖNLE: her parçayı komşularıyla koşullandır (previous_text /
+  // next_text). Böylece parça sınırlarında ses tonu "bir artıp bir azalmaz",
+  // tek bir anlatıcı akışı gibi tutarlı kalır. stability biraz yükseltildi.
+  for (let i = 0; i < chunks.length; i++) {
+    const c = chunks[i];
+    const prevTxt = i > 0 ? chunks[i - 1].slice(-320) : undefined;
+    const nextTxt = i < chunks.length - 1 ? chunks[i + 1].slice(0, 320) : undefined;
     try {
       const r = await fetchT("https://api.elevenlabs.io/v1/text-to-speech/" + voiceId + "?output_format=mp3_44100_128", {
         method: "POST",
@@ -392,7 +404,9 @@ async function generateSpeechEleven(text: string, voiceId: string): Promise<Uint
         body: JSON.stringify({
           text: c,
           model_id: "eleven_multilingual_v2",
-          voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.15, use_speaker_boost: true },
+          previous_text: prevTxt,
+          next_text: nextTxt,
+          voice_settings: { stability: 0.6, similarity_boost: 0.85, style: 0.1, use_speaker_boost: true },
         }),
       });
       if (!r.ok) return null;
@@ -423,6 +437,31 @@ function bytesToB64(bytes: Uint8Array): string {
     bin += String.fromCharCode(...bytes.subarray(i, i + chunk));
   }
   return btoa(bin);
+}
+
+// ── Görsel Storage'a yükle (CİHAZLAR ARASI erişim) ──────────────────────
+// data: URI cihaza özeldir: telefonda üretilen görsel bilgisayarda AÇILMAZ.
+// Çözüm: görseli 'studio-ses' bucket'ına yaz, herkese açık kalıcı URL döndür.
+// Bucket yoksa (kurulum SQL'i çalışmadıysa) data: URI'ye güvenle düşer.
+async function uploadImage(admin: any, userId: string, dataUri: string): Promise<string> {
+  try {
+    const m = /^data:(image\/[a-z0-9.+-]+);base64,(.*)$/i.exec(dataUri || "");
+    if (!admin || !m) return dataUri;
+    const mime = m[1];
+    const ext = mime.indexOf("png") >= 0 ? "png" : "jpg";
+    const b64 = m[2];
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const path = "gorsel/" + (userId || "anon") + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+    const up = await admin.storage.from("studio-ses")
+      .upload(path, bytes, { contentType: mime, upsert: false });
+    if (up.error) return dataUri;
+    const pub = admin.storage.from("studio-ses").getPublicUrl(path);
+    return pub?.data?.publicUrl || dataUri;
+  } catch (_e) {
+    return dataUri;   // her hâlükârda görsel kaybolmasın
+  }
 }
 
 // ── ARAŞTIRMA BİRİMİ (grounding) ───────────────────────────────────────
@@ -683,6 +722,10 @@ Deno.serve(async (req) => {
     // Ücretli çağrı → kullanıcıyı doğrula ve bakiyeyi ön-kontrol et.
     // Düzenleme ücretsiz olsa bile giriş şarttır (istismarı önler).
     let admin: any = null, userId = "";
+    // YENİDEN ÜRET (1 kez ücretsiz): kullanıcı beğenmediyse önceki ÜCRETLİ
+    // üretimin (prevJob) bir defalık bedava hakkıyla yeniden üretir.
+    let freeRegen = false;
+    let regenPrevJob = "";
     if (cost > 0 || isEdit) {
       const SB_URL = Deno.env.get("SUPABASE_URL");
       const SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -702,6 +745,15 @@ Deno.serve(async (req) => {
           if (!error && (count ?? 0) < 3) cost = 0;
         } catch (_e) { /* tablo yoksa ücretli varsay (güvenli taraf) */ }
       }
+      // YENİDEN ÜRET: yalnız GERÇEK, ücretli, hakkı henüz kullanılmamış önceki
+      // job'a bağlıysa ücretsiz — böylece sonsuz bedava üretim mümkün olmaz.
+      regenPrevJob = (String(b.action || "") === "generate" && b.regen === true) ? cleanJob(b.prevJob) : "";
+      if (regenPrevJob) {
+        try {
+          const pj = await loadJobResult(admin, userId, regenPrevJob);
+          if (pj && pj.charged === true && pj.regenUsed !== true) { freeRegen = true; cost = 0; }
+        } catch (_e) { /* güvenli taraf: ücretli kalır */ }
+      }
       // vade/aylık kota tazele + bakiye oku
       const { data: prof } = await admin.rpc("refresh_profile_credits", { p_user: userId });
       const row = Array.isArray(prof) ? prof[0] : prof;
@@ -713,6 +765,8 @@ Deno.serve(async (req) => {
     if (String(b.action || "") === "image") {
       let url = await generateImage(String(b.prompt || ""), String(b.size || ""));
       if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
+      // CİHAZLAR ARASI: data: URI cihaza özeldir → Storage'a yükle, kalıcı URL ver
+      if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
       logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "uretilemedi" });
       if (!url) return json({ ok: false, error: "Görsel üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       if (cost > 0 && admin && userId) {
@@ -724,7 +778,8 @@ Deno.serve(async (req) => {
 
     // GÖRSEL DÜZENLEME — mevcut görseli korur, istenen değişikliği uygular
     if (isEdit) {
-      const url = await editImage(String(b.image || ""), String(b.prompt || ""), String(b.size || ""));
+      let url = await editImage(String(b.image || ""), String(b.prompt || ""), String(b.size || ""));
+      if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
       logRun({ action: "edit", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "duzenlenemedi" });
       if (!url) return json({ ok: false, error: "Görsel düzenlenemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       if (cost > 0 && admin && userId) {
@@ -871,6 +926,24 @@ ${prompt}`;
       // job ile üretimi kredisiz geri alabilir (mobil "Load failed" telafisi).
       if (isGen && job) await saveJobResult(admin, userId, job, { result, credits, charged: true, grounded, ts: Date.now() });
       return json({ ok: true, result, text: result, charged: true, credits, grounded });
+    }
+
+    // ÜCRETSİZ YENİDEN ÜRET: kredi düşülmez; önceki job'ın bedava hakkı tüketilir
+    // ve yeni sonuç kaydedilir (bağlantı koparsa kredisiz geri alınabilsin).
+    if (freeRegen && isGen && admin && userId) {
+      let credits: number | undefined;
+      try {
+        const { data: prof2 } = await admin.rpc("refresh_profile_credits", { p_user: userId });
+        const r2 = Array.isArray(prof2) ? prof2[0] : prof2;
+        credits = r2 && typeof r2.credits === "number" ? r2.credits : undefined;
+      } catch (_e) { /* bakiye okunamadıysa istemci mevcut değeri korur */ }
+      if (job) await saveJobResult(admin, userId, job, { result, credits, charged: false, grounded, ts: Date.now() });
+      try {
+        const pj = await loadJobResult(admin, userId, regenPrevJob);
+        if (pj) await saveJobResult(admin, userId, regenPrevJob, { ...pj, regenUsed: true });
+      } catch (_e) { /* işaretlenemese bile üretim döner */ }
+      logRun({ action: "regen_free", ok: true, ms: Date.now() - t0, user_id: userId });
+      return json({ ok: true, result, text: result, charged: false, credits, grounded, freeRegen: true });
     }
 
     return json({ ok: true, result, text: result, charged: false, grounded });
