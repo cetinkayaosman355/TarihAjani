@@ -191,11 +191,13 @@ audio{width:100%;margin-top:10px}
 <div class="scr" id="scr-oynat" style="padding:0"></div>
 <div class="scr" id="scr-haber"></div>
 <div class="scr" id="scr-ders"></div>
+<div class="scr" id="scr-makale"></div>
 
 <nav id="tabbar" aria-label="Uygulama menüsü"></nav>
 <div id="toast" role="status"></div>
 
 <script src="/arsiv-data.js"></script>
+<script src="/app/haber-data.js"></script>
 <script src="/arsiv-slugs.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -298,6 +300,7 @@ $('#tabbar').addEventListener('click', function (e) {
 window.addEventListener('popstate', function (e) {
   var st = e.state || {};
   if (typeof st.d === 'number') { drawDosya(st.d, true); return; }
+  if (typeof st.m === 'number') { drawMakale(st.m, true); return; }
   go(st.k || 'masa', false, true);
 });
 try { history.replaceState({ k: 'masa' }, ''); } catch (e) {}
@@ -710,7 +713,72 @@ function gorselUret(i, btn) {
   }).catch(function () { btn.disabled = false; btn.textContent = '◈ GÖRSEL · 12 KR'; toast('Bağlantı hatası'); });
 }
 
-/* ── HABER — tarihin canlı yayını, tamamen native ── */
+/* ── HABER — sıfırdan haber uygulaması: başyazı + kategoriler + makale ── */
+var MAKALE = window.__HABER__ || [];
+var haberKat = 'TÜMÜ';
+var HKATLAR = ['TÜMÜ', 'SAVAŞ', 'SUİKAST', 'GİZEM', 'FELAKET', 'SİYASET'];
+function drawHaber() {
+  var el = $('#scr-haber');
+  var doy = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  var lead = MAKALE[doy % Math.max(1, MAKALE.length)] || MAKALE[0] || {};
+  var liste = MAKALE.filter(function (a) { return a !== lead && (haberKat === 'TÜMÜ' || a.kat === haberKat); });
+  el.innerHTML =
+    '<div class="h-row"><div><b>Tarih Ajansı</b>' +
+    '<span class="alt" style="display:inline-flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#c0524e;box-shadow:0 0 6px rgba(192,82,78,.9);animation:spin 0s"></span>CANLI YAYIN · TARİHİN KRONİK SERVİSİ</span></div>' +
+    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    // BAŞYAZI — günün manşeti
+    (lead.baslik ? '<div class="hero" style="height:min(58vw,250px)" data-makale="' + MAKALE.indexOf(lead) + '">' +
+      (lead.img ? '<img src="' + lead.img + '" alt="">' : '') +
+      '<span class="bd" style="background:linear-gradient(115deg,#7c1f16,#a62f22);color:#f7ecd4">BAŞYAZI · ' + esc(lead.kat || '') + '</span>' +
+      '<span class="tt"><b style="font-size:21px">' + esc(lead.baslik) + '</b>' +
+      '<span>' + esc((lead.dl || '').replace(/—$/, '')) + ' · Devamını oku →</span></span></div>' : '') +
+    // kategori çipleri
+    '<div class="posters" style="padding-top:14px;padding-bottom:2px">' +
+    HKATLAR.map(function (k) {
+      return '<button class="chip' + (k === haberKat ? ' on' : '') + '" data-hkat="' + k + '" style="flex:none">' + k + '</button>';
+    }).join('') + '</div>' +
+    // akış
+    liste.map(function (a) {
+      var i = MAKALE.indexOf(a);
+      return '<div class="drow" data-makale="' + i + '" style="align-items:flex-start">' +
+        (a.img ? '<img src="' + a.img + '" alt="" loading="lazy" style="flex:none;width:92px;height:66px;object-fit:cover;border-radius:10px;border:1px solid rgba(193,154,82,.25)">' : '') +
+        '<span class="m"><span style="display:block;font-size:8.5px;letter-spacing:.16em;color:#c0706c;font-weight:800;margin-bottom:3px">' + esc(a.kat || '') + '</span>' +
+        '<b style="white-space:normal;font-size:14.5px;line-height:1.3">' + esc(a.baslik) + '</b>' +
+        '<span style="letter-spacing:.02em">' + esc((a.dl || '').replace(/—$/, '')) + '</span></span>' +
+        '<span class="git" style="color:var(--brass)">›</span></div>';
+    }).join('') +
+    '<p class="alt-not" style="margin-top:16px">TARİH AJANSI · HER MANŞET DOĞRULANMIŞ KAYITLARDAN</p>';
+  el.querySelectorAll('[data-hkat]').forEach(function (b) {
+    b.addEventListener('click', function () { haberKat = b.getAttribute('data-hkat'); drawHaber(); });
+  });
+  krediGetir();
+}
+/* MAKALE — tam ekran haber okuma deneyimi */
+function drawMakale(i, sessiz) {
+  var a = MAKALE[i]; if (!a) return;
+  var el = $('#scr-makale');
+  var ilgili = MAKALE.filter(function (x, j) { return j !== i && x.kat === a.kat; }).slice(0, 2);
+  el.innerHTML =
+    '<div class="ust"><button class="geri" data-go="haber">‹</button><span>TARİH AJANSI · ' + esc(a.kat || '') + '</span></div>' +
+    (a.img ? '<img src="' + a.img + '" alt="" style="display:block;width:calc(100% - 28px);margin:2px 14px 0;border-radius:14px;border:1px solid rgba(193,154,82,.25);aspect-ratio:16/10;object-fit:cover">' : '') +
+    '<div style="padding:14px 20px 0">' +
+    '<h1 class="serif" style="margin:0;font-size:23px;line-height:1.22;font-weight:800">' + esc(a.baslik) + '</h1>' +
+    (a.spot ? '<p class="serif" style="margin:10px 0 0;font-style:italic;font-size:15px;line-height:1.55;color:#cfc8b4">' + esc(a.spot) + '</p>' : '') +
+    '<p style="margin:12px 0 0;font-size:11px;letter-spacing:.12em;color:var(--brass)">' + esc(a.dl || '') + ' <span style="color:var(--dim)">MUHABİRİMİZDEN</span></p>' +
+    (a.lede ? '<p style="margin:14px 0 0;font-size:15px;line-height:1.75;color:#e4ddc9;font-weight:600">' + esc(a.lede) + '</p>' : '') +
+    (a.body || []).map(function (p) {
+      return '<p style="margin:13px 0 0;font-size:14.5px;line-height:1.78;color:#c9cdd6">' + esc(p) + '</p>';
+    }).join('') + '</div>' +
+    '<div style="padding:20px 14px 0"><button class="cta" data-uret-konu="' + esc(a.baslik) + '">◉ &nbsp;Bu haberi videoya dönüştür</button></div>' +
+    (ilgili.length ? '<div class="sh"><b>İLGİLİ HABERLER</b></div>' + ilgili.map(function (x) {
+      return '<div class="drow" data-makale="' + MAKALE.indexOf(x) + '"><span class="m"><b style="white-space:normal;font-size:14px;line-height:1.3">' + esc(x.baslik) + '</b>' +
+        '<span>' + esc(x.kat) + '</span></span><span class="git" style="color:var(--brass)">›</span></div>';
+    }).join('') : '') +
+    '<p class="alt-not" style="margin-top:16px">© TARİH AJANSI KRONİK SERVİSİ</p>';
+  document.querySelectorAll('.scr').forEach(function (s) { s.classList.remove('on', 'push'); });
+  el.classList.add('on', 'push'); el.scrollTop = 0; cur = 'makale';
+  if (!sessiz) { try { history.pushState({ m: i }, ''); } catch (e) {} }
+}
 var HABERLER = [
   { y: '1453', k: 'SON DAKİKA', m: 'Konstantinopolis düştü: bin yıllık Bizans sona erdi',
     o: 'Elli üç gün süren kuşatmanın sonunda surlarda gedik açıldı. Genç padişah Mehmed, şehre Topkapı yönünden girdi. Ayasofya’da öğle vakti ezan okundu. Muhabirimiz, son Bizans imparatoru Konstantin’in cesedinin mor çizmelerinden tanındığını aktarıyor.' },
@@ -729,23 +797,6 @@ var HABERLER = [
   { y: 'MÖ 1274', k: 'ANTLAŞMA', m: 'Kadeş’te iki dev karşı karşıya: tarihin ilk yazılı barışı yolda',
     o: 'Hitit ve Mısır orduları Orontes kıyısında günlerdir üstünlük kuramıyor. Saray kaynakları, iki tarafın da zafer ilan edip masaya oturacağını, gümüş levhalara kazınacak bir antlaşmanın hazırlandığını aktarıyor.' }
 ];
-function drawHaber() {
-  var el = $('#scr-haber');
-  el.innerHTML =
-    '<div class="h-row"><div><b>Tarih Ajansı</b><span class="alt">TARİHİN CANLI YAYINI · O GÜN BUGÜNMÜŞ GİBİ</span></div>' +
-    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
-    HABERLER.map(function (h, i) {
-      return '<div class="sec' + (i === 0 ? ' ac' : '') + '"><div class="sbh"><b style="display:flex;gap:9px;align-items:center">' +
-        '<span style="flex:none;font-family:\'Playfair Display\',serif;font-size:15px;color:var(--gold);letter-spacing:0">' + esc(h.y) + '</span>' +
-        '<span style="font-size:8.5px;border:1px solid rgba(176,65,62,.6);color:#e08a80;border-radius:6px;padding:3px 7px;letter-spacing:.14em">' + esc(h.k) + '</span></b><i>›</i></div>' +
-        '<div style="padding:0 15px 4px"><b class="serif" style="font-size:15.5px;line-height:1.35;color:#ede4cf">' + esc(h.m) + '</b></div>' +
-        '<div class="ic"><div class="blk"><div class="t">' + esc(h.o) + '</div></div>' +
-        '<button class="kopya" style="margin-top:10px" data-haber-uret="' + i + '">◉ BU HABERİ VİDEOYA DÖNÜŞTÜR</button></div></div>';
-    }).join('') +
-    '<p class="alt-not" style="margin-top:16px">AJANS ARŞİVİ · HER MANŞET DOĞRULANMIŞ KAYITLARDAN</p>';
-  krediGetir();
-}
-
 /* ── OYUN ── */
 function drawOyun() {
   $('#scr-oyun').innerHTML =
@@ -1032,6 +1083,8 @@ document.addEventListener('click', function (e) {
   var g = e.target.closest('[data-geri]'); if (g) { history.back(); return; }
   var oy = e.target.closest('[data-oynat]'); if (oy) { oynat(oy.getAttribute('data-oynat'), oy.getAttribute('data-ad') || ''); return; }
   var ex = e.target.closest('[data-ext]'); if (ex) { window.open(ex.getAttribute('data-ext'), '_blank'); return; }
+  var mk = e.target.closest('[data-makale]');
+  if (mk) { drawMakale(+mk.getAttribute('data-makale')); return; }
   var dr = e.target.closest('[data-ders]');
   if (dr) {
     if (+dr.getAttribute('data-ders') === 0) drawDers();
