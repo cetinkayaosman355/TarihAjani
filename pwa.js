@@ -310,7 +310,30 @@
     + '@keyframes ta-scr-push{from{opacity:.35;transform:translateX(26%)}to{opacity:1;transform:none}}'
     + '#ta-app-home,#ta-app-arsiv,#ta-app-profil{animation:ta-scr-in .26s ease both}'
     + '#ta-app-dosya{animation:ta-scr-push .3s cubic-bezier(.3,.85,.35,1) both}'
-    + '@media(prefers-reduced-motion:reduce){#ta-app-home,#ta-app-arsiv,#ta-app-profil,#ta-app-dosya{animation:none}}';
+    /* ── SAYFALAR ARASI GEÇİŞ — koyu kadife perde + altın spinner ── */
+    + '@view-transition{navigation:auto}'
+    + '::view-transition-old(root){animation:ta-vt-out .2s ease both}'
+    + '::view-transition-new(root){animation:ta-vt-in .26s ease both}'
+    + '@keyframes ta-vt-out{to{opacity:0;transform:translateX(-4%)}}'
+    + '@keyframes ta-vt-in{from{opacity:0;transform:translateX(5%)}to{opacity:1;transform:none}}'
+    + '#ta-nav-veil{position:fixed;inset:0;z-index:2147483004;background:#07080d;opacity:0;pointer-events:none;'
+      + 'display:grid;place-items:center;transition:opacity .18s ease}'
+    + '#ta-nav-veil.on{opacity:1;pointer-events:auto}'
+    + '#ta-nav-veil i{width:30px;height:30px;border-radius:50%;border:2px solid rgba(230,196,120,.2);border-top-color:#e6c478;'
+      + 'animation:ta-nv-spin .8s linear infinite;opacity:0;transition:opacity .2s .25s}'
+    + '#ta-nav-veil.on i{opacity:1}'
+    + '@keyframes ta-nv-spin{to{transform:rotate(360deg)}}'
+    /* ── TUŞLAR — uygulama genelinde dokunma tepkisi ── */
+    + ':root.ta-standalone a,:root.ta-standalone button{-webkit-tap-highlight-color:transparent}'
+    + ':root.ta-standalone a:active,:root.ta-standalone button:active{opacity:.82;transition:opacity .06s}'
+    /* ── TAŞMA KORUMASI — hiçbir sayfa yana kaymaz ── */
+    + ':root.ta-standalone body{overflow-x:hidden!important;-webkit-text-size-adjust:100%}'
+    + ':root.ta-standalone img,:root.ta-standalone video,:root.ta-standalone iframe,:root.ta-standalone svg{max-width:100%}'
+    + ':root.ta-standalone pre,:root.ta-standalone table{max-width:100%;overflow-x:auto}'
+    /* üst çubuk: kaydırınca zarif gölge */
+    + '#ta-topbar.sc{box-shadow:0 10px 30px rgba(0,0,0,.5)}'
+    + '@media(prefers-reduced-motion:reduce){#ta-app-home,#ta-app-arsiv,#ta-app-profil,#ta-app-dosya{animation:none}'
+      + '::view-transition-old(root),::view-transition-new(root){animation:none}}';
 
   var TABS = [
     { k: 'home',   href: '/',        label: 'Masa',   d: 'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5' },
@@ -660,6 +683,66 @@
       window.scrollTo(0, 0);
     });
   }
+
+  /* ── SAYFALAR ARASI GEÇİŞ YÖNETİCİSİ ──
+     Uygulama içi her bağlantı: koyu perde kapanır → sayfa değişir → yeni
+     sayfada perde açılır. Modern tarayıcıda @view-transition ek yumuşaklık
+     katar; perde her tarayıcıda çalışan garantili temeldir. */
+  function navVeil() {
+    var v = document.getElementById('ta-nav-veil');
+    if (!v) {
+      v = document.createElement('div');
+      v.id = 'ta-nav-veil';
+      v.innerHTML = '<i></i>';
+      document.body.appendChild(v);
+    }
+    return v;
+  }
+  var navBusy = false;
+  // WINDOW capture: page-transition.js'in document dinleyicisinden ÖNCE koşar —
+  // uygulama içinde geçişin sahibi biziz (o script defaultPrevented'ı sayar).
+  window.addEventListener('click', function (e) {
+    if (e.defaultPrevented || navBusy) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (e.button && e.button !== 0)) return;
+    var a = e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+    var href = a.getAttribute('href') || '';
+    if (!href || href.charAt(0) === '#') return;
+    if (/^(mailto:|tel:|javascript:)/i.test(href)) return;
+    if (a.host && a.host !== location.host) return;                       // dış bağlantı
+    // aynı sayfada yalnız hash değişiyorsa perde yok
+    if (a.pathname === location.pathname && a.hash) return;
+    e.preventDefault();
+    navBusy = true;
+    try { sessionStorage.setItem('ta_nav', '1'); } catch (_e) {}
+    var v = navVeil();
+    requestAnimationFrame(function () { v.classList.add('on'); });
+    setTimeout(function () { location.href = a.href; }, 180);
+    setTimeout(function () { navBusy = false; v.classList.remove('on'); }, 4000);  // emniyet: nav gerçekleşmezse aç
+  }, true);
+  // yeni sayfa: perde kapalı başlar, içerik hazır olunca zarifçe açılır
+  (function () {
+    var geldi = false;
+    try { geldi = sessionStorage.getItem('ta_nav') === '1'; sessionStorage.removeItem('ta_nav'); } catch (_e) {}
+    if (!geldi) return;
+    function acil() {
+      var v = navVeil();
+      v.classList.add('on');
+      requestAnimationFrame(function () { requestAnimationFrame(function () { v.classList.remove('on'); }); });
+    }
+    if (document.body) acil(); else document.addEventListener('DOMContentLoaded', acil);
+  })();
+  // bfcache'ten dönüşte perde asla asılı kalmasın
+  window.addEventListener('pageshow', function () {
+    navBusy = false;
+    var v = document.getElementById('ta-nav-veil');
+    if (v) v.classList.remove('on');
+  });
+  // üst çubuk kaydırma gölgesi
+  window.addEventListener('scroll', function () {
+    var b = document.getElementById('ta-topbar');
+    if (b) b.classList.toggle('sc', window.scrollY > 8);
+  }, { passive: true });
 
   function ensure() {
     if (!document.body) return;

@@ -65,7 +65,7 @@
     var cta = document.createElement('a');
     cta.href = '/uyelik';
     cta.textContent = 'ÜCRETSİZ ÜYE OL · KODU KULLAN →';
-    cta.style.cssText = 'display:block;background:linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52);color:#171207;' +
+    cta.style.cssText = 'display:block;box-sizing:border-box;width:100%;text-align:center;background:linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52);color:#171207;' +
       'font-weight:800;font-size:12.5px;letter-spacing:.1em;text-decoration:none;padding:15px;';
     cta.onclick = function () { mark(); };
     card.appendChild(cta);
