@@ -768,6 +768,13 @@ ${prompt}`;
     // sahne olmadığından burada YALNIZ geçerli JSON şart. (Sahne-sayısı tekrarı
     // kaldırıldı — eskiden kısa videoda gereksiz çift üretime yol açıyordu.)
     if (isGen) {
+      // Model konuyu "geçersiz" işaretlediyse (saçma/rastgele giriş) → kredi
+      // DÜŞMEDEN dostça uyar. İstemci de ön-eleme yapar; bu sunucu yedeğidir.
+      const invalid = tryParseJson(result);
+      if (invalid && invalid.gecersiz === true) {
+        logRun({ action: "generate", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "gecersiz_konu" });
+        return json({ ok: false, error: String(invalid.mesaj || "Bunu bir tarih konusuna bağlayamadım — lütfen bir olay, kişi ya da dönem yaz.") }, 400);
+      }
       // #5: yalnız "geçerli JSON" değil, ZORUNLU alanlar da doğrulanır
       const validGen = (t: string) => {
         const o = tryParseJson(t);

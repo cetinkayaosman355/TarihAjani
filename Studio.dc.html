@@ -509,6 +509,9 @@
                 </div>
               </div>
             </sc-if>
+            <sc-if value="{{ ideaWarn }}" hint-placeholder-val="{{ '' }}">
+              <p style="margin: 16px 0 0; padding: 12px 14px; border: 1px solid rgba(201,120,90,.4); background: rgba(201,120,90,.08); color: #e0a58a; font-size: 13px; line-height: 1.6;">⚠ {{ ideaWarn }}</p>
+            </sc-if>
             <div style="display: flex; justify-content: flex-end; margin-top: 26px;">
               <button onClick="{{ toStep2 }}" disabled="{{ ideaEmpty }}" style="{{ nextBtnStyle }}" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">SEÇENEKLERE GEÇ →</button>
             </div>
@@ -1132,7 +1135,7 @@ class Component extends DCLogic {
       imgAspect: null, imgZoom: '',
       vpPlaying: '', vpBusy: '',
       step: 1,
-      idea: '',
+      idea: '', ideaWarn: '',
       fromArsiv: false, arsivPick: false, chipSeed: this._pickChips(),
       tone: 'merak', voice: 'kadir', style: 'sinematik', duration: 'dk4', model: 'claude', aspect: 'yatay', regenKey: null,
       fineOpen: (typeof window === 'undefined') || window.innerWidth > 840,   // U-01: ince ayar mobilde kapalı gelir
@@ -1515,6 +1518,23 @@ class Component extends DCLogic {
     const t = ((this.state.result || {}).baslik) || this.state.idea || '';
     this.setState({ mode: 'wizard', step: 2, fromArsiv: false, result: null, idea: t, tab: 'senaryo' });
     try { window.scrollTo(0, 0); } catch (e) {}
+  }
+
+  // Girilen konu GERÇEK bir tarih konusu mu, yoksa saçma/rastgele mi? Amaç:
+  // "asfdrew" gibi anlamsız girişte boşa araştırma+üretim yapıp kredi yakmamak.
+  // Basit ama etkili sezgiler (kelime API'si yok): sesli harf, ardışık sessiz
+  // yığını, en az bir okunabilir kelime. Emin olmadığında GEÇERLİ sayar
+  // (yanlış engelleme yerine sunucudaki AI yedeği elesin).
+  looksLikeTopic(t) {
+    t = (t || '').trim();
+    if (t.length < 4) return false;
+    const low = t.toLocaleLowerCase('tr');
+    if (!/[aeıioöuü]/.test(low)) return false;                       // hiç sesli yoksa gibberish
+    if (/[bcçdfgğhjklmnprsştvyzqwx]{4,}/i.test(low)) return false;   // 4+ ardışık sessiz = gerçek kelime değil
+    const vowels = (low.match(/[aeıioöuü]/g) || []).length;
+    if (vowels / low.replace(/\s/g, '').length < 0.18) return false; // sesli oranı çok düşük
+    const words = low.split(/\s+/).filter(w => /[a-zçğıöşü]{3,}/i.test(w) && /[aeıioöuü]/.test(w));
+    return words.length >= 1;
   }
 
   // Arşiv başlıkları — "Arşivden hikâye bul" paneli ve fikir önerileri için
@@ -2296,6 +2316,7 @@ class Component extends DCLogic {
 
 BU ÜRETİMİN PARAMETRELERİ:
 - KONU: ${s.idea}
+- ⛔ GEÇERLİLİK KONTROLÜ (ÖNCE BUNU YAP): Eğer KONU anlamlı bir tarih/insanlık konusu DEĞİLSE — rastgele harfler (ör. "asdfgh"), anlamsız kelimeler, boş ya da tarihle ilgisiz saçma bir ifade ise — hiçbir dosya ÜRETME. Bunun yerine SADECE şu tek JSON'u döndür, başka hiçbir şey yazma: {"gecersiz": true, "mesaj": "Bunu bir tarih konusuna bağlayamadım; bir olay, kişi ya da dönem yazar mısın?"}. Konu geçerli bir tarih konusuysa bu kuralı yok say ve normal üret.
 - Anlatım tonu: ${tonStr}
 - Seslendirme tarzı: ${sesStr}
 - Görsel stil çekirdeği (her görsel/video promptunun BAŞINA birebir konur): ${stilStr}
@@ -2571,6 +2592,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   async startGenerate() {
     const s = this.state;
     if (s.generating) return;
+    // Saçma/rastgele konuda üretime GİRME → boşa araştırma+üretim, kredi yakma yok
+    if (!this.looksLikeTopic(s.idea || '')) {
+      this.setState({ step: 1, ideaWarn: 'Bu geçerli bir tarih konusu gibi görünmüyor. Bir olay, kişi, dönem ya da soru yaz — ya da SEN ÖNER’e bas.' });
+      return;
+    }
     const cost = this.costOf();
     if (s.credits < cost) { this.setState({ creditModal: true }); return; }
     this.setState({ step: 3, generating: true, genError: '', genPct: 4 });
@@ -3111,8 +3137,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       }),
 
       idea: s.idea,
-      onIdea: e => this.setState({ idea: e.target.value }),
+      onIdea: e => this.setState({ idea: e.target.value, ideaWarn: '' }),
       ideaEmpty: !s.idea.trim(),
+      ideaWarn: s.ideaWarn,
       ideaShort: s.idea.length > 70 ? s.idea.slice(0, 70) + '…' : s.idea,
       ideaChips: ((s.chipSeed && s.chipSeed.length) ? s.chipSeed : chips).map(c => ({ text: c, use: () => this.setState({ idea: c }) })),
       openArsivPick: () => this.setState({ arsivPick: true }),
@@ -3129,7 +3156,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         color: s.idea.trim() ? '#171207' : '#676d7c'
       },
       toStep1: () => this.setState({ step: 1 }),
-      toStep2: () => { if (s.idea.trim()) this.setState({ step: 2 }); },
+      toStep2: () => {
+        const v = (s.idea || '').trim();
+        if (!v) return;
+        if (!this.looksLikeTopic(v)) {
+          this.setState({ ideaWarn: 'Bu geçerli bir tarih konusu gibi görünmüyor. Bir olay, kişi, dönem ya da soru yaz (ör. "Kanuni’nin Zigetvar seferi") — ya da SEN ÖNER’e bas.' });
+          return;
+        }
+        this.setState({ step: 2, ideaWarn: '' });
+      },
 
       optionGroups: groups,
       startGenerate: () => this.startGenerate(),
