@@ -1426,12 +1426,14 @@ class Component extends DCLogic {
         { id: 'duygusal', name: 'Duygusal · İnsani', desc: 'Yaşayanların gözünden, sıcak ve dokunaklı' }
       ],
       voice: [
-        { id: 'kadir', name: 'Kadir Kayışcı · Anlatıcı', desc: 'Derin, olgun, yumuşak — profesyonel Türkçe anlatıcı', engine: 'eleven', elId: 'j82ax9yhzfYwq9lDvRWL', oa: 'onyx', el: { name: 'Kadir Kayışcı', id: 'j82ax9yhzfYwq9lDvRWL', stability: 0.5, style: 0.15 } },
-        { id: 'erkek', name: 'Erkek · Anlatıcı', desc: 'Derin, güven veren klasik anlatıcı', oa: 'onyx', el: { name: 'Adam', id: 'pNInz6obpgDQGcFmaJgB', stability: 0.5, style: 0.35 } },
-        { id: 'erkek-gizemli', name: 'Erkek · Gizemli', desc: 'Alçak tonlu, sır verir gibi', oa: 'echo', el: { name: 'Antoni', id: 'ErXwobaYiN019PkySvjV', stability: 0.42, style: 0.5 } },
-        { id: 'erkek-net', name: 'Erkek · Net', desc: 'Berrak, güçlü, tempolu sunum', oa: 'ash', el: { name: 'Josh', id: 'TxGEqnHWrfWFTfGW9XjX', stability: 0.5, style: 0.3 } },
-        { id: 'kadin-belgesel', name: 'Kadın · Belgesel', desc: 'Sıcak, akıcı, profesyonel', oa: 'nova', el: { name: 'Bella', id: 'EXAVITQu4vr4xnSDxMaL', stability: 0.6, style: 0.2 } },
-        { id: 'kadin-olgun', name: 'Kadın · Olgun', desc: 'Sakin, ağırbaşlı, güven veren', oa: 'sage', el: { name: 'Rachel', id: '21m00Tcm4TlvDq8ikWAM', stability: 0.62, style: 0.18 } }
+        // HEPSİ ElevenLabs (eleven_multilingual_v2 · Türkçe) — OpenAI sesleri kaldırıldı.
+        // 'oa' yalnız sunucuda SESSİZ yedek (ElevenLabs anlık hata verirse ses kesilmesin).
+        { id: 'kadir', name: 'Kadir Kayışçı · İmza Anlatıcı', desc: 'Derin, olgun, yumuşak — imza Türkçe anlatıcımız', engine: 'eleven', elId: 'j82ax9yhzfYwq9lDvRWL', oa: 'onyx', el: { name: 'Kadir Kayışçı', id: 'j82ax9yhzfYwq9lDvRWL', stability: 0.5, style: 0.15 } },
+        { id: 'erkek', name: 'Erkek · Anlatıcı', desc: 'Derin, güven veren klasik belgesel sesi', engine: 'eleven', elId: 'pNInz6obpgDQGcFmaJgB', oa: 'onyx', el: { name: 'Adam', id: 'pNInz6obpgDQGcFmaJgB', stability: 0.5, style: 0.35 } },
+        { id: 'erkek-gizemli', name: 'Erkek · Gizemli', desc: 'Alçak tonlu, sır verir gibi', engine: 'eleven', elId: 'ErXwobaYiN019PkySvjV', oa: 'echo', el: { name: 'Antoni', id: 'ErXwobaYiN019PkySvjV', stability: 0.42, style: 0.5 } },
+        { id: 'erkek-net', name: 'Erkek · Net', desc: 'Berrak, güçlü, tempolu sunum', engine: 'eleven', elId: 'TxGEqnHWrfWFTfGW9XjX', oa: 'ash', el: { name: 'Josh', id: 'TxGEqnHWrfWFTfGW9XjX', stability: 0.5, style: 0.3 } },
+        { id: 'kadin-belgesel', name: 'Kadın · Belgesel', desc: 'Sıcak, akıcı, profesyonel', engine: 'eleven', elId: 'EXAVITQu4vr4xnSDxMaL', oa: 'nova', el: { name: 'Bella', id: 'EXAVITQu4vr4xnSDxMaL', stability: 0.6, style: 0.2 } },
+        { id: 'kadin-olgun', name: 'Kadın · Olgun', desc: 'Sakin, ağırbaşlı, güven veren', engine: 'eleven', elId: '21m00Tcm4TlvDq8ikWAM', oa: 'sage', el: { name: 'Rachel', id: '21m00Tcm4TlvDq8ikWAM', stability: 0.62, style: 0.18 } }
       ],
       style: [
         { id: 'hollywood', name: 'Hollywood Gerçekçi', desc: 'ARRI sinema kamerası, profesyonel ışık, fotogerçekçi' },

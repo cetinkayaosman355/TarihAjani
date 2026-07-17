@@ -513,6 +513,15 @@ function drawMasaMisafir() {
         (a.img ? '<img src="' + a.img + '" alt="" loading="lazy">' : '') +
         '<span><b>' + esc(a.baslik) + '</b><span>' + esc(a.kat || '') + ' · ' + esc((a.dl || '').replace(/—$/, '')) + '</span></span></div>';
     }).join('') +
+    '<div class="sh"><b>ÖĞREN & OKU</b></div>' +
+    '<div class="kart" data-go="akademi"><div class="krow">' +
+    '<span class="rz">🎓</span><span class="m"><b>Ajan Akademisi</b>' +
+    '<span>9 derslik içerik üretim eğitimi — ilk ders ücretsiz.</span></span>' +
+    '<span class="git">›</span></div></div>' +
+    '<div class="kart" data-oynat="/kitaplik" data-ad="Dijital Kitaplık"><div class="krow">' +
+    '<span class="rz">📚</span><span class="m"><b>Dijital Kitaplık</b>' +
+    '<span>Ajan Z’nin bürosu — tarih dosyaları, sayfa sayfa okunan dijital kitaplar.</span></span>' +
+    '<span class="git">›</span></div></div>' +
     '<div style="padding:20px 14px 0"><button class="cta" data-go="profil">ÜCRETSİZ ÜYE OL · HEMEN ÜRETMEYE BAŞLA →</button>' +
     '<button class="cta ghost" style="margin-top:10px" data-go="oyun">♞ Önce oyunlarla dene</button></div>' +
     '<p class="alt-not" style="margin-top:14px">Üyeliksiz de gez — üretmek için ücretsiz kayıt ol</p>';
@@ -630,10 +639,12 @@ var STIL_CORE = {
   minyatur: 'traditional Ottoman-Persian miniature illustration, gold-leaf accents, vivid tempera colors, full-bleed, no border',
   animasyon: 'high-quality 3D animated feature film still, Pixar-DreamWorks style expressive characters, soft global illumination, warm vibrant colors'
 };
-// Sesler — web Studio ile birebir; Kadir Kayışçı = ElevenLabs (stabil, tonu kaymaz)
+// Sesler — HEPSİ ElevenLabs (eleven_multilingual_v2 · Türkçe); web Studio ile birebir.
+// 5. eleman yalnız sunucuda SESSİZ yedek (ElevenLabs anlık hata verirse ses kesilmesin).
 var SESLER = [
-  ['kadir', 'Kadir Kayışçı', 'eleven', 'j82ax9yhzfYwq9lDvRWL', 'onyx'],
+  ['kadir', 'Kadir Kayışçı · İmza', 'eleven', 'j82ax9yhzfYwq9lDvRWL', 'onyx'],
   ['erkek', 'Erkek · Anlatıcı', 'eleven', 'pNInz6obpgDQGcFmaJgB', 'onyx'],
+  ['erkek-gizemli', 'Erkek · Gizemli', 'eleven', 'ErXwobaYiN019PkySvjV', 'echo'],
   ['erkek-net', 'Erkek · Net', 'eleven', 'TxGEqnHWrfWFTfGW9XjX', 'ash'],
   ['kadin-belgesel', 'Kadın · Belgesel', 'eleven', 'EXAVITQu4vr4xnSDxMaL', 'nova'],
   ['kadin-olgun', 'Kadın · Olgun', 'eleven', '21m00Tcm4TlvDq8ikWAM', 'sage']
