@@ -220,7 +220,38 @@ body.sheet-acik #sheet-veil{opacity:1;pointer-events:auto}
 #scr-oynat .obar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;background:rgba(8,10,16,.97);
   border-bottom:1px solid var(--line);padding:calc(6px + env(safe-area-inset-top,0px)) 10px 6px}
 #scr-oynat .obar b{font-family:'Playfair Display',serif;font-size:15px}
-#scr-oynat iframe{display:block;width:100%;height:calc(100vh - 118px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));border:0;background:#000}
+#scr-oynat iframe{display:block;width:100%;height:calc(100dvh - 54px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));border:0;background:#000}
+/* oyun oynanırken alt menü gizlenir → oyunun kendi butonları kesilmez */
+body.oyun-modu #tabbar{display:none}
+/* ── marka başlığı + sol menü ── */
+.mbar{display:flex;align-items:center;gap:11px;padding:8px 16px 12px}
+.menubtn{flex:none;width:42px;height:42px;border-radius:12px;border:1px solid rgba(193,154,82,.5);background:rgba(193,154,82,.1);display:grid;place-items:center;cursor:pointer}
+.menubtn:active{transform:scale(.94)}
+.menubtn i{display:block;width:18px;height:2px;background:var(--gold);border-radius:2px;box-shadow:0 -6px 0 var(--gold),0 6px 0 var(--gold)}
+.mbar .brand{flex:1;font-family:'Playfair Display',serif;font-size:20px;font-weight:800;color:#f0e8d4;letter-spacing:.01em}
+.uyebtn{flex:none;border:0;background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:12px;letter-spacing:.04em;padding:11px 15px;border-radius:11px;cursor:pointer}
+.uyebtn:active{transform:scale(.95)}
+/* ── misafir vitrin ── */
+.mhero{margin:2px 14px 0;padding:26px 22px;border-radius:18px;border:1px solid var(--line);background:radial-gradient(120% 90% at 50% 0%,#1a2340,#0a0d16);text-align:center}
+.mhero .k{font-size:10px;letter-spacing:.28em;color:var(--brass)}
+.mhero h1{margin:10px 0 0;font-family:'Playfair Display',serif;font-size:25px;line-height:1.22;color:#f4ecd8}
+.mhero h1 em{font-style:italic;color:var(--gold)}
+.mhero p{margin:11px auto 0;max-width:32ch;color:#a8aebc;font-size:13.5px;line-height:1.65}
+.mhero .go{display:block;width:100%;margin-top:18px;border:0;background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:13.5px;letter-spacing:.04em;padding:15px;border-radius:13px;cursor:pointer}
+.adim{display:flex;gap:13px;align-items:flex-start;padding:11px 18px}
+.adim .n{flex:none;width:32px;height:32px;border-radius:50%;border:1px solid rgba(193,154,82,.5);display:grid;place-items:center;color:var(--gold);font-family:'Playfair Display',serif;font-weight:800;font-size:15px}
+.adim b{display:block;font-size:15px;color:#f0e8d4}
+.adim span{display:block;margin-top:2px;color:var(--mut);font-size:12.5px;line-height:1.55}
+.ornek{margin:12px 14px 0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)}
+.ornek img{width:100%;height:150px;object-fit:cover;display:block;filter:saturate(1.02)}
+.ornek .ic{padding:14px 15px}
+.ornek b{font-family:'Playfair Display',serif;font-size:16px;color:#f0e8d4}
+.ornek p{margin:5px 0 10px;font-size:12px;color:var(--mut);line-height:1.5}
+.ornek audio{width:100%}
+.mnews{display:flex;gap:12px;align-items:flex-start;padding:11px 18px;border-top:1px solid rgba(230,220,196,.06);cursor:pointer}
+.mnews img{flex:none;width:84px;height:60px;object-fit:cover;border-radius:9px;border:1px solid rgba(193,154,82,.25)}
+.mnews b{display:block;font-family:'Playfair Display',serif;font-size:14px;line-height:1.3;color:#ede4cf}
+.mnews span{display:block;margin-top:3px;font-size:9px;letter-spacing:.14em;color:#c0706c;font-weight:800}
 /* paket / ürün kartları */
 .pk{margin:10px 16px 0;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:15px;display:flex;align-items:center;gap:13px}
 .pk .m{flex:1;min-width:0}
@@ -337,7 +368,7 @@ var TABS = [
 var cur = '';
 function go(k, push, sessiz) {
   if (k === cur && k !== 'dosya') return;
-  var ifr = $('#scr-oynat'); if (ifr && k !== 'oynat') ifr.innerHTML = '';   // oynatıcıyı bırak
+  var ifr = $('#scr-oynat'); if (ifr && k !== 'oynat') { ifr.innerHTML = ''; document.body.classList.remove('oyun-modu'); }   // oynatıcıyı bırak
   document.querySelectorAll('.scr').forEach(function (s) { s.classList.remove('on', 'push'); });
   var el = $('#scr-' + k);
   if (!el) return;
@@ -363,6 +394,7 @@ function oynat(url, ad) {
     '<iframe src="' + esc(url) + '" allow="autoplay; fullscreen"></iframe>';
   document.querySelectorAll('.scr').forEach(function (s) { s.classList.remove('on', 'push'); });
   el.classList.add('on', 'push'); cur = 'oynat';
+  document.body.classList.add('oyun-modu');   // tam ekran oyun (alt menü gizli)
   try { history.pushState({ k: donus || 'masa' }, ''); } catch (e) {}
   $('#o-geri').addEventListener('click', function () { el.innerHTML = ''; cur = ''; go(donus || 'masa'); });
   // Aynı origin: oyun sayfasının kendi site-menü linklerini uygulamada GİZLE —
@@ -436,19 +468,53 @@ var HERO_IDX = (function () {   // görseli olan dosyaların indeksleri (hero ro
   for (var i = 0; i < SLUGS.length; i++) if (imgFor(i)) out.push(i);
   return out.length ? out : [0];
 })();
-function drawMasa() {
+// Marka başlığı — solda belirgin menü, ortada "Tarih Ajanı", sağda kredi/üye
+function masaBar() {
+  var sag = user
+    ? '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button>'
+    : '<button class="uyebtn" data-go="profil">ÜYE OL</button>';
+  return '<div class="mbar"><button class="menubtn" data-sheet aria-label="Menü"><i></i></button>' +
+    '<span class="brand">Tarih Ajanı</span>' + sag + '</div>';
+}
+function drawMasa() { if (user) drawMasaAjan(); else drawMasaMisafir(); }
+
+// ── MİSAFİR (girişsiz) ANA SAYFA — ne yaptığımız net; örnek + son dakika ──
+function drawMasaMisafir() {
   var el = $('#scr-masa');
-  var now = new Date(), sa = now.getHours();
-  var selam = sa < 6 ? 'İyi geceler' : sa < 12 ? 'Günaydın' : sa < 18 ? 'İyi günler' : 'İyi akşamlar';
-  var ad = user ? (user.user_metadata && user.user_metadata.full_name || user.email.split('@')[0]).split(' ')[0] : 'Ajan';
-  var gun = ['PAZAR','PAZARTESİ','SALI','ÇARŞAMBA','PERŞEMBE','CUMA','CUMARTESİ'][now.getDay()];
-  var ay = ['OCAK','ŞUBAT','MART','NİSAN','MAYIS','HAZİRAN','TEMMUZ','AĞUSTOS','EYLÜL','EKİM','KASIM','ARALIK'][now.getMonth()];
+  var haber = MAKALE.slice(0, 5);
+  el.innerHTML = masaBar() +
+    '<div class="mhero"><p class="k">YAPAY ZEKÂ TARİH STÜDYOSU</p>' +
+    '<h1>Tarihi anlatan videoları<br><em>dakikalar içinde</em> üret</h1>' +
+    '<p>Bir konu yaz — araştırılmış senaryo, profesyonel seslendirme ve sinematik sahneler senin için hazırlansın.</p>' +
+    '<button class="go" data-go="profil">ÜCRETSİZ BAŞLA · 30 KREDİ →</button></div>' +
+    '<div class="sh"><b>NASIL ÇALIŞIR?</b></div>' +
+    '<div class="adim"><span class="n">1</span><span><b>Konuyu yaz</b><span>“Kanuni’nin Zigetvar seferi” — tek cümle yeter.</span></span></div>' +
+    '<div class="adim"><span class="n">2</span><span><b>Ajan işi devralır</b><span>Kaynakları araştırır, senaryoyu yazar, seslendirir, sahneleri görselleştirir.</span></span></div>' +
+    '<div class="adim"><span class="n">3</span><span><b>Yayına hazır paket</b><span>Senaryo, seslendirme ve görseller elinde — YouTube’a yükle.</span></span></div>' +
+    '<div class="sh"><b>ÖRNEK ÜRETİM · DİNLE</b><button data-go="ornek">hepsi →</button></div>' +
+    '<div class="ornek"><img src="/assets/haber/sezar-suikasti.jpg" alt="">' +
+    '<div class="ic"><b>Sezar — Mart’ın Ortasında</b><p>Gerçek bir Studio çıktısı: araştırılmış senaryo + profesyonel seslendirme.</p>' +
+    '<audio controls preload="none" src="/assets/ses/sezar.mp3"></audio></div></div>' +
+    '<div class="sh"><b>SON DAKİKA · TARİH AJANSI</b><button data-go="haber">tümü →</button></div>' +
+    haber.map(function (a) {
+      return '<div class="mnews" data-makale="' + MAKALE.indexOf(a) + '">' +
+        (a.img ? '<img src="' + a.img + '" alt="" loading="lazy">' : '') +
+        '<span><b>' + esc(a.baslik) + '</b><span>' + esc(a.kat || '') + ' · ' + esc((a.dl || '').replace(/—$/, '')) + '</span></span></div>';
+    }).join('') +
+    '<div style="padding:20px 14px 0"><button class="cta" data-go="profil">ÜCRETSİZ ÜYE OL · HEMEN ÜRETMEYE BAŞLA →</button>' +
+    '<button class="cta ghost" style="margin-top:10px" data-go="oyun">♞ Önce oyunlarla dene</button></div>' +
+    '<p class="alt-not" style="margin-top:14px">Üyeliksiz de gez — üretmek için ücretsiz kayıt ol</p>';
+  krediGetir();
+}
+
+// ── AJAN (girişli) PANOSU — çalışma masası ──
+function drawMasaAjan() {
+  var el = $('#scr-masa');
+  var now = new Date();
   var doy = Math.floor((now - new Date(now.getFullYear(),0,0)) / 86400000);
   var hi = HERO_IDX[doy % HERO_IDX.length];            // görseli doğru eşleşen dosyalardan seç
   var hero = DATA[hi] || { baslik: 'Gizli Arşiv', era: '' };
-  el.innerHTML =
-    '<div class="h-row"><div><b>' + selam + ', ' + esc(ad) + '</b><span class="alt">' + gun + ' · ' + now.getDate() + ' ' + ay + '</span></div>' +
-    '<span style="display:flex;gap:8px"><button class="kredi" data-sheet>☰</button><button class="kredi" data-go="kesfet">✦ Keşfet</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
+  el.innerHTML = masaBar() +
     '<div class="hero" data-dosya="' + hi + '">' +
     '<img src="' + imgFor(hi) + '" alt="">' +
     '<span class="bd">GÜNÜN DOSYASI</span>' +
