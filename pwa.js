@@ -10,6 +10,25 @@
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('/sw.js').catch(function () {});
     });
+    // GÜNCELLEME AKIŞI: yeni sürüm devraldığında altın "YENİLE" pili göster —
+    // kullanıcı tek dokunuşla en yeni uygulamayı alır ("değişmedi" derdi biter).
+    var reloaded = false;
+    var hadController = !!navigator.serviceWorker.controller;   // ilk kurulumda pil GÖSTERME
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (reloaded || !hadController || !navigator.serviceWorker.controller) return;
+      reloaded = true;
+      if (document.getElementById('ta-upd')) return;
+      var p = document.createElement('button');
+      p.id = 'ta-upd';
+      p.textContent = '✦ Uygulama güncellendi — YENİLE';
+      p.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:2147483002;' +
+        'border:0;cursor:pointer;background:linear-gradient(110deg,#a77d35,#d8b26a 50%,#c19a52);color:#171207;font-weight:800;font-size:12.5px;' +
+        'letter-spacing:.04em;padding:13px 20px;border-radius:24px;box-shadow:0 14px 40px rgba(0,0,0,.55),0 0 22px rgba(230,196,120,.35);' +
+        'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+      p.addEventListener('click', function () { location.reload(); });
+      (document.body || document.documentElement).appendChild(p);
+      setTimeout(function () { if (p.parentElement) p.remove(); }, 30000);
+    });
   }
 
   // uygulama olarak açıldıysa (veya ?app=1 önizlemedeyse) hiç ipucu/çubuk gösterme
@@ -134,9 +153,26 @@
     + '#ta-app-home{position:fixed;inset:0;z-index:2147483000;background:#07080d;overflow-y:auto;-webkit-overflow-scrolling:touch;'
       + 'padding:calc(14px + env(safe-area-inset-top,0px)) 0 calc(96px + env(safe-area-inset-bottom,0px));'
       + 'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}'
-    + '#ta-app-home .hel{padding:8px 18px 14px}'
+    + '#ta-app-home .hel{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:8px 18px 14px}'
     + '#ta-app-home .hel b{display:block;font-family:"Playfair Display",Georgia,serif;font-size:23px;font-weight:700;color:#f4ecd8;line-height:1.1}'
     + '#ta-app-home .hel span{display:block;margin-top:4px;font-size:10px;letter-spacing:.22em;color:#77705c}'
+    /* kredi çipi — uygulama hissi: bakiye hep görünür */
+    + '.ta-kredi{flex:none;display:inline-flex;align-items:center;gap:6px;text-decoration:none;margin-top:3px;'
+      + 'border:1px solid rgba(193,154,82,.45);background:rgba(193,154,82,.1);border-radius:20px;padding:7px 13px;'
+      + 'color:#e6c478;font-weight:800;font-size:12px;font-variant-numeric:tabular-nums;-webkit-tap-highlight-color:transparent}'
+    + '.ta-kredi:active{transform:scale(.95)}'
+    /* oyun tüneli kartı */
+    + '#ta-app-home .oyunkart{display:block;margin:14px 14px 0;border-radius:15px;overflow:hidden;position:relative;'
+      + 'border:1px solid rgba(193,154,82,.3);background:linear-gradient(120deg,#101426,#090c16);text-decoration:none;-webkit-tap-highlight-color:transparent}'
+    + '#ta-app-home .oyunkart:active{transform:scale(.985)}'
+    + '#ta-app-home .oyunkart .ust2{display:flex;align-items:center;gap:13px;padding:13px 15px 10px}'
+    + '#ta-app-home .oyunkart .rz{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid rgba(193,154,82,.5);display:grid;place-items:center;color:#e6c478;font-size:17px}'
+    + '#ta-app-home .oyunkart b{display:block;color:#ede4cf;font-size:14px;font-weight:700}'
+    + '#ta-app-home .oyunkart .m span{display:block;margin-top:2px;color:#8a8f9c;font-size:11px}'
+    + '#ta-app-home .oyunkart .git{margin-left:auto;color:#c19a52;font-size:18px}'
+    + '#ta-app-home .oyunkart .minis{display:flex;gap:7px;padding:0 15px 13px}'
+    + '#ta-app-home .oyunkart .minis span{flex:1;text-align:center;font-size:10px;letter-spacing:.06em;color:#c9c2ae;'
+      + 'border:1px solid rgba(129,135,151,.25);border-radius:9px;padding:8px 4px;background:rgba(255,255,255,.02)}'
     + '#ta-app-home .hero{position:relative;display:block;margin:0 14px;border-radius:20px;overflow:hidden;height:min(52vw,236px);'
       + 'border:1px solid rgba(193,154,82,.3);text-decoration:none;-webkit-tap-highlight-color:transparent;background:#0c0e16}'
     + '#ta-app-home .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}'
@@ -330,7 +366,8 @@
     var el = document.createElement('div');
     el.id = 'ta-app-home';
     el.innerHTML =
-      '<div class="hel"><b>' + selam + '</b><span>' + gun + ' · ' + now.getDate() + ' ' + ay + ' · İSTANBUL</span></div>'
+      '<div class="hel"><div><b>' + selam + '</b><span>' + gun + ' · ' + now.getDate() + ' ' + ay + ' · İSTANBUL</span></div>'
+      + '<a class="ta-kredi" href="/uyelik" data-ta-kredi>🪙 <span class="kv">—</span></a></div>'
       // günün dosyası: arşivden, uygulama içi detaya
       + '<a class="hero" href="/arsiv#dosya-' + (hero.di + 1) + '"><img src="' + hero.img + '" alt="">'
       + '<span class="bd">GÜNÜN DOSYASI</span>'
@@ -350,6 +387,11 @@
       + '<a class="akkart" href="/egitim"><span class="rz">IX</span>'
       + '<span class="m"><b>Ajan Akademisi</b><span>Ders 1 · Söylenti ile kaydı ayırmak — 9 derslik program</span></span>'
       + '<span class="git">›</span></a>'
+      // oyun tüneli kartı — 3 saha oyunu
+      + '<a class="oyunkart" href="/zaman-tuneli"><span class="ust2"><span class="rz">♞</span>'
+      + '<span class="m"><b>Oyun Tüneli</b><span>3 saha oyunu · rütbeni kanıtla</span></span>'
+      + '<span class="git">›</span></span>'
+      + '<span class="minis"><span>◈ Zaman Görevi</span><span>♞ Satranç 1402</span><span>🏺 Mangala</span></span></a>'
       + '<div class="sh"><b>SON DAKİKA</b><a href="/haber/">tümü →</a></div>'
       + NEWS.slice(0, 3).map(function (n) {
           return '<a class="nrow" href="' + n.href + '"><span class="yil">' + esc(n.y) + '</span><p>' + esc(n.t) + '</p><span class="ok">›</span></a>';
@@ -544,6 +586,43 @@
     return u;
   }
   function mIco(d) { return '<svg viewBox="0 0 24 24"><path d="' + d + '"/></svg>'; }
+
+  /* ── kredi bakiyesi: önce cihazdaki son değer ANINDA, sonra sunucudan taze ── */
+  function okuToken() {
+    var t = null;
+    try {
+      Object.keys(localStorage).forEach(function (k) {
+        if (t) return;
+        if (k.indexOf('sb-') === 0 && k.indexOf('auth-token') !== -1) {
+          var v = JSON.parse(localStorage.getItem(k) || 'null');
+          t = v && (v.access_token || (v.currentSession && v.currentSession.access_token)) || null;
+        }
+      });
+    } catch (e) {}
+    return t;
+  }
+  var krediBusy = false, krediSon = 0;
+  function doldurKredi() {
+    var yerler = document.querySelectorAll('[data-ta-kredi] .kv');
+    if (!yerler.length) return;
+    var cached = '';
+    try { cached = localStorage.getItem('ta_kredi_v1') || ''; } catch (e) {}
+    if (cached !== '') yerler.forEach(function (y) { y.textContent = cached + ' KR'; });
+    if (krediBusy || Date.now() - krediSon < 90000) return;   // sunucuyu en çok 90 sn'de bir yokla
+    var tok = okuToken();
+    if (!tok) { if (cached === '') yerler.forEach(function (y) { y.textContent = 'GİRİŞ'; }); return; }
+    krediBusy = true; krediSon = Date.now();
+    fetch('https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/credits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+      body: JSON.stringify({ action: 'balance' })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      krediBusy = false;
+      if (!d || typeof d.credits !== 'number') return;
+      try { localStorage.setItem('ta_kredi_v1', String(d.credits)); } catch (e) {}
+      document.querySelectorAll('[data-ta-kredi] .kv').forEach(function (y) { y.textContent = d.credits + ' KR'; });
+    }).catch(function () { krediBusy = false; });
+  }
   function buildProfil() {
     if (activeKey() !== 'profil' || profilKapali) return;
     if (document.getElementById('ta-app-profil')) return;
@@ -558,16 +637,21 @@
       + '<span>' + (u ? esc(u.email) : 'Giriş yapılmadı — üyelik sayfasından giriş yap') + '</span></div></div>'
       + '<button class="seviye" id="ta-pr-seviye">Üyelik &amp; Seviyeleri Gör →</button>'
       + '<div class="grup">'
+      + '<a class="mrow" href="/uyelik" data-ta-kredi>' + mIco('M12 2 2 7l10 5 10-5-10-5Zm0 10v10') + '<span style="flex:1">Kredi Bakiyem</span><b style="color:#e6c478;font-variant-numeric:tabular-nums"><span class="kv">—</span></b><i>›</i></a>'
+      + '</div>'
+      + '<div class="grup">'
       + '<a class="mrow" href="/urunler">' + mIco('M3 7l2-3h14l2 3M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Zm7 4h4') + '<span>Ajan Teçhizatı — ürünler</span><i>›</i></a>'
       + '<a class="mrow" href="/ekitap">' + mIco('M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h13') + '<span>E-Kitaplarım</span><i>›</i></a>'
       + '<a class="mrow" href="/egitim">' + mIco('M12 3 2 8l10 5 10-5-10-5Zm-6 7v4c0 1.7 2.7 3 6 3s6-1.3 6-3v-4') + '<span>Ajan Akademisi</span><i>›</i></a>'
-      + '<a class="mrow" href="/zaman-tuneli">' + mIco('M12 8v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z') + '<span>Zaman Tüneli</span><i>›</i></a>'
+      + '<a class="mrow" href="/zaman-tuneli">' + mIco('M12 8v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z') + '<span>Oyun Tüneli — 3 saha oyunu</span><i>›</i></a>'
+      + '<a class="mrow" href="/kitaplik">' + mIco('M4 20V4h4v16H4Zm6 0V4h4v16h-4Zm7.5-.3-3-15 3.9-.8 3 15-3.9.8Z') + '<span>Dijital Kitaplık</span><i>›</i></a>'
       + '</div>'
       + '<div class="grup">'
+      + '<a class="mrow" href="/neden">' + mIco('M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm-.2-6.2c0-2.4 2.7-2.5 2.7-4.3 0-1.2-1-2-2.4-2-1.2 0-2.1.6-2.6 1.5M12 17.8v.1') + '<span>Neden Tarih Ajanı?</span><i>›</i></a>'
       + '<a class="mrow" href="mailto:iletisim@tarihajani.com">' + mIco('M4 6h16v12H4zM4 7l8 6 8-6') + '<span>İletişim</span><i>›</i></a>'
       + '<a class="mrow" href="/gizlilik">' + mIco('M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3Z') + '<span>Gizlilik &amp; KVKK</span><i>›</i></a>'
       + '</div>'
-      + '<div class="alt">TARİH AJANI UYGULAMASI · 1.0</div>';
+      + '<div class="alt">TARİH AJANI UYGULAMASI · 1.1</div>';
     document.body.appendChild(el);
     el.querySelector('#ta-pr-seviye').addEventListener('click', function () {
       profilKapali = true;
@@ -585,6 +669,7 @@
     buildArsiv();
     buildProfil();
     buildChrome();
+    doldurKredi();
   }
   // dc'nin render döngüsüne karışmamak için MutationObserver YOK —
   // yüzen butonlarla aynı güvenli desen: DOMContentLoaded + periyodik yoklama.
