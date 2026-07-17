@@ -340,6 +340,18 @@ function toast(m) {
   var t = $('#toast'); t.textContent = m; t.classList.add('on');
   clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('on'); }, 2600);
 }
+// Sorun bildir — bağlam + cihaz bilgisiyle bize ulaşır (müşteri muhatapsız kalmasın)
+function sorunBildir(baglam) {
+  var bilgi = 'Bağlam: ' + (baglam || '-') +
+    '\nHesap: ' + (user ? user.email : 'giriş yok') +
+    '\nKredi: ' + (kredi == null ? '?' : kredi) +
+    '\nCihaz: ' + navigator.userAgent +
+    '\n\nSorun (lütfen ne yaşadığını yaz):\n';
+  var url = 'mailto:iletisim@tarihajani.com?subject=' + encodeURIComponent('Tarih Ajanı — Sorun Bildirimi') +
+    '&body=' + encodeURIComponent(bilgi);
+  location.href = url;
+  toast('Bildirimin bize ulaşacak 🙏');
+}
 function kopyala(t) {
   (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(
     function () { toast('⧉ Kopyalandı'); },
@@ -604,11 +616,11 @@ function drawDosya(i, sessiz) {
 var TONLAR = [['merak','🔍 Merak'],['dramatik','⚡ Dramatik'],['belgesel','📜 Belgesel'],['destansi','🏛 Destansı'],['duygusal','💛 Duygusal']];
 var STILLER = [['hollywood','🎬 Gerçekçi'],['sinematik','🌒 Sinematik'],['belgeselfoto','📷 Belgesel'],['gravur','🖋 Gravür'],['minyatur','🎨 Minyatür'],['animasyon','✨ Animasyon']];
 var TON_TARIF = {
-  merak: 'DEDEKTİF/VAKA üslubu: her bölüm bir soruyla açılır, ipucu ipucu ilerler, kesin hükmü sona saklar.',
-  dramatik: 'YÜKSEK GERİLİM: kısa vurucu cümleler, anın içine sokan sinematik anlatım.',
-  belgesel: 'KAYNAK ODAKLI ölçülü uzman sesi; iddia-kanıt dengesi, güven veren akış.',
-  destansi: 'DESTANSI: epik ölçek, yükselen ritim, kader-miras vurgusu; olguya sadık.',
-  duygusal: 'İNSANİ ve SICAK: olayı yaşayanların gözünden, dokunaklı ayrıntılarla.'
+  merak: 'meraklı ve sürükleyici bir belgesel anlatıcısı gibi; olayı bir sır çözer gibi merak uyandırarak, ama akıcı düzyazıyla anlat.',
+  dramatik: 'yüksek gerilimli, sinematik bir anlatı; kısa vurucu cümlelerle uzun akan cümleleri dönüşümlü kullan, okuru anın içine sok.',
+  belgesel: 'kaynak odaklı, ölçülü ve güven veren bir uzman sesi; iddiayı kanıtla dengele, abartma.',
+  destansi: 'destansı, epik bir ölçek ve yükselen ritim; kader ve miras vurgusuyla, olguya sadık kalarak anlat.',
+  duygusal: 'insani ve sıcak; olayı yaşayan sıradan insanların gözünden, dokunaklı ayrıntılarla anlat.'
 };
 var STIL_CORE = {
   hollywood: 'ultra-photorealistic cinematic film still shot on ARRI Alexa 65, professional cinema lighting, richly lit epic scale, 8K clarity, hyperreal',
@@ -618,7 +630,15 @@ var STIL_CORE = {
   minyatur: 'traditional Ottoman-Persian miniature illustration, gold-leaf accents, vivid tempera colors, full-bleed, no border',
   animasyon: 'high-quality 3D animated feature film still, Pixar-DreamWorks style expressive characters, soft global illumination, warm vibrant colors'
 };
-var uret = { ton: 'merak', stil: 'sinematik', sure: 60, busy: false, sonuc: null, hata: '', konu: '' };
+// Sesler — web Studio ile birebir; Kadir Kayışçı = ElevenLabs (stabil, tonu kaymaz)
+var SESLER = [
+  ['kadir', 'Kadir Kayışçı', 'eleven', 'j82ax9yhzfYwq9lDvRWL', 'onyx'],
+  ['erkek', 'Erkek · Anlatıcı', 'eleven', 'pNInz6obpgDQGcFmaJgB', 'onyx'],
+  ['erkek-net', 'Erkek · Net', 'eleven', 'TxGEqnHWrfWFTfGW9XjX', 'ash'],
+  ['kadin-belgesel', 'Kadın · Belgesel', 'eleven', 'EXAVITQu4vr4xnSDxMaL', 'nova'],
+  ['kadin-olgun', 'Kadın · Olgun', 'eleven', '21m00Tcm4TlvDq8ikWAM', 'sage']
+];
+var uret = { ton: 'merak', stil: 'sinematik', sure: 60, ses: 'kadir', busy: false, sonuc: null, hata: '', konu: '' };
 /* SEN ÖNER — anında, hatasız: yerel seçkin havuz (karışık sıra, tekrar yok) */
 var ONERI = (function () {
   var p = ['Hezârfen gerçekten uçtu mu? Boğaz’ı geçen adamın belge yüzü',
@@ -654,9 +674,11 @@ function drawUret() {
     TONLAR.map(function (t) { return '<button class="chip' + (uret.ton === t[0] ? ' on' : '') + '" data-ton="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
     '<div class="sh"><b>GÖRSEL STİL</b></div><div class="opt-grid">' +
     STILLER.map(function (t) { return '<button class="chip' + (uret.stil === t[0] ? ' on' : '') + '" data-stil="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="sh"><b>ANLATICI SESİ</b></div><div class="opt-grid">' +
+    SESLER.map(function (v) { return '<button class="chip' + (uret.ses === v[0] ? ' on' : '') + '" data-ses="' + v[0] + '">🎙 ' + v[1] + '</button>'; }).join('') + '</div>' +
     '<div class="sh"><b>SÜRE</b></div><div class="sure">' +
-    '<input id="u-sure" type="range" min="30" max="180" step="30" value="' + uret.sure + '">' +
-    '<div class="val"><span>30 sn</span><b id="u-sure-v">' + sureText() + ' · ' + uretKredi() + ' KR</b><span>3 dk</span></div></div>' +
+    '<input id="u-sure" type="range" min="30" max="600" step="30" value="' + uret.sure + '">' +
+    '<div class="val"><span>30 sn</span><b id="u-sure-v">' + sureText() + ' · ' + uretKredi() + ' KR</b><span>10 dk</span></div></div>' +
     (uret.hata ? '<div class="hata">' + esc(uret.hata) + '</div>' : '') +
     '<div style="padding:20px 16px 0"><button class="cta" id="u-go">◉ &nbsp;ÜRET · ' + uretKredi() + ' KR</button>' +
     '<p class="alt-not" style="margin-top:12px">Seslendirme ve sahne görselleri üretimden sonra dosyanın içinde</p></div>' +
@@ -678,6 +700,7 @@ function drawUret() {
   });
   el.querySelectorAll('[data-ton]').forEach(function (b) { b.addEventListener('click', function () { uret.ton = b.getAttribute('data-ton'); drawUret(); }); });
   el.querySelectorAll('[data-stil]').forEach(function (b) { b.addEventListener('click', function () { uret.stil = b.getAttribute('data-stil'); drawUret(); }); });
+  el.querySelectorAll('[data-ses]').forEach(function (b) { b.addEventListener('click', function () { uret.ses = b.getAttribute('data-ses'); drawUret(); }); });
   $('#u-go').addEventListener('click', uretBasla);
   krediGetir();
 }
@@ -714,17 +737,22 @@ function uretMesaj(m, pct) {
 }
 function buildUretPrompt() {
   var sec = uret.sure;
-  var bolum = Math.max(2, Math.round(sec / 70));
+  var bolum = Math.max(3, Math.round(sec / 60));          // ~1 bölüm/dakika
   var kelime = Math.round(sec * 2.3);
-  return 'Sen "Tarih Ajanı" kanalının kıdemli senaristi ve araştırmacısısın. Aşağıdaki konu için TAM bir video üretim dosyası hazırla.\n' +
+  var sahne = Math.max(4, Math.round(sec / 8));           // ~1 sahne / 8 sn (1dk≈7, 3dk≈22)
+  return 'Sen "Tarih Ajanı" kanalının kıdemli senaristi ve araştırmacısısın. Aşağıdaki tarih konusu için PROFESYONEL, yayına hazır TAM bir video dosyası hazırla. Kalite çıtası: büyük bir belgesel kanalının seviyesi.\n' +
     'KONU: ' + uret.konu + '\n' +
-    'SÜRE: toplam ~' + sec + ' saniye seslendirme (~' + kelime + ' kelime, ' + bolum + ' bölüm). Bu süre KİLİTLİDİR.\n' +
-    'TON: ' + (TON_TARIF[uret.ton] || TON_TARIF.merak) + '\n' +
-    'YAZIM: sesli okunacak — tüm sayı/tarihler YAZIYLA; kısa vurucu ve akan cümleler dönüşümlü; klişe yasak ("tarihin tozlu sayfaları" vb.); somut isim/tarih/yer; tarihî doğruluk esas, emin olunmayan "rivayete göre".\n' +
-    'GÖRSEL STİL ÇEKİRDEĞİ (her görsel promptu bununla BAŞLAR): "' + STIL_CORE[uret.stil] + '"\n' +
-    'GÖRSEL PROMPTLAR: bölüm başına 2 sahne; İngilizce, 40-70 kelime, dönem-doğru, "9:16 vertical" içerir, şu satırla biter: "No modern text, no watermark, no distorted anatomy."\n' +
+    'SÜRE: toplam ~' + sec + ' saniye seslendirme (~' + kelime + ' kelime, ' + bolum + ' akıcı bölüm). Bu süre KİLİTLİDİR — daha kısa yazma.\n' +
+    'ANLATIM TONU: ' + (TON_TARIF[uret.ton] || TON_TARIF.merak) + '\n' +
+    'MUTLAK KURALLAR:\n' +
+    '1) Metin AKICI DÜZYAZI olacak — sesli okunacak bir belgesel anlatımı gibi. ASLA "Soru:", "İpucu 1", "İpucu 2", "Cevap:", "Bölüm 1:" gibi ETİKET/BAŞLIK/madde YAZMA. Sadece anlatı cümleleri.\n' +
+    '2) İlk cümle güçlü bir kancayla başlar; her bölüm bir öncekinden doğal devralır, sonda merak bırakır.\n' +
+    '3) Tüm sayı ve tarihleri YAZIYLA yaz ("1453" değil "bin dört yüz elli üç"; "II. Mehmed" değil "İkinci Mehmed"). Kısaltma/parantez yok.\n' +
+    '4) Somut isim, tarih, yer ve ayrıntı geçir; klişe yok ("tarihin tozlu sayfaları", "yolculuğumuz" yasak). Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver.\n' +
+    'GÖRSEL STİL ÇEKİRDEĞİ (her görsel promptu KELİMESİ KELİMESİNE bununla BAŞLAR): "' + STIL_CORE[uret.stil] + '"\n' +
+    'GÖRSEL PROMPTLAR: TAM ' + sahne + ' sahne üret (anlatıyı sırayla görselleştir). Her biri İngilizce, 45-75 kelime, dönem-doğru (anakronizm yok), "9:16 vertical" içerir ve şu satırla biter: "No modern text, no watermark, no distorted anatomy." Tanınmış tarihî kişi geçiyorsa belgelenmiş görünümünü tarif et.\n' +
     'Konu gerçek bir tarih konusu değilse ya da anlamsızsa SADECE şunu döndür: {"gecersiz":true,"mesaj":"..."}\n' +
-    'ÇIKTI: SADECE geçerli tek JSON. Şema: {"baslik":"...","logline":"...","senaryo":[{"bolum":"...","sure":"0:00-0:30","metin":"TAM seslendirme metni"}],"gorsel_promptlar":[{"sahne":"...","prompt":"..."}],"kapak":[{"ad":"Kapak","prompt":"..."}]}';
+    'ÇIKTI: SADECE geçerli tek JSON, başka hiçbir şey yazma. Şema: {"baslik":"...","logline":"...","senaryo":[{"bolum":"kısa bölüm adı","sure":"0:00-0:30","metin":"TAM akıcı seslendirme metni"}],"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","prompt":"İngilizce görsel"}],"kapak":[{"ad":"Kapak","prompt":"İngilizce"}]}';
 }
 function parseGen(text) {
   var t = String(text || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '');
@@ -753,11 +781,15 @@ function uretBasla() {
   var mi = 0, pct = 6;
   var mt = setInterval(function () { mi = Math.min(mi + 1, msgs.length - 1); pct += 9; uretMesaj(msgs[mi], pct); }, 5000);
   var job = 'app' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  var bedava = uret.bedava; uret.bedava = false;   // ücretsiz yeniden-üret bayrağı (sunucu doğrular)
   function call() {
+    var g = { action: 'generate', provider: 'claude', prompt: buildUretPrompt(), topic: uret.konu, duration: 's' + uret.sure, max_tokens: 8000, job: job };
+    if (bedava && uret.prevJob) { g.regen = true; g.prevJob = uret.prevJob; }
+    uret.prevJob = job;
     return fetch(FN, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
-      body: JSON.stringify({ action: 'generate', provider: 'claude', prompt: buildUretPrompt(), topic: uret.konu, duration: 's' + uret.sure, max_tokens: 8000, job: job })
+      body: JSON.stringify(g)
     }).then(function (r) { return r.json().then(function (d) { return { st: r.status, d: d }; }); });
   }
   function fetchResult() {
@@ -771,7 +803,8 @@ function uretBasla() {
     clearInterval(mt);
     var obj = parseGen(d.result || d.text || '');
     if (!obj || !obj.baslik) { uret.busy = false; uret.hata = 'Dosya çözümlenemedi — TEKRAR DENE (tamamlandıysa kredisiz geri gelir).'; drawUret(); return; }
-    if (typeof d.credits === 'number') { kredi = d.credits; }
+    if (typeof d.credits === 'number') { kredi = d.credits; krediYaz(); }
+    if (bedava) uret.bedavaKullanildi = true;   // ücretsiz yeniden-üret hakkı tükendi
     uret.sonuc = obj; uret.busy = false;
     try {
       var st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}');
@@ -817,10 +850,14 @@ function drawSonuc() {
     }).join('') + '</div></div>' +
     '<div style="padding:18px 14px 0;display:grid;gap:10px">' +
     '<div id="s-ses-kutu"><button class="cta" id="s-ses">🎙 &nbsp;SESLENDİR · ' + ttsKredi() + ' KR</button></div>' +
-    '<button class="cta ghost" id="s-yeni">+ &nbsp;Yeni dosya üret</button></div>' +
+    (uret.bedavaKullanildi ? '' : '<button class="cta ghost" id="s-yenile">↻ &nbsp;Beğenmedim — yeniden üret (1 kez ücretsiz)</button>') +
+    '<button class="cta ghost" id="s-yeni">+ &nbsp;Yeni dosya üret</button>' +
+    '<button class="cta ghost" style="border-color:rgba(176,65,62,.5);color:#e08a80" id="s-sorun">⚑ &nbsp;Sorun bildir</button></div>' +
     '<p class="alt-not" style="margin-top:14px">Dosyan uygulamada ve Studio geçmişinde saklı</p>';
   $('#s-geri').addEventListener('click', function () { uret.sonuc = null; drawUret(); });
   $('#s-yeni').addEventListener('click', function () { uret.sonuc = null; uret.konu = ''; drawUret(); });
+  $('#s-sorun').addEventListener('click', function () { sorunBildir('Üretim: ' + (r.baslik || uret.konu)); });
+  var yb = $('#s-yenile'); if (yb) yb.addEventListener('click', function () { uret.bedava = true; uret.sonuc = null; uretBasla(); });
   $('#s-ses').addEventListener('click', seslendir);
   document.querySelectorAll('[data-kopya]').forEach(function (b) {
     b.addEventListener('click', function () { kopyala((uret.sonuc.gorsel_promptlar[+b.getAttribute('data-kopya')] || {}).prompt || ''); });
@@ -836,10 +873,14 @@ function seslendir() {
   var kutu = $('#s-ses-kutu'), btn = $('#s-ses');
   if (!user) { uyeGoster('seslendirme'); return; }
   btn.disabled = true; btn.textContent = '🎙  ÜRETİLİYOR… (~20 sn)';
+  var v = null; for (var i = 0; i < SESLER.length; i++) if (SESLER[i][0] === uret.ses) v = SESLER[i];
+  v = v || SESLER[0];
+  var govde = { action: 'tts', text: ttsMetin(), voice: v[4] };   // OpenAI yedeği
+  if (v[2] === 'eleven') { govde.engine = 'eleven'; govde.voiceId = v[3]; }   // Kadir vb. → ElevenLabs (stabil)
   fetch(FN, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
-    body: JSON.stringify({ action: 'tts', text: ttsMetin(), voice: 'onyx' })
+    body: JSON.stringify(govde)
   }).then(function (r) { return r.json().then(function (d) { return { st: r.status, d: d }; }); }).then(function (r) {
     if (!r.d || !r.d.ok || !r.d.url) {
       btn.disabled = false; btn.textContent = '🎙  SESLENDİR · ' + ttsKredi() + ' KR';
