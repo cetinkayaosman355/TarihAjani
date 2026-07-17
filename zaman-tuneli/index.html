@@ -90,11 +90,19 @@
     .bb{position:absolute;left:0;right:0;height:10.5vh;background:#010207;z-index:4;transform:scaleY(0)}
     .bb.t{top:0;transform-origin:top}.bb.b{bottom:0;transform-origin:bottom}
     .boot .bb{animation:bar-in .8s .3s cubic-bezier(.2,.8,.2,1) forwards}
-    .boot-stage{position:absolute;inset:0;z-index:5;display:grid;place-items:center;text-align:center;animation:bshake .45s 1.32s cubic-bezier(.3,.9,.3,1),stage-out .55s 3.35s ease forwards}
-    .boot-kick{margin:0 0 16px;color:var(--cyan);font:700 .6rem/1 'Special Elite',monospace;letter-spacing:.3em;text-indent:.3em;opacity:0;animation:kick-in .55s .3s ease forwards}
-    .boot-title{margin:0;display:flex;justify-content:center;font:800 clamp(2.7rem,9.5vw,6.2rem)/1 'Playfair Display',serif;letter-spacing:.04em}
-    .boot-title span{display:inline-block;opacity:0;background:linear-gradient(110deg,#B18742,#E6C478 45%,#FFF0B1 55%,#9D7536);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 16px rgba(0,0,0,.8));animation:ltr .58s calc(.5s + var(--i)*.055s) cubic-bezier(.2,.9,.3,1.25) forwards}
-    .boot-title .sp{width:.34em}
+    .boot-stage{position:absolute;inset:0;z-index:5;display:grid;place-items:center;text-align:center;animation:stage-out .55s 3.35s ease forwards}
+    .boot-kick{margin:18px 0 0;color:var(--gold);font:700 .66rem/1 'Special Elite',monospace;letter-spacing:.5em;text-indent:.5em;opacity:0;animation:kick-in .8s .9s ease forwards}
+    /* Premium mühür: iç içe dönen astrolab halkaları + altın TA monogramı */
+    .boot-emb{position:relative;width:clamp(150px,26vw,220px);height:clamp(150px,26vw,220px);margin:0 auto;display:grid;place-items:center;opacity:0;animation:emb-in 1.1s .25s cubic-bezier(.2,.8,.2,1) forwards}
+    .be-ring{position:absolute;border-radius:50%}
+    .be-ring.r1{inset:0;border:1px solid rgba(201,162,90,.55);border-top-color:transparent;border-bottom-color:transparent;animation:spin 14s linear infinite}
+    .be-ring.r2{inset:11%;border:1px dashed rgba(230,196,120,.4);animation:spin 22s linear infinite reverse}
+    .be-ring.r3{inset:23%;border:1px solid rgba(201,162,90,.3);border-left-color:transparent;border-right-color:transparent;animation:spin 9s linear infinite}
+    .be-tick{position:absolute;inset:5.5%;border-radius:50%;background:repeating-conic-gradient(rgba(230,196,120,.5) 0 .35deg,transparent .35deg 6deg);-webkit-mask:radial-gradient(circle,transparent 62%,#000 63%,#000 66%,transparent 67%);mask:radial-gradient(circle,transparent 62%,#000 63%,#000 66%,transparent 67%);animation:spin 40s linear infinite}
+    .be-mono{font:800 clamp(2.6rem,7vw,4rem)/1 'Playfair Display',serif;letter-spacing:.06em;background:linear-gradient(110deg,#B18742,#E6C478 45%,#FFF0B1 55%,#9D7536);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 18px rgba(0,0,0,.85));animation:mono-breathe 3.2s ease-in-out infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes emb-in{from{opacity:0;transform:scale(.55) rotate(-14deg);filter:blur(8px)}to{opacity:1;transform:scale(1) rotate(0);filter:blur(0)}}
+    @keyframes mono-breathe{0%,100%{filter:drop-shadow(0 4px 18px rgba(0,0,0,.85)) drop-shadow(0 0 10px rgba(230,196,120,.25))}50%{filter:drop-shadow(0 4px 18px rgba(0,0,0,.85)) drop-shadow(0 0 26px rgba(230,196,120,.6))}}
     .boot-line{margin:20px 0 0;color:#b8b3a6;font:400 .6rem/1 'Special Elite',monospace;letter-spacing:.3em;opacity:0;animation:reveal .5s 1.68s ease forwards}
     .boot-bar{width:min(320px,64vw);height:2px;margin:15px auto 0;background:rgba(201,162,90,.16);overflow:hidden;opacity:0;animation:reveal .4s 1.74s ease forwards}
     .boot-bar i{display:block;height:100%;background:linear-gradient(90deg,#A77D35,#E6C478,#FFF0B1);transform:scaleX(0);transform-origin:left;animation:bfill 1.55s 1.8s cubic-bezier(.35,.6,.25,1) forwards;box-shadow:0 0 12px rgba(230,196,120,.8)}
@@ -109,7 +117,9 @@
     .boot-skip{position:absolute;left:50%;bottom:3.6vh;transform:translateX(-50%);z-index:7;color:rgba(240,236,226,.42);font:700 .52rem/1 'Special Elite',monospace;letter-spacing:.28em;opacity:0;animation:reveal .6s 2.1s ease forwards}
     .boot.open .boot-stage,.boot.open .boot-art,.boot.open .bb,.boot.open .boot-vig,.boot.open .boot-skip,.boot.open .boot-embers,.boot.open .boot-ring{opacity:0!important;transition:opacity .4s ease}
     @keyframes boot-ring{0%{transform:translate(-50%,-50%) scale(.04);opacity:0}14%{opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
-    @keyframes boot-art{from{opacity:0;transform:scale(1.24)}35%{opacity:.9}to{opacity:.6;transform:scale(1.045)}}
+    @keyframes boot-art{from{opacity:0;transform:scale(1.24)}35%{opacity:.95}to{opacity:.85;transform:scale(1.045)}}
+    .boot-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 38%}
+    @media(prefers-reduced-motion:reduce){.boot-video{display:none}}
     @keyframes bar-in{to{transform:scaleY(1)}}
     @keyframes kick-in{from{opacity:0;letter-spacing:.62em;filter:blur(4px)}to{opacity:1;letter-spacing:.3em;filter:blur(0)}}
     @keyframes ltr{from{opacity:0;transform:translateY(-.85em) scale(1.75) rotate(5deg);filter:blur(14px) drop-shadow(0 4px 16px rgba(0,0,0,.8))}62%{opacity:1;transform:translateY(.05em) scale(.97);filter:blur(0) drop-shadow(0 4px 16px rgba(0,0,0,.8))}to{opacity:1;transform:none;filter:drop-shadow(0 4px 16px rgba(0,0,0,.8))}}
@@ -197,16 +207,22 @@
   <!-- WOW GİRİŞ: mühür + tarama + genişleyen zaman halkaları -->
   <div class="boot" id="boot" aria-hidden="true">
     <div class="boot-door dl"></div><div class="boot-door dr"></div>
-    <div class="boot-art"></div>
+    <div class="boot-art"><video class="boot-video" autoplay muted loop playsinline preload="auto" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_100754_25cbab9c-f866-4e6a-b7fc-32acc10e2cf5.mp4"></video></div>
     <div class="boot-vig"></div>
     <div class="bb t"></div><div class="bb b"></div>
     <div class="boot-ring"></div><div class="boot-ring b2"></div><div class="boot-ring b3"></div>
     <div class="boot-embers"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="boot-stage">
       <div>
-        <p class="boot-kick">TARİH AJANI · OYUN BİRİMİ</p>
-        <h2 class="boot-title"><span style="--i:0">Z</span><span style="--i:1">A</span><span style="--i:2">M</span><span style="--i:3">A</span><span style="--i:4">N</span><span class="sp" style="--i:5"> </span><span style="--i:6">T</span><span style="--i:7">Ü</span><span style="--i:8">N</span><span style="--i:9">E</span><span style="--i:10">L</span><span style="--i:11">İ</span></h2>
-        <p class="boot-line">KRONO-ÇEKİRDEK DEVREDE · GEÇİT AÇILIYOR</p>
+        <div class="boot-emb" aria-hidden="true">
+          <span class="be-ring r1"></span>
+          <span class="be-ring r2"></span>
+          <span class="be-ring r3"></span>
+          <span class="be-tick"></span>
+          <span class="be-mono">TA</span>
+        </div>
+        <p class="boot-kick">TARİH AJANI</p>
+        <p class="boot-line">GEÇİT AÇILIYOR</p>
         <div class="boot-bar"><i></i></div>
         <p class="boot-pct" id="bootpct">%0</p>
       </div>
@@ -248,7 +264,7 @@
   </script>
   <a class="site-return" href="/">TA · ANA SAYFA</a>
   <canvas id="universe" aria-hidden="true"></canvas>
-  <div class="hero-art" aria-hidden="true"><div class="art-base"><video class="art-video" autoplay muted loop playsinline preload="auto" poster="/zaman-tuneli/assets/hero.webp" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_095457_3e2e6c9a-7345-41e8-86be-6b47c73a862c.mp4"></video></div><div class="art-depth"></div><div class="art-veil"></div><div class="art-glow"></div><div class="art-scan"></div></div>
+  <div class="hero-art" aria-hidden="true"><div class="art-base"><video class="art-video" autoplay muted loop playsinline preload="auto" poster="/zaman-tuneli/assets/hero.webp" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_100946_8e135673-876f-48a2-bbad-509d84b52ee4.mp4"></video></div><div class="art-depth"></div><div class="art-veil"></div><div class="art-glow"></div><div class="art-scan"></div></div>
   <main>
     <section class="hero" aria-labelledby="title">
       <div class="content">
