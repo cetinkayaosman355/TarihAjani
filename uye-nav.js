@@ -105,6 +105,30 @@
       a.addEventListener('click', function (e) { e.preventDefault(); cb(); });
       menuEl.appendChild(a); return a;
     }
+    // Kredi satırı: önce cihazdaki son bilinen değer anında, sonra sunucudan taze
+    var kr = document.createElement('div');
+    kr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(193,154,82,.35);background:rgba(193,154,82,.07);color:#e6c478;font-weight:700;';
+    var cached = '';
+    try { cached = localStorage.getItem('ta_kredi_v1') || ''; } catch (e) {}
+    kr.innerHTML = '<span>🪙 KREDİN</span><span data-kr-val>' + (cached !== '' ? cached + ' KR' : '…') + '</span>';
+    menuEl.appendChild(kr);
+    (function fetchCredits() {
+      if (!sbClient) return;
+      sbClient.auth.getSession().then(function (r) {
+        var tok = r && r.data && r.data.session && r.data.session.access_token;
+        if (!tok) return;
+        fetch(SB_URL + '/functions/v1/credits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+          body: JSON.stringify({ action: 'balance' })
+        }).then(function (res) { return res.json(); }).then(function (d) {
+          if (!d || typeof d.credits !== 'number') return;
+          try { localStorage.setItem('ta_kredi_v1', String(d.credits)); } catch (e) {}
+          var v = kr.querySelector('[data-kr-val]');
+          if (v) v.textContent = d.credits + ' KR';
+        }).catch(function () {});
+      });
+    })();
     item('👤 ÜYELİK PANELİM', function () { closeMenu(); window.location.href = '/uyelik'; });
     item('🎬 STUDIO', function () { closeMenu(); window.location.href = '/studio'; });
     item('🗂 ARŞİV', function () { closeMenu(); window.location.href = '/arsiv'; });
