@@ -271,6 +271,16 @@ body.oyun-modu #tabbar{display:none}
   letter-spacing:.06em;padding:11px 16px;border-radius:10px;cursor:pointer}
 .pk .al:active{transform:scale(.95)}
 audio{width:100%;margin-top:10px}
+/* PREMIUM SES OYNATICI — beyaz native yerine koyu+altın özel oynatıcı */
+.aud{display:flex;align-items:center;gap:13px;background:linear-gradient(180deg,rgba(193,154,82,.09),rgba(193,154,82,.03));border:1px solid rgba(193,154,82,.28);border-radius:13px;padding:11px 14px;margin-top:11px}
+.aud .pb{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:linear-gradient(135deg,#f0cd82,#c19a52);color:#171207;font-size:15px;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 18px rgba(201,162,90,.32);transition:transform .12s}
+.aud .pb:active{transform:scale(.92)}
+.aud .bar{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.13);position:relative;cursor:pointer}
+.aud .bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:3px;background:linear-gradient(90deg,#c19a52,#f0cd82)}
+.aud .bar i::after{content:"";position:absolute;right:-5px;top:50%;transform:translateY(-50%);width:11px;height:11px;border-radius:50%;background:#f6dc9a;box-shadow:0 0 8px rgba(240,205,130,.7)}
+.aud .t{flex:none;font-size:11px;color:#a8aebc;font-variant-numeric:tabular-nums;min-width:84px;text-align:right;letter-spacing:.02em}
+/* Arşiv satırı kapak görseli */
+.drow .kap{flex:none;width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid var(--line)}
 /* sahne görseli — kutuya oturur, tıklanınca lightbox; dev açılmaz */
 .scene-img{display:block;width:100%;max-height:52vh;object-fit:contain;background:#05070d;border-radius:10px;margin-top:10px;border:1px solid var(--line);cursor:zoom-in}
 .gtag{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(193,154,82,.3);background:rgba(193,154,82,.06);color:#c9c2ae;font-size:11px;padding:6px 10px;border-radius:8px;margin:0 6px 6px 0}
@@ -463,6 +473,31 @@ window.addEventListener('popstate', function (e) {
   go(st.k || 'masa', false, true);
 });
 try { history.replaceState({ k: 'masa' }, ''); } catch (e) {}
+/* ── PREMIUM SES OYNATICI (özel, koyu) — tek anda bir çalar ── */
+function sesSure(s) { s = Math.max(0, s | 0); var m = (s / 60) | 0, ss = s % 60; return m + ':' + (ss < 10 ? '0' : '') + ss; }
+function sesKutu(src) { return '<div class="aud" data-src="' + esc(src) + '"><button class="pb" aria-label="Oynat">▶</button><div class="bar"><i></i></div><span class="t">0:00</span></div>'; }
+var _curAud = null;
+function sesToggle(box) {
+  var a = box._au;
+  if (!a) {
+    a = new Audio(box.getAttribute('data-src')); box._au = a;
+    a.addEventListener('timeupdate', function () {
+      var pct = a.duration ? (a.currentTime / a.duration * 100) : 0;
+      box.querySelector('.bar i').style.width = pct + '%';
+      box.querySelector('.t').textContent = sesSure(a.currentTime) + ' / ' + sesSure(a.duration || 0);
+    });
+    a.addEventListener('ended', function () { box.querySelector('.pb').textContent = '▶'; box.querySelector('.bar i').style.width = '0%'; });
+  }
+  if (a.paused) {
+    if (_curAud && _curAud._au && _curAud._au !== a) { _curAud._au.pause(); _curAud.querySelector('.pb').textContent = '▶'; }
+    _curAud = box; a.play().catch(function () {}); box.querySelector('.pb').textContent = '⏸';
+  } else { a.pause(); box.querySelector('.pb').textContent = '▶'; }
+}
+document.addEventListener('click', function (e) {
+  var pb = e.target.closest('.aud .pb'); if (pb) { sesToggle(pb.closest('.aud')); return; }
+  var bar = e.target.closest('.aud .bar');
+  if (bar) { var box = bar.closest('.aud'), a = box._au; if (a && a.duration) { var r = bar.getBoundingClientRect(); a.currentTime = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * a.duration; } }
+});
 /* Lightbox kontrolleri (bir kez) */
 $('#lb-kapat').addEventListener('click', imgLbKapat);
 $('#imglb').addEventListener('click', function (e) { if (e.target.id === 'imglb') imgLbKapat(); });
@@ -545,7 +580,7 @@ function drawMasaMisafir() {
     '<div class="sh"><b>ÖRNEK ÜRETİM · DİNLE</b><button data-go="ornek">hepsi →</button></div>' +
     '<div class="ornek"><img src="/assets/haber/sezar-suikasti.jpg" alt="">' +
     '<div class="ic"><b>Sezar — Mart’ın Ortasında</b><p>Gerçek bir Studio çıktısı: araştırılmış senaryo + profesyonel seslendirme.</p>' +
-    '<audio controls preload="none" src="/assets/ses/sezar.mp3"></audio></div></div>' +
+    sesKutu('/assets/ses/sezar.mp3') + '</div></div>' +
     '<div class="sh"><b>SON DAKİKA · TARİH AJANSI</b><button data-go="haber">tümü →</button></div>' +
     haber.map(function (a) {
       return '<div class="mnews" data-makale="' + MAKALE.indexOf(a) + '">' +
@@ -638,8 +673,12 @@ function drawArsiv() {
     DATA.forEach(function (d, i) {
       if (f && (d.baslik + ' ' + (d.era || '') + ' ' + (d.ozet || '')).toLocaleLowerCase('tr').indexOf(f) === -1) return;
       n++;
-      html += '<div class="drow" data-dosya="' + i + '"><span class="no">' + String(i + 1).padStart(2, '0') + '</span>' +
-        '<span class="m"><b>' + esc(d.baslik) + '</b><span>' + esc(d.era || 'TARİH DOSYASI') + '</span></span>' +
+      var im = imgFor(i);
+      var bas = im
+        ? '<img class="kap" src="' + im + '" alt="" loading="lazy">'
+        : '<span class="no">' + String(i + 1).padStart(2, '0') + '</span>';
+      html += '<div class="drow" data-dosya="' + i + '">' + bas +
+        '<span class="m"><b>' + esc(d.baslik) + '</b><span>' + esc(d.era || d.fileNo || 'VAKA DOSYASI') + '</span></span>' +
         '<span class="git" style="color:var(--brass)">›</span></div>';
     });
     $('#ar-liste').innerHTML = n ? html : '<div class="bos">Dosya bulunamadı — başka bir iz sür.</div>';
@@ -1032,7 +1071,7 @@ function seslendir() {
     }
     if (typeof r.d.credits === 'number') { kredi = r.d.credits; krediYaz(); }
     kutu.innerHTML = '<div class="sec ac" style="margin:0"><div class="sbh"><b>SESLENDİRME ✓</b></div><div class="ic">' +
-      '<audio controls src="' + esc(r.d.url) + '"></audio>' +
+      sesKutu(r.d.url) +
       '<a class="cta ghost" style="margin-top:10px;display:flex" href="' + esc(r.d.url) + '" download="tarih-ajani.mp3">⬇ &nbsp;MP3 indir</a></div></div>';
     toast('Seslendirme hazır 🎙');
   }).catch(function () {
@@ -1449,7 +1488,7 @@ function drawOrnek() {
         return '<div class="kart" style="margin:0"><div style="padding:15px 16px 17px">' +
           '<b class="serif" style="font-size:15.5px;color:#ede4cf">' + o[1] + '</b>' +
           '<p style="margin:6px 0 11px;font-size:12px;line-height:1.6;color:var(--mut)">' + o[2] + '</p>' +
-          '<audio controls preload="none" src="/assets/ses/' + o[0] + '.mp3"></audio></div></div>';
+          sesKutu('/assets/ses/' + o[0] + '.mp3') + '</div></div>';
       }).join('') + '</div>';
   }
   el.innerHTML =
