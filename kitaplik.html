@@ -293,42 +293,33 @@
   }
   .buro-don:hover { color: var(--gold-bright); border-color: var(--gold); background: rgba(201,162,75,.08); }
 
-  header { text-align: center; padding: 72px 20px 30px; }
-  .muhur {
-    width: 88px; height: 88px; margin: 0 auto 22px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; font-size: 2.2rem;
-    background: radial-gradient(circle at 32% 28%, #3a2f1c, #171208 74%);
-    border: 1px solid var(--gold-dim);
-    box-shadow: 0 0 0 6px rgba(201,162,75,.07), 0 0 0 1px rgba(201,162,75,.25),
-      0 18px 40px rgba(0,0,0,.6), inset 0 2px 8px rgba(233,207,142,.15);
-    position: relative;
-  }
-  .muhur::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; border: 1px dashed rgba(201,162,75,.45); }
+  header { text-align: center; padding: 26px 20px 8px; }
+  .muhur { display: none; }
   .ust-etiket {
-    font-size: .72rem; letter-spacing: .55em; text-indent: .55em;
-    text-transform: uppercase; color: var(--gold); margin-bottom: 14px;
+    font-size: .64rem; letter-spacing: .5em; text-indent: .5em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 8px;
   }
   h1.baslik {
     font-family: var(--serif-display); font-weight: 600;
-    font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: .02em;
+    font-size: clamp(1.8rem, 4.6vw, 3rem); line-height: 1.04; letter-spacing: .02em;
     background: linear-gradient(160deg, #f6e7c1 20%, var(--gold) 55%, #9c7b3c 85%);
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 4px 22px rgba(201,162,75,.22));
   }
-  .ayrac { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 22px auto 18px; color: var(--gold-dim); }
-  .ayrac::before, .ayrac::after { content: ""; height: 1px; width: min(160px, 24vw); background: linear-gradient(to var(--yon, right), transparent, var(--gold-dim)); }
+  .ayrac { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 12px auto 10px; color: var(--gold-dim); }
+  .ayrac::before, .ayrac::after { content: ""; height: 1px; width: min(120px, 20vw); background: linear-gradient(to var(--yon, right), transparent, var(--gold-dim)); }
   .ayrac::before { --yon: right; } .ayrac::after { --yon: left; }
-  .ayrac span { font-size: .9rem; letter-spacing: .2em; }
-  .alt-baslik { font-family: var(--serif-display); font-style: italic; font-weight: 500; font-size: clamp(1rem, 2.4vw, 1.25rem); color: #cdb98c; }
-  .gorev-notu { max-width: 580px; margin: 24px auto 0; font-size: 1.12rem; line-height: 1.75; color: #a9997a; }
+  .ayrac span { font-size: .82rem; letter-spacing: .2em; }
+  .alt-baslik { font-family: var(--serif-display); font-style: italic; font-weight: 500; font-size: clamp(.92rem, 2vw, 1.1rem); color: #cdb98c; }
+  .gorev-notu { display: none; }
 
-  .ilerleme { max-width: 340px; margin: 38px auto 0; text-align: center; }
-  .ilerleme .metin { font-size: .78rem; letter-spacing: .3em; text-indent: .3em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 10px; }
+  .ilerleme { max-width: 300px; margin: 14px auto 0; text-align: center; }
+  .ilerleme .metin { font-size: .68rem; letter-spacing: .28em; text-indent: .28em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 7px; }
   .ilerleme .metin b { color: var(--gold-bright); font-weight: 600; }
   .cubuk { height: 3px; background: rgba(201,162,75,.14); border-radius: 99px; overflow: hidden; }
   .cubuk .dolu { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright)); box-shadow: 0 0 12px rgba(233,207,142,.5); transition: width .8s cubic-bezier(.22,1,.36,1); }
 
-  .filtreler { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 30px; padding: 46px 20px 40px; }
+  .filtreler { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 26px; padding: 20px 20px 20px; }
   .filtre { font-family: var(--serif-display); font-size: .95rem; letter-spacing: .12em; padding: 10px 4px; border: none; background: transparent; color: #9d8c6b; cursor: pointer; position: relative; transition: color .25s; }
   .filtre::after { content: ""; position: absolute; left: 50%; bottom: 2px; width: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-bright), transparent); transition: all .3s ease; transform: translateX(-50%); }
   .filtre:hover { color: var(--gold-bright); }
@@ -336,7 +327,36 @@
   .filtre.aktif::after { width: 100%; }
 
   /* ---------- Raf + kitap sırtları ---------- */
-  .kitaplik { max-width: 1180px; margin: 0 auto; padding: 0 28px 60px; }
+  .kitaplik { max-width: 1240px; margin: 0 auto; padding: 0 22px 56px; }
+  /* Gerçek ahşap kitap dolabı çerçevesi + ambiyans */
+  .dolap-cerceve {
+    position: relative;
+    border-radius: 8px;
+    padding: 20px clamp(14px, 3vw, 40px) 12px;
+    background: #120b06;
+    box-shadow:
+      0 0 0 4px #4a3016,
+      0 0 0 7px #241608,
+      0 0 0 8px rgba(233,207,142,.16),
+      0 44px 100px rgba(0,0,0,.75),
+      inset 0 0 140px rgba(0,0,0,.7);
+    overflow: hidden;
+  }
+  /* Arkada gerçek ansiklopedi duvarı (loş) */
+  .dolap-cerceve::before {
+    content: ""; position: absolute; inset: 0; z-index: 0;
+    background-image: var(--raf-fon);
+    background-size: cover; background-position: center;
+    opacity: .28; filter: blur(2px) brightness(.55) saturate(.85);
+  }
+  /* Üstten sıcak spot + vinyet */
+  .dolap-cerceve::after {
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(140% 75% at 50% -12%, rgba(233,207,142,.2), transparent 54%),
+      radial-gradient(ellipse at 50% 54%, transparent 58%, rgba(0,0,0,.42) 100%);
+  }
+  #raflar { position: relative; z-index: 1; }
   .raf {
     position: relative;
     display: flex;
@@ -376,9 +396,9 @@
   }
 
   .kitap {
-    --spine: 66px;
+    --spine: 78px;
     width: var(--spine);
-    height: 272px;
+    height: 322px;
     position: relative;
     cursor: pointer;
     border: none; background: transparent; padding: 0;
@@ -603,12 +623,32 @@
   footer .soz { font-family: var(--serif-display); font-style: italic; font-size: 1.05rem; color: #8f7c58; }
   footer .imza { margin-top: 8px; font-size: .72rem; letter-spacing: .35em; text-indent: .35em; text-transform: uppercase; color: #6a5a3e; }
 
+  /* ---------- Mouse ile uzanan el ---------- */
+  .el {
+    position: fixed;
+    left: 0; bottom: 0;
+    width: 300px; height: 538px;
+    z-index: 70;
+    pointer-events: none;
+    transform: translateX(calc(var(--el-x, 50vw) - 50%)) translateY(var(--el-y, 60%)) rotate(var(--el-r, 0deg));
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 -10px 26px rgba(0,0,0,.7));
+    opacity: 0;
+    transition: opacity .55s ease;
+    will-change: transform, opacity;
+  }
+  .el.aktif { opacity: 1; }
+  .el-img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
+  @media (max-width: 620px) { .el { width: 190px; height: 340px; } }
+  @media (pointer: coarse) { .el { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .el { display: none; } }
+
   @media (max-width: 620px) {
     header { padding-top: 58px; }
     .kitaplik { padding: 0 14px 40px; }
     .raf { gap: 12px; padding: 24px 12px 22px; }
-    .kitap { --spine: 52px; height: 220px; }
-    .kitap .sirt-baslik { font-size: .72rem; }
+    .kitap { --spine: 60px; height: 264px; }
+    .kitap .sirt-baslik { font-size: .74rem; }
     .kitap .etiket { width: 168px; }
     .buro-don { top: 18px; right: 16px; padding: 6px 12px; font-size: .82rem; }
     .geri-baglanti { top: 18px; left: 16px; padding: 6px 12px; font-size: .82rem; }
@@ -683,9 +723,15 @@
   </nav>
 
   <main class="kitaplik">
-    <div id="raflar"></div>
-    <p class="bos-mesaj" id="bosMesaj">Bu dönemde henüz görev dosyası yok, Ajan. Başka bir rafa göz at!</p>
+    <div class="dolap-cerceve">
+      <div id="raflar"></div>
+      <p class="bos-mesaj" id="bosMesaj">Bu dönemde henüz görev dosyası yok, Ajan. Başka bir rafa göz at!</p>
+    </div>
   </main>
+
+  <div class="el" id="el" aria-hidden="true">
+    <img class="el-img" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_045117_adcff226-90c4-4a9a-89da-95c9ad6da67f.png" alt="">
+  </div>
 
   <footer>
     <p class="soz">&ldquo;Tarihi bilmeyen ajan, zamanda kaybolur.&rdquo;</p>
@@ -994,7 +1040,7 @@ function ilerlemeGuncelle() {
 /* ---------------- Raf çizimi (dinamik sütun) ---------------- */
 function sutunSayisi(adet) {
   const genislik = raflar.clientWidth || window.innerWidth;
-  const spine = window.matchMedia("(max-width: 620px)").matches ? 52 : 66;
+  const spine = window.matchMedia("(max-width: 620px)").matches ? 60 : 78;
   const ayak = spine + 16; /* sırt + boşluk */
   let cols = Math.floor((genislik - 44) / ayak);
   cols = Math.max(1, Math.min(cols, adet, 9));
@@ -1138,6 +1184,52 @@ function tozUret() {
     document.body.appendChild(z);
   }
 }
+
+/* ---------------- Mouse ile uzanan el ---------------- */
+(function () {
+  const el = document.getElementById("el");
+  if (!el) return;
+  if (azHareket || matchMedia("(pointer: coarse)").matches) return;
+
+  let tx = window.innerWidth / 2, ty = 0.58, tr = 0;
+  let cx = tx, cy = ty, cr = 0;
+  let calisiyor = false, bosZaman;
+
+  function goster() {
+    el.classList.add("aktif");
+    clearTimeout(bosZaman);
+    bosZaman = setTimeout(() => el.classList.remove("aktif"), 2600);
+    if (!calisiyor) { calisiyor = true; requestAnimationFrame(tik); }
+  }
+
+  window.addEventListener("pointermove", (e) => {
+    if (e.pointerType === "touch") return;
+    if (!kutuphane.classList.contains("acik")) return;
+    if (okuyucu.classList.contains("acik")) { el.classList.remove("aktif"); return; }
+    tx = e.clientX;
+    const kitapUstunde = e.target.closest && e.target.closest(".kitap");
+    const yOran = e.clientY / window.innerHeight;      /* 0 üst · 1 alt */
+    ty = kitapUstunde ? 0.05 : (0.16 + yOran * 0.42);  /* kitaba gelince tam uzan */
+    tr = ((e.clientX - window.innerWidth / 2) / window.innerWidth) * 15;
+    goster();
+  }, { passive: true });
+
+  document.addEventListener("pointerleave", () => el.classList.remove("aktif"));
+
+  function tik() {
+    cx += (tx - cx) * 0.15;
+    cy += (ty - cy) * 0.12;
+    cr += (tr - cr) * 0.12;
+    el.style.setProperty("--el-x", cx + "px");
+    el.style.setProperty("--el-y", (cy * 100) + "%");
+    el.style.setProperty("--el-r", cr + "deg");
+    if (Math.abs(tx - cx) > 0.5 || Math.abs(ty - cy) > 0.002 || el.classList.contains("aktif")) {
+      requestAnimationFrame(tik);
+    } else {
+      calisiyor = false;
+    }
+  }
+})();
 </script>
 </body>
 </html>
