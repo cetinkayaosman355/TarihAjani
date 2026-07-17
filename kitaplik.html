@@ -417,78 +417,56 @@
     filter: drop-shadow(18px 30px 34px rgba(0,0,0,.7));
     z-index: 30;
   }
-  /* Sırt gövdesi — antika ansiklopedi cildi */
+  /* Sırt gövdesi — fotogerçekçi antika deri doku */
   .kitap .govde {
     position: absolute; inset: 0;
     border-radius: 2px 4px 4px 2px;
-    background:
-      linear-gradient(90deg, rgba(0,0,0,.55), rgba(0,0,0,.04) 15%, transparent 32%, transparent 68%, rgba(0,0,0,.14) 85%, rgba(0,0,0,.58)),
-      linear-gradient(180deg, rgba(255,255,255,.16), transparent 13%, transparent 87%, rgba(0,0,0,.3)),
-      var(--cilt, #5a3a20);
+    background-color: #2a1c12;
+    background-image:
+      linear-gradient(90deg, rgba(0,0,0,.5), transparent 15%, transparent 85%, rgba(0,0,0,.5)),
+      var(--doku, none);
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
     box-shadow:
-      inset 0 0 0 1px rgba(0,0,0,.4),
-      inset 0 3px 0 rgba(233,207,142,.22),
-      inset 0 -3px 0 rgba(233,207,142,.18),
-      inset 0 0 22px rgba(0,0,0,.4);
-    display: flex; flex-direction: column; align-items: center;
-    padding: 13px 5px 11px;
+      inset 0 0 0 1px rgba(0,0,0,.45),
+      inset -5px 0 12px rgba(0,0,0,.4),
+      inset 5px 0 10px rgba(255,255,255,.04);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 14px 6px;
     overflow: hidden;
   }
-  /* deri dokusu */
-  .kitap .govde::before {
-    content: ""; position: absolute; inset: 0; opacity: .22;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)'/%3E%3C/svg%3E");
-    mix-blend-mode: overlay;
-    pointer-events: none;
-  }
-  /* kabartma sırt bantları (hubbed spine ridges) */
+  /* başlık okunsun diye ortada yumuşak koyuluk (dikey başlığa uygun) */
   .kitap .govde::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: repeating-linear-gradient(180deg,
-      transparent 0 39px,
-      rgba(0,0,0,.36) 39px 40px,
-      rgba(255,255,255,.13) 40px 42px,
-      rgba(0,0,0,.32) 42px 43px,
-      transparent 43px 46px);
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(58% 46% at 50% 50%, rgba(0,0,0,.5), rgba(0,0,0,.16) 62%, transparent 80%);
+    pointer-events: none; z-index: 1;
   }
-  .sirt-emblem {
-    font-size: .92rem; line-height: 1; margin-bottom: 5px;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,.85)); opacity: .92; z-index: 2;
-  }
-  .sirt-panel {
-    position: relative; z-index: 2;
-    border: 1px solid rgba(233,207,142,.6);
-    background: linear-gradient(180deg, rgba(0,0,0,.24), rgba(0,0,0,.44));
-    box-shadow: 0 0 0 1px rgba(0,0,0,.45), inset 0 0 9px rgba(0,0,0,.45);
-    border-radius: 2px;
-  }
-  .sirt-panel--baslik {
-    flex: 1;
-    width: calc(100% - 6px);
-    margin: 5px 0;
-    display: flex; align-items: center; justify-content: center;
-    padding: 8px 2px;
-  }
+  /* deri üzerine yaldızlı kabartma başlık */
   .sirt-baslik {
+    position: relative; z-index: 2;
     writing-mode: vertical-rl;
     text-orientation: mixed;
     font-family: var(--serif-display);
     font-weight: 700;
-    font-size: .82rem;
-    letter-spacing: .07em;
-    color: var(--gold-bright);
-    text-shadow: 0 1px 2px rgba(0,0,0,.95), 0 0 8px rgba(201,162,75,.25);
+    font-size: .92rem;
+    letter-spacing: .09em;
+    color: #f0d692;
+    text-shadow:
+      0 1px 0 rgba(0,0,0,.95),
+      0 -1px 0 rgba(255,238,196,.3),
+      0 0 8px rgba(201,162,75,.4);
     white-space: nowrap;
     overflow: hidden;
+    max-height: 76%;
   }
-  .sirt-panel--cilt {
-    width: calc(100% - 12px);
-    padding: 5px 2px 4px;
+  .sirt-cilt {
+    position: absolute; bottom: 11px; left: 0; right: 0; z-index: 2;
     text-align: center;
     font-family: var(--serif-display);
-    font-size: .54rem; letter-spacing: .16em;
-    color: var(--gold-bright);
-    text-shadow: 0 1px 2px rgba(0,0,0,.9);
+    font-size: .5rem; letter-spacing: .2em; text-indent: .2em;
+    color: #e6c880;
+    text-shadow: 0 1px 1px rgba(0,0,0,.95);
   }
   /* Okundu rozeti */
   .kitap .rozet-okundu {
@@ -627,19 +605,19 @@
   .el {
     position: fixed;
     left: 0; bottom: 0;
-    width: 300px; height: 538px;
+    width: 370px; height: 662px;
     z-index: 70;
     pointer-events: none;
-    transform: translateX(calc(var(--el-x, 50vw) - 50%)) translateY(var(--el-y, 60%)) rotate(var(--el-r, 0deg));
+    transform: translateX(calc(var(--el-x, 50vw) - 50%)) translateY(var(--el-y, 40%)) rotate(var(--el-r, 0deg));
     transform-origin: 50% 100%;
-    filter: drop-shadow(0 -10px 26px rgba(0,0,0,.7));
+    filter: drop-shadow(0 -12px 30px rgba(0,0,0,.72));
     opacity: 0;
     transition: opacity .55s ease;
     will-change: transform, opacity;
   }
   .el.aktif { opacity: 1; }
   .el-img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
-  @media (max-width: 620px) { .el { width: 190px; height: 340px; } }
+  @media (max-width: 620px) { .el { width: 240px; height: 430px; } }
   @media (pointer: coarse) { .el { display: none; } }
   @media (prefers-reduced-motion: reduce) { .el { display: none; } }
 
@@ -730,7 +708,7 @@
   </main>
 
   <div class="el" id="el" aria-hidden="true">
-    <img class="el-img" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_045117_adcff226-90c4-4a9a-89da-95c9ad6da67f.png" alt="">
+    <img class="el-img" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_051120_a5d2e470-94e5-468a-b78b-847eda2b41b7.png" alt="">
   </div>
 
   <footer>
@@ -1047,6 +1025,18 @@ function sutunSayisi(adet) {
   return cols;
 }
 
+const CDN = "https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/";
+const dokular = {
+  gobeklitepe: CDN + "hf_20260717_050948_04720c07-f73c-4e82-b027-5f1983a511a1.png",
+  troya:       CDN + "hf_20260717_050951_36097d8c-8d47-4840-8e02-d158791e5f1e.png",
+  malazgirt:   CDN + "hf_20260717_050953_8758141b-76b6-4095-b8ef-65ebf1e4e44a.png",
+  ipekyolu:    CDN + "hf_20260717_050955_1f84fa17-69aa-4e7d-87f9-8493c02081a9.png",
+  fetih:       CDN + "hf_20260717_051006_3b45c952-8b8d-43ba-8f66-c4aaf481e1e7.png",
+  pirireis:    CDN + "hf_20260717_051008_0436572d-cb4d-43e8-9666-ae356f4868da.png",
+  canakkale:   CDN + "hf_20260717_051011_2be65751-3c82-4a51-a94b-adb1154cf42d.png",
+  cumhuriyet:  CDN + "hf_20260717_051013_59fa0b55-4cc3-41a7-b000-91a5ffd45b61.png"
+};
+
 function roman(n) {
   const t = [["X",10],["IX",9],["V",5],["IV",4],["I",1]];
   let s = "";
@@ -1058,17 +1048,15 @@ function spineYap(k, i) {
   const btn = document.createElement("button");
   const okundu = okunanlar().includes(k.id);
   btn.className = "kitap" + (okundu ? " tamamlandi" : "");
-  btn.style.setProperty("--cilt", k.cilt);
-  btn.style.setProperty("--cilt-koyu", k.ciltKoyu);
+  btn.style.setProperty("--doku", "url('" + (dokular[k.id] || "") + "')");
   btn.style.animationDelay = (i * 65) + "ms";
   btn.setAttribute("aria-label", k.baslik + " — dosyayı aç");
   const ciltNo = kitaplar.findIndex(x => x.id === k.id) + 1;
   btn.innerHTML = `
     <span class="rozet-okundu">✓</span>
     <span class="govde">
-      <span class="sirt-emblem">${k.amblem}</span>
-      <span class="sirt-panel sirt-panel--baslik"><span class="sirt-baslik">${k.sirt}</span></span>
-      <span class="sirt-panel sirt-panel--cilt">CİLT ${roman(ciltNo)}</span>
+      <span class="sirt-baslik">${k.sirt}</span>
+      <span class="sirt-cilt">CİLT ${roman(ciltNo)}</span>
     </span>
     <span class="etiket">
       <img src="${k.kapak}" alt="" loading="lazy" onerror="this.style.display='none'">
@@ -1191,7 +1179,7 @@ function tozUret() {
   if (!el) return;
   if (azHareket || matchMedia("(pointer: coarse)").matches) return;
 
-  let tx = window.innerWidth / 2, ty = 0.58, tr = 0;
+  let tx = window.innerWidth / 2, ty = 0.4, tr = 0;
   let cx = tx, cy = ty, cr = 0;
   let calisiyor = false, bosZaman;
 
@@ -1209,8 +1197,8 @@ function tozUret() {
     tx = e.clientX;
     const kitapUstunde = e.target.closest && e.target.closest(".kitap");
     const yOran = e.clientY / window.innerHeight;      /* 0 üst · 1 alt */
-    ty = kitapUstunde ? 0.05 : (0.16 + yOran * 0.42);  /* kitaba gelince tam uzan */
-    tr = ((e.clientX - window.innerWidth / 2) / window.innerWidth) * 15;
+    ty = kitapUstunde ? 0.02 : (0.10 + yOran * 0.32);  /* kitaba gelince tam uzan */
+    tr = ((e.clientX - window.innerWidth / 2) / window.innerWidth) * 13;
     goster();
   }, { passive: true });
 
