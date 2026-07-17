@@ -667,9 +667,16 @@ Deno.serve(async (req) => {
         ? EDIT_COST
         : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
 
-    // G-01: ücretsiz AI uçları daha sıkı sınırlı (dakikada 30) — bot/istismar
-    // bizim OpenAI/Anthropic faturamızı şişiremesin.
-    if (cost === 0 && rateLimited("free:" + ip, 30)) {
+    // G-01: ücretsiz AI uçları sınırlı — bot/istismar faturamızı şişiremesin.
+    // GİRİŞLİ kullanıcıya 90/dk: uzun üretimde bölüm metinleri + sahne promptları
+    // (hepsi ücretsiz uç) paralel akar; 30/dk gerçek müşteriyi sınıra takıyordu.
+    let authedUser = false;
+    try {
+      const hp = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").split(".")[1] || "";
+      const claims = JSON.parse(atob(hp.replace(/-/g, "+").replace(/_/g, "/")));
+      authedUser = claims && claims.role === "authenticated";
+    } catch (_e) { /* anon */ }
+    if (cost === 0 && rateLimited("free:" + ip, authedUser ? 90 : 30)) {
       return json({ ok: false, error: "Çok fazla istek — bir dakika sonra tekrar dene." }, 429);
     }
 
@@ -849,6 +856,11 @@ ${prompt}`;
         logRun({ action: "generate", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "gecersiz_json" });
         return json({ ok: false, error: "Yapay zekâ geçerli bir dosya döndürmedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       }
+      // KRİTİK: istemciye HAM model metni değil, onarılmış TEMİZ JSON gönder.
+      // (Eskiden sunucu onarıp kabul ediyor + kredi düşüyor, ama ham metni alan
+      // istemcinin basit parse'ı patlıyordu → "kredi gitti, hata geldi" şikâyeti.)
+      const canon = tryParseJson(result);
+      if (canon) result = JSON.stringify(canon);
       logRun({ action: "generate", ok: true, ms: Date.now() - t0, user_id: userId || null, err: grounded ? null : "arastirmasiz" });
     }
 
