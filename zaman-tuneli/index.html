@@ -75,20 +75,73 @@
     .video-meta{position:absolute;z-index:2;left:17px;right:54px;bottom:14px;text-shadow:0 2px 9px #000}.video-no{display:block;margin-bottom:5px;color:var(--gold);font:700 .52rem/1 'Special Elite',monospace;letter-spacing:.19em}.video-title{display:block;font:700 clamp(.75rem,1.05vw,.94rem)/1.35 'Playfair Display',serif;letter-spacing:.025em}
     .play{position:absolute;z-index:3;right:16px;bottom:16px;width:31px;height:31px;border:1px solid rgba(79,209,224,.7);border-radius:50%;background:rgba(4,15,23,.75);box-shadow:0 0 18px rgba(79,209,224,.18);display:grid;place-items:center}.play:after{content:"";margin-left:2px;border-left:8px solid #bff8ff;border-top:5px solid transparent;border-bottom:5px solid transparent}
     .channel-link{position:absolute;z-index:40;left:50%;bottom:5vh;transform:translateX(-50%);color:var(--cyan);font:700 .58rem/1 'Special Elite',monospace;letter-spacing:.24em;text-decoration:none;border-bottom:1px solid rgba(79,209,224,.4);padding:9px 3px;white-space:nowrap;transition:color .25s,text-shadow .25s}.channel-link:hover{color:#c9fbff;text-shadow:0 0 18px rgba(79,209,224,.65)}
-    .boot{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:#03050b;pointer-events:none;overflow:hidden;animation:boot-out .9s 2.15s ease forwards}
-    .boot-inner{text-align:center;transform:rotate(-4deg)}
-    .boot-stamp{display:inline-block;padding:16px 30px;border:3px double rgba(201,162,90,.85);color:#e6c478;font:700 clamp(1rem,2.6vw,1.7rem)/1 'Special Elite',monospace;letter-spacing:.3em;text-indent:.3em;opacity:0;animation:stamp-in .5s .25s cubic-bezier(.2,1.6,.3,1) forwards}
-    .boot-line{margin:18px 0 0;color:#4fd1e0;font:400 .62rem/1 'Special Elite',monospace;letter-spacing:.3em;opacity:0;animation:reveal .6s .9s ease forwards}
-    .boot-bar{width:min(280px,60vw);height:1px;margin:14px auto 0;background:rgba(79,209,224,.2);position:relative;overflow:hidden}
-    .boot-bar:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,#4fd1e0,transparent);transform:translateX(-100%);animation:boot-scan 1.5s .5s ease forwards}
-    .boot-ring{position:absolute;left:50%;top:50%;width:130vmax;height:130vmax;border:1px solid rgba(201,162,90,.35);border-radius:50%;transform:translate(-50%,-50%) scale(.05);opacity:0;animation:boot-ring 1.9s ease-out forwards}
-    .boot-ring.b2{border-color:rgba(79,209,224,.3);animation-delay:.35s}
-    .boot-ring.b3{border-color:rgba(201,162,90,.2);animation-delay:.7s}
-    @keyframes boot-ring{0%{transform:translate(-50%,-50%) scale(.05);opacity:0}15%{opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+    /* ── ULTRA GİRİŞ — sinematik AAA açılış sekansı ── */
+    .boot{position:fixed;inset:0;z-index:80;overflow:hidden;pointer-events:auto;cursor:pointer;animation:boot-out .8s 7s ease forwards}/* 7s: JS çalışmazsa emniyet */
+    .boot.gone{opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s}
+    .boot-door{position:absolute;top:0;bottom:0;width:50.5%;z-index:1;background:linear-gradient(160deg,#070a14,#02030a);transition:transform .95s cubic-bezier(.72,0,.18,1)}
+    .boot-door.dl{left:0;border-right:1px solid rgba(230,196,120,.55);box-shadow:16px 0 50px rgba(201,162,90,.12)}
+    .boot-door.dr{right:0;border-left:1px solid rgba(230,196,120,.55);box-shadow:-16px 0 50px rgba(201,162,90,.12)}
+    .boot.open .boot-door.dl{transform:translateX(-102%)}
+    .boot.open .boot-door.dr{transform:translateX(102%)}
+    .boot-art{position:absolute;inset:-3%;z-index:2;background:url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_092946_5264d916-a55b-4e28-b81f-0e2a3e1587f8_min.webp") center 38%/cover no-repeat,url("/zaman-tuneli/assets/hero.webp") center 38%/cover no-repeat;opacity:0;filter:saturate(.98) brightness(.82);animation:boot-art 2.6s .9s cubic-bezier(.2,.7,.2,1) forwards}
+    .boot-vig{position:absolute;inset:0;z-index:3;background:radial-gradient(ellipse 64% 54% at 50% 44%,transparent 28%,rgba(2,3,9,.9) 100%)}
+    .bb{position:absolute;left:0;right:0;height:10.5vh;background:#010207;z-index:4;transform:scaleY(0)}
+    .bb.t{top:0;transform-origin:top}.bb.b{bottom:0;transform-origin:bottom}
+    .boot .bb{animation:bar-in .8s .3s cubic-bezier(.2,.8,.2,1) forwards}
+    .boot-stage{position:absolute;inset:0;z-index:5;display:grid;place-items:center;text-align:center;animation:bshake .45s 1.32s cubic-bezier(.3,.9,.3,1),stage-out .55s 3.35s ease forwards}
+    .boot-kick{margin:0 0 16px;color:var(--cyan);font:700 .6rem/1 'Special Elite',monospace;letter-spacing:.3em;text-indent:.3em;opacity:0;animation:kick-in .55s .3s ease forwards}
+    .boot-title{margin:0;display:flex;justify-content:center;font:800 clamp(2.7rem,9.5vw,6.2rem)/1 'Playfair Display',serif;letter-spacing:.04em}
+    .boot-title span{display:inline-block;opacity:0;background:linear-gradient(110deg,#B18742,#E6C478 45%,#FFF0B1 55%,#9D7536);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 16px rgba(0,0,0,.8));animation:ltr .58s calc(.5s + var(--i)*.055s) cubic-bezier(.2,.9,.3,1.25) forwards}
+    .boot-title .sp{width:.34em}
+    .boot-line{margin:20px 0 0;color:#b8b3a6;font:400 .6rem/1 'Special Elite',monospace;letter-spacing:.3em;opacity:0;animation:reveal .5s 1.68s ease forwards}
+    .boot-bar{width:min(320px,64vw);height:2px;margin:15px auto 0;background:rgba(201,162,90,.16);overflow:hidden;opacity:0;animation:reveal .4s 1.74s ease forwards}
+    .boot-bar i{display:block;height:100%;background:linear-gradient(90deg,#A77D35,#E6C478,#FFF0B1);transform:scaleX(0);transform-origin:left;animation:bfill 1.55s 1.8s cubic-bezier(.35,.6,.25,1) forwards;box-shadow:0 0 12px rgba(230,196,120,.8)}
+    .boot-pct{margin:9px 0 0;color:var(--gold);font:700 .6rem/1 'Special Elite',monospace;letter-spacing:.2em;opacity:0;animation:reveal .4s 1.8s ease forwards}
+    .boot-ring{position:absolute;left:50%;top:44%;width:130vmax;height:130vmax;border:1px solid rgba(201,162,90,.4);border-radius:50%;transform:translate(-50%,-50%) scale(.04);opacity:0;z-index:4;animation:boot-ring 1.5s 1.28s ease-out forwards}
+    .boot-ring.b2{border-color:rgba(79,209,224,.32);animation-delay:1.4s}
+    .boot-ring.b3{border-color:rgba(201,162,90,.22);animation-delay:1.55s}
+    .boot-flash{position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(circle at 50% 44%,rgba(255,240,180,.95),transparent 58%);mix-blend-mode:screen;opacity:0;animation:bflash .75s 1.3s ease-out forwards}
+    .boot-embers{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+    .boot-embers i{position:absolute;bottom:-8px;width:3px;height:3px;border-radius:50%;background:radial-gradient(circle,#FFF0B1,#C9A25A);box-shadow:0 0 8px rgba(230,196,120,.9);opacity:0;animation:ember 3.4s linear infinite}
+    .boot-embers i:nth-child(1){left:8%;animation-delay:1.2s}.boot-embers i:nth-child(2){left:17%;animation-delay:2.1s;width:2px;height:2px}.boot-embers i:nth-child(3){left:26%;animation-delay:1.6s}.boot-embers i:nth-child(4){left:35%;animation-delay:2.6s;width:2px;height:2px}.boot-embers i:nth-child(5){left:44%;animation-delay:1.4s}.boot-embers i:nth-child(6){left:52%;animation-delay:2.9s}.boot-embers i:nth-child(7){left:60%;animation-delay:1.8s;width:2px;height:2px}.boot-embers i:nth-child(8){left:68%;animation-delay:2.4s}.boot-embers i:nth-child(9){left:76%;animation-delay:1.3s;width:4px;height:4px}.boot-embers i:nth-child(10){left:84%;animation-delay:2.2s}.boot-embers i:nth-child(11){left:91%;animation-delay:1.7s;width:2px;height:2px}.boot-embers i:nth-child(12){left:96%;animation-delay:2.7s}
+    .boot-skip{position:absolute;left:50%;bottom:3.6vh;transform:translateX(-50%);z-index:7;color:rgba(240,236,226,.42);font:700 .52rem/1 'Special Elite',monospace;letter-spacing:.28em;opacity:0;animation:reveal .6s 2.1s ease forwards}
+    .boot.open .boot-stage,.boot.open .boot-art,.boot.open .bb,.boot.open .boot-vig,.boot.open .boot-skip,.boot.open .boot-embers,.boot.open .boot-ring{opacity:0!important;transition:opacity .4s ease}
+    @keyframes boot-ring{0%{transform:translate(-50%,-50%) scale(.04);opacity:0}14%{opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+    @keyframes boot-art{from{opacity:0;transform:scale(1.24)}35%{opacity:.9}to{opacity:.6;transform:scale(1.045)}}
+    @keyframes bar-in{to{transform:scaleY(1)}}
+    @keyframes kick-in{from{opacity:0;letter-spacing:.62em;filter:blur(4px)}to{opacity:1;letter-spacing:.3em;filter:blur(0)}}
+    @keyframes ltr{from{opacity:0;transform:translateY(-.85em) scale(1.75) rotate(5deg);filter:blur(14px) drop-shadow(0 4px 16px rgba(0,0,0,.8))}62%{opacity:1;transform:translateY(.05em) scale(.97);filter:blur(0) drop-shadow(0 4px 16px rgba(0,0,0,.8))}to{opacity:1;transform:none;filter:drop-shadow(0 4px 16px rgba(0,0,0,.8))}}
+    @keyframes bshake{0%,100%{transform:translate(0,0)}20%{transform:translate(-5px,3px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(2px,-1px)}}
+    @keyframes stage-out{to{opacity:0;transform:scale(1.06)}}
+    @keyframes bflash{0%{opacity:0}12%{opacity:.8}100%{opacity:0}}
+    @keyframes bfill{to{transform:scaleX(1)}}
+    @keyframes ember{0%{opacity:0;transform:translateY(0)}12%{opacity:1}100%{opacity:0;transform:translateY(-92vh) translateX(2vw)}}
+    /* içerik, giriş perdesi açılana dek bekler (yalnız JS varken .hold gelir) */
+    body.hold:not(.go) .content>*,body.hold:not(.go) .gm-card,body.hold:not(.go) .game-orb,body.hold:not(.go) .scroll-hint{animation-play-state:paused!important}
+    .gm-card{--c:0;opacity:0;animation:card-in .7s calc(.9s + var(--c)*.14s) cubic-bezier(.2,.8,.2,1) both}
+    @keyframes card-in{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @media(max-width:700px){.boot-art{filter:saturate(.92) brightness(.55)}.bb{height:8vh}}
+    @media(prefers-reduced-motion:reduce){.boot{animation:boot-out .6s .5s ease forwards}.boot *{animation:none!important}.boot-stage{opacity:0}.gm-card{animation:none;opacity:1}}
     .btn.war{color:#f2d4b0;border-color:rgba(176,65,62,.85);background:linear-gradient(110deg,rgba(90,26,24,.55),rgba(56,18,16,.55));box-shadow:inset 0 0 22px rgba(176,65,62,.14)}
     .btn.war:hover{box-shadow:0 0 34px rgba(192,82,78,.35);background:linear-gradient(110deg,rgba(112,32,30,.6),rgba(70,22,20,.6))}
-    @keyframes stamp-in{from{opacity:0;transform:scale(2.2)}to{opacity:1;transform:scale(1)}}
-    @keyframes boot-scan{to{transform:translateX(100%)}}
+    /* ── SAHA OYUNLARI — premium kart destesi ── */
+    .game-deck{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0 6px;pointer-events:auto;opacity:0;animation:reveal .95s .85s ease forwards}
+    .gm-card{position:relative;display:flex;flex-direction:column;gap:10px;padding:20px 18px 18px;text-decoration:none;color:var(--ink);background:linear-gradient(158deg,rgba(14,18,32,.92),rgba(6,9,18,.96));border:1px solid rgba(201,162,90,.30);border-radius:3px;overflow:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .35s,box-shadow .35s;box-shadow:0 18px 46px rgba(0,0,0,.55)}
+    .gm-card:before{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 0%,rgba(230,196,120,.10),transparent 62%);opacity:.6;transition:opacity .35s}
+    .gm-card:hover{transform:translateY(-6px);border-color:rgba(230,196,120,.85);box-shadow:0 26px 64px rgba(0,0,0,.66),0 0 30px rgba(201,162,90,.18)}
+    .gm-card:hover:before{opacity:1}
+    .gm-emblem{font-size:1.7rem;line-height:1;color:var(--gold);filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}
+    .gm-name{display:block;font:800 1.12rem/1.05 'Playfair Display',serif;letter-spacing:.02em}
+    .gm-era{display:block;margin-top:5px;color:var(--brass);font:700 .55rem/1.4 'Special Elite',monospace;letter-spacing:.16em}
+    .gm-desc{display:block;margin-top:9px;color:var(--muted);font:400 .74rem/1.55 'Special Elite',monospace;flex:1}
+    .gm-go{display:inline-block;margin-top:12px;align-self:flex-start;padding:8px 15px;border:1px solid rgba(201,162,90,.5);border-radius:2px;color:var(--gold);font:700 .6rem/1 'Special Elite',monospace;letter-spacing:.15em;transition:background .3s,color .3s}
+    .gm-card:hover .gm-go{background:linear-gradient(110deg,#A77D35,#E6C478 48%,#C9A25A);color:#1a1206;border-color:transparent}
+    .gm-card.war{border-color:rgba(176,65,62,.5)}.gm-card.war .gm-emblem,.gm-card.war .gm-era{color:#e0928c}.gm-card.war:before{background:radial-gradient(120% 90% at 50% 0%,rgba(192,82,78,.14),transparent 62%)}
+    .gm-card.war:hover{border-color:rgba(224,146,140,.9);box-shadow:0 26px 64px rgba(0,0,0,.66),0 0 30px rgba(176,65,62,.24)}
+    .gm-card.war .gm-go{border-color:rgba(176,65,62,.6);color:#e8938f}.gm-card.war:hover .gm-go{background:linear-gradient(110deg,#7e2f2d,#c0524e);color:#fff;border-color:transparent}
+    .deck-more{display:inline-block;margin-top:4px;color:var(--muted);font:700 .58rem/1 'Special Elite',monospace;letter-spacing:.18em;text-decoration:none;border-bottom:1px solid rgba(168,164,152,.3);padding-bottom:3px;pointer-events:auto;opacity:0;animation:reveal .95s 1.05s ease forwards;transition:color .3s,border-color .3s}
+    .deck-more:hover{color:var(--gold);border-color:var(--gold)}
+    @media(max-width:700px){.game-deck{grid-template-columns:1fr;gap:11px;margin:18px 0 6px}.gm-card{flex-direction:row;align-items:center;gap:13px;padding:15px 15px}.gm-emblem{font-size:1.5rem}.gm-body{flex:1}.gm-name{font-size:1rem}.gm-desc{display:none}.gm-go{margin-top:0;white-space:nowrap;font-size:.55rem;padding:8px 12px}}
     @keyframes boot-out{to{opacity:0;visibility:hidden}}
     .mission{margin:14px auto 0;display:inline-block;padding:9px 16px;border:1px solid rgba(230,196,120,.4);background:rgba(3,5,11,.6);color:#e6c478;font:700 .58rem/1 'Special Elite',monospace;letter-spacing:.24em}
     .mission.done{border-color:rgba(79,209,224,.7);color:#8fe8f0;box-shadow:0 0 24px rgba(79,209,224,.2)}
@@ -141,14 +194,57 @@
 </head>
 <body>
   <!-- WOW GİRİŞ: mühür + tarama + genişleyen zaman halkaları -->
-  <div class="boot" aria-hidden="true">
+  <div class="boot" id="boot" aria-hidden="true">
+    <div class="boot-door dl"></div><div class="boot-door dr"></div>
+    <div class="boot-art"></div>
+    <div class="boot-vig"></div>
+    <div class="bb t"></div><div class="bb b"></div>
     <div class="boot-ring"></div><div class="boot-ring b2"></div><div class="boot-ring b3"></div>
-    <div class="boot-inner">
-      <span class="boot-stamp">ZAMAN TÜNELİ</span>
-      <p class="boot-line">KRONO-ÇEKİRDEK DEVREDE · BAĞLANTI KURULUYOR</p>
-      <div class="boot-bar"></div>
+    <div class="boot-embers"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="boot-stage">
+      <div>
+        <p class="boot-kick">TARİH AJANI · OYUN BİRİMİ</p>
+        <h2 class="boot-title"><span style="--i:0">Z</span><span style="--i:1">A</span><span style="--i:2">M</span><span style="--i:3">A</span><span style="--i:4">N</span><span class="sp" style="--i:5"> </span><span style="--i:6">T</span><span style="--i:7">Ü</span><span style="--i:8">N</span><span style="--i:9">E</span><span style="--i:10">L</span><span style="--i:11">İ</span></h2>
+        <p class="boot-line">KRONO-ÇEKİRDEK DEVREDE · GEÇİT AÇILIYOR</p>
+        <div class="boot-bar"><i></i></div>
+        <p class="boot-pct" id="bootpct">%0</p>
+      </div>
     </div>
+    <div class="boot-flash"></div>
+    <p class="boot-skip">GEÇMEK İÇİN DOKUN</p>
   </div>
+  <script>
+  /* ULTRA GİRİŞ sekans kontrolü — tıkla/tuşla geç, azaltılmış-hareket saygılı */
+  (function(){
+    var boot=document.getElementById('boot'),body=document.body;
+    if(!boot)return;
+    body.classList.add('hold');
+    var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var pct=document.getElementById('bootpct'),iv=null,auto=null;
+    function open(){
+      if(boot.classList.contains('open'))return;
+      boot.classList.add('open');body.classList.add('go');
+      if(iv)clearInterval(iv);if(pct)pct.textContent='%100';
+      setTimeout(function(){boot.classList.add('gone');setTimeout(function(){boot.remove();},600);},980);
+    }
+    if(reduced){body.classList.add('go');open();return;}
+    setTimeout(function(){
+      var t0=performance.now();
+      iv=setInterval(function(){
+        var k=Math.min(1,(performance.now()-t0)/1550);
+        if(pct)pct.textContent='%'+Math.round(k*100);
+        if(k>=1)clearInterval(iv);
+      },60);
+    },1800);
+    auto=setTimeout(open,3600);
+    boot.addEventListener('click',function(){clearTimeout(auto);open();});
+    addEventListener('keydown',function(){clearTimeout(auto);open();},{once:true});
+    /* kart girişleri bitince animasyonu bırak → hover transform geri gelsin */
+    document.querySelectorAll('.gm-card').forEach(function(c){
+      c.addEventListener('animationend',function(e){if(e.animationName==='card-in')c.style.animation='none';});
+    });
+  })();
+  </script>
   <a class="site-return" href="/">TA · ANA SAYFA</a>
   <canvas id="universe" aria-hidden="true"></canvas>
   <div class="hero-art" aria-hidden="true"><div class="art-base"></div><div class="art-depth"></div><div class="art-glow"></div><div class="art-scan"></div></div>
@@ -159,8 +255,37 @@
         <h1 id="title">ZAMAN <span>GÖREVİ</span></h1>
         <p class="slogan">Tarihi ne kadar tanıyorsun, ajan?</p>
         <p class="game-lead">Rütbeni seç, zaman kapsüllerini çöz. Her doğru cevap seni saha ajanlığına bir adım yaklaştırır — sonunda kendi zaman sarmalın açılır.</p>
-        <div class="game-stat"><div><b>3</b><span>SAHA OYUNU</span></div><div><b>50+</b><span>SORU · TÜM ÇAĞLAR</span></div><div><b>1402</b><span>ANKARA · SATRANÇ</span></div></div>
-        <div class="actions"><a class="btn primary" href="/oyun/sayi-tahmin/">GÖREVE BAŞLA →</a><a class="btn war" href="/oyun/satranc-1402/">♞ SATRANÇ 1402 · TİMUR vs BAYEZİD</a><a class="btn secondary" href="/oyun/mangala/">🏺 MANGALA</a><a class="btn secondary" href="#arsiv">ZAMAN SARMALINI KEŞFET</a></div>
+        <div class="game-stat"><div><b>3</b><span>SAHA OYUNU</span></div><div><b>100</b><span>SORU · TÜM ÇAĞLAR</span></div><div><b>1402</b><span>ANKARA · SATRANÇ</span></div></div>
+        <div class="game-deck">
+          <a class="gm-card" style="--c:0" href="/oyun/sayi-tahmin/">
+            <span class="gm-emblem">◈</span>
+            <span class="gm-body">
+              <span class="gm-name">Zaman Görevi</span>
+              <span class="gm-era">KRONOLOJİ &amp; BİLGİ · 100 SORU</span>
+              <span class="gm-desc">Rütbeni seç, zaman kapsüllerini doğru sıraya diz ve çöz. Jokerlerle ilerle, tüm çağlarda sınan.</span>
+            </span>
+            <span class="gm-go">GÖREVE BAŞLA →</span>
+          </a>
+          <a class="gm-card war" style="--c:1" href="/oyun/satranc-1402/">
+            <span class="gm-emblem">♞</span>
+            <span class="gm-body">
+              <span class="gm-name">Satranç 1402</span>
+              <span class="gm-era">ANKARA SAVAŞI · TİMUR vs BAYEZİD</span>
+              <span class="gm-desc">Tarihî karşılaşmayı seç, orduna komuta et. Üç zorluk, taş isimleri ve gerçek savaş günlüğü.</span>
+            </span>
+            <span class="gm-go">SAVAŞA GİR →</span>
+          </a>
+          <a class="gm-card" style="--c:2" href="/oyun/mangala/">
+            <span class="gm-emblem">🏺</span>
+            <span class="gm-body">
+              <span class="gm-name">Mangala</span>
+              <span class="gm-era">BİN YILLIK TÜRK STRATEJİSİ</span>
+              <span class="gm-desc">Anadolu'nun kadim akıl oyunu. Kuyularını ustaca boşalt, yapay zekâ hazineye ulaşmadan üstün gel.</span>
+            </span>
+            <span class="gm-go">OYNA →</span>
+          </a>
+        </div>
+        <a class="deck-more" href="#arsiv">↓ ZAMAN SARMALINI KEŞFET</a>
       </div>
       <div class="game-orb" aria-hidden="true"><div class="orb-ring r1"></div><div class="orb-ring r2"></div><div class="orb-ring r3"></div><div class="orb-sweep"></div><div class="orb-blip b1"></div><div class="orb-blip b2"></div><div class="orb-blip b3"></div><div class="orb-core">?</div></div>
       <div class="scroll-hint">AŞAĞI KAY · ZAMAN SARMALI</div>
