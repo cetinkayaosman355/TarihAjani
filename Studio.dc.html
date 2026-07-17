@@ -1103,6 +1103,14 @@
     </div>
   </sc-if>
 
+<!-- GÖRSEL ÜRETİLİYOR bandı: hangi sekmede olursan ol, üretim sürerken görünür -->
+  <sc-if value="{{ imgJobsOn }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; left: 50%; bottom: 86px; transform: translateX(-50%); z-index: 1280; display: inline-flex; align-items: center; gap: 10px; background: rgba(5,7,13,.96); border: 1px solid rgba(193,154,82,.55); box-shadow: 0 14px 44px rgba(0,0,0,.6), 0 0 22px rgba(201,162,90,.15); padding: 11px 18px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; color: #e6c478; animation: ta-rise .3s ease both;">
+      <span style="display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(230,196,120,.25); border-top-color: #e6c478; border-radius: 50%; animation: ta-spin .8s linear infinite;"></span>
+      {{ imgJobsMsg }}
+    </div>
+  </sc-if>
+
   <sc-if value="{{ showCreditModal }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ closeCredits }}" style="position: fixed; inset: 0; z-index: 1290; background: rgba(2,3,8,.8); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 24px;">
       <div onClick="{{ stopProp }}" style="width: min(680px, 100%); border: 1px solid rgba(193,154,82,.4); background: #05070d; padding: 34px; animation: ta-rise .4s ease both;">
@@ -3057,6 +3065,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       },
       queueImage: () => this.makeImage(s.imgPrompt),
       imgGoLabel: (s.imgJobs || 0) > 0 ? '⟳ ÜRETİLİYOR… (' + s.imgJobs + ')' : '◈ GÖRSEL ÜRET · 12 KR',
+      imgJobsOn: (s.imgJobs || 0) > 0,
+      imgJobsMsg: (s.imgJobs || 0) > 1 ? (s.imgJobs + ' GÖRSEL ÜRETİLİYOR… RAFA EKLENECEK') : 'GÖRSEL ÜRETİLİYOR… RAFA EKLENECEK',
       hasImgQueue: (s.imgQueue || []).length > 0,
       imgQueue: (s.imgQueue || []).map(x => {
         const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[x.ar] || '16/9';
@@ -3557,13 +3567,23 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   async suggestIdeaNow() {
     if (this.state.suggestBusy) return;
     this.setState({ suggestBusy: true });
-    try {
-      const reply = await this.askAI('Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan kıdemli bir editörsün. GERÇEK, doğrulanabilir bir tarihî olay/kişi/nesne üzerine, az bilinen ama kaynaklarda izi olan, "bunu nasıl bilmiyordum" dedirten, ilk cümlede kilitleyen TEK bir video konusu öner. KURALLAR: (1) somut ve spesifik olsun — belirli bir kişi, yer, tarih ya da nesne içersin; (2) klişe/genel olmasın ("tarihin gizemleri" gibi değil); (3) uydurma/komplo değil, araştırılabilir bir çekirdeği olsun; (4) tercihen Türk-İslam ya da dünya tarihinden sıra dışı bir vaka. YALNIZCA o tek cümlelik konu başlığını döndür; tırnak, açıklama veya önek ekleme.', 300);
-      this.setState({ idea: reply.trim().replace(/^["']|["']$/g, ''), suggestBusy: false });
-    } catch (e) {
-      this.setState({ suggestBusy: false, idea: this.state.idea || '', genError: '' });
-      alert('Öneri alınamadı: ' + e.message);
+    const ask = () => this.askAI('Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan kıdemli bir editörsün. GERÇEK, doğrulanabilir bir tarihî olay/kişi/nesne üzerine, az bilinen ama kaynaklarda izi olan, "bunu nasıl bilmiyordum" dedirten, ilk cümlede kilitleyen TEK bir video konusu öner. KURALLAR: (1) somut ve spesifik olsun — belirli bir kişi, yer, tarih ya da nesne içersin; (2) klişe/genel olmasın ("tarihin gizemleri" gibi değil); (3) uydurma/komplo değil, araştırılabilir bir çekirdeği olsun; (4) tercihen Türk-İslam ya da dünya tarihinden sıra dışı bir vaka. YALNIZCA o tek cümlelik konu başlığını döndür; tırnak, açıklama veya önek ekleme.', 300);
+    // Ücretsiz uç: sunucu/AI hıçkırığında otomatik 3 deneme — kullanıcı
+    // tekrar tekrar basmak zorunda kalmasın (aralarda kısa bekleme).
+    let lastErr = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const reply = await ask();
+        this.setState({ idea: reply.trim().replace(/^["']|["']$/g, ''), suggestBusy: false });
+        return;
+      } catch (e) {
+        lastErr = e;
+        if (e.message === 'YETERSIZ_KREDI') break;
+        await new Promise(r => setTimeout(r, 900 * (attempt + 1)));
+      }
     }
+    this.setState({ suggestBusy: false, idea: this.state.idea || '', genError: '' });
+    alert('Öneri alınamadı: ' + (lastErr && lastErr.message || 'bilinmeyen hata') + ' — lütfen bir kez daha dene.');
   }
 
   async addShortNow() {
