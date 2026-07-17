@@ -441,6 +441,27 @@ var STIL_CORE = {
   animasyon: 'high-quality 3D animated feature film still, Pixar-DreamWorks style expressive characters, soft global illumination, warm vibrant colors'
 };
 var uret = { ton: 'merak', stil: 'sinematik', sure: 60, busy: false, sonuc: null, hata: '', konu: '' };
+/* SEN ÖNER — anında, hatasız: yerel seçkin havuz (karışık sıra, tekrar yok) */
+var ONERI = (function () {
+  var p = ['Hezârfen gerçekten uçtu mu? Boğaz’ı geçen adamın belge yüzü',
+    'II. Abdülhamid’in kurduğu gizli istihbarat: Yıldız arşivinin sırrı',
+    'Selçuklu hastanelerinde müzikle ve suyla tedavi edilen hastalar',
+    'Kâtip Çelebi’nin haritasında olmayan ama gerçek olan ada',
+    'Fatih’in İtalyan ressamı Bellini’nin kaybolan İstanbul defterleri',
+    'Yeniçeriler isyan ederken neden kazan devirirdi?',
+    'Mimar Sinan’ın köprüsündeki gizli imza: ustalık şifresi mi?',
+    'Piri Reis haritasındaki imkânsız kıyı: Antarktika bilmecesi',
+    'Osmanlı’nın ilk denizaltısı Abdülhamid: 1886’da torpido atan gemi',
+    'Roma lejyonunun Çin kaynaklarında izi: kayıp lejyon nerede?',
+    'İskender’in mezarı neden hâlâ bulunamadı?',
+    'Vikinglerin Amerika’sı: Kolomb’dan beş asır önceki köy',
+    'Bizans’ın sokak lambaları: Ortaçağ’da aydınlatılan başkent',
+    'Timur’un mezarındaki lanet yazısı ve 1941 baharı',
+    'Antikythera makinesi: iki bin yıllık dişli bilgisayar kimin?'];
+  for (var i = p.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = p[i]; p[i] = p[j]; p[j] = t; }
+  return p;
+})();
+var oneriIdx = 0;
 function uretKredi() { return Math.max(30, Math.round((20 + uret.sure / 4) / 5) * 5); }
 function drawUret() {
   var el = $('#scr-uret');
@@ -449,7 +470,8 @@ function drawUret() {
   el.innerHTML =
     '<div class="h-row"><div><b>Yeni Dosya</b><span class="alt">KONU YAZ · TARZI SEÇ · ÜRET</span></div>' +
     '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
-    '<div class="pad"><textarea id="u-konu" class="inp" rows="3" placeholder="Bir olay, kişi ya da soru yaz — ör. Kanuni’nin Zigetvar seferi">' + esc(uret.konu) + '</textarea></div>' +
+    '<div class="pad"><textarea id="u-konu" class="inp" rows="3" placeholder="Bir olay, kişi ya da soru yaz — ör. Kanuni’nin Zigetvar seferi">' + esc(uret.konu) + '</textarea>' +
+    '<button class="chip" id="u-oner" style="margin-top:9px">◈ SEN ÖNER</button></div>' +
     '<div class="sh"><b>ANLATIM TONU</b></div><div class="opt-grid">' +
     TONLAR.map(function (t) { return '<button class="chip' + (uret.ton === t[0] ? ' on' : '') + '" data-ton="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
     '<div class="sh"><b>GÖRSEL STİL</b></div><div class="opt-grid">' +
@@ -461,6 +483,15 @@ function drawUret() {
     '<div style="padding:20px 16px 0"><button class="cta" id="u-go">◉ &nbsp;ÜRET · ' + uretKredi() + ' KR</button>' +
     '<p class="alt-not" style="margin-top:12px">Seslendirme ve sahne görselleri üretimden sonra dosyanın içinde</p></div>';
   $('#u-konu').addEventListener('input', function (e) { uret.konu = e.target.value; });
+  $('#u-oner').addEventListener('click', function () {
+    var b = $('#u-oner');
+    b.textContent = '◈ AJAN DÜŞÜNÜYOR…';
+    setTimeout(function () {
+      uret.konu = ONERI[oneriIdx % ONERI.length]; oneriIdx++;
+      $('#u-konu').value = uret.konu;
+      b.textContent = '◈ SEN ÖNER';
+    }, 420);
+  });
   $('#u-sure').addEventListener('input', function (e) {
     uret.sure = +e.target.value;
     $('#u-sure-v').textContent = sureText() + ' · ' + uretKredi() + ' KR';
