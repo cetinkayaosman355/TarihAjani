@@ -373,6 +373,7 @@ async function generateSpeech(text: string, voice: string): Promise<Uint8Array |
 const ELEVEN_ALLOWED = new Set([
   "j82ax9yhzfYwq9lDvRWL", // Kadir Kayışçı (imza ses)
   "pNInz6obpgDQGcFmaJgB", // Erkek · Anlatıcı
+  "ErXwobaYiN019PkySvjV", // Erkek · Gizemli
   "TxGEqnHWrfWFTfGW9XjX", // Erkek · Net
   "EXAVITQu4vr4xnSDxMaL", // Kadın · Belgesel
   "21m00Tcm4TlvDq8ikWAM", // Kadın · Olgun
