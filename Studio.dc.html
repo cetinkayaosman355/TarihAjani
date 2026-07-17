@@ -1169,6 +1169,7 @@ class Component extends DCLogic {
       tier: saved.tier || 'uye',
       credits: typeof saved.credits === 'number' ? saved.credits : (this.props.startCredits ?? 500),
       history: saved.history || [],
+      pendingJob: saved.pendingJob || null,
       creditModal: false,
       prices: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {},   // fiyat önbelleği (flicker/eskime yok)
       elKey: saved.elKey || '', ttsBusy: false, ttsError: '', audioUrl: '',
@@ -1275,7 +1276,8 @@ class Component extends DCLogic {
     const s = { ...this.state, ...extra };
     try {
       localStorage.setItem('ta_studio_v5', JSON.stringify({
-        agent: s.agentName, email: s.regEmail, credits: s.credits, tier: s.tier, history: s.history, elKey: s.elKey
+        agent: s.agentName, email: s.regEmail, credits: s.credits, tier: s.tier, history: s.history, elKey: s.elKey,
+        pendingJob: s.pendingJob || null   // sayfa yenilense bile TEKRAR DENE kredisiz kurtarabilsin
       }));
     } catch (e) {}
     this._syncHistoryToServer(s.history);   // cihazlar arası: geçmişi sunucuya da yaz (debounce'lı)
@@ -2666,7 +2668,26 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       // Sahne promptları artık HER süre için ayrı aşamada üretildiğinden ana
       // çağrı daha hafif → truncation riski düşer.
       const maxTok = twoStage ? 5000 : (sec <= 60 ? 4000 : 6000);
-      const text = await this.askAI(this.buildPrompt(twoStage), maxTok, 'generate');
+      // KURTARMA KİMLİĞİ: aynı konuda TEKRAR DENE aynı işi kullanır → sunucuda
+      // tamamlanmış üretim KREDİSİZ geri gelir; mobilde bağlantı kopması
+      // (Load failed) artık kredi yakıp dosyayı kaybettirmez.
+      const job = (s.pendingJob && s.pendingJob.idea === s.idea && s.pendingJob.job)
+        ? s.pendingJob.job
+        : ('j' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+      this.setState({ pendingJob: { job, idea: s.idea } }, () => this.persist());
+      this._genJob = job;
+      let text;
+      try {
+        text = await this.askAI(this.buildPrompt(twoStage), maxTok, 'generate');
+      } catch (err) {
+        // Ağ kopması mı? Üretim sunucuda sürüyor olabilir — sonucu beklerken sor.
+        const isNet = /load failed|failed to fetch|network|internet|abort/i.test(err.message || '');
+        if (!(isNet && this.hasSession())) throw err;
+        clearInterval(this._mt);
+        const rec = await this.recoverJob(job);
+        if (!rec) throw err;
+        text = rec;
+      } finally { this._genJob = null; }
       const genCharge = this._lastGen;   // kredi düşmesi ilk 'generate' çağrısına ait; sonraki çağrılar üzerine yazmadan yakala
       const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
       let result = JSON.parse(clean);
@@ -2697,7 +2718,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         picks: { tone: this.state.tone, voice: this.state.voice, style: this.state.style, duration: this.state.duration, model: this.state.model }
       };
       this.setState(st => ({
-        generating: false, genPct: 100, result, fileNo: no, step: 4, tab: 'senaryo', fromArsiv: false,
+        generating: false, genPct: 100, result, fileNo: no, step: 4, tab: 'senaryo', fromArsiv: false, pendingJob: null,
         genWarn: partial ? 'Dosyan hazır ve kaydedildi — ama sahne promptları tamamlanamadı. Görsel Promptları sekmesinden “Sahne promptlarını üret” ile ek kredi olmadan tamamlayabilirsin.' : '',
         history: [entry, ...st.history].slice(0, 12), audioUrl: '', ttsError: '', sysAudioUrl: '', sysTtsError: ''
       }), () => this.persist());
@@ -2717,11 +2738,39 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         this.setState({ generating: false, genError: '', genPct: 0, creditModal: true });
         return;
       }
+      const isNetE = /load failed|failed to fetch|network|internet/i.test(e.message || '');
       const msg = e.message === 'DEMO'
         ? 'Demo modu açık: gerçek üretim için demoMode tweak\'ini kapatın.'
-        : 'Üretim tamamlanamadı: ' + e.message + ' — Lütfen tekrar deneyin.';
+        : isNetE
+          ? 'Bağlantı koptu (telefon uzun üretimde bağlantıyı kesebiliyor). Merak etme: üretim sunucuda tamamlandıysa TEKRAR DENE dosyayı KREDİSİZ geri getirir — ekranı açık tutup bir kez daha dene.'
+          : 'Üretim tamamlanamadı: ' + e.message + ' — Lütfen tekrar deneyin.';
       this.setState({ generating: false, genError: msg, genPct: 0 });
     }
+  }
+
+  // Bağlantı koptuğunda üretim sunucuda sürüyor olabilir: sonucu ~4 dakika
+  // boyunca aralıklarla sor. Bulunursa kredi zaten düşmüştür — dosya kurtarılır.
+  async recoverJob(job) {
+    const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    this.setState({ genMsg: 'BAĞLANTI KOPTU — DOSYA SUNUCUDA TAMAMLANIYOR, KURTARILIYOR…', genPct: 42 });
+    for (let i = 0; i < 34; i++) {
+      await new Promise(r => setTimeout(r, 7000));
+      try {
+        const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (this._token() || '') },
+          body: JSON.stringify({ action: 'fetch_result', job })
+        });
+        if (r.status === 404) continue;                       // henüz hazır değil
+        const d = await r.json().catch(() => null);
+        if (d && d.ok && (d.result || d.text)) {
+          this._lastGen = { charged: true, credits: (typeof d.credits === 'number' ? d.credits : undefined) };
+          this.setState({ genMsg: 'DOSYA KURTARILDI ✓', genPct: 44 });
+          return d.result || d.text;
+        }
+      } catch (e) { /* hâlâ çevrimdışı olabilir — denemeye devam */ }
+    }
+    return null;
   }
 
   async genAudio() {
@@ -3542,7 +3591,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000, action: action || '', duration: this.state.duration, topic: this.state.idea })
+      body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000, action: action || '', duration: this.state.duration, topic: this.state.idea, job: this._genJob || undefined })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'Sunucu yanıtı okunamadı' }));
     if (r.status === 402) { this._lastGen = { charged: false, insufficient: true, credits: data.credits }; throw new Error('YETERSIZ_KREDI'); }

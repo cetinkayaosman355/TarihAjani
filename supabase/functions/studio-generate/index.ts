@@ -602,6 +602,27 @@ async function spendSafe(admin: any, userId: string, amount: number, reason: str
   return row && typeof row.new_credits === "number" ? row.new_credits : undefined;
 }
 
+// ── ÜRETİM KURTARMA ──────────────────────────────────────────────
+// Mobilde uzun üretimde tarayıcı bağlantıyı koparabiliyor ("Load failed"):
+// sunucu üretimi bitirip krediyi düşüyor ama sonuç istemciye ulaşamıyordu.
+// Çözüm: başarılı üretim Storage'a yazılır (studio-ses/sonuc/...). İstemci
+// aynı "job" kimliğiyle tekrar sorarsa sonuç KREDİSİZ geri verilir.
+async function saveJobResult(admin: any, userId: string, job: string, payload: any) {
+  try {
+    const bytes = new TextEncoder().encode(JSON.stringify(payload));
+    await admin.storage.from("studio-ses")
+      .upload("sonuc/" + userId + "/" + job + ".json", bytes, { contentType: "application/json", upsert: true });
+  } catch (_e) { /* kayıt başarısızsa kurtarma olmaz ama üretim etkilenmez */ }
+}
+async function loadJobResult(admin: any, userId: string, job: string): Promise<any | null> {
+  try {
+    const d = await admin.storage.from("studio-ses").download("sonuc/" + userId + "/" + job + ".json");
+    if (d.error || !d.data) return null;
+    return JSON.parse(await d.data.text());
+  } catch (_e) { return null; }
+}
+const cleanJob = (v: unknown) => String(v || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 60);
+
 Deno.serve(async (req) => {
   const origin = originFor(req);
   const json = jsonWith(origin);
@@ -616,7 +637,23 @@ Deno.serve(async (req) => {
     const isEdit = act === "edit";
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
     // TTS'in prompt/konusu yok, yalnız seslendirme METNİ var — bu kontrolden muaf
-    if (!prompt && act !== "tts") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
+    if (!prompt && act !== "tts" && act !== "fetch_result") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
+
+    // KURTARMA UCU: bağlantısı kopan istemci, tamamlanmış üretimi buradan alır.
+    // Ücretsiz; yalnız kendi sonucunu görebilsin diye giriş şarttır.
+    if (act === "fetch_result") {
+      const FU = Deno.env.get("SUPABASE_URL"), FS = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (!FU || !FS) return json({ ok: false, error: "Sunucu yapılandırması eksik." }, 500);
+      const fdb = createClient(FU, FS);
+      const fjwt = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+      const { data: fud } = await fdb.auth.getUser(fjwt);
+      if (!fud?.user) return json({ ok: false, error: "Giriş gerekli." }, 401);
+      const fjob = cleanJob(b.job);
+      if (!fjob) return json({ ok: false, error: "job eksik." }, 400);
+      const row = await loadJobResult(fdb, fud.user.id, fjob);
+      if (!row || !row.result) return json({ ok: false, found: false }, 404);
+      return json({ ok: true, found: true, result: row.result, text: row.result, charged: false, recovered: true, credits: row.credits, grounded: !!row.grounded });
+    }
 
     const isPreview = act === "tts" && b.preview === true;   // ücretsiz ses önizlemesi
     const ttsFull = String(b.text || "").trim();
@@ -738,6 +775,16 @@ Deno.serve(async (req) => {
     const useClaude = provider === "claude" || provider === "anthropic";
     const isGen = String(b.action || "") === "generate";
     const topic = String(b.topic || "").trim();
+    // TEKRAR DENE aynı job kimliğiyle gelir: üretim daha önce tamamlandıysa
+    // AI'a hiç gitmeden, KREDİ DÜŞMEDEN kayıtlı sonucu geri ver (çifte ücret biter).
+    const job = cleanJob(b.job);
+    if (isGen && job && admin && userId) {
+      const prev = await loadJobResult(admin, userId, job);
+      if (prev && prev.result) {
+        logRun({ action: "generate", ok: true, ms: Date.now() - t0, user_id: userId, err: "kurtarildi" });
+        return json({ ok: true, result: prev.result, text: prev.result, charged: false, recovered: true, credits: prev.credits, grounded: !!prev.grounded });
+      }
+    }
     // Üretimden önce ARAŞTIR (grounding) → sonra üret. Tek kredi, çok daha derin/doğru çıktı.
     let genPrompt = prompt;
     let grounded = false;   // #3: araştırma başarısı artık yanıtla birlikte döner
@@ -808,6 +855,9 @@ ${prompt}`;
     // Üretim başarılı → krediyi ATOMİK düş (başarısız üretim kredi yakmaz)
     if (cost > 0 && admin && userId) {
       const credits = await spendSafe(admin, userId, cost, String(b.action || "uretim"));
+      // Sonucu KAYDET: bağlantı kopmuş olsa bile istemci fetch_result / aynı
+      // job ile üretimi kredisiz geri alabilir (mobil "Load failed" telafisi).
+      if (isGen && job) await saveJobResult(admin, userId, job, { result, credits, charged: true, grounded, ts: Date.now() });
       return json({ ok: true, result, text: result, charged: true, credits, grounded });
     }
 
