@@ -2497,8 +2497,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const txt = await this.askAI(prompt, maxTok, 'scenes');
-        const clean = txt.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
-        const j = JSON.parse(clean);
+        const j = this.parseGenJson(txt);
+        if (!j) throw new Error('parse');
         const g = (Array.isArray(j.gorsel_promptlar) ? j.gorsel_promptlar : []).filter(x => x && x.prompt);
         const v = (Array.isArray(j.video_promptlar) ? j.video_promptlar : []).filter(x => x && x.prompt);
         if (g.length) return { gorsel: g, video: v.length ? v : g.map(x => ({ sahne: x.sahne, prompt: '' })) };
@@ -2633,6 +2633,29 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     return result;
   }
 
+  // Sunucuyla AYNI onarım mantığı: model çıktısı kırpılmış/önekli/çitli olsa
+  // bile geçerli JSON'a çevir. (Eskiden sunucu onarıp kabul edip krediyi
+  // düşüyor, istemcinin naif parse'ı patlıyordu → "kredi gitti, hata geldi".)
+  parseGenJson(text) {
+    const t = String(text || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '');
+    const clean = t.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
+    try { return JSON.parse(clean); } catch (e) { /* onarım dene */ }
+    try {
+      const src = t.replace(/^[\s\S]*?\{/, '{');
+      const stack = []; let inStr = false, esc = false;
+      for (const ch of src) {
+        if (inStr) { if (esc) esc = false; else if (ch === '\\') esc = true; else if (ch === '"') inStr = false; continue; }
+        if (ch === '"') inStr = true;
+        else if (ch === '{' || ch === '[') stack.push(ch);
+        else if (ch === '}' || ch === ']') stack.pop();
+      }
+      let s2 = src.replace(/,\s*$/, '');
+      if (inStr) s2 += '"';
+      for (let i = stack.length - 1; i >= 0; i--) s2 += stack[i] === '{' ? '}' : ']';
+      return JSON.parse(s2);
+    } catch (e) { return null; }
+  }
+
   async startGenerate() {
     const s = this.state;
     if (s.generating) return;
@@ -2689,8 +2712,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         text = rec;
       } finally { this._genJob = null; }
       const genCharge = this._lastGen;   // kredi düşmesi ilk 'generate' çağrısına ait; sonraki çağrılar üzerine yazmadan yakala
-      const clean = text.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
-      let result = JSON.parse(clean);
+      let result = this.parseGenJson(text);
+      if (!result || !result.baslik) throw new Error('Dosya çözümlenemedi. TEKRAR DENE — tamamlanan üretim KREDİSİZ geri gelir.');
       result = this.qualityFix(result);
       clearInterval(this._mt);   // taslak hazır → genel mesaj döngüsü sussun, aşama mesajları ezilmesin
       this.setState({ genMsg: 'TASLAK HAZIR — BÖLÜMLER YAZILIYOR…', genPct: 44 });
