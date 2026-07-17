@@ -761,7 +761,21 @@ ${prompt}`;
       ? Math.min(Math.max(Number(b.max_tokens) || 8000, 8000), 16000)
       : Math.min(Number(b.max_tokens) || 4000, 4000);
     // Üretimde jsonMode: Claude prefill + OpenAI response_format json_object
-    const gen = () => useClaude ? callClaude(genPrompt, capTok, isGen) : callOpenAI(genPrompt, capTok, isGen);
+    // DAYANIKLILIK: birincil sağlayıcı hata verirse (aşırı yük / bakiye / model)
+    // diğerine DÜŞ — biri çökse bile üretim/sohbet sürsün, kullanıcı 500 görmesin.
+    const gen = async (): Promise<string> => {
+      try {
+        return useClaude ? await callClaude(genPrompt, capTok, isGen) : await callOpenAI(genPrompt, capTok, isGen);
+      } catch (e) {
+        console.error("birincil saglayici hatasi, yedege dusuluyor: " + String(e).slice(0, 160));
+        try {
+          return useClaude ? await callOpenAI(genPrompt, capTok, isGen) : await callClaude(genPrompt, capTok, isGen);
+        } catch (e2) {
+          // İkisi de düştü → asıl nedeni yukarı taşı (catch bloğu ipucu üretsin)
+          throw new Error(String((e2 as any)?.message || e2));
+        }
+      }
+    };
 
     let result = await gen();
     // Sahne promptları AYRI 'scenes' çağrılarında bölüm bölüm üretiliyor; taslakta
@@ -799,8 +813,15 @@ ${prompt}`;
 
     return json({ ok: true, result, text: result, charged: false, grounded });
   } catch (e) {
-    // #18: iç ayrıntı istemciye sızmaz — loglanır, kullanıcıya sade mesaj döner
-    console.error("studio-generate beklenmeyen hata: " + String(e).slice(0, 400));
-    return json({ ok: false, error: "Sunucuda beklenmeyen bir hata oluştu — lütfen tekrar dene." }, 500);
+    // #18: iç ayrıntı istemciye sızmaz — ama YÖNETİCİ tanılayabilsin diye
+    // yaygın nedenler kısa bir İPUCUNA çevrilir (anahtar/bakiye/model/yapılandırma).
+    const detail = String((e as any)?.message || e).slice(0, 400);
+    console.error("studio-generate beklenmeyen hata: " + detail);
+    let hint = "";
+    if (/authentication|invalid x-api-key|permission|401|403/i.test(detail)) hint = " (AI anahtarı geçersiz — ANTHROPIC_API_KEY / OPENAI_API_KEY secret'ını kontrol edin)";
+    else if (/credit|balance|quota|insufficient|billing|429/i.test(detail)) hint = " (AI bakiyesi/kotası bitmiş olabilir)";
+    else if (/not_found|model|kullanılabilir model/i.test(detail)) hint = " (AI modeli bulunamadı — model adı değişmiş olabilir)";
+    else if (/secret eksik|yapılandırma/i.test(detail)) hint = " (Sunucu secret'ları eksik)";
+    return json({ ok: false, error: "Sunucuda beklenmeyen bir hata oluştu — lütfen tekrar dene." + hint }, 500);
   }
 });
