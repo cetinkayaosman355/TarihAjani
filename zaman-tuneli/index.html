@@ -99,10 +99,10 @@
     .be-ring.r2{inset:11%;border:1px dashed rgba(230,196,120,.4);animation:spin 22s linear infinite reverse}
     .be-ring.r3{inset:23%;border:1px solid rgba(201,162,90,.3);border-left-color:transparent;border-right-color:transparent;animation:spin 9s linear infinite}
     .be-tick{position:absolute;inset:5.5%;border-radius:50%;background:repeating-conic-gradient(rgba(230,196,120,.5) 0 .35deg,transparent .35deg 6deg);-webkit-mask:radial-gradient(circle,transparent 62%,#000 63%,#000 66%,transparent 67%);mask:radial-gradient(circle,transparent 62%,#000 63%,#000 66%,transparent 67%);animation:spin 40s linear infinite}
-    .be-mono{font:800 clamp(2.6rem,7vw,4rem)/1 'Playfair Display',serif;letter-spacing:.06em;background:linear-gradient(110deg,#B18742,#E6C478 45%,#FFF0B1 55%,#9D7536);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 18px rgba(0,0,0,.85));animation:mono-breathe 3.2s ease-in-out infinite}
+    .be-mono{width:58%;height:58%;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px rgba(201,162,90,.75),0 14px 40px rgba(0,0,0,.7);animation:mono-breathe 3.2s ease-in-out infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     @keyframes emb-in{from{opacity:0;transform:scale(.55) rotate(-14deg);filter:blur(8px)}to{opacity:1;transform:scale(1) rotate(0);filter:blur(0)}}
-    @keyframes mono-breathe{0%,100%{filter:drop-shadow(0 4px 18px rgba(0,0,0,.85)) drop-shadow(0 0 10px rgba(230,196,120,.25))}50%{filter:drop-shadow(0 4px 18px rgba(0,0,0,.85)) drop-shadow(0 0 26px rgba(230,196,120,.6))}}
+    @keyframes mono-breathe{0%,100%{box-shadow:0 0 0 3px rgba(201,162,90,.75),0 14px 40px rgba(0,0,0,.7),0 0 12px rgba(230,196,120,.25)}50%{box-shadow:0 0 0 3px rgba(230,196,120,.95),0 14px 40px rgba(0,0,0,.7),0 0 30px rgba(230,196,120,.6)}}
     .boot-line{margin:20px 0 0;color:#b8b3a6;font:400 .6rem/1 'Special Elite',monospace;letter-spacing:.3em;opacity:0;animation:reveal .5s 1.68s ease forwards}
     .boot-bar{width:min(320px,64vw);height:2px;margin:15px auto 0;background:rgba(201,162,90,.16);overflow:hidden;opacity:0;animation:reveal .4s 1.74s ease forwards}
     .boot-bar i{display:block;height:100%;background:linear-gradient(90deg,#A77D35,#E6C478,#FFF0B1);transform:scaleX(0);transform-origin:left;animation:bfill 1.55s 1.8s cubic-bezier(.35,.6,.25,1) forwards;box-shadow:0 0 12px rgba(230,196,120,.8)}
@@ -219,7 +219,7 @@
           <span class="be-ring r2"></span>
           <span class="be-ring r3"></span>
           <span class="be-tick"></span>
-          <span class="be-mono">TA</span>
+          <img class="be-mono" src="/assets/logo-mark.png" alt="Tarih Ajanı">
         </div>
         <p class="boot-kick">TARİH AJANI</p>
         <p class="boot-line">GEÇİT AÇILIYOR</p>
