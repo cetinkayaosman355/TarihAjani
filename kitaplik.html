@@ -40,6 +40,9 @@
     --buro-genis: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042617_f00f063a-a254-477d-a820-1662df2df791.png");
     --buro-dar: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042617_f00f063a-a254-477d-a820-1662df2df791.png");
     --raf-fon: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042617_79a238f0-c667-484a-bb36-7d42eacc344e.png");
+    /* İngiliz kütüphane odası — sayfa arka planı */
+    --kutuphane-fon: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_052726_4eadc4bd-386c-4295-bd0c-9f6f0ae67097.png");
+    --kutuphane-fon-dar: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_052728_7ffea75d-c9ae-4e46-8564-e151d6a5137a.png");
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -251,17 +254,29 @@
   .kutuphane { display: none; }
   .kutuphane.acik { display: block; animation: yavasBelir 1s ease both; }
   @keyframes yavasBelir { from { opacity: 0; } to { opacity: 1; } }
-  /* Gerçek kitaplık yakın planı — soluk, sinematik arka fon */
+  /* İngiliz kütüphane odası — sıcak, sinematik arka plan */
   .kutuphane.acik::before {
     content: "";
     position: fixed; inset: 0;
     z-index: 0;
-    background-image: var(--raf-fon);
+    background-image: var(--kutuphane-fon);
     background-size: cover;
     background-position: center;
-    opacity: .10;
-    filter: blur(2px) saturate(.85) brightness(.7);
+    opacity: .38;
+    filter: saturate(.92) brightness(.6);
     pointer-events: none;
+  }
+  @media (max-width: 620px) {
+    .kutuphane.acik::before { background-image: var(--kutuphane-fon-dar); }
+  }
+  /* Odayı loşlaştıran sıcak vinyet — içerik okunur kalsın */
+  .kutuphane.acik::after {
+    content: "";
+    position: fixed; inset: 0;
+    z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(120% 92% at 50% 32%, rgba(26,16,8,.12), rgba(6,4,2,.74) 100%),
+      linear-gradient(180deg, rgba(6,4,2,.62), transparent 18%, transparent 82%, rgba(6,4,2,.72));
   }
 
   .zerre {
@@ -345,20 +360,18 @@
       0 50px 110px rgba(0,0,0,.78),
       inset 0 0 150px rgba(0,0,0,.72),
       inset 0 0 0 1px rgba(233,207,142,.1);
-    overflow: hidden;
+    overflow: visible;
   }
-  /* üstte ince altın tabela çizgisi */
-  .dolap-cerceve > .raf:first-child { margin-top: 4px; }
   /* Arkada gerçek ansiklopedi duvarı (loş) */
   .dolap-cerceve::before {
-    content: ""; position: absolute; inset: 0; z-index: 0;
+    content: ""; position: absolute; inset: 0; z-index: 0; border-radius: 10px;
     background-image: var(--raf-fon);
     background-size: cover; background-position: center;
     opacity: .28; filter: blur(2px) brightness(.55) saturate(.85);
   }
   /* Üstten sıcak spot + vinyet */
   .dolap-cerceve::after {
-    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: 10px;
     background:
       radial-gradient(140% 75% at 50% -12%, rgba(233,207,142,.2), transparent 54%),
       radial-gradient(ellipse at 50% 54%, transparent 58%, rgba(0,0,0,.42) 100%);
@@ -486,52 +499,50 @@
   }
   .kitap.tamamlandi .rozet-okundu { display: flex; }
 
-  /* Üstüne gelince açılan etiket/künye */
-  .kitap .etiket {
-    position: absolute;
-    left: 50%; bottom: calc(100% + 18px);
-    transform: translateX(-50%) translateY(10px) scale(.94);
-    transform-origin: bottom center;
-    width: 208px;
+  /* Üstüne gelince açılan künye (kapak + isim) — üst seviye, kırpılmaz */
+  .kunye {
+    position: fixed;
+    z-index: 78;
+    width: 224px;
     background: linear-gradient(180deg, #1c150c, #120d07);
-    border: 1px solid rgba(201,162,75,.45);
+    border: 1px solid rgba(201,162,75,.5);
     border-radius: 10px;
     padding: 12px 12px 14px;
-    box-shadow: 0 26px 50px rgba(0,0,0,.7), inset 0 1px 0 rgba(233,207,142,.15);
+    box-shadow: 0 26px 54px rgba(0,0,0,.78), inset 0 1px 0 rgba(233,207,142,.16);
     opacity: 0;
     pointer-events: none;
-    transition: opacity .32s ease, transform .32s cubic-bezier(.22,1,.36,1);
-    z-index: 40;
+    transform: translate(-50%, -100%) translateY(6px) scale(.95);
+    transform-origin: bottom center;
+    transition: opacity .26s ease, transform .26s cubic-bezier(.22,1,.36,1);
   }
-  .kitap .etiket::after {
+  .kunye.acik { opacity: 1; transform: translate(-50%, -100%) translateY(-14px) scale(1); }
+  .kunye::after {
     content: ""; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%) rotate(45deg);
     width: 14px; height: 14px; background: #120d07;
-    border-right: 1px solid rgba(201,162,75,.45); border-bottom: 1px solid rgba(201,162,75,.45);
+    border-right: 1px solid rgba(201,162,75,.5); border-bottom: 1px solid rgba(201,162,75,.5);
   }
-  .kitap:hover .etiket, .kitap:focus-visible .etiket {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
-  }
-  .etiket img {
-    width: 100%; height: 96px; object-fit: cover;
+  .kunye img {
+    width: 100%; height: 106px; object-fit: cover;
     border-radius: 6px; display: block;
     border: 1px solid rgba(201,162,75,.3);
+    background: #241a0c;
   }
-  .etiket .e-donem {
+  .kunye .e-donem {
     display: block; margin-top: 9px;
     font-size: .56rem; letter-spacing: .28em; text-indent: .28em; text-transform: uppercase;
     color: var(--gold);
   }
-  .etiket .e-baslik {
+  .kunye .e-baslik {
     display: block; margin-top: 4px;
-    font-family: var(--serif-display); font-weight: 600; font-size: .96rem; line-height: 1.22;
+    font-family: var(--serif-display); font-weight: 600; font-size: .98rem; line-height: 1.22;
     color: #f7efdc;
   }
-  .etiket .e-ac {
+  .kunye .e-ac {
     display: inline-block; margin-top: 9px;
     font-size: .68rem; letter-spacing: .12em;
     color: var(--gold-bright);
   }
+  @media (pointer: coarse) { .kunye { display: none; } }
 
   .bos-mesaj { text-align: center; color: #9d8c6b; font-style: italic; font-size: 1.1rem; padding: 40px 0; display: none; }
 
@@ -717,6 +728,8 @@
   <div class="el" id="el" aria-hidden="true">
     <img class="el-img" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_051120_a5d2e470-94e5-468a-b78b-847eda2b41b7.png" alt="">
   </div>
+
+  <div class="kunye" id="kunye" aria-hidden="true"></div>
 
   <footer>
     <p class="soz">&ldquo;Tarihi bilmeyen ajan, zamanda kaybolur.&rdquo;</p>
@@ -1064,16 +1077,30 @@ function spineYap(k, i) {
     <span class="govde">
       <span class="sirt-baslik">${k.sirt}</span>
       <span class="sirt-cilt">CİLT ${roman(ciltNo)}</span>
-    </span>
-    <span class="etiket">
-      <img src="${k.kapak}" alt="" loading="lazy" onerror="this.style.display='none'">
-      <span class="e-donem">${k.donemAdi}</span>
-      <span class="e-baslik">${k.baslik}</span>
-      <span class="e-ac">${k.sayfalar.length} sayfa · Aç ▸</span>
     </span>`;
   btn.addEventListener("click", () => kitapAc(k));
+  btn.addEventListener("mouseenter", () => kunyeGoster(btn, k));
+  btn.addEventListener("mouseleave", kunyeGizle);
+  btn.addEventListener("focus", () => kunyeGoster(btn, k));
+  btn.addEventListener("blur", kunyeGizle);
   return btn;
 }
+
+const kunye = document.getElementById("kunye");
+function kunyeGoster(btn, k) {
+  if (matchMedia("(pointer: coarse)").matches) return;
+  const r = btn.getBoundingClientRect();
+  kunye.innerHTML = `
+    <img src="${k.kapak}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+    <span class="e-donem">${k.donemAdi}</span>
+    <span class="e-baslik">${k.baslik}</span>
+    <span class="e-ac">${k.sayfalar.length} sayfa · Aç ▸</span>`;
+  kunye.style.left = (r.left + r.width / 2) + "px";
+  kunye.style.top = r.top + "px";
+  kunye.classList.add("acik");
+}
+function kunyeGizle() { kunye.classList.remove("acik"); }
+window.addEventListener("scroll", kunyeGizle, { passive: true });
 
 function rafiCiz(filtre) {
   aktifFiltre = filtre;
@@ -1097,6 +1124,7 @@ function rafiCiz(filtre) {
 
 /* ---------------- Okuyucu ---------------- */
 function kitapAc(k) {
+  kunyeGizle();
   acikKitap = k;
   sayfa = 0;
   kitapBaslik.textContent = k.baslik;
