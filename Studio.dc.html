@@ -505,6 +505,10 @@
               </sc-for>
             </div>
             <button onClick="{{ findTopic }}" style="margin-top: 12px; border: 0; background: transparent; color: #818797; font-size: 12.5px; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px;" style-hover="color: #e6c478;">Ne yazacağını bilmiyor musun? Ajanla konuş, birlikte bulalım →</button>
+            <div style="margin-top: 18px;">
+              <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .16em;">ÖZEL İSTEK · OPSİYONEL</p>
+              <textarea value="{{ custom }}" onChange="{{ onCustom }}" rows="2" placeholder="Kendi tarzını serbestçe yaz — ör. 'kare format, gençlere hitap eden esprili dil' ya da sadece '16:9 yatay' ya da sadece 'daha destansı'. Boş bırakırsan seçtiğin ayarlar geçerli." style="width: 100%; resize: vertical; border: 1px solid rgba(129,135,151,.3); background: #060910; color: #e6dfcb; padding: 12px 14px; font-size: 13.5px; line-height: 1.55;"></textarea>
+            </div>
             <sc-if value="{{ arsivPickOpen }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top: 16px; border: 1px solid rgba(193,154,82,.35); background: #070a12;">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid rgba(193,154,82,.2);">
@@ -2291,7 +2295,7 @@ class Component extends DCLogic {
   }
   sysVoiceId() { const o = this.find('voice', this.state.voice); return (o && o.oa) || 'onyx'; }
   // Seçili ses ElevenLabs motoruysa sunucuya engine+voiceId geçir (yoksa boş → OpenAI)
-  voiceEngine(o) { const v = o || this.find('voice', this.state.voice); return (v && v.engine === 'eleven' && v.elId) ? { engine: 'eleven', voiceId: v.elId } : {}; }
+  voiceEngine(o) { const v = o || this.find('voice', this.state.voice); if (!(v && v.engine === 'eleven' && v.elId)) return {}; const e = { engine: 'eleven', voiceId: v.elId }; if (v.el && typeof v.el.stability === 'number') e.stability = v.el.stability; if (v.el && typeof v.el.style === 'number') e.style = v.el.style; return e; }
   // ── Ses önizleme ── ücretsiz (kredi düşmez); üretilen kısa örnek cihazda
   // localStorage'da saklanır → ikinci dinlemede tekrar üretilmez, maliyet olmaz.
   async previewServer(v) {
@@ -2419,7 +2423,8 @@ class Component extends DCLogic {
     const p = `Sen "Tarih Ajanı" adlı Türkçe tarih YouTube kanalının BAŞ senaristi, araştırmacısı ve yapım yönetmenisin. Kanal tarihi bir dedektif titizliğiyle işler: her iddia belgeye dayanır, anlatım bir vaka dosyası gibi kurgulanır, izleyici ilk saniyeden ipuçlarıyla sürüklenir. Çıktın PROFESYONEL yayın kalitesinde olmalı; yüzeysel, genel-geçer, "ansiklopedi özeti" gibi metinler KABUL EDİLMEZ.
 
 BU ÜRETİMİN PARAMETRELERİ:
-- KONU: ${s.idea}
+- KONU: ${s.idea}${(s.custom || '').trim() ? `
+- ⭐ KULLANICI ÖZEL İSTEĞİ (EN YÜKSEK ÖNCELİK — aşağıdaki hazır ayarlarla çelişirse buna uy; kullanıcı en-boy oranı/süre/tarz/dil belirttiyse onu uygula): "${(s.custom || '').trim().slice(0, 500)}"` : ''}
 - ⛔ GEÇERLİLİK KONTROLÜ (ÖNCE BUNU YAP): Eğer KONU anlamlı bir tarih/insanlık konusu DEĞİLSE — rastgele harfler (ör. "asdfgh"), anlamsız kelimeler, boş ya da tarihle ilgisiz saçma bir ifade ise — hiçbir dosya ÜRETME. Bunun yerine SADECE şu tek JSON'u döndür, başka hiçbir şey yazma: {"gecersiz": true, "mesaj": "Bunu bir tarih konusuna bağlayamadım; bir olay, kişi ya da dönem yazar mısın?"}. Konu geçerli bir tarih konusuysa bu kuralı yok say ve normal üret.
 - Anlatım tonu: ${tonStr}
 - Seslendirme tarzı: ${sesStr}
@@ -2433,7 +2438,8 @@ BU ÜRETİMİN PARAMETRELERİ:
 
 KALİTE BARI (EN KRİTİK — zayıf çıktı geçersizdir):
 - SESLENDİRME (senaryo[].metin): O bölümün TAM, kelimesi kelimesine okunacak metni. Somut isim/tarih/yer/sayı geçir; duyusal ve sinematik dil kur; her bölüm mikro-kanca ile açılıp merak bırakarak bitsin. Toplam kelime ${wmin}-${wmax} aralığında KALMALI: ${wmin} altına düşme, ${wmax} üstüne ÇIKMA (süre kilidi kesindir). Dolgu, klişe, "tarih boyunca insanlar…" tarzı genel cümle YASAK — kısalık kaliteyi düşürmez, netleştirir.
-- 🎙 SESLİ OKUMA KURALI (metin bir anlatıcı tarafından OKUNACAK): tüm sayı, tarih ve rakamları YAZIYLA yaz — "1453" değil "bin dört yüz elli üç", "II. Mehmed" değil "İkinci Mehmed", "%40" değil "yüzde kırk". Parantez, tire içi ara cümle, madde işareti, kısaltma KULLANMA; her cümle yüksek sesle doğal okunabilsin.
+- 🎙 SESLİ OKUMA KURALI (metin bir anlatıcı tarafından OKUNACAK): senaryo[].metin YALNIZCA yüksek sesle okunacak temiz anlatıdır — içine sahne/kamera/müzik yönergesi, zaman damgası, "Bölüm 1" gibi başlık, köşeli/parantez içi teknik not KOYMA (okunmaz, akışı bozar). Tüm sayı, tarih ve rakamları YAZIYLA yaz — "1453" değil "bin dört yüz elli üç", "II. Mehmed" değil "İkinci Mehmed", "%40" değil "yüzde kırk". Parantez, tire içi ara cümle, madde işareti, kısaltma KULLANMA; her cümle yüksek sesle doğal okunabilsin.
+- 💛 DUYGU (EN ÖNEMLİ): kuru ansiklopedi anlatımı DEĞİL. Sahnenin duygusunu (gerilim, hüzün, hayret, öfke, zafer) kelime seçimine ve cümle ritmine işle; dinleyici olayı HİSSETSİN, sadece öğrenmesin. Duyguyu abartma/melodrama kaçmadan, olguya sadık kalarak ver — büyük bir belgeselin insanı içine çeken sıcaklığı.
 - ANLATIM ZANAATİ: Cümle ritmini dönüşümlü kur — kısa vurucu cümlelerle uzun akan cümleleri karıştır; art arda cümleler aynı kelime/kalıpla BAŞLAMASIN. Göster, anlatma: soyut yargı ("çok korkunçtu") yerine sahne ve duyu ("etin yanık kokusu surlara kadar ulaşıyordu"). Şu yapay-zekâ klişeleri KESİNLİKLE YASAK: "adeta", "âdeta", "tarihin tozlu sayfaları", "yolculuğumuz", "asla unutmayacaktı", "hayal edin" (bölüm başına en fazla 1 kez), "günümüzde bile", "kim bilir belki de".
 - KANCA: İlk 3 saniye maksimum merak; ilk cümle bir soru, çelişki ya da çarpıcı iddia olsun.
 - YOUTUBE AÇIKLAMASI (aciklama): EN AZ 3 dolu paragraf — 1) merak açan giriş, 2) videoda ne var/neyi kanıtlıyoruz, 3) abonelik + kaynak/uyarı çağrısı. Ardından "00:00 Giriş" biçiminde EN AZ 3 zaman damgası, sonra 5-8 arama-dostu anahtar kelime. Kısa/tek paragraf KABUL EDİLMEZ.
@@ -2881,10 +2887,23 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   }
 
   // G-03: Shorts bölümü ana seslendirmeye KARIŞMAZ (ayrı içerik, ayrı ses)
+  // Seslendirme = SADECE okunacak temiz anlatı. Etiket, zaman damgası, sahne/
+  // teknik yönerge, köşeli/parantez içi cue okunmaz — akış bozulmasın.
+  cleanNarration(t) {
+    return String(t || '')
+      .replace(/\[[^\]]*\]/g, ' ')
+      .replace(/\((?:[^)]*?(?:müzik|müzikal|efekt|ses efekti|sfx|kamera|fade|geçiş|sahne|kesme|jenerik|music)[^)]*?)\)/gi, ' ')
+      .replace(/^\s*\d+\s*\.?\s*Bölüm\s*[:—–-].*$/gim, '')
+      .replace(/^\s*\d{1,2}:\d{2}(?:\s*[-–]\s*\d{1,2}:\d{2})?\s*$/gm, '')
+      .replace(/[ \t]{2,}/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
   voiceText() {
     const r = this.state.result;
     if (!r || !r.senaryo) return '';
-    return r.senaryo.filter(x => !/^shorts/i.test((x && x.bolum) || '')).map(x => x.metin).join('\n\n');
+    const raw = r.senaryo.filter(x => !/^shorts/i.test((x && x.bolum) || '')).map(x => x.metin).join('\n\n');
+    return this.cleanNarration(raw);
   }
 
   // ── Ö-03: ALTYAZI (.SRT) + ZAMAN DAMGALARI — ek AI maliyeti yok ──
@@ -3325,6 +3344,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
 
       idea: s.idea,
       onIdea: e => this.setState({ idea: e.target.value, ideaWarn: '' }),
+      custom: s.custom || '',
+      onCustom: e => this.setState({ custom: e.target.value }),
       ideaEmpty: !s.idea.trim(),
       ideaWarn: s.ideaWarn,
       ideaShort: s.idea.length > 70 ? s.idea.slice(0, 70) + '…' : s.idea,

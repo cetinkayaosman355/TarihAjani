@@ -263,7 +263,18 @@ body.oyun-modu #tabbar{display:none}
   letter-spacing:.06em;padding:11px 16px;border-radius:10px;cursor:pointer}
 .pk .al:active{transform:scale(.95)}
 audio{width:100%;margin-top:10px}
-.scene-img{width:100%;border-radius:10px;margin-top:10px;border:1px solid var(--line)}
+/* sahne görseli — kutuya oturur, tıklanınca lightbox; dev açılmaz */
+.scene-img{display:block;width:100%;max-height:52vh;object-fit:contain;background:#05070d;border-radius:10px;margin-top:10px;border:1px solid var(--line);cursor:zoom-in}
+.gtag{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(193,154,82,.3);background:rgba(193,154,82,.06);color:#c9c2ae;font-size:11px;padding:6px 10px;border-radius:8px;margin:0 6px 6px 0}
+/* GÖRSEL BÜYÜTME (lightbox) — sağa/sola ok ile galeri */
+#imglb{position:fixed;inset:0;z-index:1200;display:none;place-items:center;align-content:center;gap:12px;background:rgba(2,3,8,.95);padding:18px;cursor:zoom-out}
+#imglb.on{display:grid}
+#imglb .stage{position:relative;display:grid;place-items:center;width:100%;max-width:96vw}
+#imglb img{max-width:96vw;max-height:78vh;object-fit:contain;border:1px solid rgba(193,154,82,.4);border-radius:8px;box-shadow:0 30px 90px rgba(0,0,0,.7)}
+#imglb .nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:1px solid rgba(193,154,82,.5);background:rgba(8,10,16,.85);color:var(--gold);font-size:26px;display:grid;place-items:center;cursor:pointer}
+#imglb .nav.l{left:6px}#imglb .nav.r{right:6px}
+#imglb .say{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;color:#a8a498}
+#imglb .lbtn{border:1px solid rgba(129,135,151,.4);background:none;color:#cdd2dc;font-size:11px;letter-spacing:.1em;padding:11px 18px;border-radius:10px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -314,6 +325,7 @@ audio{width:100%;margin-top:10px}
   </div>
 </div>
 <div id="uyepop" aria-hidden="true"></div>
+<div id="imglb" aria-hidden="true"><div class="stage"><button class="nav l" id="lb-prev" aria-label="Önceki">‹</button><img id="lb-img" src="" alt=""><button class="nav r" id="lb-next" aria-label="Sonraki">›</button></div><div class="say" id="lb-say"></div><div style="display:flex;gap:10px"><a class="lbtn" id="lb-dl" download="tarih-ajani-gorsel.jpg">⬇ İndir</a><button class="lbtn" id="lb-kapat">Kapat ✕</button></div></div>
 <div id="toast" role="status"></div>
 
 <script src="/arsiv-data.js"></script>
@@ -437,6 +449,18 @@ window.addEventListener('popstate', function (e) {
   go(st.k || 'masa', false, true);
 });
 try { history.replaceState({ k: 'masa' }, ''); } catch (e) {}
+/* Lightbox kontrolleri (bir kez) */
+$('#lb-kapat').addEventListener('click', imgLbKapat);
+$('#imglb').addEventListener('click', function (e) { if (e.target.id === 'imglb') imgLbKapat(); });
+$('#lb-prev').addEventListener('click', function (e) { e.stopPropagation(); imgLbStep(-1); });
+$('#lb-next').addEventListener('click', function (e) { e.stopPropagation(); imgLbStep(1); });
+$('#lb-dl').addEventListener('click', function (e) { e.stopPropagation(); });
+window.addEventListener('keydown', function (e) {
+  if (!$('#imglb').classList.contains('on')) return;
+  if (e.key === 'ArrowLeft') imgLbStep(-1);
+  else if (e.key === 'ArrowRight') imgLbStep(1);
+  else if (e.key === 'Escape') imgLbKapat();
+});
 
 /* ── KREDİ ── */
 function krediYaz() {
@@ -649,7 +673,7 @@ var SESLER = [
   ['kadin-belgesel', 'Kadın · Belgesel', 'eleven', 'EXAVITQu4vr4xnSDxMaL', 'nova'],
   ['kadin-olgun', 'Kadın · Olgun', 'eleven', '21m00Tcm4TlvDq8ikWAM', 'sage']
 ];
-var uret = { ton: 'merak', stil: 'sinematik', sure: 60, ses: 'kadir', busy: false, sonuc: null, hata: '', konu: '' };
+var uret = { ton: 'merak', stil: 'sinematik', sure: 60, ses: 'kadir', busy: false, sonuc: null, hata: '', konu: '', ozel: '' };
 /* SEN ÖNER — anında, hatasız: yerel seçkin havuz (karışık sıra, tekrar yok) */
 var ONERI = (function () {
   var p = ['Hezârfen gerçekten uçtu mu? Boğaz’ı geçen adamın belge yüzü',
@@ -681,6 +705,13 @@ function drawUret() {
     '<span style="display:flex;gap:8px"><button class="kredi" data-sheet>☰</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
     '<div class="pad"><textarea id="u-konu" class="inp" rows="3" placeholder="Bir olay, kişi ya da soru yaz — ör. Kanuni’nin Zigetvar seferi">' + esc(uret.konu) + '</textarea>' +
     '<button class="chip" id="u-oner" style="margin-top:9px">◈ SEN ÖNER</button></div>' +
+    // BİZİM TARZIMIZ — üretim öncesi örnek: görsel + anlatım + prompt (kafa karışmasın)
+    '<div class="sec ac" style="margin-top:12px"><div class="sbh"><b>◆ BİZİM TARZIMIZ · ÖRNEK</b><i>›</i></div><div class="ic">' +
+    '<p class="alt-not" style="margin:0 0 8px;text-align:left">Üretiminde tam olarak bunu alırsın: araştırılmış akıcı anlatım, sinematik sahne görseli ve hazır İngilizce prompt.</p>' +
+    '<img class="scene-img" style="cursor:default;max-height:34vh" src="/assets/haber/sezar-suikasti.jpg" alt="Örnek sahne görseli">' +
+    '<div class="blk"><div class="k">ÖRNEK ANLATIM (seslendirilecek metin)</div><div class="t" style="font-size:13px">Roma’nın en güçlü adamı, ölümüne yalnızca birkaç adım kala hiçbir şeyden şüphelenmiyordu. Senato salonuna girdiğinde, güvendiği yüzlerin ardında yirmi üç bıçak onu bekliyordu.</div></div>' +
+    '<div class="blk"><div class="k">ÖRNEK GÖRSEL PROMPTU (İngilizce)</div><div class="t" style="font-size:12px;color:#a8b2c2">Dark moody cinematic film still, Roman senate interior, Julius Caesar in white toga turning in shock as senators close in with daggers, low-key torchlight, 9:16 vertical. No modern text, no watermark, no distorted anatomy.</div></div>' +
+    '</div></div>' +
     '<div class="sh"><b>ANLATIM TONU</b></div><div class="opt-grid">' +
     TONLAR.map(function (t) { return '<button class="chip' + (uret.ton === t[0] ? ' on' : '') + '" data-ton="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
     '<div class="sh"><b>GÖRSEL STİL</b></div><div class="opt-grid">' +
@@ -690,11 +721,14 @@ function drawUret() {
     '<div class="sh"><b>SÜRE</b></div><div class="sure">' +
     '<input id="u-sure" type="range" min="30" max="600" step="30" value="' + uret.sure + '">' +
     '<div class="val"><span>30 sn</span><b id="u-sure-v">' + sureText() + ' · ' + uretKredi() + ' KR</b><span>10 dk</span></div></div>' +
+    '<div class="sh"><b>ÖZEL İSTEK · OPSİYONEL</b></div>' +
+    '<div class="pad" style="padding-top:0"><textarea id="u-ozel" class="inp" rows="2" placeholder="Kendi tarzını serbestçe yaz — ör. “kare format, gençlere hitap eden esprili dil” ya da sadece “16:9 yatay” ya da sadece “daha destansı”. Boş bırakırsan yukarıdaki seçimlerin geçerli olur.">' + esc(uret.ozel || '') + '</textarea></div>' +
     (uret.hata ? '<div class="hata">' + esc(uret.hata) + '</div>' : '') +
     '<div style="padding:20px 16px 0"><button class="cta" id="u-go">◉ &nbsp;ÜRET · ' + uretKredi() + ' KR</button>' +
     '<p class="alt-not" style="margin-top:12px">Seslendirme ve sahne görselleri üretimden sonra dosyanın içinde</p></div>' +
     gecmisHtml();
   $('#u-konu').addEventListener('input', function (e) { uret.konu = e.target.value; });
+  var oz = $('#u-ozel'); if (oz) oz.addEventListener('input', function (e) { uret.ozel = e.target.value; });
   $('#u-oner').addEventListener('click', function () {
     var b = $('#u-oner');
     b.textContent = '◈ AJAN DÜŞÜNÜYOR…';
@@ -755,15 +789,21 @@ function buildUretPrompt() {
     'KONU: ' + uret.konu + '\n' +
     'SÜRE: toplam ~' + sec + ' saniye seslendirme (~' + kelime + ' kelime, ' + bolum + ' akıcı bölüm). Bu süre KİLİTLİDİR — daha kısa yazma.\n' +
     'ANLATIM TONU: ' + (TON_TARIF[uret.ton] || TON_TARIF.merak) + '\n' +
+    ((uret.ozel || '').trim() ? 'KULLANICI ÖZEL İSTEĞİ (EN YÜKSEK ÖNCELİK — çelişki olursa buna uy; en-boy oranı/süre/tarz belirttiyse onu uygula): "' + (uret.ozel || '').trim().slice(0, 400) + '"\n' : '') +
     'MUTLAK KURALLAR:\n' +
-    '1) Metin AKICI DÜZYAZI olacak — sesli okunacak bir belgesel anlatımı gibi. ASLA "Soru:", "İpucu 1", "İpucu 2", "Cevap:", "Bölüm 1:" gibi ETİKET/BAŞLIK/madde YAZMA. Sadece anlatı cümleleri.\n' +
-    '2) İlk cümle güçlü bir kancayla başlar; her bölüm bir öncekinden doğal devralır, sonda merak bırakır.\n' +
-    '3) Tüm sayı ve tarihleri YAZIYLA yaz ("1453" değil "bin dört yüz elli üç"; "II. Mehmed" değil "İkinci Mehmed"). Kısaltma/parantez yok.\n' +
-    '4) Somut isim, tarih, yer ve ayrıntı geçir; klişe yok ("tarihin tozlu sayfaları", "yolculuğumuz" yasak). Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver.\n' +
+    '1) SESLENDİRME METNİ (senaryo[].metin) = SADECE anlatıcının yüksek sesle okuyacağı temiz düzyazı. İçine ASLA etiket, başlık, "Soru:", "İpucu 1", "Cevap:", "Bölüm 1:", zaman damgası, sahne/kamera/müzik yönergesi ([...] veya (müzik yükselir) gibi) YAZMA. Okunmayacak hiçbir şey bu alana girmez — yoksa akış bozulur.\n' +
+    '2) DUYGU KAT: kuru ansiklopedi değil, DUYGUSAL ve sürükleyici anlat. Gerilim, hüzün, hayret, zafer — sahnenin duygusunu cümlenin ritmine ve kelime seçimine işle; okuru olayın içinde HİSSETTİR. Ama abartma, melodrama kaçma.\n' +
+    '3) İlk cümle güçlü bir kancayla başlar; her bölüm bir öncekinden doğal devralır, sonda merak bırakır. Kısa vurucu cümlelerle uzun akan cümleleri dönüşümlü kullan.\n' +
+    '4) Tüm sayı ve tarihleri YAZIYLA yaz ("1453" değil "bin dört yüz elli üç"; "II. Mehmed" değil "İkinci Mehmed"). Kısaltma/parantez yok.\n' +
+    '5) Somut isim, tarih, yer ve ayrıntı geçir; klişe yok ("tarihin tozlu sayfaları", "yolculuğumuz", "adeta", "hayal edin" yasak). Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver.\n' +
+    'KARAKTERLER + SÜREKLİLİK: Anlatıda geçen ana kişileri "karakterler" dizisinde tanımla; her biri için SABİT bir İngilizce görünüm tarifi ver (yaş, ten, saç/sakal, yüz hatları, ayırt edici detay, döneme uygun kıyafet). Bu tarif KİLİTLİDİR: o kişinin geçtiği HER görsel promptunun başında BİREBİR aynı tarifi tekrarla — video ' + sec + ' saniye bile olsa kişi baştan sona AYNI görünsün (yüz, kıyafet değişmez).\n' +
     'GÖRSEL STİL ÇEKİRDEĞİ (her görsel promptu KELİMESİ KELİMESİNE bununla BAŞLAR): "' + STIL_CORE[uret.stil] + '"\n' +
-    'GÖRSEL PROMPTLAR: TAM ' + sahne + ' sahne üret (anlatıyı sırayla görselleştir). Her biri İngilizce, 45-75 kelime, dönem-doğru (anakronizm yok), "9:16 vertical" içerir ve şu satırla biter: "No modern text, no watermark, no distorted anatomy." Tanınmış tarihî kişi geçiyorsa belgelenmiş görünümünü tarif et.\n' +
+    'GÖRSEL PROMPTLAR: TAM ' + sahne + ' sahne üret (anlatıyı sırayla görselleştir). Her biri İngilizce, 45-75 kelime, dönem-doğru (anakronizm yok), "9:16 vertical" içerir ve şu satırla biter: "No modern text, no watermark, no distorted anatomy." Karakter geçiyorsa yukarıdaki SABİT görünüm tarifini birebir kullan.\n' +
+    'VİDEO PROMPTLAR: gorsel_promptlar ile AYNI ' + sahne + ' sahne için birer video promptu. Her biri İngilizce, tek bir kamera hareketi/aksiyon (5-8 sn: slow push-in, gentle pan, subtle parallax vb.) tarif eder ve şu satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker."\n' +
+    'KAPAK: 2 alternatif kapak (A ve B). Her biri İngilizce görsel promptu (stil çekirdeğiyle başlar) + 2-4 kelimelik ÇARPICI Türkçe kapak yazısı.\n' +
+    'YAYIN PAKETİ: youtube {baslik: 70 karakteri geçmeyen tıklanabilir başlık, aciklama: 3 dolu paragraf + "00:00 Giriş" biçiminde en az 3 zaman damgası, etiketler: TAM 15 arama-dostu etiket} ve instagram {aciklama: 1 hook satırı + 2 kısa paragraf + net CTA, hashtagler: TAM 5 güçlü hashtag (# ile)}.\n' +
     'Konu gerçek bir tarih konusu değilse ya da anlamsızsa SADECE şunu döndür: {"gecersiz":true,"mesaj":"..."}\n' +
-    'ÇIKTI: SADECE geçerli tek JSON, başka hiçbir şey yazma. Şema: {"baslik":"...","logline":"...","senaryo":[{"bolum":"kısa bölüm adı","sure":"0:00-0:30","metin":"TAM akıcı seslendirme metni"}],"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","prompt":"İngilizce görsel"}],"kapak":[{"ad":"Kapak","prompt":"İngilizce"}]}';
+    'ÇIKTI: SADECE geçerli tek JSON, başka hiçbir şey yazma. Şema: {"baslik":"...","logline":"...","karakterler":[{"ad":"Türkçe ad/rol","gorunum":"SABİT İngilizce görünüm tarifi"}],"senaryo":[{"bolum":"kısa bölüm adı","sure":"0:00-0:30","metin":"TAM akıcı seslendirme metni"}],"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","prompt":"İngilizce görsel"}],"video_promptlar":[{"sahne":"kısa Türkçe sahne adı","prompt":"İngilizce kamera hareketi"}],"kapak":[{"ad":"Kapak A","prompt":"İngilizce","yazi":"Türkçe kapak yazısı"},{"ad":"Kapak B","prompt":"İngilizce","yazi":"Türkçe kapak yazısı"}],"youtube":{"baslik":"...","aciklama":"...","etiketler":["..."]},"instagram":{"aciklama":"...","hashtagler":["..."]}}';
 }
 function parseGen(text) {
   var t = String(text || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '');
@@ -794,7 +834,7 @@ function uretBasla() {
   var job = 'app' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   var bedava = uret.bedava; uret.bedava = false;   // ücretsiz yeniden-üret bayrağı (sunucu doğrular)
   function call() {
-    var g = { action: 'generate', provider: 'claude', prompt: buildUretPrompt(), topic: uret.konu, duration: 's' + uret.sure, max_tokens: 8000, job: job };
+    var g = { action: 'generate', provider: 'claude', prompt: buildUretPrompt(), topic: uret.konu, duration: 's' + uret.sure, max_tokens: 12000, job: job };
     if (bedava && uret.prevJob) { g.regen = true; g.prevJob = uret.prevJob; }
     uret.prevJob = job;
     return fetch(FN, {
@@ -843,42 +883,116 @@ function uretBasla() {
     }, 7000);
   });
 }
+function imgVar(kind, i) { var s = uret[kind === 'kapak' ? 'kapaklar' : kind === 'karakter' ? 'karakterGorsel' : 'gorseller'] || {}; return s[i]; }
+function imgHtml(kind, i, alt) { var u = imgVar(kind, i); return u ? '<img class="scene-img" data-lb="' + kind + ':' + i + '" src="' + esc(u) + '" alt="' + esc(alt || '') + '">' : ''; }
 function drawSonuc() {
   var r = uret.sonuc;
-  $('#scr-uret').innerHTML =
+  var gorseller = r.gorsel_promptlar || [], karakterler = r.karakterler || [], kapaklar = r.kapak || [], videolar = r.video_promptlar || [];
+  var yt = r.youtube || null, ig = r.instagram || null;
+  var uretilenN = Object.keys(uret.gorseller || {}).length;
+  var h =
     '<div class="ust"><button class="geri" id="s-geri">‹</button><span>DOSYA HAZIR ✓</span></div>' +
     '<div style="padding:2px 20px 6px"><h2 class="serif" style="margin:0;font-size:21px;line-height:1.25">' + esc(r.baslik) + '</h2>' +
     (r.logline ? '<p style="margin:8px 0 0;font-size:13.5px;line-height:1.6;color:#b9bec9">' + esc(r.logline) + '</p>' : '') + '</div>' +
+    // SENARYO
     '<div class="sec ac"><div class="sbh"><b>SENARYO</b><i>›</i></div><div class="ic">' +
     (r.senaryo || []).map(function (s) {
       return '<div class="blk"><div class="k">' + esc(s.bolum || '') + ' · ' + esc(s.sure || '') + '</div><div class="t">' + esc(s.metin || '') + '</div></div>';
-    }).join('') + '</div></div>' +
-    '<div class="sec"><div class="sbh"><b>GÖRSEL PROMPTLAR (' + (r.gorsel_promptlar || []).length + ')</b><i>›</i></div><div class="ic">' +
-    (r.gorsel_promptlar || []).map(function (g, i) {
+    }).join('') + '</div></div>';
+  // KARAKTERLER — sabit görünüm + portre üret (süreklilik referansı)
+  if (karakterler.length) {
+    h += '<div class="sec"><div class="sbh"><b>KARAKTERLER (' + karakterler.length + ')</b><i>›</i></div><div class="ic">' +
+      karakterler.map(function (k, i) {
+        return '<div class="blk"><div class="k" style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">' + esc(k.ad || ('Karakter ' + (i + 1))) +
+          '<span style="display:flex;gap:6px"><button class="kopya" data-karakter="' + i + '">' + (imgVar('karakter', i) ? '✓ PORTRE' : '◈ PORTRE · 12 KR') + '</button>' +
+          '<button class="kopya" data-kkopya="' + i + '">⧉</button></span></div>' +
+          '<div class="t" style="font-size:12px;color:#a8b2c2">' + esc(k.gorunum || '') + '</div>' + imgHtml('karakter', i, k.ad) + '</div>';
+      }).join('') + '</div></div>';
+  }
+  // GÖRSELLER — sahne görselleri + tümünü üret + galeri
+  h += '<div class="sec"><div class="sbh"><b>SAHNE GÖRSELLERİ (' + uretilenN + '/' + gorseller.length + ')</b><i>›</i></div><div class="ic">' +
+    (gorseller.length ? '<button class="cta" id="s-hepsi" style="margin:2px 0 12px">◈ &nbsp;Tüm sahneleri üret (' + gorseller.length + ')</button>' : '') +
+    gorseller.map(function (g, i) {
       return '<div class="blk"><div class="k" style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">' + esc(g.sahne || ('SAHNE ' + (i + 1))) +
-        '<span style="display:flex;gap:6px"><button class="kopya" data-gorsel="' + i + '">◈ GÖRSEL · 12 KR</button>' +
-        '<button class="kopya" data-kopya="' + i + '">⧉</button></span></div><div class="t" style="font-size:12px;color:#a8b2c2">' + esc(g.prompt || '') + '</div></div>';
-    }).join('') + '</div></div>' +
-    '<div style="padding:18px 14px 0;display:grid;gap:10px">' +
+        '<span style="display:flex;gap:6px"><button class="kopya" data-gorsel="' + i + '">' + (imgVar('gorsel', i) ? '✓ ÜRETİLDİ' : '◈ ÜRET · 12 KR') + '</button>' +
+        '<button class="kopya" data-kopya="' + i + '">⧉</button></span></div>' +
+        '<div class="t" style="font-size:12px;color:#a8b2c2">' + esc(g.prompt || '') + '</div>' + imgHtml('gorsel', i, g.sahne) + '</div>';
+    }).join('') + '</div></div>';
+  // KAPAK — 2 alternatif, yazı + üret
+  if (kapaklar.length) {
+    h += '<div class="sec"><div class="sbh"><b>KAPAK</b><i>›</i></div><div class="ic">' +
+      kapaklar.map(function (k, i) {
+        return '<div class="blk"><div class="k" style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">' + esc(k.ad || ('Kapak ' + (i + 1))) +
+          (k.yazi ? ' — “' + esc(k.yazi) + '”' : '') +
+          '<span style="display:flex;gap:6px"><button class="kopya" data-kapak="' + i + '">' + (imgVar('kapak', i) ? '✓ ÜRETİLDİ' : '◈ ÜRET · 12 KR') + '</button>' +
+          '<button class="kopya" data-kkapak="' + i + '">⧉</button></span></div>' +
+          '<div class="t" style="font-size:12px;color:#a8b2c2">' + esc(k.prompt || '') + '</div>' + imgHtml('kapak', i, k.ad) + '</div>';
+      }).join('') + '</div></div>';
+  }
+  // VİDEO PROMPTLARI — kopyala (video üretimi web/dış araçta)
+  if (videolar.length) {
+    h += '<div class="sec"><div class="sbh"><b>VİDEO PROMPTLARI (' + videolar.length + ')</b><i>›</i></div><div class="ic">' +
+      videolar.map(function (v, i) {
+        return '<div class="blk"><div class="k" style="display:flex;justify-content:space-between;align-items:center;gap:6px">' + esc(v.sahne || ('SAHNE ' + (i + 1))) +
+          '<button class="kopya" data-vkopya="' + i + '">⧉</button></div><div class="t" style="font-size:12px;color:#a8b2c2">' + esc(v.prompt || '') + '</div></div>';
+      }).join('') + '</div></div>';
+  }
+  // YAYIN PAKETİ — YouTube + Instagram
+  if (yt || ig) {
+    h += '<div class="sec"><div class="sbh"><b>YAYIN PAKETİ</b><i>›</i></div><div class="ic">';
+    if (yt) {
+      h += '<div class="blk"><div class="k" style="display:flex;justify-content:space-between;align-items:center">▶ YOUTUBE BAŞLIK<button class="kopya" data-yp="baslik">⧉</button></div><div class="t" style="font-size:13px">' + esc(yt.baslik || '') + '</div></div>' +
+        '<div class="blk"><div class="k" style="display:flex;justify-content:space-between;align-items:center">▶ YOUTUBE AÇIKLAMA<button class="kopya" data-yp="aciklama">⧉</button></div><div class="t" style="font-size:12.5px">' + esc(yt.aciklama || '') + '</div></div>' +
+        ((yt.etiketler && yt.etiketler.length) ? '<div class="blk"><div class="k" style="display:flex;justify-content:space-between;align-items:center">▶ ETİKETLER (' + yt.etiketler.length + ')<button class="kopya" data-yp="etiketler">⧉</button></div><div style="margin-top:4px">' + yt.etiketler.map(function (t) { return '<span class="gtag">' + esc(t) + '</span>'; }).join('') + '</div></div>' : '');
+    }
+    if (ig) {
+      h += '<div class="blk"><div class="k" style="display:flex;justify-content:space-between;align-items:center">◆ INSTAGRAM<button class="kopya" data-ig="aciklama">⧉</button></div><div class="t" style="font-size:12.5px">' + esc(ig.aciklama || '') + '</div></div>' +
+        ((ig.hashtagler && ig.hashtagler.length) ? '<div class="blk"><div class="k" style="display:flex;justify-content:space-between;align-items:center">◆ HASHTAG<button class="kopya" data-ig="hashtagler">⧉</button></div><div style="margin-top:4px">' + ig.hashtagler.map(function (t) { return '<span class="gtag">' + esc(t) + '</span>'; }).join('') + '</div></div>' : '');
+    }
+    h += '</div></div>';
+  }
+  // AKSİYONLAR
+  h += '<div style="padding:18px 14px 0;display:grid;gap:10px">' +
     '<div id="s-ses-kutu"><button class="cta" id="s-ses">🎙 &nbsp;SESLENDİR · ' + ttsKredi() + ' KR</button></div>' +
     (uret.bedavaKullanildi ? '' : '<button class="cta ghost" id="s-yenile">↻ &nbsp;Beğenmedim — yeniden üret (1 kez ücretsiz)</button>') +
     '<button class="cta ghost" id="s-yeni">+ &nbsp;Yeni dosya üret</button>' +
     '<button class="cta ghost" style="border-color:rgba(176,65,62,.5);color:#e08a80" id="s-sorun">⚑ &nbsp;Sorun bildir</button></div>' +
-    '<p class="alt-not" style="margin-top:14px">Dosyan uygulamada ve Studio geçmişinde saklı</p>';
+    '<p class="alt-not" style="margin-top:14px">Seslendirme yalnızca okunacak temiz anlatıyı kullanır. Dosyan uygulamada saklı.</p>';
+  $('#scr-uret').innerHTML = h;
   $('#s-geri').addEventListener('click', function () { uret.sonuc = null; drawUret(); });
-  $('#s-yeni').addEventListener('click', function () { uret.sonuc = null; uret.konu = ''; drawUret(); });
+  $('#s-yeni').addEventListener('click', function () { uret.sonuc = null; uret.konu = ''; uret.gorseller = {}; uret.kapaklar = {}; uret.karakterGorsel = {}; drawUret(); });
   $('#s-sorun').addEventListener('click', function () { sorunBildir('Üretim: ' + (r.baslik || uret.konu)); });
-  var yb = $('#s-yenile'); if (yb) yb.addEventListener('click', function () { uret.bedava = true; uret.sonuc = null; uretBasla(); });
+  var yb = $('#s-yenile'); if (yb) yb.addEventListener('click', function () { uret.bedava = true; uret.sonuc = null; uret.gorseller = {}; uret.kapaklar = {}; uret.karakterGorsel = {}; uretBasla(); });
   $('#s-ses').addEventListener('click', seslendir);
-  document.querySelectorAll('[data-kopya]').forEach(function (b) {
-    b.addEventListener('click', function () { kopyala((uret.sonuc.gorsel_promptlar[+b.getAttribute('data-kopya')] || {}).prompt || ''); });
-  });
-  document.querySelectorAll('[data-gorsel]').forEach(function (b) {
-    b.addEventListener('click', function () { gorselUret(+b.getAttribute('data-gorsel'), b); });
-  });
+  var hp = $('#s-hepsi'); if (hp) hp.addEventListener('click', tumGorselUret);
+  document.querySelectorAll('[data-kopya]').forEach(function (b) { b.addEventListener('click', function () { kopyala((gorseller[+b.getAttribute('data-kopya')] || {}).prompt || ''); }); });
+  document.querySelectorAll('[data-kkopya]').forEach(function (b) { b.addEventListener('click', function () { kopyala((karakterler[+b.getAttribute('data-kkopya')] || {}).gorunum || ''); }); });
+  document.querySelectorAll('[data-vkopya]').forEach(function (b) { b.addEventListener('click', function () { kopyala((videolar[+b.getAttribute('data-vkopya')] || {}).prompt || ''); }); });
+  document.querySelectorAll('[data-kkapak]').forEach(function (b) { b.addEventListener('click', function () { kopyala((kapaklar[+b.getAttribute('data-kkapak')] || {}).prompt || ''); }); });
+  document.querySelectorAll('[data-yp]').forEach(function (b) { b.addEventListener('click', function () { var k = b.getAttribute('data-yp'); kopyala(k === 'etiketler' ? (yt.etiketler || []).join(', ') : (yt[k] || '')); }); });
+  document.querySelectorAll('[data-ig]').forEach(function (b) { b.addEventListener('click', function () { var k = b.getAttribute('data-ig'); kopyala(k === 'hashtagler' ? (ig.hashtagler || []).join(' ') : (ig[k] || '')); }); });
+  document.querySelectorAll('[data-gorsel]').forEach(function (b) { b.addEventListener('click', function () { gorselUret('gorsel', +b.getAttribute('data-gorsel'), b); }); });
+  document.querySelectorAll('[data-kapak]').forEach(function (b) { b.addEventListener('click', function () { gorselUret('kapak', +b.getAttribute('data-kapak'), b); }); });
+  document.querySelectorAll('[data-karakter]').forEach(function (b) { b.addEventListener('click', function () { gorselUret('karakter', +b.getAttribute('data-karakter'), b); }); });
+  document.querySelectorAll('[data-lb]').forEach(function (im) { im.addEventListener('click', function () { var p = im.getAttribute('data-lb').split(':'); acGaleri(p[0], +p[1]); }); });
 }
 /* native SESLENDİRME — uygulamadan çıkmadan mp3 üret ve dinle */
-function ttsMetin() { return (uret.sonuc && uret.sonuc.senaryo || []).map(function (s) { return s.metin || ''; }).join('\n\n').slice(0, 11500); }
+// Seslendirme = SADECE okunacak temiz anlatı. Etiket, zaman damgası, sahne/teknik
+// notu, köşeli/parantez içi yönerge okunmaz — akış bozulmasın.
+function temizSeslendirme(t) {
+  return String(t || '')
+    .replace(/\[[^\]]*\]/g, ' ')
+    .replace(/\((?:[^)]*?(?:müzik|müzikal|efekt|ses efekti|sfx|kamera|fade|geçiş|sahne|kesme|jenerik|music)[^)]*?)\)/gi, ' ')
+    .replace(/^\s*\d+\s*\.?\s*Bölüm\s*[:—–-].*$/gim, '')
+    .replace(/^\s*\d{1,2}:\d{2}(?:\s*[-–]\s*\d{1,2}:\d{2})?\s*$/gm, '')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+function ttsMetin() {
+  var ham = (uret.sonuc && uret.sonuc.senaryo || []).map(function (s) { return s.metin || ''; }).join('\n\n');
+  return temizSeslendirme(ham).slice(0, 11500);
+}
 function ttsKredi() { return Math.max(10, Math.ceil(ttsMetin().length / 1000) * 5); }
 function seslendir() {
   var kutu = $('#s-ses-kutu'), btn = $('#s-ses');
@@ -908,30 +1022,87 @@ function seslendir() {
     toast('Bağlantı hatası — tekrar dene');
   });
 }
-/* native GÖRSEL ÜRETİMİ — sahne görseli uygulamada, anında */
-function gorselUret(i, btn) {
-  if (!user) { uyeGoster('gorsel'); return; }
-  var g = (uret.sonuc.gorsel_promptlar || [])[i]; if (!g) return;
-  btn.disabled = true; btn.textContent = '⟳ ÜRETİLİYOR…';
-  fetch(FN, {
+/* native GÖRSEL ÜRETİMİ — sahne/kapak/karakter görseli uygulamada, anında.
+   Karakter süreklilik referansı: üretilen karakter promptu, o karakterin geçtiği
+   sahnelerde zaten prompt başında birebir tekrar edildiğinden görünüm sabit kalır. */
+function gorselStore(kind) { var key = kind === 'kapak' ? 'kapaklar' : kind === 'karakter' ? 'karakterGorsel' : 'gorseller'; uret[key] = uret[key] || {}; return uret[key]; }
+function gorselPrompt(kind, i) {
+  var arr = kind === 'kapak' ? (uret.sonuc.kapak || []) : kind === 'karakter' ? (uret.sonuc.karakterler || []) : (uret.sonuc.gorsel_promptlar || []);
+  var it = arr[i]; if (!it) return '';
+  return kind === 'karakter' ? (it.gorunum || '') : (it.prompt || '');
+}
+function gorselUret(kind, i, btn) {
+  if (!user) { uyeGoster('gorsel'); return Promise.resolve(false); }
+  var prompt = gorselPrompt(kind, i); if (!prompt) return Promise.resolve(false);
+  var etiket = kind === 'kapak' ? '◈ ÜRET · 12 KR' : kind === 'karakter' ? '◈ PORTRE · 12 KR' : '◈ ÜRET · 12 KR';
+  if (btn) { btn.disabled = true; btn.textContent = '⟳ ÜRETİLİYOR…'; }
+  var karakterMi = kind === 'karakter';
+  var body = { action: 'image', prompt: prompt + (karakterMi ? '. Character reference portrait, 9:16 vertical, neutral background, sharp detail.' : ''), size: 'dikey', imgIndex: i };
+  return fetch(FN, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
-    body: JSON.stringify({ action: 'image', prompt: g.prompt, size: 'dikey', imgIndex: i })
+    body: JSON.stringify(body)
   }).then(function (r) { return r.json().then(function (d) { return { st: r.status, d: d }; }); }).then(function (r) {
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
     if (!r.d || !r.d.ok || !r.d.url) {
-      btn.textContent = '◈ GÖRSEL · 12 KR';
+      if (btn) btn.textContent = etiket;
       toast(r.st === 402 ? 'Yetersiz kredi' : ((r.d && r.d.error) || 'Görsel üretilemedi (kredi düşmedi)'));
-      return;
+      return false;
     }
     if (typeof r.d.credits === 'number') { kredi = r.d.credits; krediYaz(); }
-    btn.textContent = '✓ ÜRETİLDİ';
-    var img = document.createElement('img');
-    img.className = 'scene-img'; img.src = r.d.url; img.alt = g.sahne || '';
-    btn.closest('.blk').appendChild(img);
+    gorselStore(kind)[i] = r.d.url;
+    if (btn) {
+      btn.textContent = kind === 'karakter' ? '✓ PORTRE' : '✓ ÜRETİLDİ';
+      var blk = btn.closest('.blk');
+      if (blk && !blk.querySelector('[data-lb="' + kind + ':' + i + '"]')) {
+        var img = document.createElement('img');
+        img.className = 'scene-img'; img.src = r.d.url; img.setAttribute('data-lb', kind + ':' + i);
+        img.addEventListener('click', function () { acGaleri(kind, i); });
+        blk.appendChild(img);
+      }
+    }
     toast('Görsel hazır ◈');
-  }).catch(function () { btn.disabled = false; btn.textContent = '◈ GÖRSEL · 12 KR'; toast('Bağlantı hatası'); });
+    return true;
+  }).catch(function () { if (btn) { btn.disabled = false; btn.textContent = etiket; } toast('Bağlantı hatası'); return false; });
 }
+/* TÜM SAHNELERİ ÜRET — sırayla (hız sınırına takılmadan), üretilmişleri atlar */
+function tumGorselUret() {
+  if (!user) { uyeGoster('gorsel'); return; }
+  var arr = uret.sonuc.gorsel_promptlar || [], store = gorselStore('gorsel');
+  var bekleyen = [];
+  for (var i = 0; i < arr.length; i++) if (!store[i]) bekleyen.push(i);
+  if (!bekleyen.length) { toast('Tüm sahneler zaten üretildi ✓'); return; }
+  if (!confirm(bekleyen.length + ' sahne görseli üretilecek. Hata verene kredi düşmez. Devam?')) return;
+  var hp = $('#s-hepsi'); if (hp) { hp.disabled = true; }
+  var n = 0;
+  function sirayla(k) {
+    if (k >= bekleyen.length) { if (hp) { hp.disabled = false; hp.textContent = '◈  Tüm sahneleri üret (' + arr.length + ')'; } drawSonuc(); return; }
+    var idx = bekleyen[k];
+    if (hp) hp.textContent = '⟳ ÜRETİLİYOR… (' + (n + 1) + '/' + bekleyen.length + ')';
+    var b = document.querySelector('[data-gorsel="' + idx + '"]');
+    gorselUret('gorsel', idx, b).then(function () { n++; setTimeout(function () { sirayla(k + 1); }, 400); });
+  }
+  sirayla(0);
+}
+/* GÖRSEL GALERİSİ (lightbox · ‹ ›) — açık türdeki üretilmiş görselleri gez */
+var imgLb = { list: [], idx: 0 };
+function acGaleri(kind, i) {
+  var store = gorselStore(kind);
+  var keys = Object.keys(store).map(Number).sort(function (a, b) { return a - b; });
+  imgLb.list = keys.map(function (k) { return store[k]; });
+  imgLb.idx = Math.max(0, keys.indexOf(i));
+  imgLbYaz(); $('#imglb').classList.add('on');
+}
+function imgLbYaz() {
+  var u = imgLb.list[imgLb.idx] || '';
+  $('#lb-img').src = u; $('#lb-dl').href = u;
+  var multi = imgLb.list.length > 1;
+  $('#lb-say').textContent = multi ? (imgLb.idx + 1) + ' / ' + imgLb.list.length : '';
+  $('#lb-prev').style.display = multi ? 'grid' : 'none';
+  $('#lb-next').style.display = multi ? 'grid' : 'none';
+}
+function imgLbStep(d) { if (imgLb.list.length < 2) return; imgLb.idx = (imgLb.idx + d + imgLb.list.length) % imgLb.list.length; imgLbYaz(); }
+function imgLbKapat() { $('#imglb').classList.remove('on'); }
 
 /* ── HABER — sıfırdan haber uygulaması: başyazı + kategoriler + makale ── */
 var MAKALE = window.__HABER__ || [];

@@ -378,7 +378,7 @@ const ELEVEN_ALLOWED = new Set([
   "EXAVITQu4vr4xnSDxMaL", // Kadın · Belgesel
   "21m00Tcm4TlvDq8ikWAM", // Kadın · Olgun
 ]);
-async function generateSpeechEleven(text: string, voiceId: string): Promise<Uint8Array | null> {
+async function generateSpeechEleven(text: string, voiceId: string, opts?: { stability?: number; style?: number }): Promise<Uint8Array | null> {
   const key = Deno.env.get("ELEVENLABS_API_KEY");
   if (!key || !text.trim() || !ELEVEN_ALLOWED.has(voiceId)) return null;
   const chunks: string[] = [];
@@ -391,9 +391,13 @@ async function generateSpeechEleven(text: string, voiceId: string): Promise<Uint
     rest = rest.slice(cut + 1).trim();
   }
   const parts: Uint8Array[] = [];
-  // TON KAYMASINI ÖNLE: her parçayı komşularıyla koşullandır (previous_text /
-  // next_text). Böylece parça sınırlarında ses tonu "bir artıp bir azalmaz",
-  // tek bir anlatıcı akışı gibi tutarlı kalır. stability biraz yükseltildi.
+  // DUYGU + TUTARLILIK dengesi:
+  //  - stability 0.45 → anlatım DUYGULU ve canlı (kuru/robotik değil)
+  //  - style 0.3 → ifade gücü yüksek; komşu-parça koşullandırması (previous_text/
+  //    next_text) parça sınırlarındaki ton kaymasını yine de engeller.
+  // İstemci ses başına stability/style geçebilir (web voice ayarları); yoksa bu varsayılan.
+  const stab = (opts && typeof opts.stability === "number" && opts.stability >= 0 && opts.stability <= 1) ? opts.stability : 0.45;
+  const sty = (opts && typeof opts.style === "number" && opts.style >= 0 && opts.style <= 1) ? opts.style : 0.3;
   for (let i = 0; i < chunks.length; i++) {
     const c = chunks[i];
     const prevTxt = i > 0 ? chunks[i - 1].slice(-320) : undefined;
@@ -407,7 +411,7 @@ async function generateSpeechEleven(text: string, voiceId: string): Promise<Uint
           model_id: "eleven_multilingual_v2",
           previous_text: prevTxt,
           next_text: nextTxt,
-          voice_settings: { stability: 0.6, similarity_boost: 0.85, style: 0.1, use_speaker_boost: true },
+          voice_settings: { stability: stab, similarity_boost: 0.85, style: sty, use_speaker_boost: true },
         }),
       });
       if (!r.ok) return null;
@@ -424,7 +428,7 @@ async function generateSpeechEleven(text: string, voiceId: string): Promise<Uint
 // Motor yönlendirici: engine='eleven' + izinli voiceId → ElevenLabs; yoksa/başarısızsa → OpenAI.
 async function synthSpeech(text: string, b: Record<string, unknown>): Promise<Uint8Array | null> {
   if (String(b.engine || "") === "eleven" && ELEVEN_ALLOWED.has(String(b.voiceId || ""))) {
-    const out = await generateSpeechEleven(text, String(b.voiceId));
+    const out = await generateSpeechEleven(text, String(b.voiceId), { stability: Number(b.stability), style: Number(b.style) });
     if (out) return out;
   }
   return generateSpeech(text, String(b.voice || ""));
