@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="Storia">
+  <defs>
+    <linearGradient id="sChamp" x1="10" y1="6" x2="38" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E0C588"/>
+      <stop offset=".45" stop-color="#C2A160"/>
+      <stop offset="1" stop-color="#8B6C31"/>
+    </linearGradient>
+  </defs>
+  <!-- ribbon "S" monogram -->
+  <path d="M33.2 15.2 C33.2 10.6 28.7 8 23.4 8 C16.4 8 12.4 12 12.4 16.6 C12.4 21.6 17.5 23.6 24 25.1 C30.5 26.6 35.6 28.6 35.6 33.6 C35.6 38.6 30.6 41.2 24 41.2 C18 41.2 13.4 38.6 12.9 34"
+        stroke="url(#sChamp)" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- light spark -->
+  <path d="M37.5 9.2 C37.7 11 38 11.3 39.8 11.5 C38 11.7 37.7 12 37.5 13.8 C37.3 12 37 11.7 35.2 11.5 C37 11.3 37.3 11 37.5 9.2 Z"
+        fill="#D9BC80"/>
+</svg>
