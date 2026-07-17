@@ -5,7 +5,7 @@
    - Aynı köken görsel/font: önbellek öncelikli (stale-while-revalidate, ağır dosyalar)
    - Çapraz köken (Google Fonts, unpkg React): dokunma, doğrudan ağdan
    SÜRÜM değişince eski önbellekler temizlenir. Her deploy'da bump'la. */
-var VERSION = 'ta-v2';
+var VERSION = 'ta-v3';
 var STATIC = VERSION + '-static';
 var PAGES = VERSION + '-pages';
 var MEDIA = VERSION + '-media';
