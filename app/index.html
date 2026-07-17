@@ -190,6 +190,7 @@ audio{width:100%;margin-top:10px}
 <div class="scr" id="scr-neden"></div>
 <div class="scr" id="scr-oynat" style="padding:0"></div>
 <div class="scr" id="scr-haber"></div>
+<div class="scr" id="scr-ders"></div>
 
 <nav id="tabbar" aria-label="Uygulama menüsü"></nav>
 <div id="toast" role="status"></div>
@@ -487,7 +488,8 @@ function drawUret() {
     '<div class="val"><span>30 sn</span><b id="u-sure-v">' + sureText() + ' · ' + uretKredi() + ' KR</b><span>3 dk</span></div></div>' +
     (uret.hata ? '<div class="hata">' + esc(uret.hata) + '</div>' : '') +
     '<div style="padding:20px 16px 0"><button class="cta" id="u-go">◉ &nbsp;ÜRET · ' + uretKredi() + ' KR</button>' +
-    '<p class="alt-not" style="margin-top:12px">Seslendirme ve sahne görselleri üretimden sonra dosyanın içinde</p></div>';
+    '<p class="alt-not" style="margin-top:12px">Seslendirme ve sahne görselleri üretimden sonra dosyanın içinde</p></div>' +
+    gecmisHtml();
   $('#u-konu').addEventListener('input', function (e) { uret.konu = e.target.value; });
   $('#u-oner').addEventListener('click', function () {
     var b = $('#u-oner');
@@ -509,6 +511,23 @@ function drawUret() {
   krediGetir();
 }
 function sureText() { return uret.sure < 60 ? uret.sure + ' sn' : (uret.sure / 60) + ' dk'; }
+/* GEÇMİŞ — web Studio ile AYNI kayıt (ta_studio_v5): iki tarafta da görünür */
+function okuGecmis() {
+  try {
+    var st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}');
+    return (st.history || []).filter(function (h) { return h && h.result && h.result.baslik; });
+  } catch (e) { return []; }
+}
+function gecmisHtml() {
+  var g = okuGecmis();
+  if (!g.length) return '';
+  return '<div class="sh"><b>GEÇMİŞ DOSYALARIN</b></div>' +
+    g.slice(0, 8).map(function (h, i) {
+      return '<div class="drow" data-gecmis="' + i + '"><span class="no" style="font-size:11px">' + esc((h.fileNo || 'TA').split('-').pop()) + '</span>' +
+        '<span class="m"><b>' + esc(h.result.baslik) + '</b><span>' + esc(h.date || '') + ' · ' + (h.cost || '?') + ' KR</span></span>' +
+        '<span class="git" style="color:var(--brass)">›</span></div>';
+    }).join('');
+}
 function drawUretBusy() {
   $('#scr-uret').innerHTML =
     '<div class="ust"><span style="padding-left:10px">DOSYA HAZIRLANIYOR</span></div>' +
@@ -737,7 +756,8 @@ function drawOyun() {
      ['🏺','Mangala','Bin yıllık Türk stratejisi','/oyun/mangala/'],
      ['📚','Dijital Kitaplık','Ajan Z’nin bürosu · 8 dosya kitabı','/kitaplik']].map(function (o) {
       return '<div class="kart" data-oynat="' + o[3] + '" data-ad="' + o[1] + '"><div class="krow"><span class="rz">' + o[0] + '</span>' +
-        '<span class="m"><b>' + o[1] + '</b><span>' + o[2] + '</span></span><span class="git">›</span></div></div>';
+        '<span class="m"><b>' + o[1] + '</b><span>' + o[2] + '</span></span>' +
+        '<span style="flex:none;font-size:10px;letter-spacing:.1em;font-weight:800;color:#171207;background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);padding:9px 14px;border-radius:9px">OYNA ›</span></div></div>';
     }).join('') +
     '<p class="alt-not" style="margin-top:18px">Hepsi uygulama içinde açılır — ‹ ile geri dönersin</p>';
   krediGetir();
@@ -771,11 +791,61 @@ var PK_DESC = {
   'vaka-defteri': 'Fiziki ürün · ajan vaka defteri',
   egitim: '9 derslik içerik üretim akademisi'
 };
+/* ── KREDİ HESAP MAKİNESİ — muhasebe defteri gibi kalem kalem ── */
+var hesap = { sure: 120, gorsel: 6, ses: true };
+function hFormul(sec) { return Math.max(30, Math.round((20 + sec / 4) / 5) * 5); }
+function hTts(sec) { return Math.max(10, Math.ceil((sec * 15) / 1000) * 5); }   // ~15 harf/sn seslendirme metni
+function hesapHtml() {
+  var u = hFormul(hesap.sure), s = hesap.ses ? hTts(hesap.sure) : 0, g = hesap.gorsel * 12;
+  var toplam = u + s + g;
+  var st = hesap.sure < 60 ? hesap.sure + ' sn' : (hesap.sure / 60) + ' dk';
+  var satir = function (ad, det, kr) {
+    return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:7px 0;border-bottom:1px dashed rgba(129,135,151,.18)">' +
+      '<span style="color:#c9c2ae">' + ad + ' <span style="color:var(--dim);font-size:11px">' + det + '</span></span>' +
+      '<b style="color:#ede4cf;font-variant-numeric:tabular-nums">' + kr + ' KR</b></div>';
+  };
+  var bakiyeSatir = '';
+  if (user && kredi != null) {
+    var adet = Math.floor(kredi / Math.max(1, toplam));
+    bakiyeSatir = '<div style="margin-top:11px;padding:11px 13px;border-radius:11px;background:rgba(193,154,82,.09);border:1px solid rgba(193,154,82,.3);font-size:12.5px;color:#e6c478">' +
+      '🪙 Bakiyen <b>' + kredi + ' KR</b> → bu tarifle <b>' + adet + ' tam video</b>' +
+      (adet < 1 ? ' — bir paket seçmen gerekir 👇' : ' üretebilirsin') + '</div>';
+  }
+  return '<div class="kart" style="margin-top:0"><div style="padding:15px">' +
+    '<b class="serif" style="font-size:16px;color:#ede4cf">🧮 Kredi Hesap Makinesi</b>' +
+    '<p style="margin:5px 0 12px;font-size:11.5px;color:var(--mut)">Ne üretmek istiyorsun? Maliyeti kalem kalem gör.</p>' +
+    '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-bottom:3px"><span>VİDEO SÜRESİ</span><b style="color:var(--gold)">' + st + '</b></div>' +
+    '<input id="h-sure" type="range" min="30" max="600" step="30" value="' + hesap.sure + '" style="width:100%;accent-color:var(--gold)">' +
+    '<div style="display:flex;gap:8px;margin:10px 0 13px;flex-wrap:wrap">' +
+    '<button class="chip' + (hesap.ses ? ' on' : '') + '" id="h-ses">🎙 Seslendirme</button>' +
+    '<span class="chip" style="display:inline-flex;gap:9px;align-items:center;cursor:default">◈ Görsel' +
+    '<button id="h-gaz" style="background:none;border:0;color:var(--gold);font-size:15px;cursor:pointer;padding:0 2px">−</button><b style="font-variant-numeric:tabular-nums">' + hesap.gorsel + '</b>' +
+    '<button id="h-gart" style="background:none;border:0;color:var(--gold);font-size:15px;cursor:pointer;padding:0 2px">+</button></span></div>' +
+    satir('Dosya üretimi', '(araştırma + senaryo + promptlar · ' + st + ')', u) +
+    (s ? satir('Seslendirme', '(~' + Math.round(hesap.sure * 2.3) + ' kelime, MP3)', s) : '') +
+    (g ? satir('Sahne görselleri', '(' + hesap.gorsel + ' × 12 KR)', g) : '') +
+    '<div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:14px"><b style="color:var(--gold);letter-spacing:.08em">TOPLAM</b>' +
+    '<b class="serif" style="color:var(--gold);font-size:19px;font-variant-numeric:tabular-nums">' + toplam + ' KR</b></div>' +
+    bakiyeSatir + '</div></div>';
+}
+function hesapBagla() {
+  var el = $('#scr-paket');
+  var s2 = el.querySelector('#h-sure');
+  if (!s2) return;
+  s2.addEventListener('change', function () { hesap.sure = +s2.value; hesapCiz(); });
+  el.querySelector('#h-ses').addEventListener('click', function () { hesap.ses = !hesap.ses; hesapCiz(); });
+  el.querySelector('#h-gaz').addEventListener('click', function () { hesap.gorsel = Math.max(0, hesap.gorsel - 1); hesapCiz(); });
+  el.querySelector('#h-gart').addEventListener('click', function () { hesap.gorsel = Math.min(60, hesap.gorsel + 1); hesapCiz(); });
+}
+function hesapCiz() { var k = $('#h-kutu'); if (k) { k.innerHTML = hesapHtml(); hesapBagla(); } }
 function drawPaket() {
   var el = $('#scr-paket');
   el.innerHTML = '<div class="ust"><button class="geri" data-go="profil">‹</button><span>ÜYELİK &amp; MAĞAZA</span></div>' +
     '<div class="h-row" style="padding-top:0"><div><b>Paketler</b><span class="alt">SATIN ALIMLAR KREDİNİN ÜSTÜNE EKLENİR</span></div>' +
-    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div><div id="pk-liste" class="bos">Yükleniyor…</div>';
+    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    '<div id="h-kutu" style="padding:0 0 4px">' + hesapHtml() + '</div>' +
+    '<div id="pk-liste" class="bos">Yükleniyor…</div>';
+  hesapBagla();
   urunGetir(function (list) {
     var tiers = [], packs = [], other = [];
     list.forEach(function (p) {
@@ -783,9 +853,29 @@ function drawPaket() {
       else if (/^studio-/.test(p.slug)) packs.push(p);
       else other.push(p);
     });
+    var OZELLIK = {
+      gozlemci: ['Aylık Studio kredisi', 'Tüm arşiv dosyaları', 'Seslendirme + görsel üretimi'],
+      ajan: ['Daha yüksek aylık kota', 'Öncelikli üretim', 'Gözlemci’nin her şeyi'],
+      basmufettis: ['En yüksek kredi kotası', 'Uzun format üretim', 'Tüm ayrıcalıklar']
+    };
+    var sira = { gozlemci: 0, ajan: 1, basmufettis: 2 };
+    tiers.sort(function (a, b) { return (sira[a.slug] || 0) - (sira[b.slug] || 0); });
     var html = '';
-    if (tiers.length) html += '<div class="sh"><b>ÜYELİK SEVİYELERİ</b></div>' + tiers.map(function (p) { return pkHtml(p, PK_DESC[p.slug]); }).join('');
-    if (packs.length) html += '<div class="sh"><b>KREDİ PAKETLERİ</b></div>' + packs.map(function (p) { return pkHtml(p, PK_DESC[p.slug]); }).join('');
+    if (tiers.length) html += '<div class="sh"><b>ÜYELİK SEVİYELERİ</b></div>' + tiers.map(function (p) {
+      var vurgu = p.slug === 'ajan';
+      var oz = (OZELLIK[p.slug] || []).map(function (o) { return '<span style="display:flex;gap:7px;align-items:center;font-size:12px;color:#c9c2ae"><span style="color:var(--gold)">✓</span>' + o + '</span>'; }).join('');
+      return '<div class="kart" style="' + (vurgu ? 'border-color:rgba(230,196,120,.7);box-shadow:0 0 26px rgba(201,162,90,.15)' : '') + '">' +
+        '<div style="padding:15px 15px 13px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">' +
+        '<b class="serif" style="font-size:17px;color:#ede4cf">' + esc(p.title || p.slug) + '</b>' +
+        (vurgu ? '<span style="font-size:8.5px;letter-spacing:.14em;font-weight:800;color:#171207;background:linear-gradient(110deg,#d8b26a,#e9c87e);padding:4px 9px;border-radius:7px">EN POPÜLER</span>' : '') + '</div>' +
+        '<div style="display:grid;gap:6px;margin:11px 0 13px">' + oz + '</div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
+        '<b class="serif" style="font-size:21px;color:var(--gold)">' + (p.price != null ? esc(p.price) + '₺<span style="font-size:11px;color:var(--mut);font-family:Hanken Grotesk"> /ay</span>' : '—') + '</b>' +
+        '<button class="al" style="border:0;background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:11.5px;letter-spacing:.06em;padding:12px 20px;border-radius:10px;cursor:pointer" data-ext="' + esc(p.pay_url || 'mailto:iletisim@tarihajani.com') + '">SEVİYEYİ AL →</button>' +
+        '</div></div></div>';
+    }).join('');
+    if (packs.length) html += '<div class="sh"><b>KREDİ PAKETLERİ · üstüne eklenir</b></div>' + packs.map(function (p) { return pkHtml(p, PK_DESC[p.slug]); }).join('');
     if (other.length) html += '<div class="sh"><b>AJAN TEÇHİZATI</b></div>' + other.map(function (p) { return pkHtml(p, PK_DESC[p.slug]); }).join('');
     $('#pk-liste').className = ''; $('#pk-liste').innerHTML = html || '<div class="bos">Ürünler yüklenemedi — interneti kontrol et.</div>';
   });
@@ -807,12 +897,32 @@ function drawAkademi() {
   var el = $('#scr-akademi');
   el.innerHTML = '<div class="ust"><button class="geri" data-go="profil">‹</button><span>AJAN AKADEMİSİ</span></div>' +
     '<div class="h-row" style="padding-top:0"><div><b>Akademi</b><span class="alt">9 DERSLİK İÇERİK ÜRETİM PROGRAMI</span></div></div>' +
+    '<div style="padding:0 16px 4px"><div style="height:4px;border-radius:2px;background:rgba(230,196,120,.15);overflow:hidden"><span style="display:block;width:11%;height:100%;background:linear-gradient(90deg,#a87f37,#e9c87e)"></span></div>' +
+    '<p class="alt-not" style="text-align:left;margin-top:6px">1 / 9 DERS AÇIK — ÜCRETSİZ TANITIM DERSİ</p></div>' +
     DERSLER.map(function (d, i) {
-      return '<div class="kart"><div class="krow"><span class="rz serif" style="font-size:13px">' + d[0] + '</span>' +
+      return '<div class="kart" data-ders="' + i + '"><div class="krow"><span class="rz serif" style="font-size:13px">' + d[0] + '</span>' +
         '<span class="m"><b>Ders ' + (i + 1) + ' · ' + d[1] + '</b><span>' + d[2] + '</span></span>' +
         '<span class="git">' + (i === 0 ? '▶' : '🔒') + '</span></div></div>';
     }).join('') +
     '<div style="padding:18px 16px 0"><button class="cta" data-go="paket">Tüm dersleri aç — Eğitim paketi →</button></div>';
+}
+/* Ders 1 — ücretsiz tanıtım dersi, tamamen native */
+function drawDers() {
+  var el = $('#scr-ders');
+  el.innerHTML =
+    '<div class="ust"><button class="geri" data-go="akademi">‹</button><span>DERS 1 · ÜCRETSİZ</span></div>' +
+    '<div style="padding:2px 20px 8px"><h2 class="serif" style="margin:0;font-size:21px;line-height:1.25">Söylenti ile kaydı ayırmak</h2>' +
+    '<p style="margin:8px 0 0;font-size:13px;color:var(--mut)">Ajan Akademisi · Kaynak hiyerarşisi</p></div>' +
+    [['NEDEN ÖNEMLİ?', 'Tarih anlatıcılığının bir numaralı günahı, söylentiyi gerçekmiş gibi sunmaktır. İzleyici bir kez yakalarsa güven biter — kanal biter. Tarih Ajanı formatının bel kemiği şu cümledir: "kesin olanı kesin, rivayet olanı rivayet diye söyle."'],
+     ['KAYNAK HİYERARŞİSİ', 'Her bilgi eşit doğmaz. Sıralama şöyle işler:\n\n1) BİRİNCİL KAYIT — olayın çağdaşı belge: ferman, mektup, sikke, kazı buluntusu. En değerli kanıt.\n2) KRONİK — olaydan onlarca yıl sonra yazılmış tarihçe. Değerli ama yazarın tarafını sor.\n3) RİVAYET — kulaktan kulağa aktarım. Ancak "rivayete göre" çerçevesiyle kullanılır.\n4) MODERN EFSANE — internette dolaşan kaynaksız hikâye. Kullanma; çürütmek için kullan.'],
+     ['ÜÇ SORU TESTİ', 'Bir bilgiyi senaryona koymadan önce üç soru sor:\n\n• Bunu İLK kim söylemiş? (kaynağın kaynağı)\n• Olaydan KAÇ YIL sonra yazılmış?\n• Yazarın bir ÇIKARI var mıydı? (saray tarihçisi mi, düşman elçisi mi?)\n\nÜçünden ikisi karanlıkta kalıyorsa o bilgi "rivayet" rafına gider.'],
+     ['UYGULAMA', 'Studio’da üretim yaparken sistem bu kuralı otomatik uygular: araştırma aşaması doğrulanmış bilgiyi omurga yapar, emin olunmayanı "rivayete göre" diye işaretler. Ama son söz her zaman sende — yayınlamadan önce üç soru testini kendin de çalıştır.']].map(function (b) {
+      return '<div class="sec ac"><div class="sbh"><b>' + b[0] + '</b><i>›</i></div><div class="ic"><div class="blk"><div class="t">' + b[1] + '</div></div></div></div>';
+    }).join('') +
+    '<div style="padding:18px 16px 0"><button class="cta" data-go="paket">Devamı: 8 ders daha — Eğitim paketi →</button></div>';
+  document.querySelectorAll('.scr').forEach(function (s) { s.classList.remove('on', 'push'); });
+  el.classList.add('on', 'push'); el.scrollTop = 0; cur = 'ders';
+  try { history.pushState({ k: 'akademi' }, ''); } catch (e) {}
 }
 /* ── NEDEN BİZ — native tanıtım ── */
 var NEDEN_IMGS = [
@@ -922,6 +1032,18 @@ document.addEventListener('click', function (e) {
   var g = e.target.closest('[data-geri]'); if (g) { history.back(); return; }
   var oy = e.target.closest('[data-oynat]'); if (oy) { oynat(oy.getAttribute('data-oynat'), oy.getAttribute('data-ad') || ''); return; }
   var ex = e.target.closest('[data-ext]'); if (ex) { window.open(ex.getAttribute('data-ext'), '_blank'); return; }
+  var dr = e.target.closest('[data-ders]');
+  if (dr) {
+    if (+dr.getAttribute('data-ders') === 0) drawDers();
+    else { toast('🔒 Bu ders Eğitim paketiyle açılır'); go('paket'); }
+    return;
+  }
+  var gm = e.target.closest('[data-gecmis]');
+  if (gm) {
+    var gh = okuGecmis()[+gm.getAttribute('data-gecmis')];
+    if (gh) { uret.sonuc = gh.result; uret.konu = gh.idea || gh.result.baslik; drawUret(); }
+    return;
+  }
   var hu = e.target.closest('[data-haber-uret]');
   if (hu) { var hh = HABERLER[+hu.getAttribute('data-haber-uret')]; if (hh) { uret.konu = hh.y + ' — ' + hh.m; uret.sonuc = null; go('uret'); } return; }
   var uk = e.target.closest('[data-uret-konu]');
