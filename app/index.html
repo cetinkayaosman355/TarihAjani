@@ -29,10 +29,27 @@ a{color:inherit;text-decoration:none}
 @keyframes scr-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes scr-push{from{opacity:.4;transform:translateX(24%)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.scr.on,.scr.push{animation:none}}
+html{-webkit-text-size-adjust:100%}
+/* ── ÜYELİK POP-UP (freemium) — girişsiz de gezilir, üyelik dürtükler ── */
+#uyepop{position:fixed;inset:0;z-index:200;display:none;align-items:flex-end;justify-content:center}
+#uyepop.on{display:flex}
+#uyepop .bd{position:absolute;inset:0;background:rgba(2,3,8,.72);backdrop-filter:blur(3px);animation:fade .25s ease both}
+#uyepop .sheet{position:relative;width:100%;max-width:460px;background:linear-gradient(180deg,#0d1120,#080a12);
+  border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;padding:12px 22px calc(26px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -20px 60px rgba(0,0,0,.6);animation:slideup .34s cubic-bezier(.2,.8,.2,1) both;text-align:center}
+#uyepop .grip{width:44px;height:5px;border-radius:3px;background:rgba(201,162,90,.4);margin:0 auto 16px}
+#uyepop img{width:74px;height:74px;border-radius:50%;box-shadow:0 0 0 3px rgba(201,162,90,.6),0 12px 34px rgba(0,0,0,.5)}
+#uyepop h2{margin:14px 0 6px;font-family:'Playfair Display',serif;font-size:24px;font-weight:800}
+#uyepop h2 em{font-style:italic;color:var(--gold)}
+#uyepop p{margin:0 auto 4px;max-width:32ch;color:var(--mut);font-size:14px;line-height:1.65}
+#uyepop .btns{display:grid;gap:10px;margin-top:20px}
+#uyepop .gec{background:none;border:0;color:var(--mut);font-weight:700;font-size:13px;padding:6px;cursor:pointer}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
 /* ── alt menü ── */
 #tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;align-items:stretch;
   background:rgba(8,10,16,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-top:1px solid var(--line);padding:5px 4px calc(4px + env(safe-area-inset-bottom,0px))}
+  border-top:1px solid var(--line);padding:5px 4px max(6px,env(safe-area-inset-bottom,0px))}
 #tabbar button{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;
   padding-top:7px;background:none;border:0;color:#9298a6;font-size:11px;font-weight:600;cursor:pointer}
 #tabbar button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
@@ -265,6 +282,7 @@ audio{width:100%;margin-top:10px}
     <div class="sit" data-go="paket"><span class="i">🧮</span>Hesap Makinesi</div>
   </div>
 </div>
+<div id="uyepop" aria-hidden="true"></div>
 <div id="toast" role="status"></div>
 
 <script src="/arsiv-data.js"></script>
@@ -450,9 +468,18 @@ function drawMasa() {
         : '<span class="muhur"><span><b>' + String(di + 1).padStart(2, '0') + '</b><span>' + esc((d.fileNo || 'DOSYA').slice(0, 14)) + '</span></span></span>';
       return '<div class="po" data-dosya="' + di + '">' + ust + '<b>' + esc(d.baslik || '') + '</b><span>' + esc(d.era || '') + '</span></div>';
     }).join('') + '</div>' +
-    '<div class="kart" data-go="oyun"><div class="krow"><span class="rz">♞</span>' +
-    '<span class="m"><b>Oyun Tüneli</b><span>3 saha oyunu · rütbeni kanıtla</span></span><span class="git">›</span></div>' +
-    '<div class="minis"><span>◈ Zaman Görevi</span><span>♞ Satranç 1402</span><span>🏺 Mangala</span></div></div>' +
+    '<div class="sh"><b>🎮 OYUN TÜNELİ</b><button data-go="oyun">hepsi →</button></div>' +
+    '<div style="display:flex;gap:10px;padding:0 14px;overflow-x:auto;scrollbar-width:none">' +
+    [['◈','Zaman Görevi','100 SORU','/oyun/sayi-tahmin/','#1a2340'],
+     ['♞','Satranç 1402','TİMUR vs BAYEZİD','/oyun/satranc-1402/','#2a1618'],
+     ['🏺','Mangala','TÜRK STRATEJİSİ','/oyun/mangala/','#1c2416']].map(function (o) {
+      return '<div class="oyunf" data-oynat="' + o[3] + '" data-ad="' + o[1] + '" style="flex:none;width:150px;border-radius:15px;overflow:hidden;cursor:pointer;' +
+        'border:1px solid rgba(193,154,82,.4);background:linear-gradient(160deg,' + o[4] + ',#0a0d16);padding:15px 14px;position:relative">' +
+        '<div style="font-size:30px;line-height:1;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5))">' + o[0] + '</div>' +
+        '<b style="display:block;margin-top:10px;font-family:\'Playfair Display\',serif;font-size:15px;color:#f0e8d4">' + o[1] + '</b>' +
+        '<span style="display:block;margin-top:4px;font-size:9px;letter-spacing:.14em;color:var(--brass)">' + o[2] + '</span>' +
+        '<span style="display:inline-block;margin-top:11px;font-size:10px;font-weight:800;letter-spacing:.08em;color:#171207;background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);padding:7px 13px;border-radius:8px">OYNA ›</span></div>';
+    }).join('') + '</div>' +
     '<div class="sh"><b>SON DAKİKA · TARİH AJANSI</b><button data-go="haber">tümü →</button></div>' +
     HABERLER.slice(0, 3).map(function (h) {
       return '<div class="drow" data-go="haber"><span class="no" style="font-size:12px">' + esc(h.y) + '</span>' +
@@ -488,7 +515,7 @@ function drawArsiv() {
 }
 function drawDosya(i, sessiz) {
   var d = DATA[i]; if (!d) return;
-  if (!user) { toast('🔒 Dosyaları açmak için ücretsiz üye ol'); go('profil'); return; }
+  if (!user) { uyeGoster('arsiv'); return; }
   var el = $('#scr-dosya');
   el.innerHTML =
     '<div class="ust"><button class="geri" data-geri>‹</button><span>' + esc(d.fileNo || '') + '</span></div>' +
@@ -653,7 +680,7 @@ function uretBasla() {
   uret.konu = (uret.konu || '').trim();
   uret.hata = '';
   if (uret.konu.length < 6) { uret.hata = 'Bir konu yaz — olay, kişi ya da soru.'; drawUret(); return; }
-  if (!user) { toast('Üretim için giriş yap'); go('profil'); return; }
+  if (!user) { uyeGoster('uretim'); return; }
   if (kredi != null && kredi < uretKredi()) { uret.hata = 'Yetersiz kredi (' + kredi + ' KR). Profilden paket alabilirsin.'; drawUret(); return; }
   uret.busy = true; drawUret();
   var msgs = ['KAYNAKLAR ÇAPRAZ SORGULANIYOR…', 'KANIT ZİNCİRİ KURULUYOR…', 'SENARYO KALEME ALINIYOR…', 'SAHNELER GÖRSELLEŞTİRİLİYOR…', 'YAYIN PAKETİ MÜHÜRLENİYOR…'];
@@ -741,7 +768,7 @@ function ttsMetin() { return (uret.sonuc && uret.sonuc.senaryo || []).map(functi
 function ttsKredi() { return Math.max(10, Math.ceil(ttsMetin().length / 1000) * 5); }
 function seslendir() {
   var kutu = $('#s-ses-kutu'), btn = $('#s-ses');
-  if (!user) { toast('Seslendirme için giriş yap'); go('profil'); return; }
+  if (!user) { uyeGoster('seslendirme'); return; }
   btn.disabled = true; btn.textContent = '🎙  ÜRETİLİYOR… (~20 sn)';
   fetch(FN, {
     method: 'POST',
@@ -765,7 +792,7 @@ function seslendir() {
 }
 /* native GÖRSEL ÜRETİMİ — sahne görseli uygulamada, anında */
 function gorselUret(i, btn) {
-  if (!user) { toast('Görsel için giriş yap'); go('profil'); return; }
+  if (!user) { uyeGoster('gorsel'); return; }
   var g = (uret.sonuc.gorsel_promptlar || [])[i]; if (!g) return;
   btn.disabled = true; btn.textContent = '⟳ ÜRETİLİYOR…';
   fetch(FN, {
@@ -1219,8 +1246,33 @@ function sheetKapat() { document.body.classList.remove('sheet-acik'); }
 $('#sheet-veil').addEventListener('click', sheetKapat);
 $('#sheet').addEventListener('click', function () { setTimeout(sheetKapat, 60); });
 
+/* ── ÜYELİK POP-UP (freemium): girişsiz gezilir; üretim/tam erişimde çıkar ── */
+var UYE_SEBEP = {
+  hos: 'Gezinmeye devam edebilirsin — ama <b>üretmek</b> ve <b>tüm dosyalara</b> erişmek için ücretsiz üye ol. Hesabına 30 deneme kredisi tanımlanır.',
+  uretim: 'Dosya <b>üretmek</b> için üye olman gerekiyor. Ücretsiz kayıt ol; hesabına <b>30 deneme kredisi</b> hediye.',
+  arsiv: 'Bu <b>vaka dosyasını</b> açmak için ücretsiz üye ol — 30 deneme kredisiyle hemen başla.',
+  seslendirme: 'Seslendirme <b>üretmek</b> için üye girişi gerekiyor. Ücretsiz kayıt ol.',
+  gorsel: 'Sahne <b>görseli üretmek</b> için üye girişi gerekiyor. Ücretsiz kayıt ol.'
+};
+function uyeGoster(sebep) {
+  if (user) return false;
+  $('#uyepop').innerHTML =
+    '<div class="bd" data-uyekapat></div>' +
+    '<div class="sheet"><div class="grip"></div>' +
+    '<img src="/assets/logo-mark.png" alt="">' +
+    '<h2>Aramıza katıl, <em>Ajan</em></h2>' +
+    '<p>' + (UYE_SEBEP[sebep] || UYE_SEBEP.hos) + '</p>' +
+    '<div class="btns"><button class="cta" data-go="profil" data-uyekapat>ÜCRETSİZ ÜYE OL · 30 KREDİ →</button>' +
+    '<button class="cta ghost" data-go="profil" data-uyekapat>Zaten ajanım — giriş yap</button>' +
+    '<button class="gec" data-uyekapat>Şimdilik gezmeye devam et</button></div></div>';
+  $('#uyepop').classList.add('on');
+  return true;
+}
+function uyeKapat() { $('#uyepop').classList.remove('on'); }
+
 /* ── global dokunuşlar ── */
 document.addEventListener('click', function (e) {
+  if (e.target.closest('[data-uyekapat]')) { uyeKapat(); /* data-go varsa aşağıda işlenir */ }
   var sb2 = e.target.closest('[data-sheet]'); if (sb2) { sheetAc(); return; }
   var t = e.target.closest('[data-go]'); if (t) { go(t.getAttribute('data-go')); return; }
   var d = e.target.closest('[data-dosya]'); if (d) { drawDosya(+d.getAttribute('data-dosya')); return; }
@@ -1258,7 +1310,9 @@ function basla() {
     });
     sb.auth.onAuthStateChange(function (_e, s) { user = s && s.user || null; });
   }
-  go(token() ? 'masa' : 'hosgeldin');
+  // AÇILIŞ: her zaman normal Masa (girişsiz de gezilir); üyelik POP-UP olarak gelir
+  go('masa');
+  if (!token()) setTimeout(function () { if (!user) uyeGoster('hos'); }, 1100);
 }
 basla();
 })();
