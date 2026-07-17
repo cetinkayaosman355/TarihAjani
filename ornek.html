@@ -289,12 +289,12 @@
     <div class="doss-grid" id="doss-grid"></div>
 
     <div class="suggest">
-      <p class="st-lbl">◆ YA DA SEN ÖNER</p>
-      <h4>Kendi tarih konunu yaz</h4>
-      <p>Aklındaki bir olayı yaz; Ajan onun için de kısa bir örnek üretsin.</p>
+      <p class="st-lbl">◆ SEN ÖNER · <span style="color:#8a846a">🔒 AJAN ÖZELLİĞİ</span></p>
+      <h4>Kendi konunu yaz, Ajan önersin</h4>
+      <p>Normalde burada kendi tarih konunu yazar, Ajan senin için özgün bir vaka kurar. Bu özellik <strong style="color:#e6c478">Ajan girişiyle</strong> açılır — ücretsiz demoda yukarıdaki hazır örnekleri inceleyebilirsin.</p>
       <div class="st-row">
-        <input class="st-input" id="st-input" type="text" maxlength="80" placeholder="ör. Kanuni’nin Zigetvar seferi…" aria-label="Kendi konun">
-        <button class="btn-gold" id="st-go">ÖRNEK ÜRET →</button>
+        <input class="st-input" type="text" placeholder="🔒 Kendi konun — Ajan girişiyle açılır" aria-label="Kilitli — Ajan girişiyle açılır" disabled style="opacity:.5; cursor:not-allowed">
+        <a class="btn-gold" href="/uyelik" id="st-go-locked" style="display:inline-flex; align-items:center; justify-content:center; gap:7px; text-decoration:none; white-space:nowrap">🔒 SEN ÖNER</a>
       </div>
     </div>
   </section>
@@ -518,27 +518,9 @@
     grid.appendChild(b);
   });
 
-  /* ── sen öner ── */
-  $('#st-go').addEventListener('click', function(){
-    var v = ($('#st-input').value||'').trim();
-    if(!v){ $('#st-input').focus(); return; }
-    start(buildCustom(v));
-  });
-  $('#st-input').addEventListener('keydown', function(e){ if(e.key==='Enter'){ $('#st-go').click(); } });
-
-  function buildCustom(topic){
-    var t = topic.replace(/\s+/g,' ').slice(0,80);
-    return {
-      id:'ozel', ad:t, yil:'ÖZEL KONU', etiket:'SENİN KONUN',
-      img:'/assets/hero-desk.jpg',
-      konu:t,
-      scenelbl:'AÇILIŞ ANLATIMI · 00:00–00:15',
-      ses:'Bir sır perde aralanıyor. “'+t+'” — kimilerinin unuttuğu, kimilerinin hiç duymadığı bir hikâye. Kamera tozlu bir detayda geziniyor, gerilim usulca yükseliyor ve izleyici daha ilk saniyede olayın tam ortasında buluyor kendini. İşte tam burada, ajan devreye giriyor ve bu konuyu bir dakikalık sinematik bir anlatıya dönüştürüyor.',
-      prompt:'Cinematic historical scene about "'+t+'", dramatic chiaroscuro lighting, atmospheric dust, 35mm film look, hyperreal detail',
-      sahneler:['Konunun geçtiği mekâna açılan geniş kamera','Ana karakterin ilk yakın çekimi','Gerilimi yükselten detay planı','Dönüm anının sinematik çekimi','Kapanışa hazırlayan atmosfer planı'],
-      kapak:'“'+t+'” için tık odaklı kapak + başlık'
-    };
-  }
+  /* ── SEN ÖNER kilitli: serbest konu üretimi (jenerik/kötü çıktı) kaldırıldı;
+     buton Ajan girişine (/uyelik) yönlendirir. Ücretsiz demoda YALNIZ hazır,
+     içeriği önceden hazırlanmış vaka örnekleri gösterilir. ── */
 
   /* ── akış ── */
   function show(id){
@@ -776,7 +758,7 @@
     });
   });
 
-  $('#restart').addEventListener('click', function(){ stopVoice(); current=null; $('#st-input').value=''; show('#stage-pick'); });
+  $('#restart').addEventListener('click', function(){ stopVoice(); current=null; show('#stage-pick'); });
 
   /* ── analytics güvenli sarıcı ── */
   function track(ev, val){

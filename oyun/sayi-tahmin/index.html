@@ -14,7 +14,6 @@
 </style>
 <a class="ta-return l" href="/zaman-tuneli">&#8592; OYUN T&#220;NEL&#304;</a>
 <a class="ta-return r" href="/">TA &#183; ANA SAYFA</a>
-
 <style>
   :root {
     --ink-900: #05091a;
@@ -49,7 +48,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px 16px;
+    padding: 26px 16px;
     overflow-x: hidden;
   }
 
@@ -59,7 +58,7 @@
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
   }
 
-  .app { position: relative; z-index: 2; width: 100%; max-width: min(1020px, 96vw); }
+  .app { position: relative; z-index: 2; width: 100%; max-width: 660px; }
 
   /* ---- CARD ---- */
   .card {
@@ -69,7 +68,7 @@
       linear-gradient(180deg, rgba(14,24,58,0.78), rgba(6,11,30,0.90));
     border: 1px solid var(--hair-soft);
     border-radius: 14px;
-    padding: 30px 40px 28px;
+    padding: 38px 40px 34px;
     box-shadow: 0 40px 90px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
     backdrop-filter: blur(6px);
   }
@@ -88,11 +87,11 @@
 
   /* ---- CREST ---- */
   .crest { display: flex; flex-direction: column; align-items: center; text-align: center; }
-  .emblem { width: 60px; height: 60px; margin-bottom: 12px; }
+  .emblem { width: 74px; height: 74px; margin-bottom: 16px; }
   .emblem .spin { transform-origin: 50% 50%; animation: turn 60s linear infinite; }
   @keyframes turn { to { transform: rotate(360deg); } }
 
-  .kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+  .kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
   .kicker .sep { opacity: 0.5; margin: 0 7px; }
 
   h1 {
@@ -102,27 +101,27 @@
   }
   h1 .amp { font-style: italic; color: var(--gold); font-weight: 400; }
 
-  .rule { display:flex; align-items:center; justify-content:center; gap:12px; margin: 12px 0 14px; color: var(--gold); }
+  .rule { display:flex; align-items:center; justify-content:center; gap:12px; margin: 14px 0 18px; color: var(--gold); }
   .rule::before, .rule::after { content:""; height:1px; width:64px; background: linear-gradient(90deg, transparent, var(--gold)); opacity:0.6; }
   .rule::after { background: linear-gradient(90deg, var(--gold), transparent); }
   .rule .diamond { width:6px; height:6px; background: var(--gold); transform: rotate(45deg); }
 
-  .subtitle { color: var(--dim); font-family: var(--serif); font-size: 16px; font-style: italic; line-height: 1.6; margin: 0 auto 18px; max-width: 46ch; text-align: center; }
+  .subtitle { color: var(--dim); font-family: var(--serif); font-size: 16px; font-style: italic; line-height: 1.7; margin: 0 auto 22px; max-width: 46ch; text-align: center; }
 
   .record-line { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-2); text-align:center; margin-bottom: 22px; }
   .record-line span { color: var(--txt); font-weight: 700; }
   .record-line.hidden { display: none; }
 
-  .brief { font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: #c6cee0; border-top: 1px solid var(--hair-soft); border-bottom: 1px solid var(--hair-soft); padding: 13px 4px; margin-bottom: 20px; text-align: left; }
+  .brief { font-family: var(--mono); font-size: 12.5px; line-height: 1.8; color: #c6cee0; border-top: 1px solid var(--hair-soft); border-bottom: 1px solid var(--hair-soft); padding: 16px 4px; margin-bottom: 26px; text-align: left; }
   .brief .bl { color: var(--gold); letter-spacing: 2px; display:block; margin-bottom: 8px; font-size: 10px; text-transform: uppercase; }
   .brief strong { color: var(--gold-2); font-weight: 600; }
 
-  .field-label { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; text-align:center; }
+  .field-label { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--faint); margin-bottom: 12px; text-align:center; }
 
   /* clearance */
-  .clearance { display: flex; gap: 10px; margin-bottom: 20px; }
+  .clearance { display: flex; gap: 10px; margin-bottom: 28px; }
   .cl-opt {
-    flex: 1; text-align: center; padding: 12px 6px 11px;
+    flex: 1; text-align: center; padding: 15px 6px 13px;
     border: 1px solid var(--hair-soft); border-radius: 9px; cursor: pointer;
     font-family: var(--mono); font-size: 13px; color: var(--dim);
     transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
@@ -196,6 +195,10 @@
 
   .option.removed { opacity: 0.26; pointer-events: none; }
   .option.removed .opt-text { text-decoration: line-through; }
+
+  /* chrono picks */
+  .option.picked { border-color: var(--gold); background: rgba(201,162,75,0.08); }
+  .option.picked .key { background: var(--gold); color: #1a1405; border-color: var(--gold); }
 
   /* ---- QUIZ ---- */
   .qtop { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; }
@@ -321,11 +324,17 @@
       <p class="subtitle">Zaman çizgisinde kayıtlar bozuluyor. Sapmaları düzeltmekle görevli saha ajanı sensin — her doğru cevap tarihi yerine oturtur.</p>
     </div>
 
-    <div class="record-line hidden" id="record-line">◆ En Yüksek Puan · <span id="record-val">0</span></div>
+    <div class="record-line hidden" id="record-line">◆ En Yüksek · <span id="record-val">0</span></div>
 
     <div class="brief">
       <span class="bl">◈ Gelen Telsiz · Şifre Çözüldü</span>
       Ajan, saha hazır. İletilen dosyaları doğru yanıtla ve zaman çizgisini <strong>stabilize et</strong>. Kronometre işliyor — ne kadar hızlıysan o kadar çok <strong>puan</strong>. Üst üste doğrular <strong>seri bonusu</strong> kazandırır; görev sonunda rütben tescillenir.
+    </div>
+
+    <div class="field-label">— Görev Tipi Seç —</div>
+    <div class="clearance" id="modes" role="radiogroup" aria-label="Görev tipi">
+      <button type="button" class="cl-opt active" data-mode="quiz" role="radio" aria-checked="true"><span class="lv">GÖREV I</span><span class="nm">Sorgu</span><small>çoktan seçmeli</small></button>
+      <button type="button" class="cl-opt" data-mode="chrono" role="radio" aria-checked="false"><span class="lv">GÖREV II</span><span class="nm">Kronoloji</span><small>olayları sırala</small></button>
     </div>
 
     <div class="field-label">— Yetki Seviyesi Seç —</div>
@@ -798,16 +807,60 @@ const POOL = [
     info: "Doğu Cephesi komutanı Kâzım Karabekir, 1920 Gümrü Antlaşması'yla doğu sınırını güvence altına aldı." },
 ];
 
-const ROUND = 12;         // her turda sorulan soru sayısı
+/* ===== KRONOLOJİ OLAYLARI (yıllar birbirinden farklı; MÖ = negatif) ===== */
+const EVENTS = [
+  { y: -3200, t: "Yazının icadı (Sümerler)" },
+  { y: -776,  t: "İlk Olimpiyat Oyunları" },
+  { y: -753,  t: "Roma'nın kuruluşu" },
+  { y: -334,  t: "Büyük İskender'in Asya seferi" },
+  { y: -27,   t: "Roma İmparatorluğu'nun başlangıcı (Augustus)" },
+  { y: 375,   t: "Kavimler Göçü'nün başlaması" },
+  { y: 476,   t: "Batı Roma'nın yıkılışı" },
+  { y: 622,   t: "Hicret" },
+  { y: 751,   t: "Talas Savaşı" },
+  { y: 1040,  t: "Dandanakan Savaşı" },
+  { y: 1071,  t: "Malazgirt Zaferi" },
+  { y: 1096,  t: "I. Haçlı Seferi" },
+  { y: 1176,  t: "Miryokefalon Zaferi" },
+  { y: 1243,  t: "Kösedağ Savaşı" },
+  { y: 1299,  t: "Osmanlı Beyliği'nin kuruluşu" },
+  { y: 1453,  t: "İstanbul'un Fethi" },
+  { y: 1492,  t: "Amerika'ya ulaşılması" },
+  { y: 1517,  t: "Ridaniye — halifeliğin Osmanlı'ya geçişi" },
+  { y: 1520,  t: "Kanuni'nin tahta çıkışı" },
+  { y: 1571,  t: "İnebahtı Deniz Savaşı" },
+  { y: 1683,  t: "II. Viyana Kuşatması" },
+  { y: 1727,  t: "İlk Türk matbaası (Müteferrika)" },
+  { y: 1789,  t: "Fransız İhtilali" },
+  { y: 1839,  t: "Tanzimat Fermanı" },
+  { y: 1876,  t: "Kanun-i Esasi'nin ilanı" },
+  { y: 1914,  t: "I. Dünya Savaşı'nın başlaması" },
+  { y: 1919,  t: "Samsun'a çıkış" },
+  { y: 1920,  t: "TBMM'nin açılışı" },
+  { y: 1922,  t: "Büyük Taarruz" },
+  { y: 1923,  t: "Cumhuriyet'in ilanı" },
+  { y: 1928,  t: "Harf İnkılabı" },
+  { y: 1934,  t: "Kadınlara seçme-seçilme hakkı" },
+  { y: 1939,  t: "II. Dünya Savaşı'nın başlaması" },
+  { y: 1945,  t: "Birleşmiş Milletler'in kuruluşu" },
+  { y: 1969,  t: "Ay'a ilk ayak basış" },
+  { y: 1989,  t: "Berlin Duvarı'nın yıkılışı" },
+];
+const fmtYear = y => y < 0 ? "MÖ " + (-y) : String(y);
+
+const ROUND = 12;          // sorgu modunda tur başına soru
+const CHRONO_ROUNDS = 8;   // kronoloji modunda tur başına dizi
 const KEYS = ["A", "B", "C", "D"];
 const DIFFS = { kolay: 20, orta: 15, zor: 10 };
 const CIRC = 2 * Math.PI * 37;
 const BEST_KEY = "ta_best_score";
+const BEST_CHRONO_KEY = "ta_best_chrono";
 
 /* localStorage güvenli erişim */
-function loadBest() { try { return parseInt(localStorage.getItem(BEST_KEY), 10) || 0; } catch (e) { return 0; } }
-function saveBest(v) { try { localStorage.setItem(BEST_KEY, String(v)); } catch (e) {} }
-let best = loadBest();
+function loadBestKey(k) { try { return parseInt(localStorage.getItem(k), 10) || 0; } catch (e) { return 0; } }
+function saveBestKey(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+let best = loadBestKey(BEST_KEY);
+let bestChrono = loadBestKey(BEST_CHRONO_KEY);
 
 let state = {};
 let rafId = null;
@@ -831,7 +884,10 @@ function show(name) {
 
 function refreshRecordLine() {
   const line = document.getElementById("record-line");
-  if (best > 0) { document.getElementById("record-val").textContent = best; line.classList.remove("hidden"); }
+  const parts = [];
+  if (best > 0) parts.push("Sorgu " + best);
+  if (bestChrono > 0) parts.push("Kronoloji " + bestChrono);
+  if (parts.length) { document.getElementById("record-val").textContent = parts.join(" · "); line.classList.remove("hidden"); }
   else line.classList.add("hidden");
 }
 refreshRecordLine();
@@ -877,23 +933,40 @@ function sTimeout(){ ensureAudio(); tone(440,0,0.16,'triangle',0.10); tone(260,0
 
 /* zorluk seçimi */
 let chosenDiff = "kolay";
-document.querySelectorAll(".cl-opt").forEach(opt => {
+document.querySelectorAll(".cl-opt[data-diff]").forEach(opt => {
   opt.addEventListener("click", () => {
-    document.querySelectorAll(".cl-opt").forEach(o => { o.classList.remove("active"); o.setAttribute("aria-checked", "false"); });
+    document.querySelectorAll(".cl-opt[data-diff]").forEach(o => { o.classList.remove("active"); o.setAttribute("aria-checked", "false"); });
     opt.classList.add("active"); opt.setAttribute("aria-checked", "true");
     chosenDiff = opt.dataset.diff;
   });
 });
 
+/* görev tipi seçimi */
+let chosenMode = "quiz";
+document.querySelectorAll(".cl-opt[data-mode]").forEach(opt => {
+  opt.addEventListener("click", () => {
+    document.querySelectorAll(".cl-opt[data-mode]").forEach(o => { o.classList.remove("active"); o.setAttribute("aria-checked", "false"); });
+    opt.classList.add("active"); opt.setAttribute("aria-checked", "true");
+    chosenMode = opt.dataset.mode;
+  });
+});
+
 function startGame() {
   ensureAudio();
-  const pool = chosenCat === 'Tümü' ? POOL : POOL.filter(q => q.era === chosenCat);
-  const count = Math.min(ROUND, pool.length);
+  let order;
+  if (chosenMode === 'chrono') {
+    const evs = shuffle(EVENTS);
+    order = [];
+    for (let i = 0; i < CHRONO_ROUNDS; i++) order.push(evs.slice(i * 4, i * 4 + 4));
+  } else {
+    const pool = chosenCat === 'Tümü' ? POOL : POOL.filter(q => q.era === chosenCat);
+    order = shuffle(pool).slice(0, Math.min(ROUND, pool.length));
+  }
   state = {
-    diff: chosenDiff, cat: chosenCat,
-    order: shuffle(pool).slice(0, count),
+    mode: chosenMode, diff: chosenDiff, cat: chosenCat,
+    order,
     index: 0, score: 0, streak: 0, bestStreak: 0, lives: 3, correct: 0, wrong: 0,
-    answered: false, timeLeft: 0, timeTotal: 0, timeStart: 0,
+    answered: false, timeLeft: 0, timeTotal: 0, timeStart: 0, picks: [],
     jokers: { fifty: true, skip: true, time: true },
   };
   show("quiz"); renderQuestion();
@@ -907,25 +980,41 @@ function updateHud() {
 }
 
 function renderQuestion() {
-  stopTimer(); state.answered = false;
-  const item = state.order[state.index];
+  stopTimer(); state.answered = false; state.picks = [];
   updateHud();
-  document.getElementById("qera").textContent = "◈ " + item.era.toUpperCase();
   document.getElementById("qfile").textContent = "DOSYA " + String(state.index + 1).padStart(2, "0");
-  document.getElementById("question").textContent = item.q;
-
-  const shuffled = shuffle(item.opts.map((text, i) => ({ text, correct: i === item.a })));
   const optionsEl = document.getElementById("options"); optionsEl.innerHTML = "";
-  shuffled.forEach((o, i) => {
-    const btn = document.createElement("button"); btn.className = "option"; btn.type = "button";
-    btn.dataset.correct = o.correct ? "1" : "0";
-    btn.style.animationDelay = (i * 55) + "ms";
-    const key = document.createElement("span"); key.className = "key"; key.textContent = KEYS[i];
-    const label = document.createElement("span"); label.className = "opt-text"; label.textContent = o.text;
-    btn.append(key, label);
-    btn.addEventListener("click", () => selectAnswer(btn, o.correct));
-    optionsEl.appendChild(btn);
-  });
+
+  if (state.mode === 'chrono') {
+    const events = state.order[state.index];
+    document.getElementById("qera").textContent = "◈ KRONOLOJİ";
+    document.getElementById("question").textContent = "Olayları en eskiden en yeniye sırala:";
+    events.forEach((ev, i) => {
+      const btn = document.createElement("button"); btn.className = "option"; btn.type = "button";
+      btn.style.animationDelay = (i * 55) + "ms";
+      const key = document.createElement("span"); key.className = "key"; key.textContent = "·";
+      const label = document.createElement("span"); label.className = "opt-text"; label.textContent = ev.t;
+      btn.append(key, label);
+      btn._ev = ev;
+      btn.addEventListener("click", () => toggleChronoPick(btn));
+      optionsEl.appendChild(btn);
+    });
+  } else {
+    const item = state.order[state.index];
+    document.getElementById("qera").textContent = "◈ " + item.era.toUpperCase();
+    document.getElementById("question").textContent = item.q;
+    const shuffled = shuffle(item.opts.map((text, i) => ({ text, correct: i === item.a })));
+    shuffled.forEach((o, i) => {
+      const btn = document.createElement("button"); btn.className = "option"; btn.type = "button";
+      btn.dataset.correct = o.correct ? "1" : "0";
+      btn.style.animationDelay = (i * 55) + "ms";
+      const key = document.createElement("span"); key.className = "key"; key.textContent = KEYS[i];
+      const label = document.createElement("span"); label.className = "opt-text"; label.textContent = o.text;
+      btn.append(key, label);
+      btn.addEventListener("click", () => selectAnswer(btn, o.correct));
+      optionsEl.appendChild(btn);
+    });
+  }
 
   const fb = document.getElementById("feedback"); fb.className = "feedback"; fb.textContent = "";
   document.getElementById("next-row").classList.remove("show");
@@ -934,8 +1023,50 @@ function renderQuestion() {
   startTimer();
 }
 
+/* ---- kronoloji: seçim ve değerlendirme ---- */
+function toggleChronoPick(btn) {
+  if (state.answered) return;
+  const idx = state.picks.indexOf(btn);
+  if (idx >= 0) { state.picks.splice(idx, 1); btn.classList.remove("picked"); }
+  else { state.picks.push(btn); btn.classList.add("picked"); }
+  document.querySelectorAll(".option").forEach(o => {
+    const i = state.picks.indexOf(o);
+    o.querySelector(".key").textContent = i >= 0 ? String(i + 1) : "·";
+  });
+  sClick();
+  if (state.picks.length === 4) setTimeout(evaluateChrono, 300);
+}
+
+function chronoSequenceText() {
+  const sorted = state.order[state.index].slice().sort((a, b) => a.y - b.y);
+  return sorted.map((e, i) => `${i + 1}. ${e.t} (${fmtYear(e.y)})`).join("  ·  ");
+}
+
+function evaluateChrono() {
+  if (state.answered) return; state.answered = true; stopTimer();
+  const sorted = state.order[state.index].slice().sort((a, b) => a.y - b.y);
+  const ok = state.picks.every((b, i) => b._ev.y === sorted[i].y);
+  document.querySelectorAll(".option").forEach(el => el.classList.add("disabled"));
+  state.picks.forEach((b, i) => b.classList.add(b._ev.y === sorted[i].y ? "correct" : "wrong"));
+  const fb = document.getElementById("feedback");
+  if (ok) {
+    const timeBonus = Math.round(state.timeLeft) * 5, streakBonus = state.streak * 20;
+    const gained = 100 + timeBonus + streakBonus;
+    state.score += gained; state.streak++; state.bestStreak = Math.max(state.bestStreak, state.streak); state.correct++;
+    sCorrect(); showSeal(true, "TESCİL");
+    fb.className = "feedback ok show";
+    fb.innerHTML = `<span class="lead">✓ ZAMAN ÇİZGİSİ DOĞRU · +${gained} PUAN</span><span class="info">Süre bonusu +${timeBonus} · Seri bonusu +${streakBonus}. ${chronoSequenceText()}</span>`;
+  } else {
+    state.streak = 0; state.lives--; state.wrong++;
+    sWrong(); showSeal(false, "SAPMA");
+    fb.className = "feedback no show";
+    fb.innerHTML = `<span class="lead">✕ SIRALAMA HATALI</span><span class="info">Doğru sıra: ${chronoSequenceText()}</span>`;
+  }
+  updateHud(); afterAnswer();
+}
+
 function startTimer() {
-  state.timeTotal = DIFFS[state.diff];
+  state.timeTotal = DIFFS[state.diff] + (state.mode === 'chrono' ? 10 : 0);
   state.timeStart = performance.now();
   const prg = document.getElementById("chrono-prg"), num = document.getElementById("chrono-num");
   prg.style.strokeDasharray = CIRC.toFixed(2);
@@ -993,15 +1124,19 @@ function selectAnswer(btn, isCorrect) {
 
 function timeOut() {
   if (state.answered) return; state.answered = true; stopTimer();
-  const item = state.order[state.index];
   document.querySelectorAll(".option").forEach(el => el.classList.add("disabled"));
-  markCorrectOption(item);
   state.streak = 0; state.lives--; state.wrong++;
   document.getElementById("chrono-num").textContent = "0";
   updateHud(); sTimeout(); showSeal(false, "SÜRE!");
   const fb = document.getElementById("feedback");
   fb.className = "feedback no show";
-  fb.innerHTML = `<span class="lead">✕ KRONOMETRE SIFIRLANDI</span><span class="info">${item.info}</span>`;
+  if (state.mode === 'chrono') {
+    fb.innerHTML = `<span class="lead">✕ KRONOMETRE SIFIRLANDI</span><span class="info">Doğru sıra: ${chronoSequenceText()}</span>`;
+  } else {
+    const item = state.order[state.index];
+    markCorrectOption(item);
+    fb.innerHTML = `<span class="lead">✕ KRONOMETRE SIFIRLANDI</span><span class="info">${item.info}</span>`;
+  }
   afterAnswer();
 }
 
@@ -1028,8 +1163,13 @@ function endGame() {
   else { icon = "🥉"; title = "Çaylak Ajan"; rank = "RÜTBE: STAJYER — Kayıtlarda ciddi boşluklar var. Arşivde biraz daha çalışman gerek."; }
 
   const rec = document.getElementById("r-record");
-  if (state.score > best) { best = state.score; saveBest(best); rec.classList.remove("hidden"); }
-  else rec.classList.add("hidden");
+  const isChrono = state.mode === 'chrono';
+  const cur = isChrono ? bestChrono : best;
+  if (state.score > cur) {
+    if (isChrono) { bestChrono = state.score; saveBestKey(BEST_CHRONO_KEY, bestChrono); }
+    else { best = state.score; saveBestKey(BEST_KEY, best); }
+    rec.classList.remove("hidden");
+  } else rec.classList.add("hidden");
   refreshRecordLine();
 
   document.getElementById("medal-icon").textContent = icon;
@@ -1046,10 +1186,10 @@ function sClick(){ ensureAudio(); tone(520, 0, 0.08, 'sine', 0.06); }
 function updateJokers(){
   const j = (state && state.jokers) || {};
   const set = (id, avail) => { const b = document.getElementById(id); if (b) b.disabled = !avail || state.answered; };
-  set('jk-fifty', j.fifty); set('jk-skip', j.skip); set('jk-time', j.time);
+  set('jk-fifty', j.fifty && state.mode !== 'chrono'); set('jk-skip', j.skip); set('jk-time', j.time);
 }
 function useFifty(){
-  if (!state.jokers || state.answered || !state.jokers.fifty) return;
+  if (!state.jokers || state.answered || !state.jokers.fifty || state.mode === 'chrono') return;
   const wrongs = Array.prototype.filter.call(
     document.querySelectorAll('.option'),
     o => o.dataset.correct === '0' && !o.classList.contains('removed')

@@ -18,6 +18,7 @@
 <meta name="twitter:description" content="Tarih Ajanı dijital ürünleri: vaka dosyası paketleri, video promptları, üretim rehberleri ve koleksiyon setleri. Shopier ile güvenli ödeme.">
 <meta name="twitter:image" content="https://tarihajani.com/assets/dossier-bundle.jpg">
 <script src="./support.js"></script>
+<script src="/fiyat-cache.js"></script>
 <script src="/uye-nav.js" defer></script>
 <script src="/canli-sohbet.js" defer></script>
 <script src="/mobil-nav.js" defer></script>
@@ -277,7 +278,8 @@ class Component extends DCLogic {
     cat: 'TÜMÜ', q: '',
     checkout: null, stage: 'detail', payMethod: 'iban',
     fName: '', fEmail: '', fPhone: '', fConsent: false,
-    formError: '', ibanCopied: false, priceOv: {}
+    formError: '', ibanCopied: false,
+    priceOv: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {}
   };
 
   // slug ↔ başlık eşlemesi (deep-link + admin fiyat senkronu ortak kullanır)
@@ -300,13 +302,14 @@ class Component extends DCLogic {
       const url = (this.props.supabaseUrl || '').trim();
       const key = (this.props.supabaseAnonKey || '').trim();
       if (!url || !key) return;
-      const r = await fetch(url + '/rest/v1/products?select=slug,title,price', {
+      const r = await fetch(url + '/rest/v1/products?select=slug,title,price,pay_url', {
         headers: { apikey: key, Authorization: 'Bearer ' + key }
       });
       if (!r.ok) return;
       const rows = await r.json();
       const ov = {};
-      (rows || []).forEach(p => { ov[p.slug] = { title: p.title, price: String(p.price) }; });
+      (rows || []).forEach(p => { ov[p.slug] = { title: p.title, price: String(p.price), payUrl: (p.pay_url || '').trim() }; });
+      if (window.TAFiyat) window.TAFiyat.write(ov);
       this.setState({ priceOv: ov });
     } catch (e) {}
   }

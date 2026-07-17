@@ -73,6 +73,12 @@
     @media (max-width: 600px) {
       [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
       [style*="padding: 120px"] { padding-top: 130px !important; }
+      /* Fikir adımı mobilde viewport'a sığsın → birincil buton alt çubuğun/FAB'ın
+         arkasında kalmasın: başlık ve konu kutusu kompaktlaşır. */
+      main textarea { min-height: 92px !important; font-size: 15.5px !important; padding: 13px !important; }
+      main h2 { font-size: 27px !important; line-height: 1.12 !important; }
+      /* Fikir adımı CTA'sı, sağ alttaki AJANLA KONUŞ FAB'ının soluna otursun */
+      .ta-stepnav { padding-right: 66px !important; }
     }
 
     /* ── K-05: yatay taşma kilidi ── */
@@ -92,9 +98,12 @@
       #ta-tabbar button .tb-lb { font-size: 8.5px; letter-spacing: .1em; }
       #ta-tabbar button.on { color: #e6c478; }
       #ta-tabbar button.on .tb-ic { text-shadow: 0 0 14px rgba(230,196,120,.6); }
-      main { padding-bottom: 120px !important; }
+      main { padding-bottom: 190px !important; }   /* CTA + yardım bağlantısı FAB'ın (bottom 74+54px) üstünde kalsın */
       /* tema düğmesi alt sekme çubuğuna binmesin */
       #ta-tema-btn { bottom: calc(74px + env(safe-area-inset-bottom, 0)) !important; }
+      /* AJANLA KONUŞ paneli mobilde TAM EKRAN — giriş kutusu sekme çubuğunun
+         arkasında kalmasın (panel z-index sekme çubuğunu da örter) */
+      .ta-chatpanel { width: 100vw !important; z-index: 1300 !important; }   /* mobil menü (1200) üstünde → kapat ✕ erişilebilir */
     }
 
     /* ── K-06: adım göstergesi — mobilde kompakt ── */
@@ -493,6 +502,7 @@
                 <button onClick="{{ chip.use }}" style="border: 1px solid rgba(129,135,151,.3); background: rgba(8,11,19,.8); color: #a4a9b5; padding: 8px 14px; font-size: 12.5px; cursor: pointer;" style-hover="border-color: rgba(193,154,82,.6); color: #e6c478;">{{ chip.text }}</button>
               </sc-for>
             </div>
+            <button onClick="{{ findTopic }}" style="margin-top: 12px; border: 0; background: transparent; color: #818797; font-size: 12.5px; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px;" style-hover="color: #e6c478;">Ne yazacağını bilmiyor musun? Ajanla konuş, birlikte bulalım →</button>
             <sc-if value="{{ arsivPickOpen }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top: 16px; border: 1px solid rgba(193,154,82,.35); background: #070a12;">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid rgba(193,154,82,.2);">
@@ -509,7 +519,13 @@
                 </div>
               </div>
             </sc-if>
-            <div style="display: flex; justify-content: flex-end; margin-top: 26px;">
+            <sc-if value="{{ ideaWarn }}" hint-placeholder-val="{{ '' }}">
+              <div style="margin: 16px 0 0; padding: 12px 14px; border: 1px solid rgba(201,120,90,.4); background: rgba(201,120,90,.08);">
+                <p style="margin: 0; color: #e0a58a; font-size: 13px; line-height: 1.6;">⚠ {{ ideaWarn }}</p>
+                <button onClick="{{ findTopic }}" style="margin-top: 8px; border: 0; background: transparent; color: #e6c478; font-size: 12.5px; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px;">Ajanla konuşarak konu bulalım →</button>
+              </div>
+            </sc-if>
+            <div class="ta-stepnav" style="display: flex; justify-content: flex-end; margin-top: 26px;">
               <button onClick="{{ toStep2 }}" disabled="{{ ideaEmpty }}" style="{{ nextBtnStyle }}" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">SEÇENEKLERE GEÇ →</button>
             </div>
           </div>
@@ -1031,7 +1047,7 @@
   <!-- AJANLA KONUŞ · YAN PANEL -->
   <sc-if value="{{ showStudio }}" hint-placeholder-val="{{ false }}">
     <button onClick="{{ toggleChat }}" class="ta-chatfab" style="position: fixed; z-index: 55; bottom: 24px; right: 24px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(193,154,82,.6); background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 14px 20px; cursor: pointer; box-shadow: 0 12px 40px rgba(0,0,0,.6);" style-hover="box-shadow: 0 12px 50px rgba(230,196,120,.45); transform: translateY(-2px);">◈<span class="ta-fablabel">&nbsp;AJANLA KONUŞ</span></button>
-    <div style="{{ chatPanelStyle }}">
+    <div class="ta-chatpanel" style="{{ chatPanelStyle }}">
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid rgba(193,154,82,.25);">
         <div>
           <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">SORGU HATTI</p>
@@ -1132,7 +1148,7 @@ class Component extends DCLogic {
       imgAspect: null, imgZoom: '',
       vpPlaying: '', vpBusy: '',
       step: 1,
-      idea: '',
+      idea: '', ideaWarn: '',
       fromArsiv: false, arsivPick: false, chipSeed: this._pickChips(),
       tone: 'merak', voice: 'kadir', style: 'sinematik', duration: 'dk4', model: 'claude', aspect: 'yatay', regenKey: null,
       fineOpen: (typeof window === 'undefined') || window.innerWidth > 840,   // U-01: ince ayar mobilde kapalı gelir
@@ -1144,6 +1160,7 @@ class Component extends DCLogic {
       credits: typeof saved.credits === 'number' ? saved.credits : (this.props.startCredits ?? 500),
       history: saved.history || [],
       creditModal: false,
+      prices: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {},   // fiyat önbelleği (flicker/eskime yok)
       elKey: saved.elKey || '', ttsBusy: false, ttsError: '', audioUrl: '',
       sysTtsBusy: false, sysTtsError: '', sysAudioUrl: '', audioDl: false,
       copied: {}
@@ -1156,6 +1173,8 @@ class Component extends DCLogic {
       .then(list => { if (Array.isArray(list) && list.length) this.setState({ arsivEk: list }); })
       .catch(() => {});
     this.initSupabase();
+    // Admin'in güncel fiyatlarını çek → kredi modalı asla eskide kalmaz
+    if (window.TAFiyat) window.TAFiyat.refresh(m => this.setState({ prices: m }));
     this.loadSavedImgs();   // kalıcı "Önceki Üretimler" galerisini yükle
     // /studio?uret=<fileNo> ile gelen hazır arşiv isteği
     try {
@@ -1306,7 +1325,7 @@ class Component extends DCLogic {
     return [
       { id: 'kisa',     name: 'Kısa Video',  desc: 'Shorts · Reels · 60 sn · dikey',      duration: 's60',  aspect: 'dikey', tone: 'merak',    style: 'sinematik' },
       { id: 'uzun',     name: 'Uzun Video',  desc: 'YouTube · 8 dk · yatay',              duration: 's480', aspect: 'yatay', tone: 'dramatik', style: 'sinematik' },
-      { id: 'belgesel', name: 'Belgesel',    desc: 'Derin anlatı · 10 dk · yatay',        duration: 's600', aspect: 'yatay', tone: 'belgesel', style: 'gravur' }
+      { id: 'belgesel', name: 'Belgesel',    desc: 'Derin anlatı · 10 dk · yatay',        duration: 's600', aspect: 'yatay', tone: 'belgesel', style: 'belgeselfoto' }
     ];
   }
   applyProdMode(id) {
@@ -1365,7 +1384,9 @@ class Component extends DCLogic {
       tone: [
         { id: 'merak', name: 'Merak Uyandırıcı', desc: 'Soru soran, ipucu bırakan dedektif anlatımı' },
         { id: 'dramatik', name: 'Dramatik', desc: 'Yüksek gerilim, sinematik duygu yükü' },
-        { id: 'belgesel', name: 'Belgesel · Ciddi', desc: 'Kaynak odaklı, ölçülü ve otoriter ton' }
+        { id: 'belgesel', name: 'Belgesel · Ciddi', desc: 'Kaynak odaklı, ölçülü ve otoriter ton' },
+        { id: 'destansi', name: 'Destansı', desc: 'Epik ölçek, yükselen ritim, görkemli anlatı' },
+        { id: 'duygusal', name: 'Duygusal · İnsani', desc: 'Yaşayanların gözünden, sıcak ve dokunaklı' }
       ],
       voice: [
         { id: 'kadir', name: 'Kadir Kayışcı · Anlatıcı', desc: 'Derin, olgun, yumuşak — profesyonel Türkçe anlatıcı', engine: 'eleven', elId: 'j82ax9yhzfYwq9lDvRWL', oa: 'onyx', el: { name: 'Kadir Kayışcı', id: 'j82ax9yhzfYwq9lDvRWL', stability: 0.5, style: 0.15 } },
@@ -1376,9 +1397,11 @@ class Component extends DCLogic {
         { id: 'kadin-olgun', name: 'Kadın · Olgun', desc: 'Sakin, ağırbaşlı, güven veren', oa: 'sage', el: { name: 'Rachel', id: '21m00Tcm4TlvDq8ikWAM', stability: 0.62, style: 0.18 } }
       ],
       style: [
-        { id: 'hollywood', name: 'Hollywood Gerçekçi', desc: 'Fotogerçekçi kadrajlar, film ışığı' },
+        { id: 'hollywood', name: 'Hollywood Gerçekçi', desc: 'ARRI sinema kamerası, profesyonel ışık, fotogerçekçi' },
         { id: 'sinematik', name: 'Karanlık Sinematik', desc: 'Mum ışığı, gölge, noir atmosfer' },
-        { id: 'gravur', name: 'Tarihî Gravür', desc: 'Bakır baskı dokusu, dönem illüstrasyonu' }
+        { id: 'belgeselfoto', name: 'Belgesel Foto', desc: 'Doğal ışık, temiz gerçekçilik, editoryal' },
+        { id: 'gravur', name: 'Tarihî Gravür', desc: 'Bakır baskı dokusu, dönem illüstrasyonu' },
+        { id: 'minyatur', name: 'Osmanlı Minyatürü', desc: 'Altın yaldız, süslü, geleneksel el sanatı' }
       ],
       aspect: [
         { id: 'yatay', name: 'Yatay · 16:9', desc: 'YouTube ana video kadrajı' },
@@ -1514,27 +1537,52 @@ class Component extends DCLogic {
     try { window.scrollTo(0, 0); } catch (e) {}
   }
 
+  // Girilen konu GERÇEK bir tarih konusu mu, yoksa saçma/rastgele mi? Amaç:
+  // "asfdrew" gibi anlamsız girişte boşa araştırma+üretim yapıp kredi yakmamak.
+  // Basit ama etkili sezgiler (kelime API'si yok): sesli harf, ardışık sessiz
+  // yığını, en az bir okunabilir kelime. Emin olmadığında GEÇERLİ sayar
+  // (yanlış engelleme yerine sunucudaki AI yedeği elesin).
+  looksLikeTopic(t) {
+    t = (t || '').trim();
+    if (t.length < 4) return false;
+    const low = t.toLocaleLowerCase('tr');
+    if (!/[aeıioöuü]/.test(low)) return false;                       // hiç sesli yoksa gibberish
+    if (/[bcçdfgğhjklmnprsştvyzqwx]{4,}/i.test(low)) return false;   // 4+ ardışık sessiz = gerçek kelime değil
+    const vowels = (low.match(/[aeıioöuü]/g) || []).length;
+    if (vowels / low.replace(/\s/g, '').length < 0.18) return false; // sesli oranı çok düşük
+    const words = low.split(/\s+/).filter(w => /[a-zçğıöşü]{3,}/i.test(w) && /[aeıioöuü]/.test(w));
+    return words.length >= 1;
+  }
+
   // Arşiv başlıkları — "Arşivden hikâye bul" paneli ve fikir önerileri için
   arsivRaw() { return (this.masterArsiv() || this.arsivData() || []); }
   arsivTitles() {
     return this.arsivRaw().map(a => ({ title: a.baslik || a.teaser || '', era: a.era || '' })).filter(x => x.title);
   }
-  // Fikir önerileri havuzu (arşiv başlıkları + sabit kancalar) — her açılışta 3'ü döner
+  // Fikir önerileri havuzu — ARŞİVDEN BAĞIMSIZ, özenle seçilmiş, gerçekten
+  // "bunu nasıl bilmiyordum" dedirten, somut ve araştırılabilir konular. Arşiv
+  // başlıkları KARIŞTIRILMAZ (öneriler hep yeni/farklı olsun). Her açılışta 3'ü döner.
   _ideaPool() {
-    const base = [
-      'Titanic\'te hayatta kalan Osmanlı yolcusu var mıydı?',
-      'Mimar Sinan\'ın gizli imzaları',
-      'İstanbul\'un kayıp yeraltı şehri',
-      'Kanuni\'yi zehirlediği söylenen mektup',
-      'Piri Reis haritasındaki imkânsız ayrıntı',
-      'Endülüs\'ün son gecesi',
-      'Timur\'un satranç saplantısı',
-      'Truva gerçekten yandı mı?',
-      'Bizans\'ın kayıp Grek ateşi formülü',
-      'Vikinglerin İstanbul\'a bıraktığı yazıt'
+    return [
+      'Hezârfen gerçekten uçtu mu? Boğaz’ı geçen adamın belge yüzü',
+      'II. Abdülhamid’in kurduğu gizli istihbarat: Yıldız arşivinin sırrı',
+      'Selçuklu hastanelerinde müzikle ve suyla tedavi edilen hastalar',
+      'Kâtip Çelebi’nin haritasında olmayan ama gerçek olan ada',
+      'Evliya Çelebi gördüklerini abarttı mı, yoksa haklı mıydı?',
+      'Fatih’in İtalyan ressamı Bellini’nin kaybolan İstanbul defterleri',
+      'Yeniçeriler isyan ederken neden kazan devirirdi?',
+      'Bizans sarayını koruyan Viking muhafızlar: Varang Muhafızları',
+      'Kanuni’nin Fransa kralıyla kurduğu şaşırtan ittifak',
+      'Osmanlı’da vebayı ilk kim, nasıl karantinaya aldı?',
+      'IV. Murat’ın kılık değiştirip gece dolaştığı İstanbul',
+      'Barbaros’un Akdeniz’de kullandığı şifreli haberleşme ağı',
+      'Takiyüddin’in İstanbul Rasathanesi neden bir gecede yıkıldı?',
+      'Osmanlı elçisinin Paris’te gördüğü ve inanamadığı icatlar',
+      'Endülüs’ten kaçırılıp saklanan yasak kütüphaneler',
+      'Ölümünden yıllar sonra tahtta olduğu sanılan hükümdar',
+      'Bir Osmanlı denizcisinin çizdiği, olmaması gereken kıyı haritası',
+      'Sultan Cem’in Avrupa’da rehin geçen esrarengiz yılları'
     ];
-    const arsiv = this.arsivRaw().map(a => a.baslik).filter(Boolean);
-    return base.concat(arsiv);
   }
   _pickChips(n = 3) {
     const pool = this._ideaPool();
@@ -1829,20 +1877,26 @@ class Component extends DCLogic {
   promptMaps() {
     return {
       ton: {
-        merak: 'soru soran, ipucu bırakan, dedektif üslubu; her sahne merakı büyütsün',
-        dramatik: 'yüksek gerilim, sinematik duygu yükü, kısa vurucu cümleler',
-        belgesel: 'kaynak odaklı, ölçülü ve otoriter; sakin ama etkileyici'
+        merak: 'DEDEKTİF/VAKA üslubu: her bölüm bir soruyla açılır, ipucu ipucu ilerler, "acaba?" hissi sürekli diri kalır; kanıtı izleyiciyle birlikte çözer, kesin hükmü sona saklar. Sık sık doğrudan izleyiciye dönen retorik sorular kur.',
+        dramatik: 'YÜKSEK GERİLİM, sinematik duygu yükü: kısa vurucu cümlelerle uzun akan cümleleri dönüşümlü kullan; okuru anın tam içine sok, tehlikeyi/bedeli/kaybı fiziksel olarak hissettir; sahneyi "şimdi oluyormuş" gibi bugünkü zamanın yakınlığıyla anlat.',
+        belgesel: 'KAYNAK ODAKLI, ölçülü ve otoriter uzman sesi: sakin ama etkileyici; her iddiayı kanıtla dengele, abartıdan ve melodramdan kaçın; "kesin" ile "rivayet"i net ayır; güven veren, bilgi yoğun ama sıkmayan bir akış.',
+        destansi: 'DESTANSI ve yüceltici: büyük tarih anlarını epik bir ölçekte, yükselen bir ritimle anlat; görkemli imgeler, kader-miras-onur vurgusu; abartıya ve şovenizme kaçmadan, olguya sadık kalarak anlatıya heybet kat.',
+        duygusal: 'İNSANİ ve SICAK: olayı yaşayan sıradan insanların gözünden anlat; küçük, dokunaklı ayrıntılarla (bir mektup, bir yüz, bir veda) empati kur; hüzün ile umudu dengele; büyük olayın altındaki kişisel hikâyeyi öne çıkar.'
       },
       ses: {
         kadir: 'derin, olgun, yumuşak profesyonel Türkçe anlatıcı; dengeli tempo, özel adlarda hafif duraklama',
         erkek: 'derin, güven veren klasik belgesel anlatımı; dengeli tempo',
         'erkek-gizemli': 'alçak tonlu, sır verir gibi; kısa cümleler, fısıltı ritmi',
-        'kadin-belgesel': 'net, akıcı, profesyonel sunum; temiz ve bilgilendirici'
+        'erkek-net': 'berrak, güçlü ve tempolu; net telaffuz, dinamik sunum enerjisi',
+        'kadin-belgesel': 'net, akıcı, profesyonel sunum; temiz ve bilgilendirici',
+        'kadin-olgun': 'sakin, ağırbaşlı, güven veren; dengeli tempo, sıcak otorite'
       },
       stil: {
-        hollywood: 'cinematic ultra-photorealistic film still, ARRI Alexa, anamorphic, extreme detail, natural film lighting',
-        sinematik: 'dark cinematic film still, candlelit chiaroscuro, deep shadows, noir moody atmosphere, ultra-photorealistic, anamorphic',
-        gravur: 'antique engraving illustration, etched copperplate texture, period historical artwork, fine cross-hatching, muted aged tones'
+        hollywood: 'ultra-photorealistic cinematic film still shot on ARRI Alexa 65 with Zeiss Master Prime anamorphic lenses, professional cinema lighting (soft key + rim light), true-to-life skin pores, hair and fabric detail, natural color science, shallow depth of field with creamy bokeh, subtle film grain, 8K clarity, award-winning blockbuster cinematography, hyperreal',
+        sinematik: 'dark cinematic film still, candlelit chiaroscuro, deep shadows, noir moody atmosphere, volumetric light, ultra-photorealistic, anamorphic, rich teal-and-amber grade',
+        gravur: 'antique engraving illustration, etched copperplate texture, period historical artwork, fine cross-hatching, muted aged parchment tones',
+        belgeselfoto: 'clean realistic documentary photography, natural daylight, true-to-life colors, sharp focus, editorial history-magazine look, minimal stylization, believable and grounded',
+        minyatur: 'traditional Ottoman-Persian miniature illustration, flat stylized perspective, gold-leaf accents, ornate decorative borders, vivid tempera colors, medieval manuscript art'
       }
     };
   }
@@ -1944,9 +1998,11 @@ class Component extends DCLogic {
   // Görsel stili — üretimde uygulanır (kullanıcı seçebilir)
   imgStylePhrase(id) {
     return {
-      sinematik: 'cinematic film look, dramatic lighting, shallow depth of field, moody color grade',
-      hollywood: 'ultra-photorealistic, natural realistic lighting, lifelike textures, high detail, DSLR photo',
-      gravur: 'vintage engraving illustration, copperplate etching texture, period line-art style'
+      sinematik: 'cinematic film still, dramatic chiaroscuro lighting, shallow depth of field, moody teal-and-amber color grade, volumetric light',
+      hollywood: 'ultra-photorealistic cinematic still shot on ARRI Alexa 65 with Zeiss Master Prime lenses, professional cinema lighting, true-to-life skin and fabric textures, natural color science, shallow depth of field, subtle film grain, 8K clarity, hyperreal',
+      gravur: 'vintage engraving illustration, copperplate etching texture, fine cross-hatching, period line-art style, aged parchment tones',
+      belgeselfoto: 'clean realistic documentary photograph, natural daylight, true-to-life colors, sharp focus, editorial history-magazine look, grounded and believable',
+      minyatur: 'traditional Ottoman-Persian miniature illustration, flat stylized perspective, gold-leaf accents, ornate borders, vivid tempera colors'
     }[id] || '';
   }
   withAspect(p, arKey, styleKey) {
@@ -2285,6 +2341,7 @@ class Component extends DCLogic {
 
 BU ÜRETİMİN PARAMETRELERİ:
 - KONU: ${s.idea}
+- ⛔ GEÇERLİLİK KONTROLÜ (ÖNCE BUNU YAP): Eğer KONU anlamlı bir tarih/insanlık konusu DEĞİLSE — rastgele harfler (ör. "asdfgh"), anlamsız kelimeler, boş ya da tarihle ilgisiz saçma bir ifade ise — hiçbir dosya ÜRETME. Bunun yerine SADECE şu tek JSON'u döndür, başka hiçbir şey yazma: {"gecersiz": true, "mesaj": "Bunu bir tarih konusuna bağlayamadım; bir olay, kişi ya da dönem yazar mısın?"}. Konu geçerli bir tarih konusuysa bu kuralı yok say ve normal üret.
 - Anlatım tonu: ${tonStr}
 - Seslendirme tarzı: ${sesStr}
 - Görsel stil çekirdeği (her görsel/video promptunun BAŞINA birebir konur): ${stilStr}
@@ -2560,6 +2617,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   async startGenerate() {
     const s = this.state;
     if (s.generating) return;
+    // Saçma/rastgele konuda üretime GİRME → boşa araştırma+üretim, kredi yakma yok
+    if (!this.looksLikeTopic(s.idea || '')) {
+      this.setState({ step: 1, ideaWarn: 'Bu geçerli bir tarih konusu gibi görünmüyor. Bir olay, kişi, dönem ya da soru yaz — ya da SEN ÖNER’e bas.' });
+      return;
+    }
     const cost = this.costOf();
     if (s.credits < cost) { this.setState({ creditModal: true }); return; }
     this.setState({ step: 3, generating: true, genError: '', genPct: 4 });
@@ -2818,10 +2880,14 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
 
     const yt = r.youtube || {};
     const ig = r.instagram || {};
+    // Fiyatlar admin panelinden (products) gelir; önbellek sayesinde ilk boyamada
+    // doğru değer çıkar, eskide kalmaz. Gömülü değer yalnız hiç yüklenmezse yedektir.
+    const pr = s.prices || {};
+    const priceOf = (slug, def) => (pr[slug] && pr[slug].price) ? pr[slug].price : def;
     const packs = [
-      { tier: 'AJAN', credits: '500', desc: '≈ 5 dosya · 199 TL', hl: false, buy: '/satis#studio-5' },
-      { tier: 'SAHA', credits: '1.500', desc: '≈ 15 dosya · öncelikli üretim · 449 TL', hl: true, buy: '/satis#studio-15' },
-      { tier: 'ARŞİV', credits: '4.000', desc: '≈ 40 dosya · ekip kullanımı · 999 TL', hl: false, buy: '/satis#studio-40' },
+      { tier: 'AJAN', credits: '500', desc: '≈ 5 dosya · ' + priceOf('studio-5', '199') + ' TL', hl: false, buy: '/satis#studio-5' },
+      { tier: 'SAHA', credits: '1.500', desc: '≈ 15 dosya · öncelikli üretim · ' + priceOf('studio-15', '449') + ' TL', hl: true, buy: '/satis#studio-15' },
+      { tier: 'ARŞİV', credits: '4.000', desc: '≈ 40 dosya · ekip kullanımı · ' + priceOf('studio-40', '999') + ' TL', hl: false, buy: '/satis#studio-40' },
       { tier: 'AYLIK', credits: '1.000/ay', desc: 'Aylık üyelikle · Gözlemci\'den itibaren', hl: false, buy: '/uyelik#seviyeler' }
     ].map(p => ({
       ...p,
@@ -2970,6 +3036,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       editYt: () => this.startEdit('yt', 0, 'YouTube açıklaması'),
       editIg: () => this.startEdit('ig', 0, 'Instagram açıklaması'),
       suggestIdea: () => this.suggestIdeaNow(),
+      findTopic: () => this.findTopic(),
       suggestLabel: s.suggestBusy ? 'AJAN DÜŞÜNÜYOR…' : 'SEN ÖNER',
       addShort: () => this.addShortNow(),
       shortLabel: s.shortBusy ? 'YAZILIYOR…' : '+ 30 SN SHORTS VERSİYONU EKLE',
@@ -3018,7 +3085,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           }
         };
       }),
-      imgStyles: [['hollywood', 'GERÇEKÇİ'], ['sinematik', 'SİNEMATİK'], ['gravur', 'GRAVÜR']].map(([k, label]) => {
+      imgStyles: [['hollywood', 'GERÇEKÇİ'], ['sinematik', 'SİNEMATİK'], ['belgeselfoto', 'BELGESEL'], ['gravur', 'GRAVÜR'], ['minyatur', 'MİNYATÜR']].map(([k, label]) => {
         const effS = s.imgStyle || s.style;   // stil seçilmediyse sihirbazda seçilen stil görünür
         return {
           label,
@@ -3096,8 +3163,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       }),
 
       idea: s.idea,
-      onIdea: e => this.setState({ idea: e.target.value }),
+      onIdea: e => this.setState({ idea: e.target.value, ideaWarn: '' }),
       ideaEmpty: !s.idea.trim(),
+      ideaWarn: s.ideaWarn,
       ideaShort: s.idea.length > 70 ? s.idea.slice(0, 70) + '…' : s.idea,
       ideaChips: ((s.chipSeed && s.chipSeed.length) ? s.chipSeed : chips).map(c => ({ text: c, use: () => this.setState({ idea: c }) })),
       openArsivPick: () => this.setState({ arsivPick: true }),
@@ -3114,7 +3182,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         color: s.idea.trim() ? '#171207' : '#676d7c'
       },
       toStep1: () => this.setState({ step: 1 }),
-      toStep2: () => { if (s.idea.trim()) this.setState({ step: 2 }); },
+      toStep2: () => {
+        const v = (s.idea || '').trim();
+        if (!v) return;
+        if (!this.looksLikeTopic(v)) {
+          this.setState({ ideaWarn: 'Bu geçerli bir tarih konusu gibi görünmüyor. Bir olay, kişi, dönem ya da soru yaz (ör. "Kanuni’nin Zigetvar seferi") — ya da SEN ÖNER’e bas.' });
+          return;
+        }
+        this.setState({ step: 2, ideaWarn: '' });
+      },
 
       optionGroups: groups,
       startGenerate: () => this.startGenerate(),
@@ -3450,11 +3526,23 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     return norm(data.text || data.result || '');
   }
 
+  // Fikir bulamayan/takılan kullanıcı için: çıkmaz yerine SORU-CEVAP. Sohbeti
+  // açar, ajan "konu bulucu" rolüyle proaktif bir açılışla karşılar. Kullanıcı
+  // konuşarak konuyu bulur, beğendiğini konu kutusuna yazar (sohbet kredi harcamaz).
+  findTopic() {
+    const opener = 'Birlikte bir konu bulalım. 🔎\n\nŞu üçünden hangisi bugün ilgini çekiyor?\n• Bir GİZEM ya da çözülmemiş vaka\n• Bir KİŞİ (hükümdar, kâşif, bilim insanı…)\n• Bir OLAY ya da dönem (savaş, icat, keşif…)\n\nİstersen sadece “sürpriz yap” yaz — sana üç çarpıcı, az bilinen vaka önereyim. Beğendiğini yukarıdaki konu kutusuna yazman yeterli.';
+    this.setState(st => ({
+      chatOpen: true,
+      ideaWarn: '',
+      chatMsgs: (st.chatMsgs && st.chatMsgs.length) ? st.chatMsgs : [{ role: 'assistant', content: opener }]
+    }), () => this._scrollChat());
+  }
+
   async suggestIdeaNow() {
     if (this.state.suggestBusy) return;
     this.setState({ suggestBusy: true });
     try {
-      const reply = await this.askAI('Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan bir editörsün. Az bilinen, "bunu nasıl bilmiyordum" dedirten, ilk cümlede kilitleyen, görsel açıdan zengin, klişe olmayan tek bir video konusu öner (dedektif/vaka tonu). Somut bir olay/kişi/nesne olsun, jenerik olmasın. YALNIZCA o tek cümlelik konu başlığını döndür; tırnak, açıklama veya önek ekleme.', 300);
+      const reply = await this.askAI('Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan kıdemli bir editörsün. GERÇEK, doğrulanabilir bir tarihî olay/kişi/nesne üzerine, az bilinen ama kaynaklarda izi olan, "bunu nasıl bilmiyordum" dedirten, ilk cümlede kilitleyen TEK bir video konusu öner. KURALLAR: (1) somut ve spesifik olsun — belirli bir kişi, yer, tarih ya da nesne içersin; (2) klişe/genel olmasın ("tarihin gizemleri" gibi değil); (3) uydurma/komplo değil, araştırılabilir bir çekirdeği olsun; (4) tercihen Türk-İslam ya da dünya tarihinden sıra dışı bir vaka. YALNIZCA o tek cümlelik konu başlığını döndür; tırnak, açıklama veya önek ekleme.', 300);
       this.setState({ idea: reply.trim().replace(/^["']|["']$/g, ''), suggestBusy: false });
     } catch (e) {
       this.setState({ suggestBusy: false, idea: this.state.idea || '', genError: '' });
@@ -3479,6 +3567,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
 }
 </script>
 <script src="/canli-sohbet.js" defer></script>
+<script src="/fiyat-cache.js"></script>
 <script src="/mobil-nav.js" defer></script>
 <script src="/ara.js" defer></script>
 <script src="/tema.js" defer></script>

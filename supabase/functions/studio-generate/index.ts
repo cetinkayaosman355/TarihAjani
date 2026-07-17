@@ -14,7 +14,25 @@
 // Yanıt: { ok:true, result, text, charged:boolean, credits:number }
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { Image } from "npm:imagescript@1.3.0";
+
+// imagescript SADECE 9:16/16:9 kırpması için gerekir ve WASM kodeği yükler.
+// Modül seviyesinde import edilirse yüklenmesi başarısız olduğunda TÜM fonksiyon
+// boot'ta çöker (her aksiyon 500). Bu yüzden tembel yüklüyoruz: yalnız kırpma
+// anında, tek sefer, try/catch ile. Yüklenemezse görsel kırpılmadan döner.
+let _ImageMod: any = null;
+let _imageTried = false;
+async function loadImage(): Promise<any> {
+  if (_ImageMod || _imageTried) return _ImageMod;
+  _imageTried = true;
+  try {
+    const mod = await import("npm:imagescript@1.3.0");
+    _ImageMod = (mod as any).Image || (mod as any).default?.Image || null;
+  } catch (e) {
+    console.error("imagescript yuklenemedi (kirpma atlanacak): " + String(e).slice(0, 150));
+    _ImageMod = null;
+  }
+  return _ImageMod;
+}
 
 // CORS artık allowlist: yalnız kendi alan adlarımız + Netlify önizleme + yerel
 // geliştirme. Bilinmeyen origin'e ana alan döner (tarayıcı isteği reddeder).
@@ -102,8 +120,33 @@ async function callOpenAI(prompt: string, maxTokens?: number, jsonMode?: boolean
 
 // Üretim çıktısını JSON'a çevirmeyi dene (client ile aynı temizleme); olmazsa null.
 function tryParseJson(text: string): any | null {
-  const clean = String(text).replace(/^[\s\S]*?\{/, "{").replace(/\}[^}]*$/, "}");
-  try { return JSON.parse(clean); } catch { return null; }
+  let t = String(text).trim();
+  // ```json … ``` çitlerini soy (model bazen kod bloğu ekler)
+  t = t.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "");
+  const clean = t.replace(/^[\s\S]*?\{/, "{").replace(/\}[^}]*$/, "}");
+  try { return JSON.parse(clean); } catch { /* devam: onarım dene */ }
+  // Kesilmiş JSON kurtarma: string içi/dışı takip ederek açık {/[ yığınını
+  // DOĞRU SIRAYLA kapat (iç içe yapıda sıra önemlidir).
+  try {
+    const src = t.replace(/^[\s\S]*?\{/, "{");        // ilk { den başla, sonu kesme
+    const stack: string[] = [];
+    let inStr = false, esc = false;
+    for (const ch of src) {
+      if (inStr) {
+        if (esc) esc = false;
+        else if (ch === "\\") esc = true;
+        else if (ch === '"') inStr = false;
+        continue;
+      }
+      if (ch === '"') inStr = true;
+      else if (ch === "{" || ch === "[") stack.push(ch);
+      else if (ch === "}" || ch === "]") stack.pop();
+    }
+    let s = src.replace(/,\s*$/, "");                 // asılı virgülü at
+    if (inStr) s += '"';                              // yarım string'i kapat
+    for (let i = stack.length - 1; i >= 0; i--) s += stack[i] === "{" ? "}" : "]";
+    return JSON.parse(s);
+  } catch { return null; }
 }
 
 // -1: geçersiz JSON · 0..N: gorsel_promptlar öğe sayısı
@@ -123,25 +166,26 @@ const CLAUDE_MODELS = [
   "claude-sonnet-4-20250514",
 ];
 
-async function callClaude(prompt: string, maxTokens?: number): Promise<string> {
+async function callClaude(prompt: string, maxTokens?: number, jsonMode?: boolean): Promise<string> {
   const key = Deno.env.get("ANTHROPIC_API_KEY");
   if (!key) throw new Error("ANTHROPIC_API_KEY secret eksik.");
   let lastErr = "";
   for (const model of CLAUDE_MODELS) {
     let tokens = Math.min(maxTokens || 4000, 16000);
     for (let attempt = 0; attempt < 2; attempt++) {
+      // JSON GÜVENİLİRLİĞİ: asistan cevabını "{" ile ÖN-DOLDUR → Claude önsöz/
+      // markdown/```json ekleyemez, doğrudan JSON gövdesini yazmak zorunda kalır.
+      const messages: any[] = [{ role: "user", content: prompt }];
+      if (jsonMode) messages.push({ role: "assistant", content: "{" });
       const r = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model,
-          max_tokens: tokens,
-          messages: [{ role: "user", content: prompt }],
-        }),
+        body: JSON.stringify({ model, max_tokens: tokens, messages }),
       });
       if (r.ok) {
         const d = await r.json();
-        return (d.content || []).map((c: any) => c.text || "").join("\n");
+        const body = (d.content || []).map((c: any) => c.text || "").join("\n");
+        return jsonMode ? "{" + body : body;   // ön-doldurulan "{" cevaba dahil değildir → geri ekle
       }
       const txt = await r.text();
       lastErr = txt;
@@ -469,6 +513,8 @@ async function cropToAspect(dataUri: string, size: string): Promise<string> {
   const parsed = dataUriToBytes(dataUri);
   if (!parsed) return dataUri;
   try {
+    const Image = await loadImage();
+    if (!Image) return dataUri;                        // kodek yüklenemedi → kırpmadan döndür
     const img = await Image.decode(parsed.bytes);
     const cur = img.width / img.height;
     if (Math.abs(cur - target) < 0.01) return dataUri;
@@ -709,15 +755,26 @@ ${brief}
 ${prompt}`;
       }
     }
-    // G-01: token tavanı sunucuda — ücretsiz uçlarda istemci 16k isteyemez
-    const capTok = Math.min(Number(b.max_tokens) || 4000, isGen ? 16000 : 4000);
-    const gen = () => useClaude ? callClaude(genPrompt, capTok) : callOpenAI(genPrompt, capTok, isGen);
+    // G-01: token tavanı sunucuda — ücretsiz uçlarda istemci 16k isteyemez.
+    // Üretimde TABAN 8000: taslak JSON'un ortadan kesilip geçersiz olmasını önler.
+    const capTok = isGen
+      ? Math.min(Math.max(Number(b.max_tokens) || 8000, 8000), 16000)
+      : Math.min(Number(b.max_tokens) || 4000, 4000);
+    // Üretimde jsonMode: Claude prefill + OpenAI response_format json_object
+    const gen = () => useClaude ? callClaude(genPrompt, capTok, isGen) : callOpenAI(genPrompt, capTok, isGen);
 
     let result = await gen();
     // Sahne promptları AYRI 'scenes' çağrılarında bölüm bölüm üretiliyor; taslakta
     // sahne olmadığından burada YALNIZ geçerli JSON şart. (Sahne-sayısı tekrarı
     // kaldırıldı — eskiden kısa videoda gereksiz çift üretime yol açıyordu.)
     if (isGen) {
+      // Model konuyu "geçersiz" işaretlediyse (saçma/rastgele giriş) → kredi
+      // DÜŞMEDEN dostça uyar. İstemci de ön-eleme yapar; bu sunucu yedeğidir.
+      const invalid = tryParseJson(result);
+      if (invalid && invalid.gecersiz === true) {
+        logRun({ action: "generate", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "gecersiz_konu" });
+        return json({ ok: false, error: String(invalid.mesaj || "Bunu bir tarih konusuna bağlayamadım — lütfen bir olay, kişi ya da dönem yaz.") }, 400);
+      }
       // #5: yalnız "geçerli JSON" değil, ZORUNLU alanlar da doğrulanır
       const validGen = (t: string) => {
         const o = tryParseJson(t);

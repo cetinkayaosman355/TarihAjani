@@ -21,6 +21,7 @@
 {"@context":"https://schema.org","@type":"ItemList","name":"Tarih Ajanı Dijital Ürünler","itemListElement":[{"@type":"ListItem","position":1,"item":{"@type":"Product","name":"5'li Hikâye — Dijital Kitap","url":"https://tarihajani.com/urun/5li-hikaye/","offers":{"@type":"Offer","price":"49","priceCurrency":"TRY","availability":"https://schema.org/InStock"}}},{"@type":"ListItem","position":2,"item":{"@type":"Product","name":"Gizli Uygarlıklar — E-Kitap Seti","url":"https://tarihajani.com/urun/gizli-uygarliklar/","offers":{"@type":"Offer","price":"279","priceCurrency":"TRY","availability":"https://schema.org/InStock"}}},{"@type":"ListItem","position":3,"item":{"@type":"Product","name":"Tarih Anlatıcılığı — Stüdyo Rehberi","url":"https://tarihajani.com/urun/studio-rehberi/","offers":{"@type":"Offer","price":"349","priceCurrency":"TRY","availability":"https://schema.org/InStock"}}},{"@type":"ListItem","position":4,"item":{"@type":"Product","name":"Hazır Hikâye Arşivi — 5 Dosya","url":"https://tarihajani.com/urun/hazir-arsiv/","offers":{"@type":"Offer","price":"499","priceCurrency":"TRY","availability":"https://schema.org/InStock"}}},{"@type":"ListItem","position":5,"item":{"@type":"Product","name":"Belgeden Hikâyeye — Eğitim Programı","url":"https://tarihajani.com/urun/egitim/","offers":{"@type":"Offer","price":"999","priceCurrency":"TRY","availability":"https://schema.org/InStock"}}}]}
 </script>
 <script src="./support.js"></script>
+<script src="/fiyat-cache.js"></script>
 <script src="/uye-nav.js" defer></script>
 <script src="/canli-sohbet.js" defer></script>
 <script src="/mobil-nav.js" defer></script>
@@ -127,7 +128,7 @@
           <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; line-height: 1.3;">5'li Hikâye — Dijital Kitap</h3>
           <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.55; flex: 1;">Tek dosyada beş kısa tarih hikâyesi; arşive ilk adım için ideal giriş kitabı.</p>
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">49 TL</span>
+            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">{{ f5li }} TL</span>
             <a href="/satis#5li-hikaye" style="text-decoration: none; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .14em; padding: 11px 16px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">SATIN AL</a>
           </div>
         </div>
@@ -141,7 +142,7 @@
           <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; line-height: 1.3;">Gizli Uygarlıklar — E-Kitap Seti</h3>
           <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.55; flex: 1;">Dört kapsamlı dijital kitap: Etrüskler, Sümerler, İbn Fadlan ve Truva — kaynakça ve ileri okuma listesiyle.</p>
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">279 TL</span>
+            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">{{ fGizli }} TL</span>
             <a href="/satis#gizli-uygarliklar" style="text-decoration: none; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .14em; padding: 11px 16px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">SATIN AL</a>
           </div>
         </div>
@@ -155,7 +156,7 @@
           <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; line-height: 1.3;">Tarih Anlatıcılığı — Stüdyo Rehberi</h3>
           <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.55; flex: 1;">Araştırmadan mikrofona, senaryodan kurguya: güçlü bir tarih videosunun üretim zinciri ve kontrol listeleri.</p>
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">349 TL</span>
+            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">{{ fRehber }} TL</span>
             <a href="/satis#studio-rehberi" style="text-decoration: none; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .14em; padding: 11px 16px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">SATIN AL</a>
           </div>
         </div>
@@ -170,7 +171,7 @@
           <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; line-height: 1.3;">Hazır Hikâye Arşivi — 5 Dosya</h3>
           <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.55; flex: 1;">Yayınlanan 5 vakanın eksiksiz üretim dosyaları: senaryo, kaynakça ve okuma listeleriyle.</p>
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">499 TL</span>
+            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">{{ fArsiv }} TL</span>
             <a href="/satis#hazir-arsiv" style="text-decoration: none; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .14em; padding: 11px 16px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">SATIN AL</a>
           </div>
         </div>
@@ -185,7 +186,7 @@
           <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; line-height: 1.3;">Belgeden Hikâyeye — Eğitim</h3>
           <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.55; flex: 1;">3 modül, 9 ders: kaynak doğrulamadan yayına, sinematik tarih anlatısı kurmanın tam programı.</p>
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">999 TL</span>
+            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">{{ fEgitim }} TL</span>
             <a href="/satis#egitim" style="text-decoration: none; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .14em; padding: 11px 16px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">SATIN AL</a>
           </div>
         </div>
@@ -200,7 +201,7 @@
           <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; line-height: 1.3;">Ajan Vaka Defteri</h3>
           <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.55; flex: 1;">Sert kapaklı, mühür baskılı fiziki soruşturma defteri. Vaka şablonları ve kanıt sayfalarıyla.</p>
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">599 TL</span>
+            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 15px;">{{ fDefter }} TL</span>
             <a href="/satis#vaka-defteri" style="text-decoration: none; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .14em; padding: 11px 16px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">SATIN AL</a>
           </div>
         </div>
@@ -307,7 +308,7 @@
           </div>
           <div style="display: flex; align-items: center; gap: 16px; margin-top: 24px; flex-wrap: wrap;">
             <a href="/urunler" style="text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12.5px; letter-spacing: .16em; padding: 14px 26px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">SETİ SATIN AL →</a>
-            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 14px;">279 TL</span>
+            <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 14px;">{{ fGizli }} TL</span>
           </div>
         </section>
       </div>
@@ -339,8 +340,14 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { introOpen: false };
+  state = { introOpen: false, prices: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {} };
+  componentDidMount() {
+    // Admin fiyatları (products) → kart fiyatları asla eskide kalmaz
+    if (typeof window !== 'undefined' && window.TAFiyat) window.TAFiyat.refresh(m => this.setState({ prices: m }));
+  }
   renderVals() {
+    const _pr = this.state.prices || {};
+    const _fiyat = (slug, def) => (_pr[slug] && _pr[slug].price) ? _pr[slug].price : def;
     const badge = (free) => ({
       fontFamily: "'Special Elite', monospace", fontSize: '9.5px', letterSpacing: '.16em',
       padding: '4px 9px',
@@ -363,12 +370,19 @@ class Component extends DCLogic {
     return {
       introOpen: this.state.introOpen,
       archive,
+      // Statik kart fiyatları — admin panelinden (products) gelir, eskide kalmaz
+      f5li: _fiyat('5li-hikaye', '49'),
+      fGizli: _fiyat('gizli-uygarliklar', '279'),
+      fRehber: _fiyat('studio-rehberi', '349'),
+      fArsiv: _fiyat('hazir-arsiv', '499'),
+      fEgitim: _fiyat('egitim', '999'),
+      fDefter: _fiyat('vaka-defteri', '599'),
       closeIntro: () => this.setState({ introOpen: false }),
       closeIntroBackdrop: e => { if (e.target === e.currentTarget) this.setState({ introOpen: false }); },
       stopProp: e => e.stopPropagation(),
       books: (() => { const mk = b => ({ ...b, hasIntro: !!b.intro, hasRead: !!b.read, noIntro: !b.intro && !b.read, openIntro: () => this.setState({ introOpen: true }) }); return [
         {
-          tag: 'YENİ · CİLT 03', read: true, title: 'Vaka Dosyaları — 5 Hikâye', price: '49', img: 'assets/evidence-board.jpg',
+          tag: 'YENİ · CİLT 03', read: true, title: 'Vaka Dosyaları — 5 Hikâye', price: _fiyat('5li-hikaye', '49'), img: 'assets/evidence-board.jpg',
           desc: 'Tarih Ajanı arşivinden beş vaka, kitap formatında: Etrüskler, Sümerler, İbn Fadlan, Türkistan’da Japonya Planı ve Truva. Her dosya kanıtlarla açılır, "Ajanın Hükmü" ile kapanır. İlk vaka ücretsiz okunabilir.',
           features: [
             { t: '5 tam vaka dosyası · site içinde okunur' },
@@ -377,7 +391,7 @@ class Component extends DCLogic {
           ]
         },
         {
-          tag: 'CİLT 01', intro: true, title: 'Gizli Uygarlıklar — E\u2011Kitap\u00a0Seti', price: '279', img: 'assets/product-ebooks.webp',
+          tag: 'CİLT 01', intro: true, title: 'Gizli Uygarlıklar — E\u2011Kitap\u00a0Seti', price: _fiyat('gizli-uygarliklar', '279'), img: 'assets/product-ebooks.webp',
           desc: 'YouTube’da yayınlanan vaka dosyalarımızın genişletilmiş kitap hâlleri: her bölüm, videoya sığmayan belgeler, haritalar ve kaynaklarla derinleştirildi.',
           features: [
             { t: 'Etrüskler: Roma’nın Gizli Öğretmeni' },
@@ -388,7 +402,7 @@ class Component extends DCLogic {
           ]
         },
         {
-          tag: 'CİLT 02', title: 'Tarih Anlatıcılığı — Stüdyo Rehberi', price: '349', img: 'assets/product-studio-guide.webp',
+          tag: 'CİLT 02', title: 'Tarih Anlatıcılığı — Stüdyo Rehberi', price: _fiyat('studio-rehberi', '349'), img: 'assets/product-studio-guide.webp',
           desc: 'Araştırmadan mikrofona, senaryodan kurguya: güçlü bir tarih videosunun üretim zinciri. Uygulanabilir kontrol listeleri ve örnek bölüm planıyla.',
           features: [
             { t: 'Stüdyo ekipman kontrol listesi' },
