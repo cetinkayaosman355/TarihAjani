@@ -5,7 +5,7 @@
    - Aynı köken görsel/font: önbellek öncelikli (stale-while-revalidate, ağır dosyalar)
    - Çapraz köken (Google Fonts, unpkg React): dokunma, doğrudan ağdan
    SÜRÜM değişince eski önbellekler temizlenir. Her deploy'da bump'la. */
-var VERSION = 'ta-v4';
+var VERSION = 'ta-v5';
 var STATIC = VERSION + '-static';
 var PAGES = VERSION + '-pages';
 var MEDIA = VERSION + '-media';
@@ -49,10 +49,12 @@ self.addEventListener('fetch', function (e) {
   // çapraz köken (fonts, unpkg vb.) → SW karışmasın
   if (!sameOrigin) return;
 
-  // HTML gezinmesi → ağ öncelikli, çevrimdışı yedeği
+  // HTML gezinmesi → ağ öncelikli, HTTP önbelleğini ATLA (kod/HTML hep en taze),
+  // çevrimdışı yedeği SW önbelleği. no-store: tarayıcı HTTP önbelleği eski sürümü
+  // asla veremesin — "güncellemeyi görmüyorum" derdi kökten biter.
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req).then(function (res) {
+      fetch(req.url, { cache: 'no-store' }).then(function (res) {
         var copy = res.clone();
         caches.open(PAGES).then(function (c) { c.put(req, copy); });
         return res;
@@ -63,10 +65,10 @@ self.addEventListener('fetch', function (e) {
     return;
   }
 
-  // JS/CSS/JSON → ağ öncelikli (kod taze), çevrimdışı yedeği önbellek
+  // JS/CSS/JSON → ağ öncelikli + HTTP önbelleği ATLA (kod hep taze), yedeği önbellek
   if (isCode(url.pathname)) {
     e.respondWith(
-      fetch(req).then(function (res) {
+      fetch(req.url, { cache: 'no-store' }).then(function (res) {
         var copy = res.clone();
         caches.open(STATIC).then(function (c) { c.put(req, copy); });
         return res;
