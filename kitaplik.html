@@ -36,10 +36,10 @@
     --ahsap-koyu: #241608;
     --serif-display: 'Playfair Display', Georgia, serif;
     --serif-body: 'Cormorant Garamond', Georgia, serif;
-    /* Sinematik büro görselleri (Higgsfield · soul_location) */
-    --buro-genis: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_221146_54927e24-dec6-4661-af01-2ce06e6bd68d.png");
-    --buro-dar: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_221200_090ca3bf-c671-4c17-a888-215f64003cac.png");
-    --raf-fon: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_221211_674b1dc6-d8e0-4012-9ec2-20ecf9447ce2.png");
+    /* Sinematik ansiklopedi-büro görselleri (Higgsfield · soul_location + kling3_0_turbo) */
+    --buro-genis: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042617_f00f063a-a254-477d-a820-1662df2df791.png");
+    --buro-dar: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042617_f00f063a-a254-477d-a820-1662df2df791.png");
+    --raf-fon: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042617_79a238f0-c667-484a-bb36-7d42eacc344e.png");
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -118,6 +118,16 @@
     from { transform: scale(1.02) translate(0, 0); }
     to   { transform: scale(1.12) translate(-1.2%, -1.6%); }
   }
+  /* Hareketli sinematik büro videosu (üstte, foto yedeğin önünde) */
+  .oda-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center 42%;
+    z-index: 1;
+  }
+  @media (max-width: 620px) { .oda-video { object-position: center 40%; } }
+  @media (prefers-reduced-motion: reduce) { .oda-video { display: none; } }
   /* Camda yağmur ışıltısı — çok hafif, akan */
   .oda-yagmur {
     position: absolute; inset: -20%;
@@ -142,7 +152,7 @@
   }
   /* Sinematik vinyet + yazı okunabilirlik perdesi */
   .oda-vinyet {
-    position: absolute; inset: 0; pointer-events: none;
+    position: absolute; inset: 0; pointer-events: none; z-index: 3;
     background:
       linear-gradient(180deg, rgba(6,5,3,.74) 0%, rgba(6,5,3,.12) 20%, transparent 42%,
         transparent 55%, rgba(6,5,3,.5) 80%, rgba(6,5,3,.9) 100%),
@@ -156,7 +166,7 @@
     width: clamp(120px, 20vw, 220px);
     height: clamp(120px, 20vw, 220px);
     border-radius: 50%;
-    pointer-events: none;
+    pointer-events: none; z-index: 2;
     box-shadow: 0 0 0 1px rgba(233,207,142,.35), 0 0 60px rgba(233,207,142,.22);
     background: radial-gradient(circle, rgba(233,207,142,.12), transparent 68%);
     animation: nabiz 3.2s ease-in-out infinite;
@@ -387,58 +397,78 @@
     filter: drop-shadow(18px 30px 34px rgba(0,0,0,.7));
     z-index: 30;
   }
-  /* Sırt gövdesi */
+  /* Sırt gövdesi — antika ansiklopedi cildi */
   .kitap .govde {
     position: absolute; inset: 0;
-    border-radius: 3px 5px 5px 3px;
+    border-radius: 2px 4px 4px 2px;
     background:
-      linear-gradient(90deg, rgba(0,0,0,.42), transparent 16%, transparent 78%, rgba(0,0,0,.5)),
-      linear-gradient(180deg, rgba(255,255,255,.12), transparent 20%),
-      var(--cilt, #444);
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+      linear-gradient(90deg, rgba(0,0,0,.55), rgba(0,0,0,.04) 15%, transparent 32%, transparent 68%, rgba(0,0,0,.14) 85%, rgba(0,0,0,.58)),
+      linear-gradient(180deg, rgba(255,255,255,.16), transparent 13%, transparent 87%, rgba(0,0,0,.3)),
+      var(--cilt, #5a3a20);
+    box-shadow:
+      inset 0 0 0 1px rgba(0,0,0,.4),
+      inset 0 3px 0 rgba(233,207,142,.22),
+      inset 0 -3px 0 rgba(233,207,142,.18),
+      inset 0 0 22px rgba(0,0,0,.4);
     display: flex; flex-direction: column; align-items: center;
-    padding: 12px 4px 14px;
+    padding: 13px 5px 11px;
     overflow: hidden;
   }
+  /* deri dokusu */
   .kitap .govde::before {
-    content: ""; position: absolute; inset: 0; opacity: .16;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)'/%3E%3C/svg%3E");
+    content: ""; position: absolute; inset: 0; opacity: .22;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
     pointer-events: none;
   }
-  /* Sırttaki altın bantlar */
+  /* kabartma sırt bantları (hubbed spine ridges) */
   .kitap .govde::after {
-    content: ""; position: absolute; left: 0; right: 0; top: 40px; height: 46px;
-    background:
-      linear-gradient(180deg, transparent, rgba(233,207,142,.28) 12%, transparent 16%,
-        transparent 84%, rgba(233,207,142,.28) 88%, transparent);
-    pointer-events: none;
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(180deg,
+      transparent 0 39px,
+      rgba(0,0,0,.36) 39px 40px,
+      rgba(255,255,255,.13) 40px 42px,
+      rgba(0,0,0,.32) 42px 43px,
+      transparent 43px 46px);
   }
-  .sirt-ust {
-    font-size: 1.05rem;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,.7));
-    z-index: 2;
+  .sirt-emblem {
+    font-size: .92rem; line-height: 1; margin-bottom: 5px;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,.85)); opacity: .92; z-index: 2;
+  }
+  .sirt-panel {
+    position: relative; z-index: 2;
+    border: 1px solid rgba(233,207,142,.6);
+    background: linear-gradient(180deg, rgba(0,0,0,.24), rgba(0,0,0,.44));
+    box-shadow: 0 0 0 1px rgba(0,0,0,.45), inset 0 0 9px rgba(0,0,0,.45);
+    border-radius: 2px;
+  }
+  .sirt-panel--baslik {
+    flex: 1;
+    width: calc(100% - 6px);
+    margin: 5px 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px 2px;
   }
   .sirt-baslik {
     writing-mode: vertical-rl;
     text-orientation: mixed;
-    flex: 1;
-    display: flex; align-items: center; justify-content: center;
     font-family: var(--serif-display);
-    font-weight: 600;
-    font-size: .84rem;
-    letter-spacing: .04em;
-    color: #f7efdc;
-    text-shadow: 0 1px 3px rgba(0,0,0,.85);
-    margin: 8px 0;
-    z-index: 2;
+    font-weight: 700;
+    font-size: .82rem;
+    letter-spacing: .07em;
+    color: var(--gold-bright);
+    text-shadow: 0 1px 2px rgba(0,0,0,.95), 0 0 8px rgba(201,162,75,.25);
     white-space: nowrap;
     overflow: hidden;
   }
-  .sirt-no {
-    font-size: .52rem; letter-spacing: .18em;
-    color: rgba(247,239,220,.72);
-    text-shadow: 0 1px 2px rgba(0,0,0,.8);
-    z-index: 2;
+  .sirt-panel--cilt {
+    width: calc(100% - 12px);
+    padding: 5px 2px 4px;
+    text-align: center;
+    font-family: var(--serif-display);
+    font-size: .54rem; letter-spacing: .16em;
+    color: var(--gold-bright);
+    text-shadow: 0 1px 2px rgba(0,0,0,.9);
   }
   /* Okundu rozeti */
   .kitap .rozet-okundu {
@@ -598,9 +628,11 @@
 <!-- ============ AÇILIŞ SAHNESİ ============ -->
 <div class="sahne" id="sahne" aria-label="Ajan Z'nin bürosu">
   <div class="oda" id="oda" role="button" tabindex="0" aria-label="Kitaplığa yaklaş">
-    <div class="oda-foto"></div>
-    <div class="oda-yagmur" aria-hidden="true"></div>
-    <div class="oda-simsek" aria-hidden="true"></div>
+    <div class="oda-foto" aria-hidden="true"></div>
+    <video class="oda-video" id="odaVideo" autoplay muted loop playsinline preload="auto"
+           poster="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042617_f00f063a-a254-477d-a820-1662df2df791.png">
+      <source src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042714_dcb63ebf-635d-497a-a2f7-c6ce29cd0565.mp4" type="video/mp4">
+    </video>
     <div class="oda-ipucu" aria-hidden="true"></div>
     <div class="oda-vinyet" aria-hidden="true"></div>
   </div>
@@ -969,6 +1001,13 @@ function sutunSayisi(adet) {
   return cols;
 }
 
+function roman(n) {
+  const t = [["X",10],["IX",9],["V",5],["IV",4],["I",1]];
+  let s = "";
+  for (const [r, v] of t) while (n >= v) { s += r; n -= v; }
+  return s;
+}
+
 function spineYap(k, i) {
   const btn = document.createElement("button");
   const okundu = okunanlar().includes(k.id);
@@ -977,12 +1016,13 @@ function spineYap(k, i) {
   btn.style.setProperty("--cilt-koyu", k.ciltKoyu);
   btn.style.animationDelay = (i * 65) + "ms";
   btn.setAttribute("aria-label", k.baslik + " — dosyayı aç");
+  const ciltNo = kitaplar.findIndex(x => x.id === k.id) + 1;
   btn.innerHTML = `
     <span class="rozet-okundu">✓</span>
     <span class="govde">
-      <span class="sirt-ust">${k.amblem}</span>
-      <span class="sirt-baslik">${k.sirt}</span>
-      <span class="sirt-no">${k.dosyaNo.replace("Görev Dosyası ", "")}</span>
+      <span class="sirt-emblem">${k.amblem}</span>
+      <span class="sirt-panel sirt-panel--baslik"><span class="sirt-baslik">${k.sirt}</span></span>
+      <span class="sirt-panel sirt-panel--cilt">CİLT ${roman(ciltNo)}</span>
     </span>
     <span class="etiket">
       <img src="${k.kapak}" alt="" loading="lazy" onerror="this.style.display='none'">
