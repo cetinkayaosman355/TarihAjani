@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dijital Kitaplık · Tarih Ajanı</title>
+<meta name="description" content="Ajan Z'nin bürosuna adım at, kitaplığa yaklaş ve zaman yolculuklarından getirdiği görev dosyalarını sayfa sayfa oku: Göbeklitepe'den Cumhuriyet'e canlı tarih hikâyeleri.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/ta-logo-32.png">
+<link rel="apple-touch-icon" href="/assets/ta-logo-180.png">
+<link rel="canonical" href="https://tarihajani.com/kitaplik">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tarih Ajanı">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:url" content="https://tarihajani.com/kitaplik">
+<meta property="og:title" content="Dijital Kitaplık · Tarih Ajanı">
+<meta property="og:description" content="Ajan Z'nin bürosunda başlayan bir yolculuk: kitaplığa yaklaş, bir cildi çek ve tarihe sayfa sayfa tanıklık et.">
+<meta name="theme-color" content="#06070d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #0b0a08;
+    --bg-1: #14110c;
+    --bg-2: #1c1710;
+    --gold: #c9a24b;
+    --gold-bright: #e9cf8e;
+    --gold-dim: #8a6f36;
+    --paper: #f3ead6;
+    --paper-2: #e9dcbf;
+    --ink: #2e2517;
+    --ink-soft: #5a4c36;
+    --accent-red: #7e2f24;
+    --ahsap: #3a2716;
+    --ahsap-koyu: #241608;
+    --serif-display: 'Playfair Display', Georgia, serif;
+    --serif-body: 'Cormorant Garamond', Georgia, serif;
+    /* Sinematik ansiklopedi-büro görselleri (Higgsfield · soul_location + kling3_0_turbo) */
+    --buro-genis: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042617_f00f063a-a254-477d-a820-1662df2df791.png");
+    --buro-dar: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042617_f00f063a-a254-477d-a820-1662df2df791.png");
+    --raf-fon: url("https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042617_79a238f0-c667-484a-bb36-7d42eacc344e.png");
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg-0);
+    background-image:
+      radial-gradient(1200px 600px at 50% -10%, #2a2114 0%, transparent 60%),
+      radial-gradient(900px 500px at 85% 110%, #1e1810 0%, transparent 55%),
+      linear-gradient(var(--bg-1), var(--bg-0));
+    font-family: var(--serif-body);
+    color: var(--paper);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body.kilit { overflow: hidden; }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none; opacity: .05; z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 1;
+    background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(0,0,0,.55) 100%);
+  }
+  main, header, nav, footer { position: relative; z-index: 2; }
+
+  /* ==================================================================
+     AÇILIŞ SAHNESİ — Ajan Z'nin Bürosu
+     ================================================================== */
+  .sahne {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    overflow: hidden;
+    background:
+      radial-gradient(1000px 700px at 50% 34%, #2b2013 0%, #16100a 58%, #0a0704 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sahne.giris { pointer-events: none; }
+  /* Oda (zoom hedefi burası) */
+  .oda {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    cursor: pointer;
+    transform-origin: 50% 46%;
+    transition: transform 1.3s cubic-bezier(.66,0,.24,1),
+                opacity 1.3s cubic-bezier(.66,0,.24,1),
+                filter 1.3s cubic-bezier(.66,0,.24,1);
+    will-change: transform, opacity, filter;
+  }
+  .sahne.giris .oda {
+    transform: scale(3.7);
+    opacity: 0;
+    filter: blur(6px) brightness(1.22);
+  }
+  /* Foto-gerçekçi büro görseli (Higgsfield ile üretildi) */
+  .oda-foto {
+    position: absolute; inset: -3%;
+    background-image: var(--buro-genis);
+    background-size: cover;
+    background-position: center 42%;
+    background-repeat: no-repeat;
+    animation: kenBurns 26s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  @media (max-width: 620px) {
+    .oda-foto { background-image: var(--buro-dar); background-position: center 38%; }
+  }
+  @keyframes kenBurns {
+    from { transform: scale(1.02) translate(0, 0); }
+    to   { transform: scale(1.12) translate(-1.2%, -1.6%); }
+  }
+  /* Hareketli sinematik büro videosu (üstte, foto yedeğin önünde) */
+  .oda-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center 42%;
+    z-index: 1;
+  }
+  @media (max-width: 620px) { .oda-video { object-position: center 40%; } }
+  @media (prefers-reduced-motion: reduce) { .oda-video { display: none; } }
+  /* Camda yağmur ışıltısı — çok hafif, akan */
+  .oda-yagmur {
+    position: absolute; inset: -20%;
+    background-image: repeating-linear-gradient(101deg,
+      transparent 0 8px, rgba(190,212,240,.05) 8px 9px, transparent 9px 15px);
+    animation: yagsun .6s linear infinite;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+  @keyframes yagsun { from { transform: translateY(-15px); } to { transform: translateY(15px); } }
+  /* Uzakta çakan şimşek parıltısı */
+  .oda-simsek {
+    position: absolute; inset: 0;
+    background: linear-gradient(118deg, rgba(160,195,255,.5), transparent 46%);
+    opacity: 0; mix-blend-mode: screen; pointer-events: none;
+    animation: cak 9s ease-out infinite;
+  }
+  @keyframes cak {
+    0%, 90%, 100% { opacity: 0; }
+    91% { opacity: .5; } 92% { opacity: .06; }
+    93% { opacity: .38; } 95% { opacity: 0; }
+  }
+  /* Sinematik vinyet + yazı okunabilirlik perdesi */
+  .oda-vinyet {
+    position: absolute; inset: 0; pointer-events: none; z-index: 3;
+    background:
+      linear-gradient(180deg, rgba(6,5,3,.74) 0%, rgba(6,5,3,.12) 20%, transparent 42%,
+        transparent 55%, rgba(6,5,3,.5) 80%, rgba(6,5,3,.9) 100%),
+      radial-gradient(ellipse at 50% 46%, transparent 40%, rgba(0,0,0,.58) 100%);
+  }
+  /* Yaklaşma ipucu — fotoğrafın ortasındaki rafa işaret eder */
+  .oda-ipucu {
+    position: absolute;
+    left: 50%; top: 46%;
+    transform: translate(-50%, -50%);
+    width: clamp(120px, 20vw, 220px);
+    height: clamp(120px, 20vw, 220px);
+    border-radius: 50%;
+    pointer-events: none; z-index: 2;
+    box-shadow: 0 0 0 1px rgba(233,207,142,.35), 0 0 60px rgba(233,207,142,.22);
+    background: radial-gradient(circle, rgba(233,207,142,.12), transparent 68%);
+    animation: nabiz 3.2s ease-in-out infinite;
+  }
+  @keyframes nabiz { 0%,100% { opacity:.3; transform:translate(-50%,-50%) scale(.94); } 50% { opacity:.85; transform:translate(-50%,-50%) scale(1.06); } }
+
+  /* Sahne metni */
+  .sahne-yazi {
+    position: absolute;
+    left: 50%; top: 5%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 7;
+    width: min(620px, 90vw);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .sahne.giris .sahne-yazi { opacity: 0; transform: translate(-50%, -24px); }
+  /* Alt kontrol bloğu (buton + geç) — dolabın altında */
+  .sahne-kontrol {
+    position: absolute;
+    left: 50%; bottom: 20%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 8;
+    width: min(560px, 90vw);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .sahne.giris .sahne-kontrol { opacity: 0; transform: translate(-50%, 20px); }
+  .sahne-yazi .ust-etiket {
+    font-size: .68rem; letter-spacing: .5em; text-indent: .5em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+  }
+  .sahne-yazi h1 {
+    font-family: var(--serif-display);
+    font-weight: 600;
+    font-size: clamp(1.9rem, 5.6vw, 3.2rem);
+    line-height: 1.06;
+    background: linear-gradient(160deg, #f6e7c1 20%, var(--gold) 58%, #9c7b3c 88%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 4px 20px rgba(201,162,75,.25));
+  }
+  .sahne-yazi p.giris-not {
+    margin: 14px auto 0;
+    max-width: 460px;
+    font-family: var(--serif-display);
+    font-style: italic;
+    font-size: clamp(.95rem, 2.4vw, 1.15rem);
+    color: #cdb98c;
+    line-height: 1.6;
+  }
+  .gir-btn {
+    margin-top: 0;
+    font-family: var(--serif-display);
+    font-size: 1rem;
+    letter-spacing: .1em;
+    color: #1c1305;
+    background: linear-gradient(135deg, var(--gold-bright), var(--gold) 70%);
+    border: none;
+    border-radius: 999px;
+    padding: 13px 30px;
+    cursor: pointer;
+    box-shadow: 0 12px 30px rgba(201,162,75,.35), inset 0 1px 2px rgba(255,255,255,.6);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .gir-btn:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(201,162,75,.5), inset 0 1px 2px rgba(255,255,255,.6); }
+  .atla {
+    display: block;
+    margin: 16px auto 0;
+    background: none; border: none;
+    color: #8f7c58; cursor: pointer;
+    font-family: var(--serif-body);
+    font-size: .92rem; letter-spacing: .04em;
+    text-decoration: underline dotted rgba(143,124,88,.5);
+    text-underline-offset: 4px;
+  }
+  .atla:hover { color: var(--gold-bright); }
+
+  /* ==================================================================
+     KÜTÜPHANE GÖVDESİ
+     ================================================================== */
+  .kutuphane { display: none; }
+  .kutuphane.acik { display: block; animation: yavasBelir 1s ease both; }
+  @keyframes yavasBelir { from { opacity: 0; } to { opacity: 1; } }
+  /* Gerçek kitaplık yakın planı — soluk, sinematik arka fon */
+  .kutuphane.acik::before {
+    content: "";
+    position: fixed; inset: 0;
+    z-index: 0;
+    background-image: var(--raf-fon);
+    background-size: cover;
+    background-position: center;
+    opacity: .10;
+    filter: blur(2px) saturate(.85) brightness(.7);
+    pointer-events: none;
+  }
+
+  .zerre {
+    position: fixed; border-radius: 50%;
+    background: radial-gradient(circle, var(--gold-bright), transparent 70%);
+    pointer-events: none; z-index: 1;
+    animation: sur 14s linear infinite; opacity: 0;
+  }
+  @keyframes sur {
+    0% { transform: translateY(20px) scale(.6); opacity: 0; }
+    15% { opacity: .7; } 85% { opacity: .5; }
+    100% { transform: translateY(-90vh) scale(1.1); opacity: 0; }
+  }
+
+  .geri-baglanti {
+    position: absolute; top: 22px; left: 24px; z-index: 3;
+    font-family: var(--serif-display); font-size: .95rem; letter-spacing: .06em;
+    color: #9d8c6b; text-decoration: none;
+    padding: 8px 16px; border: 1px solid rgba(201,162,75,.28); border-radius: 999px;
+    transition: all .25s;
+  }
+  .geri-baglanti:hover { color: var(--gold-bright); border-color: var(--gold); background: rgba(201,162,75,.08); }
+  .buro-don {
+    position: absolute; top: 22px; right: 24px; z-index: 3;
+    font-family: var(--serif-display); font-size: .95rem; letter-spacing: .06em;
+    color: #9d8c6b; background: transparent;
+    padding: 8px 16px; border: 1px solid rgba(201,162,75,.28); border-radius: 999px;
+    cursor: pointer; transition: all .25s;
+  }
+  .buro-don:hover { color: var(--gold-bright); border-color: var(--gold); background: rgba(201,162,75,.08); }
+
+  header { text-align: center; padding: 26px 20px 8px; }
+  .muhur { display: none; }
+  .ust-etiket {
+    font-size: .64rem; letter-spacing: .5em; text-indent: .5em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 8px;
+  }
+  h1.baslik {
+    font-family: var(--serif-display); font-weight: 600;
+    font-size: clamp(1.8rem, 4.6vw, 3rem); line-height: 1.04; letter-spacing: .02em;
+    background: linear-gradient(160deg, #f6e7c1 20%, var(--gold) 55%, #9c7b3c 85%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 4px 22px rgba(201,162,75,.22));
+  }
+  .ayrac { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 12px auto 10px; color: var(--gold-dim); }
+  .ayrac::before, .ayrac::after { content: ""; height: 1px; width: min(120px, 20vw); background: linear-gradient(to var(--yon, right), transparent, var(--gold-dim)); }
+  .ayrac::before { --yon: right; } .ayrac::after { --yon: left; }
+  .ayrac span { font-size: .82rem; letter-spacing: .2em; }
+  .alt-baslik { font-family: var(--serif-display); font-style: italic; font-weight: 500; font-size: clamp(.92rem, 2vw, 1.1rem); color: #cdb98c; }
+  .gorev-notu { display: none; }
+
+  .ilerleme { max-width: 300px; margin: 14px auto 0; text-align: center; }
+  .ilerleme .metin { font-size: .68rem; letter-spacing: .28em; text-indent: .28em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 7px; }
+  .ilerleme .metin b { color: var(--gold-bright); font-weight: 600; }
+  .cubuk { height: 3px; background: rgba(201,162,75,.14); border-radius: 99px; overflow: hidden; }
+  .cubuk .dolu { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright)); box-shadow: 0 0 12px rgba(233,207,142,.5); transition: width .8s cubic-bezier(.22,1,.36,1); }
+
+  .filtreler { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 26px; padding: 20px 20px 20px; }
+  .filtre { font-family: var(--serif-display); font-size: .95rem; letter-spacing: .12em; padding: 10px 4px; border: none; background: transparent; color: #9d8c6b; cursor: pointer; position: relative; transition: color .25s; }
+  .filtre::after { content: ""; position: absolute; left: 50%; bottom: 2px; width: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-bright), transparent); transition: all .3s ease; transform: translateX(-50%); }
+  .filtre:hover { color: var(--gold-bright); }
+  .filtre.aktif { color: var(--gold-bright); }
+  .filtre.aktif::after { width: 100%; }
+
+  /* ---------- Raf + kitap sırtları ---------- */
+  .kitaplik { max-width: 1240px; margin: 0 auto; padding: 0 22px 60px; text-align: center; }
+  /* Gerçek ahşap vitrin dolabı — kitaplara oturur, kenarda boşluk kalmaz */
+  .dolap-cerceve {
+    position: relative;
+    display: inline-block;
+    text-align: left;
+    max-width: 100%;
+    border-radius: 10px;
+    padding: 26px clamp(20px, 3vw, 46px) 16px;
+    background: linear-gradient(180deg, #1a1109, #0f0905);
+    box-shadow:
+      0 0 0 3px #3a2714,
+      0 0 0 6px #241608,
+      0 0 0 7px rgba(233,207,142,.28),
+      0 0 0 9px rgba(0,0,0,.6),
+      0 50px 110px rgba(0,0,0,.78),
+      inset 0 0 150px rgba(0,0,0,.72),
+      inset 0 0 0 1px rgba(233,207,142,.1);
+    overflow: hidden;
+  }
+  /* üstte ince altın tabela çizgisi */
+  .dolap-cerceve > .raf:first-child { margin-top: 4px; }
+  /* Arkada gerçek ansiklopedi duvarı (loş) */
+  .dolap-cerceve::before {
+    content: ""; position: absolute; inset: 0; z-index: 0;
+    background-image: var(--raf-fon);
+    background-size: cover; background-position: center;
+    opacity: .28; filter: blur(2px) brightness(.55) saturate(.85);
+  }
+  /* Üstten sıcak spot + vinyet */
+  .dolap-cerceve::after {
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(140% 75% at 50% -12%, rgba(233,207,142,.2), transparent 54%),
+      radial-gradient(ellipse at 50% 54%, transparent 58%, rgba(0,0,0,.42) 100%);
+  }
+  #raflar { position: relative; z-index: 1; }
+  .raf {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 16px;
+    padding: 30px 22px 24px;
+    margin-bottom: 46px;
+    perspective: 1300px;
+  }
+  /* Dolabın arka paneli (derinlik) */
+  .raf::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 10px; bottom: 18px;
+    border-radius: 6px;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.5), transparent 22%, transparent 78%, rgba(0,0,0,.55)),
+      repeating-linear-gradient(90deg, #2a1c10 0 46px, #32220f 46px 48px);
+    box-shadow: inset 0 0 60px rgba(0,0,0,.72), inset 0 3px 6px rgba(0,0,0,.6);
+    z-index: 0;
+  }
+  .plank {
+    position: absolute;
+    left: 1.5%; right: 1.5%; bottom: 0;
+    height: 22px;
+    border-radius: 3px;
+    background:
+      linear-gradient(180deg, #4a3016 0%, #35230f 55%, #241608 100%),
+      repeating-linear-gradient(90deg, transparent 0 90px, rgba(0,0,0,.18) 90px 92px);
+    box-shadow:
+      0 16px 30px rgba(0,0,0,.6),
+      inset 0 2px 0 rgba(233,207,142,.18),
+      inset 0 -7px 12px rgba(0,0,0,.55);
+    z-index: 1;
+  }
+
+  .kitap {
+    --spine: 78px;
+    width: var(--spine);
+    height: 322px;
+    position: relative;
+    cursor: pointer;
+    border: none; background: transparent; padding: 0;
+    font-family: inherit; color: var(--paper); text-align: center;
+    transform-style: preserve-3d;
+    transform: translateZ(0) translateY(0) rotateY(0deg);
+    transition: transform .42s cubic-bezier(.22,1,.36,1), filter .42s;
+    filter: drop-shadow(6px 16px 16px rgba(0,0,0,.55));
+    z-index: 2;
+    animation: cik 0.7s cubic-bezier(.22,1,.36,1) backwards;
+  }
+  @keyframes cik { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+  .kitap:hover, .kitap:focus-visible {
+    outline: none;
+    transform: translateZ(70px) translateY(-16px) rotateY(-4deg);
+    filter: drop-shadow(18px 30px 34px rgba(0,0,0,.7));
+    z-index: 30;
+  }
+  /* Sırt gövdesi — fotogerçekçi antika deri doku */
+  .kitap .govde {
+    position: absolute; inset: 0;
+    border-radius: 2px 4px 4px 2px;
+    background-color: #2a1c12;
+    background-image:
+      linear-gradient(90deg, rgba(0,0,0,.5), transparent 15%, transparent 85%, rgba(0,0,0,.5)),
+      var(--doku, none);
+    background-size: cover, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,0,0,.45),
+      inset -5px 0 12px rgba(0,0,0,.4),
+      inset 5px 0 10px rgba(255,255,255,.04);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 14px 6px;
+    overflow: hidden;
+  }
+  /* başlık okunsun diye ortada yumuşak koyuluk (dikey başlığa uygun) */
+  .kitap .govde::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(58% 46% at 50% 50%, rgba(0,0,0,.5), rgba(0,0,0,.16) 62%, transparent 80%);
+    pointer-events: none; z-index: 1;
+  }
+  /* deri üzerine yaldızlı kabartma başlık */
+  .sirt-baslik {
+    position: relative; z-index: 2;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-family: var(--serif-display);
+    font-weight: 700;
+    font-size: .92rem;
+    letter-spacing: .09em;
+    color: #f0d692;
+    text-shadow:
+      0 1px 0 rgba(0,0,0,.95),
+      0 -1px 0 rgba(255,238,196,.3),
+      0 0 8px rgba(201,162,75,.4);
+    white-space: nowrap;
+    overflow: hidden;
+    max-height: 76%;
+  }
+  .sirt-cilt {
+    position: absolute; bottom: 11px; left: 0; right: 0; z-index: 2;
+    text-align: center;
+    font-family: var(--serif-display);
+    font-size: .5rem; letter-spacing: .2em; text-indent: .2em;
+    color: #e6c880;
+    text-shadow: 0 1px 1px rgba(0,0,0,.95);
+  }
+  /* Okundu rozeti */
+  .kitap .rozet-okundu {
+    position: absolute; top: -8px; right: -8px;
+    width: 26px; height: 26px; border-radius: 50%;
+    display: none; align-items: center; justify-content: center; font-size: .66rem;
+    background: radial-gradient(circle at 35% 30%, #f0d896, var(--gold) 60%, #8a6f36);
+    color: #241a08; box-shadow: 0 4px 10px rgba(0,0,0,.55), inset 0 1px 2px rgba(255,255,255,.6);
+    z-index: 5;
+  }
+  .kitap.tamamlandi .rozet-okundu { display: flex; }
+
+  /* Üstüne gelince açılan etiket/künye */
+  .kitap .etiket {
+    position: absolute;
+    left: 50%; bottom: calc(100% + 18px);
+    transform: translateX(-50%) translateY(10px) scale(.94);
+    transform-origin: bottom center;
+    width: 208px;
+    background: linear-gradient(180deg, #1c150c, #120d07);
+    border: 1px solid rgba(201,162,75,.45);
+    border-radius: 10px;
+    padding: 12px 12px 14px;
+    box-shadow: 0 26px 50px rgba(0,0,0,.7), inset 0 1px 0 rgba(233,207,142,.15);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .32s ease, transform .32s cubic-bezier(.22,1,.36,1);
+    z-index: 40;
+  }
+  .kitap .etiket::after {
+    content: ""; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%) rotate(45deg);
+    width: 14px; height: 14px; background: #120d07;
+    border-right: 1px solid rgba(201,162,75,.45); border-bottom: 1px solid rgba(201,162,75,.45);
+  }
+  .kitap:hover .etiket, .kitap:focus-visible .etiket {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  .etiket img {
+    width: 100%; height: 96px; object-fit: cover;
+    border-radius: 6px; display: block;
+    border: 1px solid rgba(201,162,75,.3);
+  }
+  .etiket .e-donem {
+    display: block; margin-top: 9px;
+    font-size: .56rem; letter-spacing: .28em; text-indent: .28em; text-transform: uppercase;
+    color: var(--gold);
+  }
+  .etiket .e-baslik {
+    display: block; margin-top: 4px;
+    font-family: var(--serif-display); font-weight: 600; font-size: .96rem; line-height: 1.22;
+    color: #f7efdc;
+  }
+  .etiket .e-ac {
+    display: inline-block; margin-top: 9px;
+    font-size: .68rem; letter-spacing: .12em;
+    color: var(--gold-bright);
+  }
+
+  .bos-mesaj { text-align: center; color: #9d8c6b; font-style: italic; font-size: 1.1rem; padding: 40px 0; display: none; }
+
+  /* ---------- Okuyucu (açık kitap) ---------- */
+  .okuyucu {
+    position: fixed; inset: 0;
+    background: rgba(5,4,2,.82);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center; padding: 24px; z-index: 80;
+  }
+  .okuyucu.acik { display: flex; }
+  .sayfa-kutusu {
+    position: relative;
+    width: min(780px, 100%); max-height: 92vh;
+    display: flex; flex-direction: column;
+    border-radius: 6px 14px 14px 6px;
+    background:
+      linear-gradient(to right, #dccba4 0 10px, var(--paper) 22px, var(--paper) calc(50% - 2px),
+        #d9c9a2 50%, var(--paper) calc(50% + 22px), var(--paper) 96%, var(--paper-2));
+    color: var(--ink);
+    box-shadow:
+      0 0 0 1px rgba(201,162,75,.35),
+      0 0 0 9px #17110a,
+      0 0 0 10px rgba(201,162,75,.3),
+      0 44px 100px rgba(0,0,0,.8);
+    overflow: hidden;
+    animation: kitapAcilis .5s cubic-bezier(.22,1,.36,1);
+  }
+  /* Orta cilt oluğu */
+  .sayfa-kutusu::before {
+    content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 30px;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, transparent, rgba(90,70,30,.22) 40%, rgba(90,70,30,.28) 50%, rgba(90,70,30,.22) 60%, transparent);
+    pointer-events: none; z-index: 6;
+  }
+  /* Sağ kenar sayfa yaprakları */
+  .sayfa-kutusu::after {
+    content: ""; position: absolute; right: 0; top: 8px; bottom: 8px; width: 7px;
+    background: repeating-linear-gradient(to bottom, #e7dbbe 0 2px, #d3c39d 2px 3px);
+    border-radius: 0 3px 3px 0; z-index: 6; pointer-events: none;
+  }
+  @keyframes kitapAcilis { from { opacity: 0; transform: translateY(30px) scale(.96) rotateX(6deg); } to { opacity: 1; transform: translateY(0) scale(1) rotateX(0); } }
+  /* Kurdele imi */
+  .kurdele {
+    position: absolute; top: -4px; right: 46px; width: 22px; height: 78px; z-index: 7;
+    background: linear-gradient(180deg, #8f2f22, #6a2016);
+    box-shadow: 0 6px 10px rgba(0,0,0,.4);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  }
+  .okuyucu-kapak { width: 100%; height: 150px; object-fit: cover; object-position: center 28%; display: block; border-bottom: 1px solid rgba(138,111,54,.5); filter: sepia(.14) saturate(.94); position: relative; z-index: 2; }
+  .sayfa-ust { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 24px 34px 18px; position: relative; z-index: 3; }
+  .sayfa-ust::after { content: ""; position: absolute; left: 34px; right: 34px; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(138,111,54,.55), transparent); }
+  .dosya-no { display: inline-block; font-size: .68rem; letter-spacing: .3em; text-transform: uppercase; color: var(--accent-red); border: 1px solid rgba(126,47,36,.4); border-radius: 3px; padding: 4px 10px 3px; margin-bottom: 10px; }
+  .sayfa-ust h2 { font-family: var(--serif-display); font-weight: 600; font-size: clamp(1.2rem, 3.4vw, 1.65rem); line-height: 1.25; }
+  .kapat { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(46,37,23,.4); background: transparent; color: var(--ink); font-size: 1rem; cursor: pointer; transition: all .25s; }
+  .kapat:hover { background: var(--ink); color: var(--paper); transform: rotate(90deg); }
+  .sayfa-icerik { padding: 26px 42px 20px; overflow-y: auto; flex: 1; font-size: 1.2rem; line-height: 1.86; color: #3b3021; position: relative; z-index: 3; }
+  .sayfa-icerik.gecis { animation: sayfaGecis .38s ease; }
+  @keyframes sayfaGecis { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+  .sayfa-icerik p { margin-bottom: 1.05em; text-align: justify; }
+  .sayfa-icerik p:first-child::first-letter { font-family: var(--serif-display); font-size: 3.3em; line-height: .8; float: left; padding: 8px 10px 0 0; color: var(--accent-red); }
+  .ajan-notu { margin-top: 1.6em; padding: 16px 20px; font-size: .95em; font-style: italic; background: linear-gradient(135deg, rgba(126,47,36,.08), rgba(201,162,75,.1)); border: 1px solid rgba(138,111,54,.35); border-left: 3px solid var(--accent-red); border-radius: 0 10px 10px 0; }
+  .sayfa-alt { display: flex; justify-content: space-between; align-items: center; padding: 16px 34px 22px; position: relative; z-index: 3; }
+  .sayfa-alt::before { content: ""; position: absolute; left: 34px; right: 34px; top: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(138,111,54,.55), transparent); }
+  .yon { font-family: var(--serif-display); font-size: .92rem; letter-spacing: .08em; padding: 10px 22px; border-radius: 99px; border: 1px solid rgba(46,37,23,.45); background: transparent; color: var(--ink); cursor: pointer; transition: all .25s; }
+  .yon:disabled { opacity: .3; cursor: default; }
+  .yon:not(:disabled):hover { background: var(--ink); color: var(--paper); }
+  .sayfa-no { font-size: .8rem; letter-spacing: .25em; text-indent: .25em; text-transform: uppercase; color: var(--ink-soft); text-align: center; }
+  .nokta-dizi { display: flex; gap: 7px; justify-content: center; margin-top: 8px; }
+  .nokta { width: 6px; height: 6px; border-radius: 50%; background: rgba(90,76,54,.3); transition: all .3s; }
+  .nokta.aktif { background: var(--accent-red); transform: scale(1.3); }
+
+  footer { text-align: center; padding: 20px 20px 64px; }
+  footer .soz { font-family: var(--serif-display); font-style: italic; font-size: 1.05rem; color: #8f7c58; }
+  footer .imza { margin-top: 8px; font-size: .72rem; letter-spacing: .35em; text-indent: .35em; text-transform: uppercase; color: #6a5a3e; }
+
+  /* ---------- Mouse ile uzanan el ---------- */
+  .el {
+    position: fixed;
+    left: 0; bottom: 0;
+    width: 256px; height: 458px;
+    z-index: 70;
+    pointer-events: none;
+    transform: translateX(calc(var(--el-x, 50vw) - 50%)) translateY(var(--el-y, 34%)) rotate(var(--el-r, 0deg));
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 -10px 26px rgba(0,0,0,.7));
+    opacity: 0;
+    transition: opacity .55s ease;
+    will-change: transform, opacity;
+  }
+  .el.aktif { opacity: 1; }
+  .el-img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
+  @media (max-width: 620px) { .el { width: 176px; height: 315px; } }
+  @media (pointer: coarse) { .el { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .el { display: none; } }
+
+  @media (max-width: 620px) {
+    header { padding-top: 58px; }
+    .kitaplik { padding: 0 14px 40px; }
+    .raf { gap: 12px; padding: 24px 12px 22px; }
+    .kitap { --spine: 60px; height: 264px; }
+    .kitap .sirt-baslik { font-size: .74rem; }
+    .kitap .etiket { width: 168px; }
+    .buro-don { top: 18px; right: 16px; padding: 6px 12px; font-size: .82rem; }
+    .geri-baglanti { top: 18px; left: 16px; padding: 6px 12px; font-size: .82rem; }
+    .sayfa-icerik { padding: 22px 24px 16px; font-size: 1.08rem; }
+    .sayfa-ust, .sayfa-alt { padding-left: 24px; padding-right: 24px; }
+    .yon { padding: 9px 16px; font-size: .84rem; }
+    .masa-props { gap: 30px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .oda { transition: none !important; }
+  }
+</style>
+</head>
+<body class="kilit">
+
+<!-- ============ AÇILIŞ SAHNESİ ============ -->
+<div class="sahne" id="sahne" aria-label="Ajan Z'nin bürosu">
+  <div class="oda" id="oda" role="button" tabindex="0" aria-label="Kitaplığa yaklaş">
+    <div class="oda-foto" aria-hidden="true"></div>
+    <video class="oda-video" id="odaVideo" autoplay muted loop playsinline preload="auto"
+           poster="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042617_f00f063a-a254-477d-a820-1662df2df791.png">
+      <source src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_042714_dcb63ebf-635d-497a-a2f7-c6ce29cd0565.mp4" type="video/mp4">
+    </video>
+    <div class="oda-ipucu" aria-hidden="true"></div>
+    <div class="oda-vinyet" aria-hidden="true"></div>
+  </div>
+
+  <div class="sahne-yazi">
+    <p class="ust-etiket">Gizli Görev Arşivi · Dosya Erişimi</p>
+    <h1>Ajan Z'nin Bürosu</h1>
+    <p class="giris-not">
+      Dışarıda yağmur var, lambam yanıyor. Duvardaki kitaplıkta bütün
+      görev dosyalarım seni bekliyor.
+    </p>
+  </div>
+
+  <div class="sahne-kontrol">
+    <button class="gir-btn" id="girBtn">Kitaplığa Yaklaş →</button>
+    <button class="atla" id="atlaBtn">Doğrudan kitaplığa geç</button>
+  </div>
+</div>
+
+<!-- ============ KÜTÜPHANE ============ -->
+<div class="kutuphane" id="kutuphane">
+  <a href="/" class="geri-baglanti">‹ Tarih Ajanı</a>
+  <button class="buro-don" id="buroDonBtn">Büroya Dön ⌂</button>
+
+  <header>
+    <div class="muhur">🕵️</div>
+    <p class="ust-etiket">Gizli Görev Arşivi</p>
+    <h1 class="baslik">Dijital Kitaplık</h1>
+    <div class="ayrac"><span>✦</span></div>
+    <p class="alt-baslik">Zamanın Sayfaları &mdash; Ajan Z'nin Raf Dosyaları</p>
+    <p class="gorev-notu">
+      İşte buradayız Ajan &mdash; kitaplığın tam karşısında. Raftaki her cilt,
+      tanık olduğum bir görevi anlatıyor. Bir sırtın üstüne gel, dosya öne çıksın;
+      tıkla, kitabın içi açılsın ve sayfaları birlikte çevirelim.
+    </p>
+    <div class="ilerleme">
+      <p class="metin"><b id="okunanSayi">0</b> / <span id="toplamSayi">0</span> Dosya Tamamlandı</p>
+      <div class="cubuk"><div class="dolu" id="ilerlemeCubugu"></div></div>
+    </div>
+  </header>
+
+  <nav class="filtreler" id="filtreler" aria-label="Dönem filtreleri">
+    <button class="filtre aktif" data-donem="hepsi">Tümü</button>
+    <button class="filtre" data-donem="ilkcag">İlk Çağ</button>
+    <button class="filtre" data-donem="ortacag">Orta Çağ</button>
+    <button class="filtre" data-donem="yenicag">Yeni Çağ</button>
+    <button class="filtre" data-donem="yakincag">Yakın Çağ</button>
+  </nav>
+
+  <main class="kitaplik">
+    <div class="dolap-cerceve">
+      <div id="raflar"></div>
+      <p class="bos-mesaj" id="bosMesaj">Bu dönemde henüz görev dosyası yok, Ajan. Başka bir rafa göz at!</p>
+    </div>
+  </main>
+
+  <div class="el" id="el" aria-hidden="true">
+    <img class="el-img" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_051120_a5d2e470-94e5-468a-b78b-847eda2b41b7.png" alt="">
+  </div>
+
+  <footer>
+    <p class="soz">&ldquo;Tarihi bilmeyen ajan, zamanda kaybolur.&rdquo;</p>
+    <p class="imza">Ajan Z &mdash; Görev Günlüğü</p>
+  </footer>
+</div>
+
+<!-- ============ OKUYUCU ============ -->
+<div class="okuyucu" id="okuyucu" role="dialog" aria-modal="true" aria-labelledby="kitapBaslik">
+  <div class="sayfa-kutusu">
+    <span class="kurdele" aria-hidden="true"></span>
+    <img class="okuyucu-kapak" id="okuyucuKapak" alt="">
+    <div class="sayfa-ust">
+      <div>
+        <span class="dosya-no" id="dosyaNo"></span>
+        <h2 id="kitapBaslik"></h2>
+      </div>
+      <button class="kapat" id="kapatBtn" aria-label="Kapat">✕</button>
+    </div>
+    <div class="sayfa-icerik" id="sayfaIcerik"></div>
+    <div class="sayfa-alt">
+      <button class="yon" id="oncekiBtn">◀ Önceki</button>
+      <div>
+        <div class="sayfa-no" id="sayfaNo"></div>
+        <div class="nokta-dizi" id="noktaDizi"></div>
+      </div>
+      <button class="yon" id="sonrakiBtn">Sonraki ▶</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const kitaplar = [
+  {
+    id: "gobeklitepe",
+    kapak: "https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_111326_05c536c1-e5bd-40f9-b5cb-1954070ff643.png",
+    baslik: "İlk Tapınağın Sırrı: Göbeklitepe",
+    sirt: "Göbeklitepe",
+    donem: "ilkcag", donemAdi: "İlk Çağ Öncesi", amblem: "🗿",
+    cilt: "linear-gradient(180deg, #9a6533, #5e3a1a 78%)", ciltKoyu: "#4a2d13",
+    dosyaNo: "Görev Dosyası № 001",
+    sayfalar: [
+      `<p>Zaman makinesinin kapısı tıslayarak açıldığında, kendimi bozkırın ortasında buldum. Bileğimdeki takvim cihazı titredi: "M.Ö. 9600". Rakamlara bir kez daha baktım, inanamadım. Yani buradaki her şey, Mısır piramitlerinden bile yaklaşık yedi bin yıl daha eskiydi. Henüz ne yazı vardı, ne tekerlek, ne de kral!</p>
+       <p>Rüzgâr kuru toprağı savuruyordu. Uzakta, alçak bir tepenin üzerinde dev gölgeler yükseliyordu. Yaklaştıkça nefesim kesildi: İnsan boyunun iki katı, T biçiminde taş sütunlar koca bir halka çizerek dizilmişti. Her birinin yüzeyinde tilki, yaban domuzu, yılan ve akrep kabartmaları vardı — sanki taşlar konuşuyor gibiydi.</p>
+       <p>Bir cep defteri çıkarıp ilk notumu düştüm: "Burada bir tuhaflık var. Bu insanlar henüz köy bile kurmamış, tarlada buğday ekmemiş. Peki bu muazzam yapıyı, hangi güç bir araya getirmiş?"</p>`,
+      `<p>Deri giysili, saçları örgülü bir çocuk çekingen adımlarla yanıma yaklaştı. Korkmadı; tam tersine, elindeki keskin çakmaktaşı aletini gururla havaya kaldırdı. Konuşamıyorduk ama işaretlerle anlaştık. Beni elimden tutup taşların dibine götürdü, toprağa çizerek anlattı.</p>
+       <p>Bu devasa sütunları kilometrelerce uzaktaki ocaktan getirmişlerdi. Ne vinç vardı ne de demir. Yüzlerce insan, kütükleri yere dizip taşları üzerinde yuvarlamış, halatları hep birlikte çekmişti. Bir tek sütunu dikmek bile haftalar sürüyordu. Yani buraya emek değil, koca bir topluluğun ortak hayali gömülmüştü.</p>
+       <p>Çocuğun gözlerindeki ışıltıyı fark ettim. Bu iş onlar için bir angarya değil, bir onurdu. "Demek ki," diye yazdım defterime, "insanları ilk birleştiren şey, aynı işi birlikte, gönülden yapabilmekmiş."</p>`,
+      `<p>Akşam olunca tepenin ortasında kocaman bir ateş yakıldı. Çevredeki tüm çadırlardan insanlar akın etti; kimileri günlerce yürümüş olmalıydı. Ellerinde kurutulmuş et, yaban meyveleri ve taş kâselerde bir tür buğday lapası vardı. Ateşin çevresinde halka olup oturdular.</p>
+       <p>Yaşlı bir kadın ayağa kalktı ve taş sütunlardaki hayvanları tek tek göstererek uzun uzun bir şeyler anlattı. Kimse sözünü kesmiyordu. O an tüylerim diken diken oldu: Bu bir eğlence değildi, bir tören, bir ibadetti. İnsanlar buraya karınlarını doyurmaya değil, birlikte inanmaya, birlikte hatırlamaya geliyordu.</p>
+       <p>İşte sırrı o gece çözdüm. Göbeklitepe bir ev, bir kale ya da bir depo değildi. İnsanlığın bilinen ilk tapınağıydı. Ve bu tapınak, tarım ve şehirlerden çok daha önce inşa edilmişti. Demek ki köyler tapınakların çevresinde kurulmuştu — inanç, medeniyetin ta kendisinden bile eskiydi.</p>`,
+      `<p>Ayrılık vakti geldiğinde görev defterime şu cümleyi büyük harflerle yazdım: "Göbeklitepe bize şunu fısıldıyor — insanları önce ortak bir inanç ve ortak bir hayal bir araya getirdi. Tarlalar, evler ve şehirler ancak sonra geldi. Önce yürek birleşti, sonra eller."</p>
+       <p>Zaman makineme dönerken örgülü saçlı çocuk peşimden koştu. Avucuma küçük, delikli bir taş boncuk bıraktı — bileğine bağladığı kolyeden çıkarmıştı. Bir teşekkür, bir armağan. O boncuk hâlâ büromdaki masanın üzerinde, lambamın dibinde duruyor. Ne zaman ona baksam, on bir bin yıl önceki o ateşi hatırlıyorum.</p>
+       <div class="ajan-notu">📌 Ajan Notu: Göbeklitepe, Şanlıurfa'dadır ve bilinen en eski tapınak yapısıdır. 2018'de UNESCO Dünya Mirası Listesi'ne girmiştir. Bilim insanları ona sık sık "tarihin sıfır noktası" der.</div>`
+    ]
+  },
+  {
+    id: "troya",
+    kapak: "https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_111338_ce1745e8-a89e-4cde-9ad8-b91eadd6737d.png",
+    baslik: "Tahta Atın İçinde: Troya",
+    sirt: "Troya",
+    donem: "ilkcag", donemAdi: "İlk Çağ", amblem: "🐎",
+    cilt: "linear-gradient(180deg, #2f9089, #1d4f4b 78%)", ciltKoyu: "#173d3a",
+    dosyaNo: "Görev Dosyası № 002",
+    sayfalar: [
+      `<p>Bu görevde saklanmam gerekiyordu — hem de tarihin en meşhur zulasında! Çanakkale yakınlarındaki antik kent Troya'nın sur diplerindeydim. Kalın taş duvarlar gökyüzüne değecek kadar yüksekti. On yıldır süren savaş herkesi bitkin düşürmüştü; hem içeridekiler hem dışarıdakiler yorgundu.</p>
+       <p>Bir sabah şafakta tuhaf bir sessizlik çöktü. Kıyıya koştum: Yunan gemileri ufukta kaybolmuştu! Kumsalda on yıldır kurulu duran çadırlar sökülmüş, ateşler söndürülmüştü. Sanki koca ordu bir gecede buhar olup uçmuştu.</p>
+       <p>Ama kumsalın ortasında akıl almaz bir şey duruyordu: tahtadan yapılmış, evler kadar büyük, tekerlekli bir at. Notumu aldım: "Bir ordu on yıl bekler de savaşı bırakıp gider mi? Bu işte bir iş var."</p>`,
+      `<p>Troya'nın kapıları açıldı, halk büyük bir sevinçle dışarı döküldü. "Kazandık! Düşman kaçtı!" diye bağrışıyorlardı. Kimileri atı bir tanrı armağanı, bir zafer anıtı sandı. Kimileri kuşkulandı, "Yakalım şunu," dedi. Ama sevinç kuşkuya galip geldi.</p>
+       <p>Kalın halatlar bağlandı, yüzlerce insan koşuldu ve o dev at, çığlıklar ve türküler eşliğinde surların kapısından içeri çekildi. Kapı at zar zor sığdığı için biraz genişletildi bile. O gece şehirde şölen vardı; şarap içildi, davullar çalındı, on yıllık yorgunluk kutlamalara karıştı.</p>
+       <p>Ben bir köşede sessizce izliyordum. Çünkü ben biliyordum: O tahta atın karnı boş değildi. İçeride, karanlıkta, nefeslerini tutmuş savaşçılar bekliyordu.</p>`,
+      `<p>Gece yarısı şehir derin uykuya daldığında atın karnındaki gizli kapak yağ sürülmüş menteşeleriyle sessizce açıldı. Savaşçılar birer birer aşağı süzüldü. Ayak sesleri o kadar hafifti ki bir tek ben duydum. Doğruca surların büyük kapısına yürüdüler ve sürgüyü içeriden çektiler.</p>
+       <p>Uzakta bekleyen Yunan donanması, karanlıkta yakılan bir işaret ateşiyle geri döndü. Az önce zafer kutlayan şehir, bir hile yüzünden gafil avlanmıştı. Parmaklarım defterin üzerinde dolaşıyor ama müdahale edemiyordum.</p>
+       <p>Çünkü Ajan Yönetmeliği'nin 1. Maddesi kesindir: "Tarihe asla karışılmaz, yalnızca tanıklık edilir." Yerimden kıpırdamadım. O gece Troya düştü. Ama düşüşü öyle sarsıcıydı ki hikâyesi üç bin yıldır dünyanın dört bir yanında hâlâ anlatılıyor.</p>`,
+      `<p>Görev dönüşünde uzun uzun düşündüm ve defterime iki satır yazdım: "Bazen en yüksek surlar kaba kuvvetle değil, akılla aşılır. Ama unutma Ajan: aklını iyilik için kullanan tarihe kahraman olarak geçer; hile ve tuzak kuran ise 'kurnaz' değil, 'güvenilmez' diye anılır."</p>
+       <p>Bir de şunu ekledim: "Zaferi kutlarken bile kuşkuyu elden bırakma. Kapından içeri giren her armağan, göründüğü gibi olmayabilir." Bu satırı büromda çerçeveletip astım; her göreve çıkmadan önce bir kez okurum.</p>
+       <div class="ajan-notu">📌 Ajan Notu: Troya Antik Kenti Çanakkale'dedir ve UNESCO Dünya Mirası Listesi'ndedir. Bu efsaneyi bize ozan Homeros, "İlyada" adlı destanında anlatır. "Truva atı" deyimi, bugün bile içine tuzak gizlenmiş armağanlar için kullanılır.</div>`
+    ]
+  },
+  {
+    id: "malazgirt",
+    kapak: "https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_111348_a9ca4266-0ff3-4d7b-b255-814c9285cfda.png",
+    baslik: "Anadolu'nun Kapısı: Malazgirt 1071",
+    sirt: "Malazgirt 1071",
+    donem: "ortacag", donemAdi: "Orta Çağ", amblem: "⚔️",
+    cilt: "linear-gradient(180deg, #a5402f, #5f1f16 78%)", ciltKoyu: "#4a1810",
+    dosyaNo: "Görev Dosyası № 003",
+    sayfalar: [
+      `<p>26 Ağustos 1071 sabahı, Muş'un Malazgirt Ovası'na indiğimde hava tozdan ve gerginlikten ağırdı. İki ordu karşı karşıya duruyordu. Bir yanda Bizans İmparatoru Romen Diyojen'in göz alabildiğine uzanan, farklı milletlerden paralı askerlerle dolu kalabalık ordusu. Diğer yanda Selçuklu Sultanı Alparslan'ın çok daha küçük ama gözü pek ordusu.</p>
+       <p>Sayıları saydım, tekrar saydım. Bizans ordusu kat kat kalabalıktı. Aklımdan "Bu iş nasıl olacak?" diye geçirdim. Ama Selçuklu askerlerinin yüzünde ne telaş vardı ne korku — sanki bir bildikleri vardı.</p>
+       <p>Sultan Alparslan atından indi. Şaşırdım: savaş günü, bembeyaz bir elbise giymişti. Sonra anladım — bu, kefenini giymiş bir adamın kararlılığıydı.</p>`,
+      `<p>Alparslan kılıcını bir kenara bıraktı, askerlerinin arasına yürüdü ve yüksek sesle seslendi: "Ben de sizden biriyim. Bugün burada ya zafer kazanır, ya bu topraklarda şehit oluruz. Beni bu beyaz elbisenin içinde gömün!" Ordunun içinden bir uğultu yükseldi; korku bir anda yerini çelik gibi bir kararlılığa bıraktı.</p>
+       <p>Sonra o meşhur taktik başladı: hilal. Ortadaki Selçuklu birlikleri geri çekiliyormuş gibi yaptı. Bizans ordusu, "Kaçıyorlar!" diye sevinerek peşlerine düştü, ovanın derinliğine kadar sokuldu.</p>
+       <p>İşte tam o an tuzak kapandı. Tepelerin ardında pusuya yatmış Selçuklu süvarileri, hilalin iki ucu gibi ileri atıldı ve koca Bizans ordusunu iki yandan sardı. Ok yağmuru başladı. Kalabalık, o dar çemberde bir işe yaramadı; askerler birbirine karıştı. Akşam olmadan savaşın kaderi belli olmuştu.</p>`,
+      `<p>Ama beni asıl şaşırtan an, savaş bittikten sonra yaşandı. Bizans İmparatoru Romen Diyojen esir düşmüştü ve zincirlerle Alparslan'ın çadırına getirildi. Herkes ağır bir ceza, belki de bir idam bekliyordu. Ben bile defterimi sıkıca kavramış, ne yazacağımı bilemiyordum.</p>
+       <p>Alparslan esir imparatora sordu: "Söyle bakalım, ben senin karşına esir düşseydim bana ne yapardın?" Diyojen dürüstçe cevap verdi: "Ağır cezalandırırdım." Alparslan gülümsedi.</p>
+       <p>Sonra olanları gözlerime inanamayarak izledim: Sultan, imparatorun zincirlerini çözdürdü, ona bir konuk gibi davrandı, çadırında ağırladı ve bir barış anlaşmasıyla ülkesine dönmesine izin verdi. Kazanan taraf, yenilen düşmanına merhamet gösteriyordu.</p>`,
+      `<p>Ovadan ayrılırken görev defterime şunu not ettim: "Malazgirt yalnızca kazanılmış bir savaş değil; Anadolu'nun Türklere yurt olmasının başlangıcıydı. Bu zaferden sonra Anadolu'nun kapıları ardına kadar açıldı."</p>
+       <p>Altına bir cümle daha ekledim, kalın harflerle: "Gerçek büyüklük, düşmanı yenmekle bitmez; asıl büyüklük, kazandıktan sonra gösterilen merhamette gizlidir." Alparslan'ın beyaz elbisesini ve o merhametli gülümsemesini hiç unutmadım.</p>
+       <div class="ajan-notu">📌 Ajan Notu: Malazgirt Zaferi 26 Ağustos 1071'de kazanıldı. Bu tarih, Anadolu'nun Türk yurdu olmaya başladığı dönüm noktası kabul edilir. Sultan Alparslan, adaleti ve cesaretiyle tarihe geçmiştir.</div>`
+    ]
+  },
+  {
+    id: "ipekyolu",
+    kapak: "https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_111351_587781c9-584e-4a73-bc9f-f7e564cacdbe.png",
+    baslik: "Kervanla Bin Yıl: İpek Yolu",
+    sirt: "İpek Yolu",
+    donem: "ortacag", donemAdi: "Orta Çağ", amblem: "🐪",
+    cilt: "linear-gradient(180deg, #6a8f42, #39511f 78%)", ciltKoyu: "#2c4018",
+    dosyaNo: "Görev Dosyası № 004",
+    sayfalar: [
+      `<p>Bu kez görevim tehlikeli değil ama upuzundu: bir kervana katılıp binlerce kilometre yol almak. Çin'in Şian şehrinden yola çıkan kervanı gördüğümde ağzım açık kaldı — yüzden fazla deve, sırtlarında ipek balyaları, baharat çuvalları, çay sandıkları ve özenle sarılmış porselen tabaklarla dizilmişti.</p>
+       <p>Develer yürüdükçe boyunlarındaki çıngıraklar bir ezgi gibi çınlıyordu. Hedef çok uzaktaydı: dağları, çölleri ve nehirleri aşıp Anadolu'ya, oradan da Avrupa'ya ulaşmak. Bu yol o kadar uzundu ki, tek bir tüccar baştan sona gitmezdi; mallar elden ele, şehirden şehre taşınırdı.</p>
+       <p>Yanımdaki genç bir çırağa sordum: "Neden bu kadar zahmet?" Gülümsedi: "Çünkü bu çuvallardaki ipek, gittiği yerde altın kadar değerli."</p>`,
+      `<p>Kervancıbaşı yaşını başını almış, bilge bir tüccardı. Bir akşam ateşin başında ona ipeği sordum. Sakalını sıvazlayıp güldü: "Yavrum, bu yolda en değerli yük ipek değildir." Şaşırdım. "Ya nedir?" dedim. Elini şakağına götürdü: "Bilgidir."</p>
+       <p>"Her durakta yeni bir dil, yeni bir buluş, yeni bir hikâye öğrenirsin," dedi. "İpek eskir, baharat tükenir; ama öğrendiğin bir fikir, ömrün boyunca yanında kalır ve başkalarına verdikçe çoğalır." O gece bu sözleri defterime aynen geçirdim.</p>
+       <p>Haklı olduğunu yolda anladım. Kâğıt yapmayı bilen Çinli ustalarla, yön bulmak için pusula kullanan denizcilerle, gökyüzünü haritalayan gök bilimcilerle tanıştım. Mallar batıya giderken, fikirler de onlarla birlikte dünyaya yayılıyordu.</p>`,
+      `<p>Aylar süren yolculuğun ardından Anadolu'ya vardık ve bir Selçuklu kervansarayında konakladık. Bu taş hanları görünce hayran kaldım: kalın duvarlı, sağlam kapılı, tıpkı bir kale gibiydiler. Ama asıl şaşırtıcı olan içerideydi.</p>
+       <p>Kervansaray, yolcuya üç gün boyunca ücretsiz yemek, yatak ve hayvanı için yem veriyordu. Fakir zengin fark etmezdi; hastaysan seni tedavi eder, ayakkabın delikse tamir ederlerdi. Devlet bu hanları güvenlik için askerle korur, hırsızlara geçit vermezdi. "Ticaretin can damarı güvenliktir," demişti kervancıbaşı.</p>
+       <p>Avluda oturup çevreme baktım: Çinli, Fars, Türk, Ermeni, Venedikli, Arap... her milletten insan yan yanaydı. Farklı diller konuşuyor, farklı yemekler pişiriyorlardı. Ama alışveriş, merak ve dostluk hepsinin ortak diliydi.</p>`,
+      `<p>Kervandan ayrılırken defterime şunu yazdım: "İpek Yolu yalnızca malların değil; fikirlerin, buluşların, inançların ve kültürlerin de yoluydu. Uzak diyarlar birbirine kılıçla değil, ticaretle ve merakla bağlandı."</p>
+       <p>Altına kervancıbaşının o sözünü bir kez daha ekledim, çünkü hiç aklımdan çıkmadı: "Bilgi paylaşılınca azalmaz, çoğalır." Bugün internetle bir tıkta ulaştığımız bilgi, bir zamanlar aylarca deve sırtında taşınıyordu. İnsanlığın merakı, en uzun yolları bile kısaltmış.</p>
+       <div class="ajan-notu">📌 Ajan Notu: İpek Yolu, Çin'den Avrupa'ya uzanan tarihi ticaret ve kültür ağıdır. Anadolu'daki Selçuklu kervansarayları, yolun en güvenli ve konuksever duraklarıydı. Ticaretin yanında kâğıt, pusula ve matbaa gibi buluşlar da bu yolla dünyaya yayıldı.</div>`
+    ]
+  },
+  {
+    id: "fetih",
+    kapak: "https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_111354_1d3dfb17-1a2f-4802-88f4-c45d4db1f30a.png",
+    baslik: "Surların Ardında: İstanbul 1453",
+    sirt: "İstanbul 1453",
+    donem: "yenicag", donemAdi: "Yeni Çağ", amblem: "🏰",
+    cilt: "linear-gradient(180deg, #3f68a1, #23375c 78%)", ciltKoyu: "#1b2a48",
+    dosyaNo: "Görev Dosyası № 005",
+    sayfalar: [
+      `<p>29 Mayıs 1453'ün şafağında, İstanbul surlarının karşısındaki bir tepedeydim. Aşağıda, dünyanın en ünlü şehri uzanıyordu. Onu koruyan surlar bin yıldır ayaktaydı ve o güne dek hiçbir ordu bu üç sıra duvarı aşamamıştı. Taşları öyle kalındı ki, gölgelerinde küçük bir ordu saklanabilirdi.</p>
+       <p>Osmanlı ordusunun başında henüz 21 yaşında bir sultan vardı: II. Mehmed. Onu dürbünümle izledim — genç yüzünde çocuksu bir heyecan değil, yaşını aşan bir kararlılık vardı. Aylardır sadece bu sabahı düşünerek hazırlanmıştı.</p>
+       <p>"Bu duvarları hangi güç yıkabilir?" diye yazdım defterime. Cevabı birazdan öğrenecektim.</p>`,
+      `<p>Genç sultanın aklında, kimsenin denemediği planlar vardı. İlk şaşkınlığı toplar yaşattı bana. Macar bir dökümcüyle birlikte, o güne dek görülmemiş büyüklükte toplar döktürmüştü. En büyüğünün adı "Şahi" idi; gülleleri yarım ton, yani küçük bir araba ağırlığındaydı!</p>
+       <p>Bu dev top ateşlendiğinde yer yerinden oynadı, kuşlar havalandı, benim durduğum tepe bile titredi. Bin yıldır aşılamayan surlarda çatlaklar belirmeye başladı. Ama Bizanslılar geceleri gedikleri onarıyor, savaş bir türlü bitmiyordu.</p>
+       <p>Sultan Mehmed sabırlıydı ama boş durmuyordu. Haliç denen koya girmek istiyordu; oysa Bizanslılar koyun ağzını kalın bir demir zincirle kapatmıştı. Gemiler giremiyordu. "Peki," diye düşündüm, "şimdi ne yapacak?"</p>`,
+      `<p>Sonra hayatımda gördüğüm en akıl almaz manzaraya tanık oldum. Bir gece, Osmanlılar gemileri denizden değil, karadan yürüttü! Tepelere kızaklar döşediler, kütükleri yağladılar ve yetmişten fazla gemiyi, öküzler ve yüzlerce askerin gücüyle karanın üzerinden çekerek Haliç'e indirdiler.</p>
+       <p>Gemiler geceleyin, meşale ışığında, davul ve mehter sesleri arasında tepelerin üzerinden süzülüyordu. Yelkenleri açıktı, sanki karada yüzüyorlardı. Gözlerime inanamadım; defterime elim titreyerek çizdim.</p>
+       <p>Sabah Haliç'e bakan Bizanslılar dehşete kapıldı. Dün boş olan koy, Osmanlı gemileriyle dolmuştu. İmkânsız sanılan olmuştu. O gece kuşatmanın kaderi değişti; şehir artık iki yönden kuşatılıyordu.</p>`,
+      `<p>Elli üç gün süren kuşatmanın sonunda surlardaki gedikler aşıldı ve 29 Mayıs sabahı İstanbul fethedildi. Ama beni asıl etkileyen, fetihten sonra olanlar oldu. Genç sultan şehre girdiğinde askerlerine halka dokunulmamasını emretti.</p>
+       <p>Farklı dinden insanlara ibadet özgürlüğü tanıdı, kiliselere dokunulmadı, herkes kendi inancıyla yaşamaya devam etti. Artık ona "Fatih" deniyordu. Defterime şunu yazdım: "Bir çağ kapandı, yepyeni bir çağ açıldı."</p>
+       <p>Altına ekledim: "Bu zaferi kazandıran şey yalnızca dev toplar ya da karadan yürüyen gemiler değildi. Asıl güç, 'imkânsız' denilen şeyi denemeye cüret eden bir aklın cesaretiydi." İşte o cesareti hep hatırlarım.</p>
+       <div class="ajan-notu">📌 Ajan Notu: İstanbul'un Fethi (29 Mayıs 1453), Orta Çağ'ın sonu ve Yeni Çağ'ın başlangıcı kabul edilir. II. Mehmed, bu zaferden sonra "Fatih" (fetheden) unvanını aldı. Gemilerin karadan yürütülmesi, tarihin en yaratıcı savaş taktiklerinden biri sayılır.</div>`
+    ]
+  },
+  {
+    id: "pirireis",
+    kapak: "https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_111356_4d0ba2a2-8a90-4528-8580-f44f06e5f83d.png",
+    baslik: "Kayıp Haritanın İzinde: Piri Reis",
+    sirt: "Piri Reis",
+    donem: "yenicag", donemAdi: "Yeni Çağ", amblem: "🧭",
+    cilt: "linear-gradient(180deg, #7a5490, #452b55 78%)", ciltKoyu: "#362142",
+    dosyaNo: "Görev Dosyası № 006",
+    sayfalar: [
+      `<p>Yıl 1513, yer Gelibolu. Kendimi denize bakan, deniz kokan bir çalışma odasında buldum. Duvarlarda dümenler, usturlaplar, kum saatleri ve rengârenk deniz kabukları asılıydı. Masanın üzerinde ise ceylan derisine çizilmiş, altın ve mavi renklerle bezenmiş muhteşem bir harita seriliydi.</p>
+       <p>Karşımdaki adam, gün yanığı yüzlü, gözleri ufuklara alışmış ünlü Osmanlı denizcisi ve haritacısı Piri Reis'ti. Haritayı bir hazineyi korur gibi düzeltiyordu. Yaklaşıp bakınca nefesim kesildi.</p>
+       <p>"Bunu nasıl çizdiniz?" diye sordum. Gülümsedi ve anlatmaya başladı — o anlattıkça ben defterime yetiştiremedim.</p>`,
+      `<p>"Bu tek bir haritanın işi değil," dedi Piri Reis. "Tam otuz dört ayrı haritayı önüme serdim, hepsini karşılaştırdım, birleştirdim. İçlerinde Portekiz, İspanya haritaları vardı; hatta Amerika'yı ilk gören Kristof Kolomb'un haritalarından biri de aralarındaydı."</p>
+       <p>"Nasıl elde ettiniz onu?" dedim şaşkınlıkla. Anlattı: Bir deniz seferinde esir alınan, gençliğinde Kolomb'la birlikte okyanusu geçmiş yaşlı bir denizci, bildiklerini onunla paylaşmıştı. Piri Reis, denizcilerden dinlediklerini, kendi gördüklerini ve eski haritaları sabırla bir araya getirmişti.</p>
+       <p>"Ben," dedi, "kimsenin görmediğini uydurmam. Duyduğumu araştırır, gördüğümü çizerim. Bir haritacı yalan söylerse, denizciyi ölüme gönderir." Bu sözü hemen not ettim.</p>`,
+      `<p>Haritaya eğilip yakından baktım ve tüylerim diken diken oldu. Avrupa, Afrika'nın batı kıyıları ve okyanusun ötesindeki o yeni kıta — yani Amerika! — hepsi oradaydı. Üstelik o çağ için inanılmaz bir doğrulukla. Kıyıların kenarına papağanlar, dağlar, gemiler ve minik notlar çizilmişti.</p>
+       <p>Sonra bana en çok gurur duyduğu eserini gösterdi: "Kitab-ı Bahriye". Bu, denizcilere yol gösteren dev bir rehberdi. Akdeniz'in her koyu, her limanı, her tehlikeli kayalığı, rüzgârların yönü, suyun derinliği tek tek çizilmiş ve anlatılmıştı.</p>
+       <p>"Bilgi paylaşılırsa çoğalır," dedi gözlerini kısarak. "Ben bilmediğim denize körü körüne açılmam. Önce öğrenir, haritasını çıkarır, sonra yelken açarım. Cesaret güzeldir ama bilgisiz cesaret, denizde kaybolmaktır."</p>`,
+      `<p>Odadan ayrılırken görev defterime şunu yazdım: "Piri Reis'in pusulası yalnızca kuzeyi göstermiyordu; merakın, araştırmanın ve bilimin de yolunu işaret ediyordu. O, korkusuz bir denizci olduğu kadar, sabırlı bir bilim insanıydı."</p>
+       <p>Altına ekledim: "Büyük işler, ummadık bilgileri sabırla bir araya getirmekten doğar. Bir denizcinin anlattığı küçük bir hikâye, koca bir kıtanın haritasında bir çizgi olabilir." O gün, merakın en güçlü pusula olduğunu bir kez daha anladım.</p>
+       <div class="ajan-notu">📌 Ajan Notu: Piri Reis'in 1513 tarihli dünya haritası, Amerika kıtasını gösteren en eski haritalardan biridir ve doğruluğuyla bilim dünyasını hâlâ şaşırtır. Bugün İstanbul'da, Topkapı Sarayı Müzesi'nde korunmaktadır. Denizcilik rehberi "Kitab-ı Bahriye" de çok değerli bir eserdir.</div>`
+    ]
+  },
+  {
+    id: "canakkale",
+    kapak: "https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_111359_0eafa6b0-47ff-49de-bb14-7b4fb423b000.png",
+    baslik: "Geçilmez Boğaz: Çanakkale 1915",
+    sirt: "Çanakkale 1915",
+    donem: "yakincag", donemAdi: "Yakın Çağ", amblem: "⚓",
+    cilt: "linear-gradient(180deg, #9c4a38, #55251a 78%)", ciltKoyu: "#421c13",
+    dosyaNo: "Görev Dosyası № 007",
+    sayfalar: [
+      `<p>18 Mart 1915. Çanakkale Boğazı'nın kıyısındaki bir topçu tabyasındaydım. Karşımda, o güne dek görülmüş en güçlü donanmalardan biri ilerliyordu; dev zırhlılar, ağır toplarını boğaza çevirmişti. Amaçları boğazı zorlayıp geçmek, İstanbul'a ulaşmaktı.</p>
+       <p>Deniz köpük köpüktü, top sesleri kulakları sağır ediyordu. Ama kıyıdaki askerlerin gözlerine baktığımda korku göremedim — kararlılık gördüm. Elleri toplarında, yürekleri yurtlarındaydı.</p>
+       <p>Onların bir sırrı vardı ki düşman bilmiyordu: Bir gece önce, karanlık sularda küçük bir gemi sessizce süzülmüştü. Adı Nusret'ti.</p>`,
+      `<p>Nusret Mayın Gemisi, düşmanın hiç beklemediği bir yere, geri dönüş yaptığı koya gizlice yirmi altı mayın döşemişti. Kimse fark etmemişti. Sabah büyük saldırı başladığında, o kocaman zırhlılar ilerledi ve birbiri ardına o gizli mayınlara çarpmaya başladı.</p>
+       <p>Patlamalar boğazı sarstı. Dünyanın en güçlü sanılan donanması, geçemeden geri çekildi. Kıyıda bir asker gördüm ki gözlerime inanamadım: Topun vinci kırılmıştı ve o, 215 kiloluk mermiyi sırtında taşıyıp namluya sürüyordu. Adı Seyit Onbaşı'ydı. Tek başına, imkânsızı başarıyordu.</p>
+       <p>O gün deniz savaşı kazanılmıştı. Defterime titreyen elle yazdım: "Bugün burada sayı değil, yürek kazandı."</p>`,
+      `<p>Ama savaş bitmedi; bu kez karaya çıktılar ve aylar süren siper savaşları başladı. Siperler bazen birbirine o kadar yakındı ki askerler karşılıklı konuşabiliyordu. İşte tam orada, savaşın ortasında, insanlığın ölmediğini gördüm.</p>
+       <p>Askerlerin yaralı düşmanlarına su verdiğine, ekmeğini bölüştüğüne, ölenleri saygıyla gömdüğüne tanık oldum. Cephede bir de genç bir komutan vardı, gözü pek ve soğukkanlı: Mustafa Kemal. Askerlerine dönüp o meşhur sözünü söyledi: "Ben size taarruzu değil, ölmeyi emrediyorum!"</p>
+       <p>Bu emir bir çaresizlik değil, bir kararlılıktı. Ve o kararlılık, cephenin kaderini değiştirdi. Askerler bir adım bile geri gitmedi.</p>`,
+      `<p>Görev dönüşünde defterime, o güne dek yazdıklarımın belki de en anlamlısını yazdım: "Çanakkale geçilmedi. Çünkü bir millet, yurdunu tek yürek olup, omuz omuza savundu. Burada yaşları bizden küçük gençler, geleceklerini vererek bir milletin geleceğini kurtardı."</p>
+       <p>Bir de şu satırı ekledim: "Savaşın en karanlık anında bile bir askerin düşmanına uzattığı su, insanlığın hiç sönmediğini gösterir." O suyu, o yürekleri hiç unutmadım.</p>
+       <div class="ajan-notu">📌 Ajan Notu: 18 Mart 1915 Deniz Zaferi, her yıl "18 Mart Şehitleri Anma Günü" olarak anılır. Çanakkale Savaşları'nda yüz binlerce insan hayatını kaybetti. Bu direniş, Kurtuluş Savaşı'na giden yolun ve Mustafa Kemal'in liderliğinin başlangıcı oldu.</div>`
+    ]
+  },
+  {
+    id: "cumhuriyet",
+    kapak: "https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260716_111401_c36827c4-72d0-43cd-a295-2c37d3a1787e.png",
+    baslik: "Yeni Bir Sabah: Cumhuriyet 1923",
+    sirt: "Cumhuriyet 1923",
+    donem: "yakincag", donemAdi: "Yakın Çağ", amblem: "🌅",
+    cilt: "linear-gradient(180deg, #2f8f87, #1f4a51 78%)", ciltKoyu: "#183a40",
+    dosyaNo: "Görev Dosyası № 008",
+    sayfalar: [
+      `<p>29 Ekim 1923 akşamı, Ankara'da Meclis binasının önündeyim. Hava serin, sokaklar kalabalık ve bir bekleyiş var. Yıllarca süren Kurtuluş Savaşı kazanılmış, düşman yurttan çıkarılmıştı. Ama şimdi bir soru vardı: Bu yeni ülke nasıl yönetilecekti?</p>
+       <p>İçeride, Meclis'te tarihi bir oturum sürüyordu. Camlardan içeriyi izledim; vekiller uzun uzun konuşuyor, bir karara varmaya çalışıyorlardı. Dışarıdaki halk sabırla bekliyordu. Havada, bir şeylerin değişmek üzere olduğunun heyecanı vardı.</p>
+       <p>Defterimi açtım ve bekledim. Bazı geceler, bir milletin kaderi birkaç saate sığar.</p>`,
+      `<p>Saat 20.30'u geçiyordu ki salondan büyük bir alkış ve tek bir haykırış yükseldi: "Yaşasın Cumhuriyet!" Türkiye Cumhuriyeti ilan edilmişti. Mustafa Kemal Paşa, oy birliğiyle ilk Cumhurbaşkanı seçilmişti.</p>
+       <p>Haber sokaklara yayılınca şehir bir anda şenlendi. Toplar atıldı, davullar çalındı, insanlar birbirine sarıldı, gözyaşları ve kahkahalar birbirine karıştı. Yaşlı bir teyze, mendiliyle gözlerini silerek yanımdan geçti ve sanki bana söylüyormuş gibi mırıldandı: "Artık söz milletin, evladım. Artık söz bizim."</p>
+       <p>O sözü defterime aynen yazdım. Çünkü cumhuriyetin ne demek olduğunu, o teyzenin cümlesi kadar güzel anlatan başka bir söz duymadım.</p>`,
+      `<p>Cumhuriyet demek, ülkeyi yönetenlerin doğuştan değil, milletin seçimiyle belirlenmesi demekti. Yani sıradan bir çocuğun bile, çalışırsa bir gün ülkesine hizmet edebilmesi demekti. Sonraki günlerde neler değiştiğini tek tek izledim.</p>
+       <p>Yeni okullar açıldı; kızlar ve erkekler aynı sıralarda eğitim görmeye başladı. Okuması kolay yeni harfler kabul edildi ve yaşlı genç herkes yeniden okumayı öğrendi. Kadınlar seçme ve seçilme hakkı kazandı — üstelik dünyanın pek çok ülkesinden önce.</p>
+       <p>Bir köy meydanında, kara tahta başında yeni harfleri öğrenen yetişkinleri gördüm. Gözlüklü bir dede, adını ilk kez kendi eliyle yazdığında sevinçten ağladı. İşte cumhuriyet, o dedenin gözyaşında gizliydi.</p>`,
+      `<p>Görev defterimin bu sayfasını, diğerlerinden farklı olarak bir yıldızla işaretledim ve şunu yazdım: "Cumhuriyet, bir milletin kendi geleceğini kendi eline almasıdır. Bu, tarihteki en değerli görevlerimden biriydi."</p>
+       <p>Altına, Atatürk'ün bir sözünü ekledim: "Cumhuriyet; düşüncesi hür, anlayışı hür, vicdanı hür nesiller ister." Ve kendi cümlemi de yazdım: "Bu emanet bugün senin ellerinde, genç Ajan. Onu okumakla, öğrenmekle ve iyi bir insan olmakla korursun."</p>
+       <div class="ajan-notu">📌 Ajan Notu: Türkiye Cumhuriyeti 29 Ekim 1923'te ilan edildi ve bu gün her yıl Cumhuriyet Bayramı olarak kutlanır. Atatürk, cumhuriyeti "en büyük eserim" diye nitelemiş ve onu gençlere emanet etmiştir — yani sana, Ajan!</div>`
+    ]
+  }
+];
+
+/* ---------------- Element referansları ---------------- */
+const sahne = document.getElementById("sahne");
+const oda = document.getElementById("oda");
+const girBtn = document.getElementById("girBtn");
+const atlaBtn = document.getElementById("atlaBtn");
+const buroDonBtn = document.getElementById("buroDonBtn");
+const kutuphane = document.getElementById("kutuphane");
+
+const raflar = document.getElementById("raflar");
+const bosMesaj = document.getElementById("bosMesaj");
+const okuyucu = document.getElementById("okuyucu");
+const kitapBaslik = document.getElementById("kitapBaslik");
+const dosyaNo = document.getElementById("dosyaNo");
+const sayfaIcerik = document.getElementById("sayfaIcerik");
+const sayfaNo = document.getElementById("sayfaNo");
+const noktaDizi = document.getElementById("noktaDizi");
+const oncekiBtn = document.getElementById("oncekiBtn");
+const sonrakiBtn = document.getElementById("sonrakiBtn");
+const kapatBtn = document.getElementById("kapatBtn");
+
+const azHareket = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let acikKitap = null;
+let sayfa = 0;
+let aktifFiltre = "hepsi";
+
+/* ---------------- Açılış sahnesi ---------------- */
+function kutuphaneyiAc(zoomla) {
+  if (zoomla && !azHareket) {
+    sahne.classList.add("giris");
+    setTimeout(gecisiBitir, 1250);
+  } else {
+    gecisiBitir();
+  }
+}
+function gecisiBitir() {
+  sahne.style.display = "none";
+  document.body.classList.remove("kilit");
+  kutuphane.classList.add("acik");
+  ilkKurulum();
+  window.scrollTo(0, 0);
+}
+function buroyaDon() {
+  kutuphane.classList.remove("acik");
+  document.body.classList.add("kilit");
+  sahne.style.display = "flex";
+  sahne.classList.remove("giris");
+  window.scrollTo(0, 0);
+}
+oda.addEventListener("click", () => kutuphaneyiAc(true));
+oda.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); kutuphaneyiAc(true); }
+});
+girBtn.addEventListener("click", (e) => { e.stopPropagation(); kutuphaneyiAc(true); });
+atlaBtn.addEventListener("click", (e) => { e.stopPropagation(); kutuphaneyiAc(false); });
+buroDonBtn.addEventListener("click", buroyaDon);
+
+let kurulumTamam = false;
+function ilkKurulum() {
+  if (kurulumTamam) { rafiCiz(aktifFiltre); return; }
+  kurulumTamam = true;
+  rafiCiz(aktifFiltre);
+  ilerlemeGuncelle();
+  tozUret();
+}
+
+/* ---------------- Okunanlar / ilerleme ---------------- */
+function okunanlar() {
+  try { return JSON.parse(localStorage.getItem("tarihAjaniOkunan") || "[]"); }
+  catch { return []; }
+}
+function okunduIsaretle(id) {
+  const liste = okunanlar();
+  if (!liste.includes(id)) {
+    liste.push(id);
+    localStorage.setItem("tarihAjaniOkunan", JSON.stringify(liste));
+  }
+  ilerlemeGuncelle();
+}
+function ilerlemeGuncelle() {
+  const okunan = okunanlar().filter(id => kitaplar.some(k => k.id === id)).length;
+  document.getElementById("okunanSayi").textContent = okunan;
+  document.getElementById("toplamSayi").textContent = kitaplar.length;
+  document.getElementById("ilerlemeCubugu").style.width = (okunan / kitaplar.length * 100) + "%";
+}
+
+/* ---------------- Raf çizimi (dinamik sütun) ---------------- */
+function sutunSayisi(adet) {
+  const genislik = raflar.clientWidth || window.innerWidth;
+  const spine = window.matchMedia("(max-width: 620px)").matches ? 60 : 78;
+  const ayak = spine + 16; /* sırt + boşluk */
+  let cols = Math.floor((genislik - 44) / ayak);
+  cols = Math.max(1, Math.min(cols, adet, 9));
+  return cols;
+}
+
+const CDN = "https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/";
+const dokular = {
+  gobeklitepe: CDN + "hf_20260717_050948_04720c07-f73c-4e82-b027-5f1983a511a1.png",
+  troya:       CDN + "hf_20260717_050951_36097d8c-8d47-4840-8e02-d158791e5f1e.png",
+  malazgirt:   CDN + "hf_20260717_050953_8758141b-76b6-4095-b8ef-65ebf1e4e44a.png",
+  ipekyolu:    CDN + "hf_20260717_050955_1f84fa17-69aa-4e7d-87f9-8493c02081a9.png",
+  fetih:       CDN + "hf_20260717_051006_3b45c952-8b8d-43ba-8f66-c4aaf481e1e7.png",
+  pirireis:    CDN + "hf_20260717_051008_0436572d-cb4d-43e8-9666-ae356f4868da.png",
+  canakkale:   CDN + "hf_20260717_051011_2be65751-3c82-4a51-a94b-adb1154cf42d.png",
+  cumhuriyet:  CDN + "hf_20260717_051013_59fa0b55-4cc3-41a7-b000-91a5ffd45b61.png"
+};
+
+function roman(n) {
+  const t = [["X",10],["IX",9],["V",5],["IV",4],["I",1]];
+  let s = "";
+  for (const [r, v] of t) while (n >= v) { s += r; n -= v; }
+  return s;
+}
+
+function spineYap(k, i) {
+  const btn = document.createElement("button");
+  const okundu = okunanlar().includes(k.id);
+  btn.className = "kitap" + (okundu ? " tamamlandi" : "");
+  btn.style.setProperty("--doku", "url('" + (dokular[k.id] || "") + "')");
+  btn.style.animationDelay = (i * 65) + "ms";
+  btn.setAttribute("aria-label", k.baslik + " — dosyayı aç");
+  const ciltNo = kitaplar.findIndex(x => x.id === k.id) + 1;
+  btn.innerHTML = `
+    <span class="rozet-okundu">✓</span>
+    <span class="govde">
+      <span class="sirt-baslik">${k.sirt}</span>
+      <span class="sirt-cilt">CİLT ${roman(ciltNo)}</span>
+    </span>
+    <span class="etiket">
+      <img src="${k.kapak}" alt="" loading="lazy" onerror="this.style.display='none'">
+      <span class="e-donem">${k.donemAdi}</span>
+      <span class="e-baslik">${k.baslik}</span>
+      <span class="e-ac">${k.sayfalar.length} sayfa · Aç ▸</span>
+    </span>`;
+  btn.addEventListener("click", () => kitapAc(k));
+  return btn;
+}
+
+function rafiCiz(filtre) {
+  aktifFiltre = filtre;
+  raflar.innerHTML = "";
+  const liste = kitaplar.filter(k => filtre === "hepsi" || k.donem === filtre);
+  bosMesaj.style.display = liste.length ? "none" : "block";
+  if (!liste.length) return;
+  const cols = sutunSayisi(liste.length);
+  let sira = 0;
+  for (let i = 0; i < liste.length; i += cols) {
+    const grup = liste.slice(i, i + cols);
+    const raf = document.createElement("div");
+    raf.className = "raf";
+    grup.forEach((k) => raf.appendChild(spineYap(k, sira++)));
+    const plank = document.createElement("div");
+    plank.className = "plank";
+    raf.appendChild(plank);
+    raflar.appendChild(raf);
+  }
+}
+
+/* ---------------- Okuyucu ---------------- */
+function kitapAc(k) {
+  acikKitap = k;
+  sayfa = 0;
+  kitapBaslik.textContent = k.baslik;
+  dosyaNo.textContent = k.dosyaNo;
+  const kapakResmi = document.getElementById("okuyucuKapak");
+  kapakResmi.style.display = "";
+  kapakResmi.onerror = () => { kapakResmi.style.display = "none"; };
+  kapakResmi.src = k.kapak;
+  noktaDizi.innerHTML = k.sayfalar.map(() => '<span class="nokta"></span>').join("");
+  sayfayiGoster(false);
+  okuyucu.classList.add("acik");
+  document.body.classList.add("kilit");
+  kapatBtn.focus();
+}
+
+function sayfayiGoster(animasyon = true) {
+  sayfaIcerik.innerHTML = acikKitap.sayfalar[sayfa];
+  sayfaIcerik.scrollTop = 0;
+  if (animasyon) {
+    sayfaIcerik.classList.remove("gecis");
+    void sayfaIcerik.offsetWidth;
+    sayfaIcerik.classList.add("gecis");
+  }
+  sayfaNo.textContent = `Sayfa ${sayfa + 1} / ${acikKitap.sayfalar.length}`;
+  noktaDizi.querySelectorAll(".nokta").forEach((n, i) => n.classList.toggle("aktif", i === sayfa));
+  oncekiBtn.disabled = sayfa === 0;
+  sonrakiBtn.disabled = sayfa === acikKitap.sayfalar.length - 1;
+  if (sayfa === acikKitap.sayfalar.length - 1) okunduIsaretle(acikKitap.id);
+}
+
+function kitapKapat() {
+  okuyucu.classList.remove("acik");
+  document.body.classList.remove("kilit");
+  acikKitap = null;
+  rafiCiz(aktifFiltre);
+}
+
+oncekiBtn.addEventListener("click", () => { if (sayfa > 0) { sayfa--; sayfayiGoster(); } });
+sonrakiBtn.addEventListener("click", () => {
+  if (acikKitap && sayfa < acikKitap.sayfalar.length - 1) { sayfa++; sayfayiGoster(); }
+});
+kapatBtn.addEventListener("click", kitapKapat);
+okuyucu.addEventListener("click", e => { if (e.target === okuyucu) kitapKapat(); });
+document.addEventListener("keydown", e => {
+  if (!okuyucu.classList.contains("acik")) return;
+  if (e.key === "Escape") kitapKapat();
+  if (e.key === "ArrowLeft") oncekiBtn.click();
+  if (e.key === "ArrowRight") sonrakiBtn.click();
+});
+
+/* ---------------- Filtreler ---------------- */
+document.getElementById("filtreler").addEventListener("click", e => {
+  const btn = e.target.closest(".filtre");
+  if (!btn) return;
+  document.querySelectorAll(".filtre").forEach(f => f.classList.remove("aktif"));
+  btn.classList.add("aktif");
+  rafiCiz(btn.dataset.donem);
+});
+
+/* ---------------- Yeniden boyutlandırma ---------------- */
+let boyutZaman;
+window.addEventListener("resize", () => {
+  if (!kutuphane.classList.contains("acik")) return;
+  clearTimeout(boyutZaman);
+  boyutZaman = setTimeout(() => rafiCiz(aktifFiltre), 180);
+});
+
+/* ---------------- Altın toz zerreleri ---------------- */
+function tozUret() {
+  if (azHareket) return;
+  for (let i = 0; i < 16; i++) {
+    const z = document.createElement("span");
+    z.className = "zerre";
+    const boyut = 2 + Math.random() * 4;
+    z.style.width = z.style.height = boyut + "px";
+    z.style.left = Math.random() * 100 + "vw";
+    z.style.top = 60 + Math.random() * 40 + "vh";
+    z.style.animationDuration = 10 + Math.random() * 12 + "s";
+    z.style.animationDelay = -Math.random() * 14 + "s";
+    document.body.appendChild(z);
+  }
+}
+
+/* ---------------- Mouse ile uzanan el ---------------- */
+(function () {
+  const el = document.getElementById("el");
+  if (!el) return;
+  if (azHareket || matchMedia("(pointer: coarse)").matches) return;
+
+  let tx = window.innerWidth / 2, ty = 0.34, tr = 0;
+  let cx = tx, cy = ty, cr = 0;
+  let calisiyor = false, bosZaman;
+
+  function goster() {
+    el.classList.add("aktif");
+    clearTimeout(bosZaman);
+    bosZaman = setTimeout(() => el.classList.remove("aktif"), 2600);
+    if (!calisiyor) { calisiyor = true; requestAnimationFrame(tik); }
+  }
+
+  window.addEventListener("pointermove", (e) => {
+    if (e.pointerType === "touch") return;
+    if (!kutuphane.classList.contains("acik")) return;
+    if (okuyucu.classList.contains("acik")) { el.classList.remove("aktif"); return; }
+    tx = e.clientX;
+    const kitapUstunde = e.target.closest && e.target.closest(".kitap");
+    const yOran = e.clientY / window.innerHeight;      /* 0 üst · 1 alt */
+    /* reach kitap bölgesiyle sınırlı — başlığın üstüne çıkmaz */
+    ty = kitapUstunde ? 0.22 : Math.max(0.28, 0.30 + yOran * 0.16);
+    tr = ((e.clientX - window.innerWidth / 2) / window.innerWidth) * 12;
+    goster();
+  }, { passive: true });
+
+  document.addEventListener("pointerleave", () => el.classList.remove("aktif"));
+
+  function tik() {
+    cx += (tx - cx) * 0.15;
+    cy += (ty - cy) * 0.12;
+    cr += (tr - cr) * 0.12;
+    el.style.setProperty("--el-x", cx + "px");
+    el.style.setProperty("--el-y", (cy * 100) + "%");
+    el.style.setProperty("--el-r", cr + "deg");
+    if (Math.abs(tx - cx) > 0.5 || Math.abs(ty - cy) > 0.002 || el.classList.contains("aktif")) {
+      requestAnimationFrame(tik);
+    } else {
+      calisiyor = false;
+    }
+  }
+})();
+</script>
+</body>
+</html>
