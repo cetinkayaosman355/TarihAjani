@@ -15,8 +15,8 @@
 /* ══ TARİH AJANI — GERÇEK UYGULAMA (sıfırdan SPA, web sayfası değil) ══ */
 :root{--bg:#06070d;--panel:#0d0f17;--panel2:#10121b;--line:rgba(193,154,82,.26);--gold:#e6c478;--brass:#c19a52;--ink:#f0ece2;--mut:#8a8f9c;--dim:#6b7080}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overscroll-behavior-y:none}
-body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;overflow:hidden}
+html,body{margin:0;height:100%;height:100dvh;overscroll-behavior-y:none}
+body{position:fixed;inset:0;background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;overflow:hidden}
 button{font-family:inherit}
 a{color:inherit;text-decoration:none}
 .serif{font-family:'Playfair Display',Georgia,serif}
@@ -189,6 +189,7 @@ audio{width:100%;margin-top:10px}
 <div class="scr" id="scr-akademi"></div>
 <div class="scr" id="scr-neden"></div>
 <div class="scr" id="scr-oynat" style="padding:0"></div>
+<div class="scr" id="scr-haber"></div>
 
 <nav id="tabbar" aria-label="Uygulama menüsü"></nav>
 <div id="toast" role="status"></div>
@@ -238,7 +239,7 @@ var TABS = [
   { k: 'masa',   label: 'Masa',   d: 'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5' },
   { k: 'arsiv',  label: 'Arşiv',  d: 'M3 7l2-3h14l2 3M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Zm7 4h4' },
   { k: 'uret',   label: 'ÜRET',   d: 'M12 5v14M5 12h14', fab: true },
-  { k: 'oyun',   label: 'Oyun',   d: 'M12 8v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z' },
+  { k: 'haber',  label: 'Haber',  d: 'M4 4h13v16H5a2 2 0 0 1-2-2V6m14 2h3v10a2 2 0 0 1-2 2M7 8h7M7 12h7M7 16h4' },
   { k: 'profil', label: 'Profil', d: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0' }
 ];
 var cur = '';
@@ -257,7 +258,7 @@ function go(k, push, sessiz) {
     b.classList.toggle('on', b.getAttribute('data-k') === k);
   });
   var draw = { masa: drawMasa, arsiv: drawArsiv, uret: drawUret, oyun: drawOyun, profil: drawProfil,
-               paket: drawPaket, akademi: drawAkademi, neden: drawNeden }[k];
+               paket: drawPaket, akademi: drawAkademi, neden: drawNeden, haber: drawHaber }[k];
   if (draw) draw();
 }
 /* uygulama içi oynatıcı: oyunlar/kitaplık web'e ÇIKMADAN burada açılır */
@@ -373,7 +374,12 @@ function drawMasa() {
     }).join('') + '</div>' +
     '<div class="kart" data-go="oyun"><div class="krow"><span class="rz">♞</span>' +
     '<span class="m"><b>Oyun Tüneli</b><span>3 saha oyunu · rütbeni kanıtla</span></span><span class="git">›</span></div>' +
-    '<div class="minis"><span>◈ Zaman Görevi</span><span>♞ Satranç 1402</span><span>🏺 Mangala</span></div></div>';
+    '<div class="minis"><span>◈ Zaman Görevi</span><span>♞ Satranç 1402</span><span>🏺 Mangala</span></div></div>' +
+    '<div class="sh"><b>SON DAKİKA · TARİH AJANSI</b><button data-go="haber">tümü →</button></div>' +
+    HABERLER.slice(0, 3).map(function (h) {
+      return '<div class="drow" data-go="haber"><span class="no" style="font-size:12px">' + esc(h.y) + '</span>' +
+        '<span class="m"><b>' + esc(h.m) + '</b><span>' + esc(h.k) + '</span></span><span class="git" style="color:var(--brass)">›</span></div>';
+    }).join('');
   krediGetir();
 }
 
@@ -685,6 +691,42 @@ function gorselUret(i, btn) {
   }).catch(function () { btn.disabled = false; btn.textContent = '◈ GÖRSEL · 12 KR'; toast('Bağlantı hatası'); });
 }
 
+/* ── HABER — tarihin canlı yayını, tamamen native ── */
+var HABERLER = [
+  { y: '1453', k: 'SON DAKİKA', m: 'Konstantinopolis düştü: bin yıllık Bizans sona erdi',
+    o: 'Elli üç gün süren kuşatmanın sonunda surlarda gedik açıldı. Genç padişah Mehmed, şehre Topkapı yönünden girdi. Ayasofya’da öğle vakti ezan okundu. Muhabirimiz, son Bizans imparatoru Konstantin’in cesedinin mor çizmelerinden tanındığını aktarıyor.' },
+  { y: '1402', k: 'SAVAŞ', m: 'Yıldırım esir düştü: iki cihangir Çubuk Ovası’nda',
+    o: 'Timur’un fillerle desteklenen ordusu, Anadolu birliklerinin saf değiştirmesiyle üstünlük kurdu. Akşam saatlerinde Sultan Bayezid’in esir alındığı doğrulandı. Osmanlı tahtı için şehzadeler arasında taht kavgası bekleniyor.' },
+  { y: 'MÖ 44', k: 'SUİKAST', m: 'Sezar senatoda öldürüldü: tam yirmi üç hançer darbesi',
+    o: 'Mart ayının on beşinde, Pompeius Tiyatrosu’ndaki senato oturumunda Gaius Julius Caesar suikaste kurban gitti. Saldırganlar arasında evlat edindiği Brutus’un da bulunduğu, diktatörün son sözlerinin ona yöneldiği iddia ediliyor.' },
+  { y: '1071', k: 'ZAFER', m: 'İmparator esir: Anadolu’nun kapısı ardına dek açıldı',
+    o: 'Malazgirt ovasında Sultan Alparslan’ın hilal taktiği Bizans ordusunu kuşattı. İmparator Romen Diyojen savaş meydanında esir alındı; sultanın kendisine bir hükümdar gibi davrandığı bildiriliyor. Türkmen boyları batıya akıyor.' },
+  { y: '1258', k: 'FELAKET', m: 'Bağdat yıkıldı: Dicle mürekkepten karardı',
+    o: 'Hülagu’nun orduları İslam dünyasının başkentini on üç günlük kuşatma sonunda ele geçirdi. Beytülhikme kütüphanesinin kitapları nehre atıldı; görgü tanıkları Dicle’nin günlerce mürekkep renginde aktığını söylüyor. Halife Mustasım’ın akıbeti belirsiz.' },
+  { y: '1915', k: 'CEPHE', m: 'Nusret’in 26 mayını boğazı kilitledi: zırhlılar geri çekiliyor',
+    o: 'Gece karanlığında Karanlık Liman’a döşenen mayınlar, sabah taarruza kalkan müttefik donanmasını biçti. Bouvet dakikalar içinde battı; Ocean ve Irresistible ağır yara aldı. Deniz harekâtının çıkmaza girdiği konuşuluyor.' },
+  { y: '1521', k: 'FETİH', m: 'Belgrad düştü: Avrupa’nın kilidi genç sultanın elinde',
+    o: 'Tahta çıkışının ikinci yılındaki Sultan Süleyman, dedelerinin alamadığı kaleyi üç haftalık kuşatmayla teslim aldı. Macar sarayında panik hâkim; elçiler Avrupa başkentlerine kötü haberi ulaştırmak için yola çıktı.' },
+  { y: 'MÖ 1274', k: 'ANTLAŞMA', m: 'Kadeş’te iki dev karşı karşıya: tarihin ilk yazılı barışı yolda',
+    o: 'Hitit ve Mısır orduları Orontes kıyısında günlerdir üstünlük kuramıyor. Saray kaynakları, iki tarafın da zafer ilan edip masaya oturacağını, gümüş levhalara kazınacak bir antlaşmanın hazırlandığını aktarıyor.' }
+];
+function drawHaber() {
+  var el = $('#scr-haber');
+  el.innerHTML =
+    '<div class="h-row"><div><b>Tarih Ajansı</b><span class="alt">TARİHİN CANLI YAYINI · O GÜN BUGÜNMÜŞ GİBİ</span></div>' +
+    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    HABERLER.map(function (h, i) {
+      return '<div class="sec' + (i === 0 ? ' ac' : '') + '"><div class="sbh"><b style="display:flex;gap:9px;align-items:center">' +
+        '<span style="flex:none;font-family:\'Playfair Display\',serif;font-size:15px;color:var(--gold);letter-spacing:0">' + esc(h.y) + '</span>' +
+        '<span style="font-size:8.5px;border:1px solid rgba(176,65,62,.6);color:#e08a80;border-radius:6px;padding:3px 7px;letter-spacing:.14em">' + esc(h.k) + '</span></b><i>›</i></div>' +
+        '<div style="padding:0 15px 4px"><b class="serif" style="font-size:15.5px;line-height:1.35;color:#ede4cf">' + esc(h.m) + '</b></div>' +
+        '<div class="ic"><div class="blk"><div class="t">' + esc(h.o) + '</div></div>' +
+        '<button class="kopya" style="margin-top:10px" data-haber-uret="' + i + '">◉ BU HABERİ VİDEOYA DÖNÜŞTÜR</button></div></div>';
+    }).join('') +
+    '<p class="alt-not" style="margin-top:16px">AJANS ARŞİVİ · HER MANŞET DOĞRULANMIŞ KAYITLARDAN</p>';
+  krediGetir();
+}
+
 /* ── OYUN ── */
 function drawOyun() {
   $('#scr-oyun').innerHTML =
@@ -823,6 +865,7 @@ function drawProfil() {
      ['Neden Tarih Ajanı?','neden','M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm-.2-6.2c0-2.4 2.7-2.5 2.7-4.3 0-1.2-1-2-2.4-2-1.2 0-2.1.6-2.6 1.5M12 17.8v.1']].map(function (m) {
       return '<button class="mrow" data-go="' + m[1] + '"><svg viewBox="0 0 24 24"><path d="' + m[2] + '"/></svg><span>' + m[0] + '</span><i>›</i></button>';
     }).join('') +
+    '<button class="mrow" data-go="oyun"><svg viewBox="0 0 24 24"><path d="M12 8v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"/></svg><span>Oyun Tüneli — 3 saha oyunu</span><i>›</i></button>' +
     '<button class="mrow" data-oynat="/kitaplik" data-ad="Dijital Kitaplık"><svg viewBox="0 0 24 24"><path d="M4 20V4h4v16H4Zm6 0V4h4v16h-4Zm7.5-.3-3-15 3.9-.8 3 15-3.9.8Z"/></svg><span>Dijital Kitaplık</span><i>›</i></button></div>' +
     (user ? '<div class="grup"><button class="mrow" id="p-cikis" style="color:#e08a80"><svg viewBox="0 0 24 24" style="stroke:#e08a80"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></svg><span>Çıkış Yap</span></button></div>' : '') +
     '<div class="alt-not">TARİH AJANI UYGULAMASI · 2.0</div>';
@@ -879,6 +922,8 @@ document.addEventListener('click', function (e) {
   var g = e.target.closest('[data-geri]'); if (g) { history.back(); return; }
   var oy = e.target.closest('[data-oynat]'); if (oy) { oynat(oy.getAttribute('data-oynat'), oy.getAttribute('data-ad') || ''); return; }
   var ex = e.target.closest('[data-ext]'); if (ex) { window.open(ex.getAttribute('data-ext'), '_blank'); return; }
+  var hu = e.target.closest('[data-haber-uret]');
+  if (hu) { var hh = HABERLER[+hu.getAttribute('data-haber-uret')]; if (hh) { uret.konu = hh.y + ' — ' + hh.m; uret.sonuc = null; go('uret'); } return; }
   var uk = e.target.closest('[data-uret-konu]');
   if (uk) { uret.konu = uk.getAttribute('data-uret-konu'); uret.sonuc = null; go('uret'); return; }
   var sh = e.target.closest('.sbh'); if (sh) sh.parentElement.classList.toggle('ac');
