@@ -4,7 +4,7 @@
   "description": "Tarihe dedektif gözüyle bakan içerik stüdyosu: vaka dosyaları, AI destekli Studio, canlı tarih haberleri ve içerik üretim akademisi.",
   "lang": "tr",
   "dir": "ltr",
-  "start_url": "/?src=pwa",
+  "start_url": "/app?src=pwa",
   "scope": "/",
   "id": "/?src=pwa",
   "display": "standalone",

@@ -5,7 +5,7 @@
    - Aynı köken görsel/font: önbellek öncelikli (stale-while-revalidate, ağır dosyalar)
    - Çapraz köken (Google Fonts, unpkg React): dokunma, doğrudan ağdan
    SÜRÜM değişince eski önbellekler temizlenir. Her deploy'da bump'la. */
-var VERSION = 'ta-v3';
+var VERSION = 'ta-v4';
 var STATIC = VERSION + '-static';
 var PAGES = VERSION + '-pages';
 var MEDIA = VERSION + '-media';
@@ -13,7 +13,7 @@ var OFFLINE = '/offline.html';
 // Çevrimdışı çekirdek: uygulama kabuğu + arşiv verisi (dosyalar internetsiz okunur).
 var PRECACHE = [
   '/offline.html', '/assets/pwa-icon-192.png',
-  '/', '/arsiv',
+  '/app', '/', '/arsiv',
   '/pwa.js', '/support.js',
   '/arsiv-data.js', '/arsiv-slugs.js'
 ];

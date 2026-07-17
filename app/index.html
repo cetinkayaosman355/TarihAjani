@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#06070d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Tarih Ajanı</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/assets/pwa-icon-192.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Hanken+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ══ TARİH AJANI — GERÇEK UYGULAMA (sıfırdan SPA, web sayfası değil) ══ */
+:root{--bg:#06070d;--panel:#0d0f17;--panel2:#10121b;--line:rgba(193,154,82,.26);--gold:#e6c478;--brass:#c19a52;--ink:#f0ece2;--mut:#8a8f9c;--dim:#6b7080}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overscroll-behavior-y:none}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;overflow:hidden}
+button{font-family:inherit}
+a{color:inherit;text-decoration:none}
+.serif{font-family:'Playfair Display',Georgia,serif}
+/* ── ekran sistemi: her ekran tam-ekran katman, geçişler native ── */
+.scr{position:fixed;inset:0;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:calc(14px + env(safe-area-inset-top,0px)) 0 calc(92px + env(safe-area-inset-bottom,0px));
+  display:none}
+.scr.on{display:block;animation:scr-in .24s ease both}
+.scr.push{animation:scr-push .28s cubic-bezier(.3,.85,.35,1) both}
+@keyframes scr-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes scr-push{from{opacity:.4;transform:translateX(24%)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.scr.on,.scr.push{animation:none}}
+/* ── alt menü ── */
+#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;align-items:stretch;
+  background:rgba(8,10,16,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--line);padding:6px 4px calc(14px + env(safe-area-inset-bottom,0px))}
+#tabbar button{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;
+  padding-top:8px;background:none;border:0;color:#828795;font-size:10px;cursor:pointer}
+#tabbar button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#tabbar button.on{color:var(--gold)}
+#tabbar button:active svg{transform:scale(.88)}
+#tabbar button.fab{overflow:visible}
+#tabbar button.fab i{position:absolute;left:50%;top:-26px;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(135deg,#a87f37,#e9c87e 55%,#c19a52);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#171207;font-style:normal;font-weight:800;font-size:9px;letter-spacing:.06em;
+  box-shadow:0 12px 30px -8px rgba(233,200,126,.6),0 0 0 5px rgba(8,10,16,.97)}
+#tabbar button.fab i svg{width:19px;height:19px;stroke:#171207;stroke-width:2.2;margin-bottom:1px}
+#tabbar button.fab span{visibility:hidden}
+/* ── ortak parçalar ── */
+.pad{padding:0 16px}
+.h-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:6px 18px 14px}
+.h-row b{display:block;font-family:'Playfair Display',serif;font-size:23px;font-weight:700}
+.h-row .alt{display:block;margin-top:4px;font-size:10px;letter-spacing:.22em;color:#77705c}
+.kredi{flex:none;display:inline-flex;align-items:center;gap:6px;margin-top:3px;border:1px solid rgba(193,154,82,.45);
+  background:rgba(193,154,82,.1);border-radius:20px;padding:7px 13px;color:var(--gold);font-weight:800;font-size:12px;
+  font-variant-numeric:tabular-nums;cursor:pointer;border:1px solid rgba(193,154,82,.45)}
+.kredi:active{transform:scale(.94)}
+.kart{display:block;margin:12px 14px 0;border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;cursor:pointer}
+.kart:active{transform:scale(.985)}
+.krow{display:flex;align-items:center;gap:13px;padding:14px 15px}
+.krow .rz{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid rgba(193,154,82,.5);display:grid;place-items:center;color:var(--gold);font-size:17px}
+.krow .m{flex:1;min-width:0}
+.krow b{display:block;font-size:14.5px;font-weight:700;color:#ede4cf}
+.krow span{display:block;margin-top:2px;color:var(--mut);font-size:11.5px}
+.krow .git{color:var(--brass);font-size:18px}
+.sh{display:flex;justify-content:space-between;align-items:baseline;padding:20px 18px 8px}
+.sh b{font-size:11px;letter-spacing:.22em;color:var(--brass)}
+.sh button{background:none;border:0;font-size:11px;color:var(--mut);cursor:pointer}
+.chip{border:1px solid rgba(193,154,82,.3);background:rgba(255,255,255,.02);color:#c9c2ae;font-size:11px;letter-spacing:.04em;
+  padding:10px 14px;border-radius:20px;cursor:pointer}
+.chip.on{background:linear-gradient(110deg,#a87f37,#e9c87e 60%,#c19a52);border-color:transparent;color:#171207;font-weight:800}
+.cta{display:flex;align-items:center;justify-content:center;gap:9px;border:0;width:100%;padding:16px;border-radius:14px;cursor:pointer;
+  background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:13.5px;letter-spacing:.04em}
+.cta:active{transform:scale(.98)}
+.cta[disabled]{opacity:.55}
+.ghost{background:none;border:1px solid rgba(193,154,82,.4);color:var(--gold)}
+.ust{display:flex;align-items:center;gap:6px;padding:2px 10px 8px}
+.ust .geri{flex:none;width:40px;height:40px;display:grid;place-items:center;color:var(--gold);font-size:24px;background:none;border:0;cursor:pointer}
+.ust span{font-size:10px;letter-spacing:.2em;color:#77705c}
+.bos{padding:36px 20px;text-align:center;color:var(--dim);font-size:13px;line-height:1.6}
+input,textarea{font-family:inherit}
+.inp{width:100%;border:1px solid rgba(193,154,82,.3);background:#080a12;color:var(--ink);padding:14px 16px;font-size:15px;border-radius:13px;outline:0}
+.inp:focus{border-color:rgba(230,196,120,.6)}
+/* toast */
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:99;
+  background:rgba(8,10,16,.97);border:1px solid var(--line);border-radius:22px;color:var(--gold);font-size:12.5px;font-weight:700;
+  padding:12px 20px;opacity:0;pointer-events:none;transition:opacity .25s;max-width:86vw;text-align:center}
+#toast.on{opacity:1}
+/* ── MASA ── */
+.hero{position:relative;display:block;margin:0 14px;border-radius:18px;overflow:hidden;height:min(52vw,230px);border:1px solid rgba(193,154,82,.3);background:var(--panel2);cursor:pointer}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,6,10,.1) 30%,rgba(5,6,10,.94))}
+.hero .bd{position:absolute;top:12px;left:12px;z-index:2;font-size:9px;letter-spacing:.18em;font-weight:800;color:#171207;background:linear-gradient(110deg,#d8b26a,#e9c87e);padding:5px 10px;border-radius:7px}
+.hero .tt{position:absolute;left:16px;right:16px;bottom:14px;z-index:2}
+.hero .tt b{display:block;font-family:'Playfair Display',serif;font-size:19px;line-height:1.2;font-weight:700}
+.hero .tt span{display:block;margin-top:4px;font-size:11px;color:var(--gold)}
+.hero:active{transform:scale(.985)}
+.posters{display:flex;gap:11px;padding:0 14px;overflow-x:auto;scrollbar-width:none}
+.posters::-webkit-scrollbar{display:none}
+.po{flex:none;width:118px;border-radius:14px;overflow:hidden;background:var(--panel2);border:1px solid rgba(193,154,82,.2);cursor:pointer}
+.po img{width:100%;height:86px;object-fit:cover;display:block}
+.po b{display:block;font-size:12px;font-weight:600;color:#e9e2d0;padding:8px 10px 3px;line-height:1.28}
+.po span{display:block;font-size:9.5px;color:var(--dim);padding:0 10px 10px}
+.po:active{transform:scale(.97)}
+.minis{display:flex;gap:7px;padding:0 15px 13px}
+.minis span{flex:1;text-align:center;font-size:10px;color:#c9c2ae;border:1px solid rgba(129,135,151,.25);border-radius:9px;padding:8px 4px;background:rgba(255,255,255,.02)}
+/* ── ARŞİV ── */
+.ara{margin:4px 14px 10px;display:flex;align-items:center;gap:9px;background:var(--panel2);border:1px solid rgba(193,154,82,.24);border-radius:13px;padding:11px 13px}
+.ara svg{width:16px;height:16px;stroke:#77705c;fill:none;stroke-width:2;flex:none}
+.ara input{flex:1;background:none;border:0;outline:0;color:#e9e2d0;font-size:15px;min-width:0}
+.drow{display:flex;gap:13px;align-items:center;padding:11px 18px;border-top:1px solid rgba(230,220,196,.06);cursor:pointer}
+.drow:active{background:rgba(193,154,82,.06)}
+.drow .no{flex:none;width:46px;height:46px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--gold)}
+.drow .m{flex:1;min-width:0}
+.drow b{display:block;font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#ede4cf;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drow span{display:block;margin-top:3px;font-size:10px;letter-spacing:.1em;color:var(--dim)}
+.sec{margin:10px 14px 0;border:1px solid var(--line);border-radius:15px;background:var(--panel);overflow:hidden}
+.sec .sbh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;cursor:pointer;user-select:none}
+.sec .sbh b{font-size:11px;letter-spacing:.18em;color:var(--brass)}
+.sec .sbh i{font-style:normal;color:#77705c;font-size:13px;transition:transform .2s}
+.sec .ic{display:none;padding:0 15px 14px}
+.sec.ac .ic{display:block}
+.sec.ac .sbh i{transform:rotate(90deg)}
+.blk+.blk{margin-top:12px}
+.blk .k{font-size:9.5px;letter-spacing:.16em;color:var(--mut);margin-bottom:5px}
+.blk .t{font-size:13px;line-height:1.68;color:#d5d9e2;white-space:pre-wrap;word-break:break-word}
+/* ── ÜRET ── */
+.opt-grid{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px}
+.sure{padding:6px 16px 0}
+.sure input[type=range]{width:100%;accent-color:var(--gold)}
+.sure .val{display:flex;justify-content:space-between;color:var(--mut);font-size:11px;margin-top:4px}
+.sure .val b{color:var(--gold);font-size:13px}
+.prog{margin:24px 16px;text-align:center}
+.prog .ring{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;border:3px solid rgba(230,196,120,.18);border-top-color:var(--gold);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prog b{display:block;font-family:'Playfair Display',serif;font-size:19px}
+.prog span{display:block;margin-top:6px;font-size:10.5px;letter-spacing:.18em;color:var(--brass)}
+.prog .bar{height:3px;background:rgba(230,196,120,.14);border-radius:2px;margin-top:18px;overflow:hidden}
+.prog .bar i{display:block;height:100%;background:linear-gradient(90deg,#a87f37,#e9c87e);transition:width .6s ease}
+.hata{margin:14px 16px;border:1px solid rgba(176,65,62,.5);background:rgba(90,26,24,.18);color:#e8b3ae;border-radius:13px;padding:14px 16px;font-size:13px;line-height:1.6}
+.kopya{border:1px solid rgba(193,154,82,.4);background:rgba(193,154,82,.08);color:var(--gold);font-size:10.5px;letter-spacing:.08em;padding:7px 11px;border-radius:9px;cursor:pointer;flex:none}
+/* ── PROFİL ── */
+.kim{display:flex;align-items:center;gap:14px;border:1px solid rgba(193,154,82,.28);background:var(--panel2);border-radius:18px;padding:16px;margin:0 16px}
+.kim .av{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#a87f37,#e9c87e 60%,#c19a52);color:#171207;font-family:'Playfair Display',serif;font-size:23px;font-weight:800}
+.kim b{display:block;font-size:16px;color:#ede4cf}
+.kim span{display:block;margin-top:3px;font-size:11.5px;color:var(--mut);word-break:break-all}
+.grup{margin:16px;border:1px solid rgba(193,154,82,.2);border-radius:16px;overflow:hidden;background:var(--panel)}
+.mrow{display:flex;align-items:center;gap:12px;padding:14px 15px;cursor:pointer;border:0;background:none;width:100%;text-align:left;color:#d5d9e2;font-size:14px}
+.mrow+.mrow{border-top:1px solid rgba(230,220,196,.06)}
+.mrow svg{flex:none;width:19px;height:19px;stroke:var(--brass);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.mrow span{flex:1}
+.mrow i{font-style:normal;color:#77705c;font-size:15px}
+.mrow:active{background:rgba(193,154,82,.06)}
+.alt-not{margin:4px 0 0;text-align:center;font-size:10px;letter-spacing:.14em;color:#4c515e}
+/* uygulama içi oynatıcı (oyunlar/kitaplık) — web'e ÇIKMADAN tam ekran */
+#scr-oynat .obar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;background:rgba(8,10,16,.97);
+  border-bottom:1px solid var(--line);padding:calc(6px + env(safe-area-inset-top,0px)) 10px 6px}
+#scr-oynat .obar b{font-family:'Playfair Display',serif;font-size:15px}
+#scr-oynat iframe{display:block;width:100%;height:calc(100vh - 118px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));border:0;background:#000}
+/* paket / ürün kartları */
+.pk{margin:10px 16px 0;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:15px;display:flex;align-items:center;gap:13px}
+.pk .m{flex:1;min-width:0}
+.pk b{display:block;font-size:14.5px;color:#ede4cf}
+.pk span{display:block;margin-top:3px;font-size:11.5px;color:var(--mut)}
+.pk .fy{flex:none;text-align:right}
+.pk .fy b{font-family:'Playfair Display',serif;font-size:18px;color:var(--gold)}
+.pk .al{flex:none;border:0;background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:11px;
+  letter-spacing:.06em;padding:11px 16px;border-radius:10px;cursor:pointer}
+.pk .al:active{transform:scale(.95)}
+audio{width:100%;margin-top:10px}
+.scene-img{width:100%;border-radius:10px;margin-top:10px;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<!-- ekranlar JS ile çizilir -->
+<div class="scr" id="scr-masa"></div>
+<div class="scr" id="scr-arsiv"></div>
+<div class="scr" id="scr-uret"></div>
+<div class="scr" id="scr-oyun"></div>
+<div class="scr" id="scr-profil"></div>
+<div class="scr" id="scr-dosya"></div>
+<div class="scr" id="scr-paket"></div>
+<div class="scr" id="scr-akademi"></div>
+<div class="scr" id="scr-neden"></div>
+<div class="scr" id="scr-oynat" style="padding:0"></div>
+
+<nav id="tabbar" aria-label="Uygulama menüsü"></nav>
+<div id="toast" role="status"></div>
+
+<script src="/arsiv-data.js"></script>
+<script src="/arsiv-slugs.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+'use strict';
+/* ═══ TARİH AJANI APP — sıfırdan yazılmış uygulama çekirdeği ═══ */
+var SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+var FN = SB_URL + '/functions/v1/studio-generate';
+var sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
+var DATA = window.__ARSIV__ || [];
+var user = null, kredi = null;
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function(){});
+
+/* ── yardımcılar ── */
+function $(s, r) { return (r || document).querySelector(s); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function toast(m) {
+  var t = $('#toast'); t.textContent = m; t.classList.add('on');
+  clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('on'); }, 2600);
+}
+function kopyala(t) {
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(
+    function () { toast('⧉ Kopyalandı'); },
+    function () { toast('Kopyalanamadı'); });
+}
+function token() {
+  try {
+    var t = null;
+    Object.keys(localStorage).forEach(function (k) {
+      if (t || k.indexOf('sb-') !== 0 || k.indexOf('auth-token') === -1) return;
+      var v = JSON.parse(localStorage.getItem(k) || 'null');
+      t = v && (v.access_token || (v.currentSession && v.currentSession.access_token)) || null;
+    });
+    return t;
+  } catch (e) { return null; }
+}
+
+/* ── ROUTER: sayfa yenilemesi YOK — ekranlar anında değişir ── */
+var TABS = [
+  { k: 'masa',   label: 'Masa',   d: 'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5' },
+  { k: 'arsiv',  label: 'Arşiv',  d: 'M3 7l2-3h14l2 3M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Zm7 4h4' },
+  { k: 'uret',   label: 'ÜRET',   d: 'M12 5v14M5 12h14', fab: true },
+  { k: 'oyun',   label: 'Oyun',   d: 'M12 8v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z' },
+  { k: 'profil', label: 'Profil', d: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0' }
+];
+var cur = '';
+function go(k, push) {
+  if (k === cur && k !== 'dosya') return;
+  document.querySelectorAll('.scr').forEach(function (s) { s.classList.remove('on', 'push'); });
+  var el = $('#scr-' + k);
+  if (!el) return;
+  el.classList.add('on'); if (push) el.classList.add('push');
+  el.scrollTop = 0;
+  cur = k;
+  document.querySelectorAll('#tabbar button').forEach(function (b) {
+    b.classList.toggle('on', b.getAttribute('data-k') === k);
+  });
+  var draw = { masa: drawMasa, arsiv: drawArsiv, uret: drawUret, oyun: drawOyun, profil: drawProfil,
+               paket: drawPaket, akademi: drawAkademi, neden: drawNeden }[k];
+  if (draw) draw();
+}
+/* uygulama içi oynatıcı: oyunlar/kitaplık web'e ÇIKMADAN burada açılır */
+function oynat(url, ad) {
+  var donus = cur === 'oynat' ? 'masa' : cur;   // geri: geldiğin ekrana dön
+  var el = $('#scr-oynat');
+  el.innerHTML =
+    '<div class="obar"><button class="geri" style="flex:none;width:40px;height:40px;display:grid;place-items:center;color:var(--gold);font-size:24px;background:none;border:0" id="o-geri">‹</button>' +
+    '<b>' + esc(ad) + '</b></div>' +
+    '<iframe src="' + esc(url) + '" allow="autoplay; fullscreen"></iframe>';
+  document.querySelectorAll('.scr').forEach(function (s) { s.classList.remove('on', 'push'); });
+  el.classList.add('on', 'push'); cur = 'oynat';
+  $('#o-geri').addEventListener('click', function () { el.innerHTML = ''; cur = ''; go(donus || 'masa'); });
+}
+$('#tabbar').innerHTML = TABS.map(function (t) {
+  var ic = '<svg viewBox="0 0 24 24"><path d="' + t.d + '"/></svg>';
+  if (t.fab) return '<button class="fab" data-k="' + t.k + '"><i>' + ic + t.label + '</i><span>' + t.label + '</span></button>';
+  return '<button data-k="' + t.k + '">' + ic + '<span>' + t.label + '</span></button>';
+}).join('');
+$('#tabbar').addEventListener('click', function (e) {
+  var b = e.target.closest('button'); if (b) go(b.getAttribute('data-k'));
+});
+window.addEventListener('popstate', function () { if (cur === 'dosya') go('arsiv'); });
+
+/* ── KREDİ ── */
+function krediYaz() {
+  document.querySelectorAll('[data-kredi]').forEach(function (el) {
+    el.textContent = user ? (kredi == null ? '…' : kredi + ' KR') : 'GİRİŞ';
+  });
+}
+var krediSon = 0;
+function krediGetir(force) {
+  krediYaz();
+  var tok = token();
+  if (!tok || (!force && Date.now() - krediSon < 60000)) return;
+  krediSon = Date.now();
+  fetch(SB_URL + '/functions/v1/credits', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+    body: JSON.stringify({ action: 'balance' })
+  }).then(function (r) { return r.json(); }).then(function (d) {
+    if (d && typeof d.credits === 'number') { kredi = d.credits; krediYaz(); }
+  }).catch(function () {});
+}
+
+/* ── MASA ── */
+var HERO_IMGS = ['/assets/haber/sezar-suikasti.jpg','/assets/haber/vezuv-pompeii.jpg','/assets/haber/grek-atesi.jpg','/assets/haber/otzi.jpg','/assets/haber/tutankamun-hancer.jpg'];
+function drawMasa() {
+  var el = $('#scr-masa');
+  var now = new Date(), sa = now.getHours();
+  var selam = sa < 6 ? 'İyi geceler' : sa < 12 ? 'Günaydın' : sa < 18 ? 'İyi günler' : 'İyi akşamlar';
+  var ad = user ? (user.user_metadata && user.user_metadata.full_name || user.email.split('@')[0]).split(' ')[0] : 'Ajan';
+  var gun = ['PAZAR','PAZARTESİ','SALI','ÇARŞAMBA','PERŞEMBE','CUMA','CUMARTESİ'][now.getDay()];
+  var ay = ['OCAK','ŞUBAT','MART','NİSAN','MAYIS','HAZİRAN','TEMMUZ','AĞUSTOS','EYLÜL','EKİM','KASIM','ARALIK'][now.getMonth()];
+  var doy = Math.floor((now - new Date(now.getFullYear(),0,0)) / 86400000);
+  var hi = DATA.length ? doy % DATA.length : 0;
+  var hero = DATA[hi] || { baslik: 'Gizli Arşiv', era: '' };
+  el.innerHTML =
+    '<div class="h-row"><div><b>' + selam + ', ' + esc(ad) + '</b><span class="alt">' + gun + ' · ' + now.getDate() + ' ' + ay + '</span></div>' +
+    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    '<div class="hero" data-dosya="' + hi + '">' +
+    '<img src="' + HERO_IMGS[doy % HERO_IMGS.length] + '" alt="">' +
+    '<span class="bd">GÜNÜN DOSYASI</span>' +
+    '<span class="tt"><b>' + esc(hero.baslik) + '</b><span>' + esc(hero.era || 'TARİH DOSYASI') + ' — Dosyayı aç →</span></span></div>' +
+    '<div class="kart" data-go="uret"><div class="krow" style="background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52)">' +
+    '<span class="rz" style="border-color:rgba(23,18,7,.3);color:#171207">◉</span>' +
+    '<span class="m"><b style="color:#171207">Yeni Dosya Üret</b><span style="color:rgba(23,18,7,.72)">Konu yaz — senaryo, sahneler, promptlar</span></span>' +
+    '<span class="git" style="color:#171207">›</span></div></div>' +
+    '<div class="sh"><b>GİZLİ ARŞİV</b><button data-go="arsiv">' + DATA.length + ' dosya →</button></div>' +
+    '<div class="posters">' +
+    [0,1,2,3,4].map(function (i) {
+      var di = (hi + 1 + i) % Math.max(1, DATA.length);
+      var d = DATA[di] || {};
+      return '<div class="po" data-dosya="' + di + '"><img src="' + HERO_IMGS[(doy + i + 1) % HERO_IMGS.length] + '" alt="" loading="lazy"><b>' + esc((d.baslik || '').slice(0, 34)) + '</b><span>' + esc(d.era || '') + '</span></div>';
+    }).join('') + '</div>' +
+    '<div class="kart" data-go="oyun"><div class="krow"><span class="rz">♞</span>' +
+    '<span class="m"><b>Oyun Tüneli</b><span>3 saha oyunu · rütbeni kanıtla</span></span><span class="git">›</span></div>' +
+    '<div class="minis"><span>◈ Zaman Görevi</span><span>♞ Satranç 1402</span><span>🏺 Mangala</span></div></div>';
+  krediGetir();
+}
+
+/* ── ARŞİV ── */
+var arsivQ = '';
+function drawArsiv() {
+  var el = $('#scr-arsiv');
+  el.innerHTML =
+    '<div class="h-row"><div><b>Gizli Arşiv</b><span class="alt">' + DATA.length + ' VAKA DOSYASI</span></div>' +
+    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    '<div class="ara"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/></svg>' +
+    '<input id="ar-q" type="search" placeholder="dosyalarda ara…" value="' + esc(arsivQ) + '" autocomplete="off"></div>' +
+    '<div id="ar-liste"></div>';
+  function ciz() {
+    var f = arsivQ.toLocaleLowerCase('tr'), html = '', n = 0;
+    DATA.forEach(function (d, i) {
+      if (f && (d.baslik + ' ' + (d.era || '') + ' ' + (d.ozet || '')).toLocaleLowerCase('tr').indexOf(f) === -1) return;
+      n++;
+      html += '<div class="drow" data-dosya="' + i + '"><span class="no">' + String(i + 1).padStart(2, '0') + '</span>' +
+        '<span class="m"><b>' + esc(d.baslik) + '</b><span>' + esc(d.era || 'TARİH DOSYASI') + '</span></span>' +
+        '<span class="git" style="color:var(--brass)">›</span></div>';
+    });
+    $('#ar-liste').innerHTML = n ? html : '<div class="bos">Dosya bulunamadı — başka bir iz sür.</div>';
+  }
+  $('#ar-q').addEventListener('input', function (e) { arsivQ = e.target.value; ciz(); });
+  ciz();
+  krediGetir();
+}
+function drawDosya(i) {
+  var d = DATA[i]; if (!d) return;
+  var el = $('#scr-dosya');
+  el.innerHTML =
+    '<div class="ust"><button class="geri" data-geri>‹</button><span>' + esc(d.fileNo || '') + '</span></div>' +
+    '<div style="padding:2px 20px 14px">' +
+    '<span style="display:inline-block;font-size:9.5px;letter-spacing:.18em;color:var(--gold);border:1px solid rgba(193,154,82,.4);border-radius:8px;padding:4px 9px;margin-bottom:10px">' + esc(d.era || 'TARİH DOSYASI') + '</span>' +
+    '<h2 class="serif" style="margin:0;font-size:22px;line-height:1.2">' + esc(d.baslik) + '</h2>' +
+    (d.ozet ? '<p style="margin:10px 0 0;font-size:14px;line-height:1.65;color:#b9bec9">' + esc(d.ozet) + '</p>' : '') + '</div>' +
+    (d.sections || []).map(function (s, si) {
+      return '<div class="sec' + (si === 0 ? ' ac' : '') + '"><div class="sbh"><b>' + esc(s.ad) + '</b><i>›</i></div><div class="ic">' +
+        (s.bloklar || []).map(function (b) { return '<div class="blk"><div class="k">' + esc(b.k || '') + '</div><div class="t">' + esc(b.t || '') + '</div></div>'; }).join('') +
+        '</div></div>';
+    }).join('') +
+    '<div style="padding:18px 14px 0"><button class="cta" data-uret-konu="' + esc(d.baslik) + '">◉ &nbsp;Bu dosyayı videoya dönüştür</button></div>';
+  document.querySelectorAll('.scr').forEach(function (s) { s.classList.remove('on', 'push'); });
+  el.classList.add('on', 'push'); el.scrollTop = 0; cur = 'dosya';
+  try { history.pushState({ d: i }, '', '#dosya-' + (i + 1)); } catch (e) {}
+}
+
+/* ── ÜRET: uygulamaya özel üretim akışı (Studio motoruyla) ── */
+var TONLAR = [['merak','🔍 Merak'],['dramatik','⚡ Dramatik'],['belgesel','📜 Belgesel'],['destansi','🏛 Destansı'],['duygusal','💛 Duygusal']];
+var STILLER = [['hollywood','🎬 Gerçekçi'],['sinematik','🌒 Sinematik'],['belgeselfoto','📷 Belgesel'],['gravur','🖋 Gravür'],['minyatur','🎨 Minyatür'],['animasyon','✨ Animasyon']];
+var TON_TARIF = {
+  merak: 'DEDEKTİF/VAKA üslubu: her bölüm bir soruyla açılır, ipucu ipucu ilerler, kesin hükmü sona saklar.',
+  dramatik: 'YÜKSEK GERİLİM: kısa vurucu cümleler, anın içine sokan sinematik anlatım.',
+  belgesel: 'KAYNAK ODAKLI ölçülü uzman sesi; iddia-kanıt dengesi, güven veren akış.',
+  destansi: 'DESTANSI: epik ölçek, yükselen ritim, kader-miras vurgusu; olguya sadık.',
+  duygusal: 'İNSANİ ve SICAK: olayı yaşayanların gözünden, dokunaklı ayrıntılarla.'
+};
+var STIL_CORE = {
+  hollywood: 'ultra-photorealistic cinematic film still shot on ARRI Alexa 65, professional cinema lighting, richly lit epic scale, 8K clarity, hyperreal',
+  sinematik: 'dark moody cinematic film still, extreme low-key lighting, flame light carving figures out of deep black shadow, chiaroscuro, near-monochrome with amber accents, ultra-photorealistic',
+  belgeselfoto: 'clean realistic documentary photography, natural daylight, true-to-life colors, editorial history-magazine look',
+  gravur: 'antique engraving illustration, copperplate texture, fine cross-hatching, aged parchment tones, full-bleed, no frame, no border',
+  minyatur: 'traditional Ottoman-Persian miniature illustration, gold-leaf accents, vivid tempera colors, full-bleed, no border',
+  animasyon: 'high-quality 3D animated feature film still, Pixar-DreamWorks style expressive characters, soft global illumination, warm vibrant colors'
+};
+var uret = { ton: 'merak', stil: 'sinematik', sure: 60, busy: false, sonuc: null, hata: '', konu: '' };
+function uretKredi() { return Math.max(30, Math.round((20 + uret.sure / 4) / 5) * 5); }
+function drawUret() {
+  var el = $('#scr-uret');
+  if (uret.busy) { drawUretBusy(); return; }
+  if (uret.sonuc) { drawSonuc(); return; }
+  el.innerHTML =
+    '<div class="h-row"><div><b>Yeni Dosya</b><span class="alt">KONU YAZ · TARZI SEÇ · ÜRET</span></div>' +
+    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    '<div class="pad"><textarea id="u-konu" class="inp" rows="3" placeholder="Bir olay, kişi ya da soru yaz — ör. Kanuni’nin Zigetvar seferi">' + esc(uret.konu) + '</textarea></div>' +
+    '<div class="sh"><b>ANLATIM TONU</b></div><div class="opt-grid">' +
+    TONLAR.map(function (t) { return '<button class="chip' + (uret.ton === t[0] ? ' on' : '') + '" data-ton="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="sh"><b>GÖRSEL STİL</b></div><div class="opt-grid">' +
+    STILLER.map(function (t) { return '<button class="chip' + (uret.stil === t[0] ? ' on' : '') + '" data-stil="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="sh"><b>SÜRE</b></div><div class="sure">' +
+    '<input id="u-sure" type="range" min="30" max="180" step="30" value="' + uret.sure + '">' +
+    '<div class="val"><span>30 sn</span><b id="u-sure-v">' + sureText() + ' · ' + uretKredi() + ' KR</b><span>3 dk</span></div></div>' +
+    (uret.hata ? '<div class="hata">' + esc(uret.hata) + '</div>' : '') +
+    '<div style="padding:20px 16px 0"><button class="cta" id="u-go">◉ &nbsp;ÜRET · ' + uretKredi() + ' KR</button>' +
+    '<p class="alt-not" style="margin-top:12px">Seslendirme ve sahne görselleri üretimden sonra dosyanın içinde</p></div>';
+  $('#u-konu').addEventListener('input', function (e) { uret.konu = e.target.value; });
+  $('#u-sure').addEventListener('input', function (e) {
+    uret.sure = +e.target.value;
+    $('#u-sure-v').textContent = sureText() + ' · ' + uretKredi() + ' KR';
+    $('#u-go').textContent = '◉  ÜRET · ' + uretKredi() + ' KR';
+  });
+  el.querySelectorAll('[data-ton]').forEach(function (b) { b.addEventListener('click', function () { uret.ton = b.getAttribute('data-ton'); drawUret(); }); });
+  el.querySelectorAll('[data-stil]').forEach(function (b) { b.addEventListener('click', function () { uret.stil = b.getAttribute('data-stil'); drawUret(); }); });
+  $('#u-go').addEventListener('click', uretBasla);
+  krediGetir();
+}
+function sureText() { return uret.sure < 60 ? uret.sure + ' sn' : (uret.sure / 60) + ' dk'; }
+function drawUretBusy() {
+  $('#scr-uret').innerHTML =
+    '<div class="ust"><span style="padding-left:10px">DOSYA HAZIRLANIYOR</span></div>' +
+    '<div class="prog"><div class="ring"></div><b class="serif">' + esc(uret.konu.slice(0, 60)) + '</b>' +
+    '<span id="u-msg">ARŞİV BAĞLANTISI KURULUYOR…</span>' +
+    '<div class="bar"><i id="u-bar" style="width:6%"></i></div></div>' +
+    '<p class="bos" style="padding-top:8px">Araştırma + senaryo + sahne promptları — 1-2 dakika sürebilir.<br>Ekranı açık tut; bağlantı koparsa dosyan kurtarılır.</p>';
+}
+function uretMesaj(m, pct) {
+  var a = $('#u-msg'), b = $('#u-bar');
+  if (a) a.textContent = m;
+  if (b && pct) b.style.width = Math.min(97, pct) + '%';
+}
+function buildUretPrompt() {
+  var sec = uret.sure;
+  var bolum = Math.max(2, Math.round(sec / 70));
+  var kelime = Math.round(sec * 2.3);
+  return 'Sen "Tarih Ajanı" kanalının kıdemli senaristi ve araştırmacısısın. Aşağıdaki konu için TAM bir video üretim dosyası hazırla.\n' +
+    'KONU: ' + uret.konu + '\n' +
+    'SÜRE: toplam ~' + sec + ' saniye seslendirme (~' + kelime + ' kelime, ' + bolum + ' bölüm). Bu süre KİLİTLİDİR.\n' +
+    'TON: ' + (TON_TARIF[uret.ton] || TON_TARIF.merak) + '\n' +
+    'YAZIM: sesli okunacak — tüm sayı/tarihler YAZIYLA; kısa vurucu ve akan cümleler dönüşümlü; klişe yasak ("tarihin tozlu sayfaları" vb.); somut isim/tarih/yer; tarihî doğruluk esas, emin olunmayan "rivayete göre".\n' +
+    'GÖRSEL STİL ÇEKİRDEĞİ (her görsel promptu bununla BAŞLAR): "' + STIL_CORE[uret.stil] + '"\n' +
+    'GÖRSEL PROMPTLAR: bölüm başına 2 sahne; İngilizce, 40-70 kelime, dönem-doğru, "9:16 vertical" içerir, şu satırla biter: "No modern text, no watermark, no distorted anatomy."\n' +
+    'Konu gerçek bir tarih konusu değilse ya da anlamsızsa SADECE şunu döndür: {"gecersiz":true,"mesaj":"..."}\n' +
+    'ÇIKTI: SADECE geçerli tek JSON. Şema: {"baslik":"...","logline":"...","senaryo":[{"bolum":"...","sure":"0:00-0:30","metin":"TAM seslendirme metni"}],"gorsel_promptlar":[{"sahne":"...","prompt":"..."}],"kapak":[{"ad":"Kapak","prompt":"..."}]}';
+}
+function parseGen(text) {
+  var t = String(text || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '');
+  var clean = t.replace(/^[\s\S]*?\{/, '{').replace(/\}[^}]*$/, '}');
+  try { return JSON.parse(clean); } catch (e) {}
+  try {
+    var src = t.replace(/^[\s\S]*?\{/, '{'), stack = [], inS = false, esc2 = false, i, ch;
+    for (i = 0; i < src.length; i++) {
+      ch = src[i];
+      if (inS) { if (esc2) esc2 = false; else if (ch === '\\') esc2 = true; else if (ch === '"') inS = false; continue; }
+      if (ch === '"') inS = true; else if (ch === '{' || ch === '[') stack.push(ch); else if (ch === '}' || ch === ']') stack.pop();
+    }
+    var s2 = src.replace(/,\s*$/, ''); if (inS) s2 += '"';
+    for (i = stack.length - 1; i >= 0; i--) s2 += stack[i] === '{' ? '}' : ']';
+    return JSON.parse(s2);
+  } catch (e) { return null; }
+}
+function uretBasla() {
+  uret.konu = (uret.konu || '').trim();
+  uret.hata = '';
+  if (uret.konu.length < 6) { uret.hata = 'Bir konu yaz — olay, kişi ya da soru.'; drawUret(); return; }
+  if (!user) { toast('Üretim için giriş yap'); go('profil'); return; }
+  if (kredi != null && kredi < uretKredi()) { uret.hata = 'Yetersiz kredi (' + kredi + ' KR). Profilden paket alabilirsin.'; drawUret(); return; }
+  uret.busy = true; drawUret();
+  var msgs = ['KAYNAKLAR ÇAPRAZ SORGULANIYOR…', 'KANIT ZİNCİRİ KURULUYOR…', 'SENARYO KALEME ALINIYOR…', 'SAHNELER GÖRSELLEŞTİRİLİYOR…', 'YAYIN PAKETİ MÜHÜRLENİYOR…'];
+  var mi = 0, pct = 6;
+  var mt = setInterval(function () { mi = Math.min(mi + 1, msgs.length - 1); pct += 9; uretMesaj(msgs[mi], pct); }, 5000);
+  var job = 'app' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  function call() {
+    return fetch(FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
+      body: JSON.stringify({ action: 'generate', provider: 'claude', prompt: buildUretPrompt(), topic: uret.konu, duration: 's' + uret.sure, max_tokens: 8000, job: job })
+    }).then(function (r) { return r.json().then(function (d) { return { st: r.status, d: d }; }); });
+  }
+  function fetchResult() {
+    return fetch(FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
+      body: JSON.stringify({ action: 'fetch_result', job: job })
+    }).then(function (r) { return r.status === 404 ? null : r.json(); }).catch(function () { return null; });
+  }
+  function bitir(d) {
+    clearInterval(mt);
+    var obj = parseGen(d.result || d.text || '');
+    if (!obj || !obj.baslik) { uret.busy = false; uret.hata = 'Dosya çözümlenemedi — TEKRAR DENE (tamamlandıysa kredisiz geri gelir).'; drawUret(); return; }
+    if (typeof d.credits === 'number') { kredi = d.credits; }
+    uret.sonuc = obj; uret.busy = false;
+    try {
+      var st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}');
+      st.history = [{ title: obj.baslik, date: new Date().toLocaleDateString('tr-TR'), ts: Date.now(), cost: uretKredi(), fileNo: 'TA-APP-' + Math.floor(100 + Math.random() * 900), result: obj, idea: uret.konu }].concat(st.history || []).slice(0, 12);
+      localStorage.setItem('ta_studio_v5', JSON.stringify(st));
+    } catch (e) {}
+    drawUret();
+  }
+  function hataVer(m) { clearInterval(mt); uret.busy = false; uret.hata = m; drawUret(); }
+  call().then(function (r) {
+    if (r.d && r.d.ok) return bitir(r.d);
+    if (r.st === 401) return hataVer('Üretim için giriş yap (Profil sekmesi).');
+    if (r.st === 402) return hataVer('Yetersiz kredi.');
+    return hataVer((r.d && r.d.error) || 'Sunucu hatası — tekrar dene.');
+  }).catch(function () {
+    // bağlantı koptu → üretim sunucuda sürüyor olabilir; 4 dk kurtarma dene
+    uretMesaj('BAĞLANTI KOPTU — DOSYA KURTARILIYOR…', 50);
+    var n = 0;
+    var iv = setInterval(function () {
+      n++;
+      fetchResult().then(function (d) {
+        if (d && d.ok) { clearInterval(iv); bitir(d); }
+        else if (n > 34) { clearInterval(iv); hataVer('Bağlantı koptu. TEKRAR DENE — üretim tamamlandıysa kredisiz geri gelir.'); }
+      });
+    }, 7000);
+  });
+}
+function drawSonuc() {
+  var r = uret.sonuc;
+  $('#scr-uret').innerHTML =
+    '<div class="ust"><button class="geri" id="s-geri">‹</button><span>DOSYA HAZIR ✓</span></div>' +
+    '<div style="padding:2px 20px 6px"><h2 class="serif" style="margin:0;font-size:21px;line-height:1.25">' + esc(r.baslik) + '</h2>' +
+    (r.logline ? '<p style="margin:8px 0 0;font-size:13.5px;line-height:1.6;color:#b9bec9">' + esc(r.logline) + '</p>' : '') + '</div>' +
+    '<div class="sec ac"><div class="sbh"><b>SENARYO</b><i>›</i></div><div class="ic">' +
+    (r.senaryo || []).map(function (s) {
+      return '<div class="blk"><div class="k">' + esc(s.bolum || '') + ' · ' + esc(s.sure || '') + '</div><div class="t">' + esc(s.metin || '') + '</div></div>';
+    }).join('') + '</div></div>' +
+    '<div class="sec"><div class="sbh"><b>GÖRSEL PROMPTLAR (' + (r.gorsel_promptlar || []).length + ')</b><i>›</i></div><div class="ic">' +
+    (r.gorsel_promptlar || []).map(function (g, i) {
+      return '<div class="blk"><div class="k" style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">' + esc(g.sahne || ('SAHNE ' + (i + 1))) +
+        '<span style="display:flex;gap:6px"><button class="kopya" data-gorsel="' + i + '">◈ GÖRSEL · 12 KR</button>' +
+        '<button class="kopya" data-kopya="' + i + '">⧉</button></span></div><div class="t" style="font-size:12px;color:#a8b2c2">' + esc(g.prompt || '') + '</div></div>';
+    }).join('') + '</div></div>' +
+    '<div style="padding:18px 14px 0;display:grid;gap:10px">' +
+    '<div id="s-ses-kutu"><button class="cta" id="s-ses">🎙 &nbsp;SESLENDİR · ' + ttsKredi() + ' KR</button></div>' +
+    '<button class="cta ghost" id="s-yeni">+ &nbsp;Yeni dosya üret</button></div>' +
+    '<p class="alt-not" style="margin-top:14px">Dosyan uygulamada ve Studio geçmişinde saklı</p>';
+  $('#s-geri').addEventListener('click', function () { uret.sonuc = null; drawUret(); });
+  $('#s-yeni').addEventListener('click', function () { uret.sonuc = null; uret.konu = ''; drawUret(); });
+  $('#s-ses').addEventListener('click', seslendir);
+  document.querySelectorAll('[data-kopya]').forEach(function (b) {
+    b.addEventListener('click', function () { kopyala((uret.sonuc.gorsel_promptlar[+b.getAttribute('data-kopya')] || {}).prompt || ''); });
+  });
+  document.querySelectorAll('[data-gorsel]').forEach(function (b) {
+    b.addEventListener('click', function () { gorselUret(+b.getAttribute('data-gorsel'), b); });
+  });
+}
+/* native SESLENDİRME — uygulamadan çıkmadan mp3 üret ve dinle */
+function ttsMetin() { return (uret.sonuc && uret.sonuc.senaryo || []).map(function (s) { return s.metin || ''; }).join('\n\n').slice(0, 11500); }
+function ttsKredi() { return Math.max(10, Math.ceil(ttsMetin().length / 1000) * 5); }
+function seslendir() {
+  var kutu = $('#s-ses-kutu'), btn = $('#s-ses');
+  if (!user) { toast('Seslendirme için giriş yap'); go('profil'); return; }
+  btn.disabled = true; btn.textContent = '🎙  ÜRETİLİYOR… (~20 sn)';
+  fetch(FN, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
+    body: JSON.stringify({ action: 'tts', text: ttsMetin(), voice: 'onyx' })
+  }).then(function (r) { return r.json().then(function (d) { return { st: r.status, d: d }; }); }).then(function (r) {
+    if (!r.d || !r.d.ok || !r.d.url) {
+      btn.disabled = false; btn.textContent = '🎙  SESLENDİR · ' + ttsKredi() + ' KR';
+      toast(r.st === 402 ? 'Yetersiz kredi' : ((r.d && r.d.error) || 'Ses üretilemedi — tekrar dene'));
+      return;
+    }
+    if (typeof r.d.credits === 'number') { kredi = r.d.credits; krediYaz(); }
+    kutu.innerHTML = '<div class="sec ac" style="margin:0"><div class="sbh"><b>SESLENDİRME ✓</b></div><div class="ic">' +
+      '<audio controls src="' + esc(r.d.url) + '"></audio>' +
+      '<a class="cta ghost" style="margin-top:10px;display:flex" href="' + esc(r.d.url) + '" download="tarih-ajani.mp3">⬇ &nbsp;MP3 indir</a></div></div>';
+    toast('Seslendirme hazır 🎙');
+  }).catch(function () {
+    btn.disabled = false; btn.textContent = '🎙  SESLENDİR · ' + ttsKredi() + ' KR';
+    toast('Bağlantı hatası — tekrar dene');
+  });
+}
+/* native GÖRSEL ÜRETİMİ — sahne görseli uygulamada, anında */
+function gorselUret(i, btn) {
+  if (!user) { toast('Görsel için giriş yap'); go('profil'); return; }
+  var g = (uret.sonuc.gorsel_promptlar || [])[i]; if (!g) return;
+  btn.disabled = true; btn.textContent = '⟳ ÜRETİLİYOR…';
+  fetch(FN, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
+    body: JSON.stringify({ action: 'image', prompt: g.prompt, size: 'dikey', imgIndex: i })
+  }).then(function (r) { return r.json().then(function (d) { return { st: r.status, d: d }; }); }).then(function (r) {
+    btn.disabled = false;
+    if (!r.d || !r.d.ok || !r.d.url) {
+      btn.textContent = '◈ GÖRSEL · 12 KR';
+      toast(r.st === 402 ? 'Yetersiz kredi' : ((r.d && r.d.error) || 'Görsel üretilemedi (kredi düşmedi)'));
+      return;
+    }
+    if (typeof r.d.credits === 'number') { kredi = r.d.credits; krediYaz(); }
+    btn.textContent = '✓ ÜRETİLDİ';
+    var img = document.createElement('img');
+    img.className = 'scene-img'; img.src = r.d.url; img.alt = g.sahne || '';
+    btn.closest('.blk').appendChild(img);
+    toast('Görsel hazır ◈');
+  }).catch(function () { btn.disabled = false; btn.textContent = '◈ GÖRSEL · 12 KR'; toast('Bağlantı hatası'); });
+}
+
+/* ── OYUN ── */
+function drawOyun() {
+  $('#scr-oyun').innerHTML =
+    '<div class="h-row"><div><b>Oyun Tüneli</b><span class="alt">RÜTBENİ KANITLA, AJAN</span></div>' +
+    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    [['◈','Zaman Görevi','Kronoloji & bilgi · 100 soru · jokerler','/oyun/sayi-tahmin/'],
+     ['♞','Satranç 1402','Tarihî karşılaşmalar · Timur vs Bayezid','/oyun/satranc-1402/'],
+     ['🏺','Mangala','Bin yıllık Türk stratejisi','/oyun/mangala/'],
+     ['📚','Dijital Kitaplık','Ajan Z’nin bürosu · 8 dosya kitabı','/kitaplik']].map(function (o) {
+      return '<div class="kart" data-oynat="' + o[3] + '" data-ad="' + o[1] + '"><div class="krow"><span class="rz">' + o[0] + '</span>' +
+        '<span class="m"><b>' + o[1] + '</b><span>' + o[2] + '</span></span><span class="git">›</span></div></div>';
+    }).join('') +
+    '<p class="alt-not" style="margin-top:18px">Hepsi uygulama içinde açılır — ‹ ile geri dönersin</p>';
+  krediGetir();
+}
+
+/* ── PAKETLER & TEÇHİZAT — native mağaza (fiyatlar canlı tablodan) ── */
+var urunler = null;
+function urunGetir(cb) {
+  if (urunler) return cb(urunler);
+  fetch(SB_URL + '/rest/v1/products?select=slug,title,price,pay_url', {
+    headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY }
+  }).then(function (r) { return r.json(); }).then(function (d) {
+    urunler = Array.isArray(d) ? d : []; cb(urunler);
+  }).catch(function () { cb([]); });
+}
+function pkHtml(p, aciklama) {
+  var buy = p.pay_url
+    ? '<button class="al" data-ext="' + esc(p.pay_url) + '">AL →</button>'
+    : '<button class="al" data-ext="mailto:iletisim@tarihajani.com?subject=' + encodeURIComponent(p.title || '') + '">AL →</button>';
+  return '<div class="pk"><div class="m"><b>' + esc(p.title || p.slug) + '</b>' +
+    (aciklama ? '<span>' + esc(aciklama) + '</span>' : '') + '</div>' +
+    '<div class="fy"><b>' + (p.price != null ? esc(p.price) + '₺' : '—') + '</b></div>' + buy + '</div>';
+}
+var PK_DESC = {
+  gozlemci: 'Aylık üyelik · Studio kredisi + arşiv erişimi',
+  ajan: 'Aylık üyelik · daha yüksek kota',
+  basmufettis: 'En kapsamlı seviye · maksimum kredi',
+  'studio-5': 'Tek seferlik kredi paketi',
+  'studio-15': 'Tek seferlik kredi paketi',
+  'studio-40': 'Tek seferlik kredi paketi · en avantajlı',
+  'vaka-defteri': 'Fiziki ürün · ajan vaka defteri',
+  egitim: '9 derslik içerik üretim akademisi'
+};
+function drawPaket() {
+  var el = $('#scr-paket');
+  el.innerHTML = '<div class="ust"><button class="geri" data-go="profil">‹</button><span>ÜYELİK &amp; MAĞAZA</span></div>' +
+    '<div class="h-row" style="padding-top:0"><div><b>Paketler</b><span class="alt">SATIN ALIMLAR KREDİNİN ÜSTÜNE EKLENİR</span></div>' +
+    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div><div id="pk-liste" class="bos">Yükleniyor…</div>';
+  urunGetir(function (list) {
+    var tiers = [], packs = [], other = [];
+    list.forEach(function (p) {
+      if (/^(gozlemci|ajan|basmufettis)$/.test(p.slug)) tiers.push(p);
+      else if (/^studio-/.test(p.slug)) packs.push(p);
+      else other.push(p);
+    });
+    var html = '';
+    if (tiers.length) html += '<div class="sh"><b>ÜYELİK SEVİYELERİ</b></div>' + tiers.map(function (p) { return pkHtml(p, PK_DESC[p.slug]); }).join('');
+    if (packs.length) html += '<div class="sh"><b>KREDİ PAKETLERİ</b></div>' + packs.map(function (p) { return pkHtml(p, PK_DESC[p.slug]); }).join('');
+    if (other.length) html += '<div class="sh"><b>AJAN TEÇHİZATI</b></div>' + other.map(function (p) { return pkHtml(p, PK_DESC[p.slug]); }).join('');
+    $('#pk-liste').className = ''; $('#pk-liste').innerHTML = html || '<div class="bos">Ürünler yüklenemedi — interneti kontrol et.</div>';
+  });
+  krediGetir();
+}
+/* ── AKADEMİ — native müfredat ── */
+var DERSLER = [
+  ['I','Söylenti ile kaydı ayırmak','Kaynak hiyerarşisi: birincil kayıt, kronik, rivayet'],
+  ['II','Vaka dosyası anatomisi','Kanca, kanıt zinciri, hüküm — Tarih Ajanı formatı'],
+  ['III','Araştırma teknikleri','Çapraz doğrulama, arşiv taraması, tarih dizini'],
+  ['IV','Senaryo mimarisi','Bölümleme, süre bütçesi, merak köprüleri'],
+  ['V','Seslendirme metni yazmak','Sesli okuma standardı, ritim, sayıların yazımı'],
+  ['VI','Görsel prompt sanatı','Stil çekirdeği, dönem doğruluğu, karakter tutarlılığı'],
+  ['VII','Kurgu ve tempo','Sahne süresi, geçişler, ses-görüntü uyumu'],
+  ['VIII','Başlık ve kapak','Tıklanan ama aldatmayan başlık formülleri'],
+  ['IX','Kanal büyütme','Seri stratejisi, yayın takvimi, veri okuma']
+];
+function drawAkademi() {
+  var el = $('#scr-akademi');
+  el.innerHTML = '<div class="ust"><button class="geri" data-go="profil">‹</button><span>AJAN AKADEMİSİ</span></div>' +
+    '<div class="h-row" style="padding-top:0"><div><b>Akademi</b><span class="alt">9 DERSLİK İÇERİK ÜRETİM PROGRAMI</span></div></div>' +
+    DERSLER.map(function (d, i) {
+      return '<div class="kart"><div class="krow"><span class="rz serif" style="font-size:13px">' + d[0] + '</span>' +
+        '<span class="m"><b>Ders ' + (i + 1) + ' · ' + d[1] + '</b><span>' + d[2] + '</span></span>' +
+        '<span class="git">' + (i === 0 ? '▶' : '🔒') + '</span></div></div>';
+    }).join('') +
+    '<div style="padding:18px 16px 0"><button class="cta" data-go="paket">Tüm dersleri aç — Eğitim paketi →</button></div>';
+}
+/* ── NEDEN BİZ — native tanıtım ── */
+var NEDEN_IMGS = [
+  ['HOLLYWOOD','https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_113138_96c3779a-d686-46ac-9f5d-bbae2645ba2c.png'],
+  ['SİNEMATİK','https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_113140_8fe7218b-2cc7-4c08-b61d-50e2d667a1f3.png'],
+  ['BELGESEL','https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_113148_68b5e45d-e78a-4248-a190-41d305e04f44.png'],
+  ['GRAVÜR','https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_113237_2e21a48a-872d-4f73-9fee-03e795665350.png'],
+  ['MİNYATÜR','https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_113150_8947935a-e953-41d7-96f4-caada3033e7e.png']
+];
+function drawNeden() {
+  var el = $('#scr-neden');
+  el.innerHTML = '<div class="ust"><button class="geri" data-go="profil">‹</button><span>NEDEN TARİH AJANI?</span></div>' +
+    '<div style="padding:2px 20px 8px"><h2 class="serif" style="margin:0;font-size:21px">Aynı cümle, beş farklı film</h2>' +
+    '<p style="margin:8px 0 0;font-size:13px;line-height:1.65;color:#b9bec9">Beşine de aynı sahneyi verdik: “1453 gecesi, kızaklar üstünde Haliç’e çekilen kadırgalar.” Değişen tek şey stil seçimi.</p></div>' +
+    '<div class="posters" style="padding-top:10px">' +
+    NEDEN_IMGS.map(function (n) {
+      return '<div class="po" style="width:200px"><img src="' + n[1] + '" style="height:112px" loading="lazy" alt=""><b>' + n[0] + '</b><span>aynı konu · farklı stil</span></div>';
+    }).join('') + '</div>' +
+    '<div class="sec ac" style="margin-top:16px"><div class="sbh"><b>SOHBET ROBOTUNDAN FARKI</b><i>›</i></div><div class="ic">' +
+    [['Araştırma','Her üretimden önce web kaynak taraması — uydurma yok'],
+     ['Görsel dil','60 sahne tek stile kilitli; aynı karakter aynı yüz'],
+     ['Süre kilidi','30 sn – 10 dk; bölüm başına kelime bütçesi'],
+     ['Tek paket','Senaryo + promptlar + ses aynı dosyada, arşivinde']].map(function (r) {
+      return '<div class="blk"><div class="k">' + r[0].toUpperCase() + '</div><div class="t">' + r[1] + '</div></div>';
+    }).join('') + '</div></div>' +
+    '<div style="padding:18px 16px 0"><button class="cta" data-go="uret">◉ &nbsp;Kendin dene — dosya üret</button></div>';
+}
+
+/* ── PROFİL ── */
+function drawProfil() {
+  var el = $('#scr-profil');
+  var ad = user ? (user.user_metadata && user.user_metadata.full_name || user.email.split('@')[0]) : 'Ajan';
+  el.innerHTML =
+    '<div class="h-row"><div><b>Profil</b><span class="alt">HESAP · KREDİ · AYARLAR</span></div></div>' +
+    '<div class="kim"><span class="av">' + esc(ad.charAt(0).toUpperCase()) + '</span>' +
+    '<div><b>' + esc(ad) + '</b><span>' + (user ? esc(user.email) : 'Giriş yapılmadı') + '</span></div></div>' +
+    (user
+      ? '<div class="grup"><button class="mrow" data-go="paket"><svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5Zm0 10v10"/></svg><span>Kredi Bakiyem</span><b style="color:var(--gold)" data-kredi>…</b><i>›</i></button></div>' +
+        '<div style="padding:0 16px"><button class="cta" data-go="paket">Üyelik &amp; Kredi Paketleri →</button></div>'
+      : '<div style="padding:0 16px;display:grid;gap:10px">' +
+        '<input id="p-ad" class="inp" type="text" placeholder="Ajan adın (kayıt için)" autocomplete="name" style="display:none">' +
+        '<input id="p-mail" class="inp" type="email" placeholder="E-posta" autocomplete="email">' +
+        '<input id="p-pass" class="inp" type="password" placeholder="Şifre" autocomplete="current-password">' +
+        '<div id="p-err" class="hata" style="display:none;margin:0"></div>' +
+        '<button class="cta" id="p-giris">GİRİŞ YAP →</button>' +
+        '<button class="cta ghost" id="p-kayit">Ücretsiz kayıt ol · 30 deneme kredisi</button></div>') +
+    '<div class="grup">' +
+    [['Üyelik &amp; Mağaza','paket','M3 7l2-3h14l2 3M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Zm7 4h4'],
+     ['Ajan Akademisi','akademi','M12 3 2 8l10 5 10-5-10-5Zm-6 7v4c0 1.7 2.7 3 6 3s6-1.3 6-3v-4'],
+     ['Neden Tarih Ajanı?','neden','M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm-.2-6.2c0-2.4 2.7-2.5 2.7-4.3 0-1.2-1-2-2.4-2-1.2 0-2.1.6-2.6 1.5M12 17.8v.1']].map(function (m) {
+      return '<button class="mrow" data-go="' + m[1] + '"><svg viewBox="0 0 24 24"><path d="' + m[2] + '"/></svg><span>' + m[0] + '</span><i>›</i></button>';
+    }).join('') +
+    '<button class="mrow" data-oynat="/kitaplik" data-ad="Dijital Kitaplık"><svg viewBox="0 0 24 24"><path d="M4 20V4h4v16H4Zm6 0V4h4v16h-4Zm7.5-.3-3-15 3.9-.8 3 15-3.9.8Z"/></svg><span>Dijital Kitaplık</span><i>›</i></button></div>' +
+    (user ? '<div class="grup"><button class="mrow" id="p-cikis" style="color:#e08a80"><svg viewBox="0 0 24 24" style="stroke:#e08a80"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></svg><span>Çıkış Yap</span></button></div>' : '') +
+    '<div class="alt-not">TARİH AJANI UYGULAMASI · 2.0</div>';
+  if (!user) {
+    var kayitModu = false;
+    function showErr(m) { var err = $('#p-err'); err.textContent = m; err.style.display = 'block'; }
+    $('#p-giris').addEventListener('click', function () {
+      var em = $('#p-mail').value.trim(), pw = $('#p-pass').value, ad2 = $('#p-ad').value.trim();
+      if (!em || em.indexOf('@') === -1) return showErr('Geçerli bir e-posta yaz.');
+      if (!pw) return showErr('Şifreni yaz (en az 6 karakter).');
+      if (kayitModu && !ad2) return showErr('Ajan adını yaz.');
+      if (!sb) return showErr('Bağlantı kurulamadı — interneti kontrol et.');
+      $('#p-giris').textContent = 'LÜTFEN BEKLE…';
+      var islem = kayitModu
+        ? sb.auth.signUp({ email: em, password: pw, options: { data: { full_name: ad2 } } })
+        : sb.auth.signInWithPassword({ email: em, password: pw });
+      islem.then(function (r) {
+        if (r.error) {
+          $('#p-giris').textContent = kayitModu ? 'KAYIT OL →' : 'GİRİŞ YAP →';
+          var m = (r.error.message || '').toLowerCase();
+          return showErr(m.indexOf('already') !== -1 ? 'Bu e-posta zaten kayıtlı — giriş yap.' : (kayitModu ? 'Kayıt yapılamadı: şifre en az 6 karakter olmalı.' : 'E-posta veya şifre hatalı.'));
+        }
+        if (kayitModu && !(r.data && r.data.session)) {
+          // e-posta doğrulaması açık olabilir → şifreyle girişi dene
+          return sb.auth.signInWithPassword({ email: em, password: pw }).then(function (r2) {
+            if (r2.error) { $('#p-giris').textContent = 'GİRİŞ YAP →'; return showErr('Kayıt alındı — e-postanı doğrulayıp giriş yap.'); }
+            user = r2.data.user; kredi = null; toast('Aramıza hoş geldin, Ajan ✓'); krediGetir(true); drawProfil();
+          });
+        }
+        user = r.data.user; kredi = null; toast('Hoş geldin, Ajan ✓'); krediGetir(true); drawProfil();
+      });
+    });
+    $('#p-kayit').addEventListener('click', function () {
+      kayitModu = !kayitModu;
+      $('#p-ad').style.display = kayitModu ? 'block' : 'none';
+      $('#p-giris').textContent = kayitModu ? 'KAYIT OL →' : 'GİRİŞ YAP →';
+      $('#p-kayit').textContent = kayitModu ? 'Zaten ajanım — giriş yap' : 'Ücretsiz kayıt ol · 30 deneme kredisi';
+    });
+  } else {
+    $('#p-cikis').addEventListener('click', function () {
+      if (sb) sb.auth.signOut();
+      user = null; kredi = null;
+      try { localStorage.removeItem('ta_kredi_v1'); } catch (e) {}
+      drawProfil(); toast('Çıkış yapıldı');
+    });
+  }
+  krediGetir();
+}
+
+/* ── global dokunuşlar ── */
+document.addEventListener('click', function (e) {
+  var t = e.target.closest('[data-go]'); if (t) { go(t.getAttribute('data-go')); return; }
+  var d = e.target.closest('[data-dosya]'); if (d) { drawDosya(+d.getAttribute('data-dosya')); return; }
+  var g = e.target.closest('[data-geri]'); if (g) { history.back(); return; }
+  var oy = e.target.closest('[data-oynat]'); if (oy) { oynat(oy.getAttribute('data-oynat'), oy.getAttribute('data-ad') || ''); return; }
+  var ex = e.target.closest('[data-ext]'); if (ex) { window.open(ex.getAttribute('data-ext'), '_blank'); return; }
+  var uk = e.target.closest('[data-uret-konu]');
+  if (uk) { uret.konu = uk.getAttribute('data-uret-konu'); uret.sonuc = null; go('uret'); return; }
+  var sh = e.target.closest('.sbh'); if (sh) sh.parentElement.classList.toggle('ac');
+});
+
+/* ── başlat ── */
+function basla() {
+  if (sb) {
+    sb.auth.getSession().then(function (r) {
+      user = r && r.data && r.data.session && r.data.session.user || null;
+      krediGetir(true);
+      if (cur) { var redraw = { masa: drawMasa, profil: drawProfil }[cur]; if (redraw) redraw(); }
+    });
+    sb.auth.onAuthStateChange(function (_e, s) { user = s && s.user || null; });
+  }
+  go('masa');
+}
+basla();
+})();
+</script>
+</body>
+</html>
