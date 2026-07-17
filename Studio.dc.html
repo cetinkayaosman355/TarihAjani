@@ -1325,7 +1325,7 @@ class Component extends DCLogic {
     return [
       { id: 'kisa',     name: 'Kısa Video',  desc: 'Shorts · Reels · 60 sn · dikey',      duration: 's60',  aspect: 'dikey', tone: 'merak',    style: 'sinematik' },
       { id: 'uzun',     name: 'Uzun Video',  desc: 'YouTube · 8 dk · yatay',              duration: 's480', aspect: 'yatay', tone: 'dramatik', style: 'sinematik' },
-      { id: 'belgesel', name: 'Belgesel',    desc: 'Derin anlatı · 10 dk · yatay',        duration: 's600', aspect: 'yatay', tone: 'belgesel', style: 'gravur' }
+      { id: 'belgesel', name: 'Belgesel',    desc: 'Derin anlatı · 10 dk · yatay',        duration: 's600', aspect: 'yatay', tone: 'belgesel', style: 'belgeselfoto' }
     ];
   }
   applyProdMode(id) {
@@ -1384,7 +1384,9 @@ class Component extends DCLogic {
       tone: [
         { id: 'merak', name: 'Merak Uyandırıcı', desc: 'Soru soran, ipucu bırakan dedektif anlatımı' },
         { id: 'dramatik', name: 'Dramatik', desc: 'Yüksek gerilim, sinematik duygu yükü' },
-        { id: 'belgesel', name: 'Belgesel · Ciddi', desc: 'Kaynak odaklı, ölçülü ve otoriter ton' }
+        { id: 'belgesel', name: 'Belgesel · Ciddi', desc: 'Kaynak odaklı, ölçülü ve otoriter ton' },
+        { id: 'destansi', name: 'Destansı', desc: 'Epik ölçek, yükselen ritim, görkemli anlatı' },
+        { id: 'duygusal', name: 'Duygusal · İnsani', desc: 'Yaşayanların gözünden, sıcak ve dokunaklı' }
       ],
       voice: [
         { id: 'kadir', name: 'Kadir Kayışcı · Anlatıcı', desc: 'Derin, olgun, yumuşak — profesyonel Türkçe anlatıcı', engine: 'eleven', elId: 'j82ax9yhzfYwq9lDvRWL', oa: 'onyx', el: { name: 'Kadir Kayışcı', id: 'j82ax9yhzfYwq9lDvRWL', stability: 0.5, style: 0.15 } },
@@ -1395,9 +1397,11 @@ class Component extends DCLogic {
         { id: 'kadin-olgun', name: 'Kadın · Olgun', desc: 'Sakin, ağırbaşlı, güven veren', oa: 'sage', el: { name: 'Rachel', id: '21m00Tcm4TlvDq8ikWAM', stability: 0.62, style: 0.18 } }
       ],
       style: [
-        { id: 'hollywood', name: 'Hollywood Gerçekçi', desc: 'Fotogerçekçi kadrajlar, film ışığı' },
+        { id: 'hollywood', name: 'Hollywood Gerçekçi', desc: 'ARRI sinema kamerası, profesyonel ışık, fotogerçekçi' },
         { id: 'sinematik', name: 'Karanlık Sinematik', desc: 'Mum ışığı, gölge, noir atmosfer' },
-        { id: 'gravur', name: 'Tarihî Gravür', desc: 'Bakır baskı dokusu, dönem illüstrasyonu' }
+        { id: 'belgeselfoto', name: 'Belgesel Foto', desc: 'Doğal ışık, temiz gerçekçilik, editoryal' },
+        { id: 'gravur', name: 'Tarihî Gravür', desc: 'Bakır baskı dokusu, dönem illüstrasyonu' },
+        { id: 'minyatur', name: 'Osmanlı Minyatürü', desc: 'Altın yaldız, süslü, geleneksel el sanatı' }
       ],
       aspect: [
         { id: 'yatay', name: 'Yatay · 16:9', desc: 'YouTube ana video kadrajı' },
@@ -1873,20 +1877,26 @@ class Component extends DCLogic {
   promptMaps() {
     return {
       ton: {
-        merak: 'soru soran, ipucu bırakan, dedektif üslubu; her sahne merakı büyütsün',
-        dramatik: 'yüksek gerilim, sinematik duygu yükü, kısa vurucu cümleler',
-        belgesel: 'kaynak odaklı, ölçülü ve otoriter; sakin ama etkileyici'
+        merak: 'DEDEKTİF/VAKA üslubu: her bölüm bir soruyla açılır, ipucu ipucu ilerler, "acaba?" hissi sürekli diri kalır; kanıtı izleyiciyle birlikte çözer, kesin hükmü sona saklar. Sık sık doğrudan izleyiciye dönen retorik sorular kur.',
+        dramatik: 'YÜKSEK GERİLİM, sinematik duygu yükü: kısa vurucu cümlelerle uzun akan cümleleri dönüşümlü kullan; okuru anın tam içine sok, tehlikeyi/bedeli/kaybı fiziksel olarak hissettir; sahneyi "şimdi oluyormuş" gibi bugünkü zamanın yakınlığıyla anlat.',
+        belgesel: 'KAYNAK ODAKLI, ölçülü ve otoriter uzman sesi: sakin ama etkileyici; her iddiayı kanıtla dengele, abartıdan ve melodramdan kaçın; "kesin" ile "rivayet"i net ayır; güven veren, bilgi yoğun ama sıkmayan bir akış.',
+        destansi: 'DESTANSI ve yüceltici: büyük tarih anlarını epik bir ölçekte, yükselen bir ritimle anlat; görkemli imgeler, kader-miras-onur vurgusu; abartıya ve şovenizme kaçmadan, olguya sadık kalarak anlatıya heybet kat.',
+        duygusal: 'İNSANİ ve SICAK: olayı yaşayan sıradan insanların gözünden anlat; küçük, dokunaklı ayrıntılarla (bir mektup, bir yüz, bir veda) empati kur; hüzün ile umudu dengele; büyük olayın altındaki kişisel hikâyeyi öne çıkar.'
       },
       ses: {
         kadir: 'derin, olgun, yumuşak profesyonel Türkçe anlatıcı; dengeli tempo, özel adlarda hafif duraklama',
         erkek: 'derin, güven veren klasik belgesel anlatımı; dengeli tempo',
         'erkek-gizemli': 'alçak tonlu, sır verir gibi; kısa cümleler, fısıltı ritmi',
-        'kadin-belgesel': 'net, akıcı, profesyonel sunum; temiz ve bilgilendirici'
+        'erkek-net': 'berrak, güçlü ve tempolu; net telaffuz, dinamik sunum enerjisi',
+        'kadin-belgesel': 'net, akıcı, profesyonel sunum; temiz ve bilgilendirici',
+        'kadin-olgun': 'sakin, ağırbaşlı, güven veren; dengeli tempo, sıcak otorite'
       },
       stil: {
-        hollywood: 'cinematic ultra-photorealistic film still, ARRI Alexa, anamorphic, extreme detail, natural film lighting',
-        sinematik: 'dark cinematic film still, candlelit chiaroscuro, deep shadows, noir moody atmosphere, ultra-photorealistic, anamorphic',
-        gravur: 'antique engraving illustration, etched copperplate texture, period historical artwork, fine cross-hatching, muted aged tones'
+        hollywood: 'ultra-photorealistic cinematic film still shot on ARRI Alexa 65 with Zeiss Master Prime anamorphic lenses, professional cinema lighting (soft key + rim light), true-to-life skin pores, hair and fabric detail, natural color science, shallow depth of field with creamy bokeh, subtle film grain, 8K clarity, award-winning blockbuster cinematography, hyperreal',
+        sinematik: 'dark cinematic film still, candlelit chiaroscuro, deep shadows, noir moody atmosphere, volumetric light, ultra-photorealistic, anamorphic, rich teal-and-amber grade',
+        gravur: 'antique engraving illustration, etched copperplate texture, period historical artwork, fine cross-hatching, muted aged parchment tones',
+        belgeselfoto: 'clean realistic documentary photography, natural daylight, true-to-life colors, sharp focus, editorial history-magazine look, minimal stylization, believable and grounded',
+        minyatur: 'traditional Ottoman-Persian miniature illustration, flat stylized perspective, gold-leaf accents, ornate decorative borders, vivid tempera colors, medieval manuscript art'
       }
     };
   }
@@ -1988,9 +1998,11 @@ class Component extends DCLogic {
   // Görsel stili — üretimde uygulanır (kullanıcı seçebilir)
   imgStylePhrase(id) {
     return {
-      sinematik: 'cinematic film look, dramatic lighting, shallow depth of field, moody color grade',
-      hollywood: 'ultra-photorealistic, natural realistic lighting, lifelike textures, high detail, DSLR photo',
-      gravur: 'vintage engraving illustration, copperplate etching texture, period line-art style'
+      sinematik: 'cinematic film still, dramatic chiaroscuro lighting, shallow depth of field, moody teal-and-amber color grade, volumetric light',
+      hollywood: 'ultra-photorealistic cinematic still shot on ARRI Alexa 65 with Zeiss Master Prime lenses, professional cinema lighting, true-to-life skin and fabric textures, natural color science, shallow depth of field, subtle film grain, 8K clarity, hyperreal',
+      gravur: 'vintage engraving illustration, copperplate etching texture, fine cross-hatching, period line-art style, aged parchment tones',
+      belgeselfoto: 'clean realistic documentary photograph, natural daylight, true-to-life colors, sharp focus, editorial history-magazine look, grounded and believable',
+      minyatur: 'traditional Ottoman-Persian miniature illustration, flat stylized perspective, gold-leaf accents, ornate borders, vivid tempera colors'
     }[id] || '';
   }
   withAspect(p, arKey, styleKey) {
@@ -3073,7 +3085,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           }
         };
       }),
-      imgStyles: [['hollywood', 'GERÇEKÇİ'], ['sinematik', 'SİNEMATİK'], ['gravur', 'GRAVÜR']].map(([k, label]) => {
+      imgStyles: [['hollywood', 'GERÇEKÇİ'], ['sinematik', 'SİNEMATİK'], ['belgeselfoto', 'BELGESEL'], ['gravur', 'GRAVÜR'], ['minyatur', 'MİNYATÜR']].map(([k, label]) => {
         const effS = s.imgStyle || s.style;   // stil seçilmediyse sihirbazda seçilen stil görünür
         return {
           label,
