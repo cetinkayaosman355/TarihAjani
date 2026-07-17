@@ -220,6 +220,9 @@ audio{width:100%;margin-top:10px}
 <div class="scr" id="scr-haber"></div>
 <div class="scr" id="scr-ders"></div>
 <div class="scr" id="scr-makale"></div>
+<div class="scr" id="scr-kesfet"></div>
+<div class="scr" id="scr-hosgeldin"></div>
+<div class="scr" id="scr-ornek"></div>
 
 <nav id="tabbar" aria-label="Uygulama menüsü"></nav>
 <div id="toast" role="status"></div>
@@ -289,7 +292,7 @@ function go(k, push, sessiz) {
     b.classList.toggle('on', b.getAttribute('data-k') === k);
   });
   var draw = { masa: drawMasa, arsiv: drawArsiv, uret: drawUret, oyun: drawOyun, profil: drawProfil,
-               paket: drawPaket, akademi: drawAkademi, neden: drawNeden, haber: drawHaber }[k];
+               paket: drawPaket, akademi: drawAkademi, neden: drawNeden, haber: drawHaber, kesfet: drawKesfet, hosgeldin: drawHosgeldin, ornek: drawOrnek }[k];
   if (draw) draw();
 }
 /* uygulama içi oynatıcı: oyunlar/kitaplık web'e ÇIKMADAN burada açılır */
@@ -387,7 +390,7 @@ function drawMasa() {
   var hero = DATA[hi] || { baslik: 'Gizli Arşiv', era: '' };
   el.innerHTML =
     '<div class="h-row"><div><b>' + selam + ', ' + esc(ad) + '</b><span class="alt">' + gun + ' · ' + now.getDate() + ' ' + ay + '</span></div>' +
-    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    '<span style="display:flex;gap:8px"><button class="kredi" data-go="kesfet">✦ Keşfet</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
     '<div class="hero" data-dosya="' + hi + '">' +
     '<img src="' + imgFor(hi) + '" alt="">' +
     '<span class="bd">GÜNÜN DOSYASI</span>' +
@@ -1007,6 +1010,66 @@ function drawDers() {
   el.classList.add('on', 'push'); el.scrollTop = 0; cur = 'ders';
   try { history.pushState({ k: 'akademi' }, ''); } catch (e) {}
 }
+
+/* ── KEŞFET — ana sayfada olmayan her şey tek yerde ── */
+function drawKesfet() {
+  var el = $('#scr-kesfet');
+  el.innerHTML =
+    '<div class="h-row"><div><b>Keşfet</b><span class="alt">TARİH AJANI EVRENİ</span></div>' +
+    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    [['🕵️','Biz Kimiz?','Aynı konu, 5 farklı film — ChatGPT farkı, kanıtıyla','neden',''],
+     ['🎬','Örnek Üretim Dinle','Gerçek Studio çıktısı: senaryo + profesyonel seslendirme','ornek',''],
+     ['🎓','Ücretsiz Ders','Söylenti ile kaydı ayırmak — Akademi tanıtım dersi','ders1',''],
+     ['🧮','Kredi Hesap Makinesi','Ne üretirsin, kaça üretirsin — kalem kalem','paket',''],
+     ['📰','Günün Başyazısı','Tarih Ajansı kronik servisi — 20 manşet','haber',''],
+     ['📚','Dijital Kitaplık','Ajan Z’nin bürosu · 8 dosya kitabı','','/kitaplik'],
+     ['🛍','Mağaza','Seviyeler, kredi paketleri, teçhizat','paket','']].map(function (k) {
+      var attr = k[4] ? 'data-oynat="' + k[4] + '" data-ad="' + k[1] + '"' : (k[3] === 'ders1' ? 'data-ders="0"' : 'data-go="' + k[3] + '"');
+      return '<div class="kart" ' + attr + '><div class="krow"><span class="rz">' + k[0] + '</span>' +
+        '<span class="m"><b>' + k[1] + '</b><span>' + k[2] + '</span></span><span class="git">›</span></div></div>';
+    }).join('') +
+    '<p class="alt-not" style="margin-top:16px">HEPSİ UYGULAMA İÇİNDE · ÜCRETSİZ BÖLÜMLER KİLİTSİZ</p>';
+  krediGetir();
+}
+/* ── ÖRNEK ÜRETİM — gerçek Studio çıktısı, sesiyle ── */
+var ORNEKLER = [
+  ['bagdat', 'Bağdat 1258 — Bilgeliğin Küllerinde', 'Hülagu’nun kuşattığı şehirde Beytülhikme’nin son günleri.'],
+  ['fetih', 'İstanbul 1453 — Surların Son Gecesi', 'Elli üç günün son saatleri; gemiler karadan, çanlar son kez.'],
+  ['sezar', 'Sezar — Mart’ın Ortasında', 'Senatoda yirmi üç hançer; dostundan gelen son darbe.'],
+  ['otzi', 'Ötzi — Buzun Sakladığı Cinayet', 'Beş bin üç yüz yıllık maktul; sırtındaki ok başı konuşuyor.'],
+  ['vezuv', 'Pompeii — Son Saat', 'Vezüv uyanırken bir şehrin dondurulmuş hayatları.'],
+  ['termopil', 'Termopylae — Üç Yüzün Yemini', 'Dar geçitte üç gün; tarihe kazınan son duruş.']
+];
+function drawOrnek() {
+  var el = $('#scr-ornek');
+  el.innerHTML =
+    '<div class="ust"><button class="geri" data-go="kesfet">‹</button><span>ÖRNEK STUDIO ÜRETİMİ</span></div>' +
+    '<div style="padding:2px 20px 10px"><h2 class="serif" style="margin:0;font-size:21px">Kulağınla test et</h2>' +
+    '<p style="margin:8px 0 0;font-size:13px;line-height:1.65;color:var(--mut)">Bunlar gerçek Studio çıktıları: araştırılmış senaryo + profesyonel seslendirme. Beğendiysen aynısını kendi konunla üretirsin.</p></div>' +
+    ORNEKLER.map(function (o) {
+      return '<div class="kart"><div style="padding:14px 15px">' +
+        '<b class="serif" style="font-size:15.5px;color:#ede4cf">' + o[1] + '</b>' +
+        '<p style="margin:5px 0 9px;font-size:12px;line-height:1.55;color:var(--mut)">' + o[2] + '</p>' +
+        '<audio controls preload="none" src="/assets/ses/' + o[0] + '.mp3"></audio></div></div>';
+    }).join('') +
+    '<div style="padding:18px 16px 0"><button class="cta" data-go="uret">◉ &nbsp;Kendi konunla üret</button></div>';
+}
+/* ── KARŞILAMA — girişsiz açılış ana sayfası ── */
+function drawHosgeldin() {
+  var el = $('#scr-hosgeldin');
+  el.innerHTML =
+    '<div style="min-height:calc(100dvh - 180px);display:flex;flex-direction:column;justify-content:center;padding:0 24px;text-align:center">' +
+    '<img src="/assets/logo-mark.png" alt="" style="width:110px;height:110px;border-radius:50%;margin:0 auto 18px;box-shadow:0 0 0 4px rgba(201,162,90,.6),0 18px 50px rgba(0,0,0,.6)">' +
+    '<p style="margin:0;font-size:10px;letter-spacing:.3em;color:var(--brass)">TARİH AJANI</p>' +
+    '<h1 class="serif" style="margin:10px 0 0;font-size:27px;line-height:1.25">Tarihi <em style="color:var(--gold)">üreten</em> uygulama</h1>' +
+    '<p style="margin:12px auto 0;max-width:30ch;font-size:13.5px;line-height:1.7;color:var(--mut)">Konu yaz; araştırılmış senaryo, profesyonel seslendirme ve sinematik sahneler dakikalar içinde elinde.</p>' +
+    '<div style="display:grid;gap:10px;margin-top:26px">' +
+    '<button class="cta" data-go="profil">ÜCRETSİZ ÜYE OL · 30 KREDİ →</button>' +
+    '<button class="cta ghost" data-go="profil">Zaten ajanım — giriş yap</button>' +
+    '<button class="cta ghost" style="border:0;color:var(--mut);font-weight:600" data-go="kesfet">✦ Önce keşfet — örnekleri dinle</button>' +
+    '</div></div>';
+}
+
 /* ── NEDEN BİZ — native tanıtım ── */
 var NEDEN_IMGS = [
   ['HOLLYWOOD','https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260717_113138_96c3779a-d686-46ac-9f5d-bbae2645ba2c.png'],
@@ -1148,7 +1211,7 @@ function basla() {
     });
     sb.auth.onAuthStateChange(function (_e, s) { user = s && s.user || null; });
   }
-  go('masa');
+  go(token() ? 'masa' : 'hosgeldin');
 }
 basla();
 })();
