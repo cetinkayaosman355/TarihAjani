@@ -22,7 +22,7 @@ a{color:inherit;text-decoration:none}
 .serif{font-family:'Playfair Display',Georgia,serif}
 /* ── ekran sistemi: her ekran tam-ekran katman, geçişler native ── */
 .scr{position:fixed;inset:0;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:calc(14px + env(safe-area-inset-top,0px)) 0 calc(86px + env(safe-area-inset-bottom,0px));
+  padding:calc(14px + env(safe-area-inset-top,0px)) 0 calc(76px + env(safe-area-inset-bottom,0px));
   display:none}
 .scr.on{display:block;animation:scr-in .24s ease both}
 .scr.push{animation:scr-push .28s cubic-bezier(.3,.85,.35,1) both}
@@ -32,9 +32,9 @@ a{color:inherit;text-decoration:none}
 /* ── alt menü ── */
 #tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;align-items:stretch;
   background:rgba(8,10,16,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-top:1px solid var(--line);padding:6px 4px calc(14px + env(safe-area-inset-bottom,0px))}
+  border-top:1px solid var(--line);padding:5px 4px calc(4px + env(safe-area-inset-bottom,0px))}
 #tabbar button{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;
-  padding-top:8px;background:none;border:0;color:#828795;font-size:10px;cursor:pointer}
+  padding-top:7px;background:none;border:0;color:#9298a6;font-size:11px;font-weight:600;cursor:pointer}
 #tabbar button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 #tabbar button.on{color:var(--gold)}
 #tabbar button:active svg{transform:scale(.88)}
@@ -49,7 +49,7 @@ a{color:inherit;text-decoration:none}
 .pad{padding:0 16px}
 .h-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:6px 18px 14px}
 .h-row b{display:block;font-family:'Playfair Display',serif;font-size:23px;font-weight:700}
-.h-row .alt{display:block;margin-top:4px;font-size:10px;letter-spacing:.22em;color:#77705c}
+.h-row .alt{display:block;margin-top:4px;font-size:10.5px;letter-spacing:.16em;color:#8a8060}
 .kredi{flex:none;display:inline-flex;align-items:center;gap:6px;margin-top:3px;border:1px solid rgba(193,154,82,.45);
   background:rgba(193,154,82,.1);border-radius:20px;padding:7px 13px;color:var(--gold);font-weight:800;font-size:12px;
   font-variant-numeric:tabular-nums;cursor:pointer;border:1px solid rgba(193,154,82,.45)}
@@ -59,14 +59,14 @@ a{color:inherit;text-decoration:none}
 .krow{display:flex;align-items:center;gap:13px;padding:14px 15px}
 .krow .rz{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid rgba(193,154,82,.5);display:grid;place-items:center;color:var(--gold);font-size:17px}
 .krow .m{flex:1;min-width:0}
-.krow b{display:block;font-size:14.5px;font-weight:700;color:#ede4cf}
-.krow span{display:block;margin-top:2px;color:var(--mut);font-size:11.5px}
+.krow b{display:block;font-size:15.5px;font-weight:700;color:#f0e8d4}
+.krow span{display:block;margin-top:3px;color:#9aa0ae;font-size:12.5px;line-height:1.45}
 .krow .git{color:var(--brass);font-size:18px}
 .sh{display:flex;justify-content:space-between;align-items:baseline;padding:20px 18px 8px}
 .sh b{font-size:11px;letter-spacing:.22em;color:var(--brass)}
 .sh button{background:none;border:0;font-size:11px;color:var(--mut);cursor:pointer}
-.chip{border:1px solid rgba(193,154,82,.3);background:rgba(255,255,255,.02);color:#c9c2ae;font-size:11px;letter-spacing:.04em;
-  padding:10px 14px;border-radius:20px;cursor:pointer}
+.chip{border:1px solid rgba(193,154,82,.3);background:rgba(255,255,255,.02);color:#d0c9b6;font-size:12.5px;letter-spacing:.02em;
+  padding:11px 15px;border-radius:20px;cursor:pointer}
 .chip.on{background:linear-gradient(110deg,#a87f37,#e9c87e 60%,#c19a52);border-color:transparent;color:#171207;font-weight:800}
 .cta{display:flex;align-items:center;justify-content:center;gap:9px;border:0;width:100%;padding:16px;border-radius:14px;cursor:pointer;
   background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:13.5px;letter-spacing:.04em}
@@ -80,6 +80,20 @@ a{color:inherit;text-decoration:none}
 input,textarea{font-family:inherit}
 .inp{width:100%;border:1px solid rgba(193,154,82,.3);background:#080a12;color:var(--ink);padding:14px 16px;font-size:15px;border-radius:13px;outline:0}
 .inp:focus{border-color:rgba(230,196,120,.6)}
+/* ── AŞAĞIDAN AÇILIR TAM MENÜ ── */
+#sheet-veil{position:fixed;inset:0;z-index:80;background:rgba(2,3,8,.7);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:81;background:linear-gradient(180deg,#10131f,#080a12);border-top:1px solid rgba(201,162,90,.4);
+  border-radius:20px 20px 0 0;padding:10px 16px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);
+  max-height:78dvh;overflow-y:auto;box-shadow:0 -20px 60px rgba(0,0,0,.6)}
+body.sheet-acik #sheet{transform:none}
+body.sheet-acik #sheet-veil{opacity:1;pointer-events:auto}
+#sheet .tut{width:44px;height:4px;border-radius:2px;background:rgba(201,162,90,.4);margin:2px auto 14px}
+#sheet .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+#sheet .sit{display:flex;align-items:center;gap:10px;padding:13px 13px;border:1px solid rgba(193,154,82,.25);border-radius:13px;
+  background:rgba(255,255,255,.02);color:#e6dfcb;font-size:13.5px;font-weight:600;cursor:pointer}
+#sheet .sit:active{transform:scale(.97);background:rgba(193,154,82,.1)}
+#sheet .sit .i{flex:none;font-size:17px}
+#sheet .sbas{font-size:10.5px;letter-spacing:.2em;color:var(--brass);margin:14px 2px 8px;font-weight:700}
 /* toast */
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:99;
   background:rgba(8,10,16,.97);border:1px solid var(--line);border-radius:22px;color:var(--gold);font-size:12.5px;font-weight:700;
@@ -117,8 +131,8 @@ input,textarea{font-family:inherit}
 .drow:active{background:rgba(193,154,82,.06)}
 .drow .no{flex:none;width:46px;height:46px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--gold)}
 .drow .m{flex:1;min-width:0}
-.drow b{display:block;font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#ede4cf;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.drow span{display:block;margin-top:3px;font-size:10px;letter-spacing:.1em;color:var(--dim)}
+.drow b{display:block;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#f0e8d4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drow span{display:block;margin-top:3px;font-size:11px;letter-spacing:.06em;color:#8b91a0}
 .sec{margin:10px 14px 0;border:1px solid var(--line);border-radius:15px;background:var(--panel);overflow:hidden}
 .sec .sbh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;cursor:pointer;user-select:none}
 .sec .sbh b{font-size:11px;letter-spacing:.18em;color:var(--brass)}
@@ -128,7 +142,7 @@ input,textarea{font-family:inherit}
 .sec.ac .sbh i{transform:rotate(90deg)}
 .blk+.blk{margin-top:12px}
 .blk .k{font-size:9.5px;letter-spacing:.16em;color:var(--mut);margin-bottom:5px}
-.blk .t{font-size:13px;line-height:1.68;color:#d5d9e2;white-space:pre-wrap;word-break:break-word}
+.blk .t{font-size:14px;line-height:1.75;color:#dde1ea;white-space:pre-wrap;word-break:break-word}
 /* ── ÜRET ── */
 .opt-grid{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px}
 .sure{padding:6px 16px 0}
@@ -156,7 +170,7 @@ input,textarea{font-family:inherit}
 .mrow span{flex:1}
 .mrow i{font-style:normal;color:#77705c;font-size:15px}
 .mrow:active{background:rgba(193,154,82,.06)}
-.alt-not{margin:4px 0 0;text-align:center;font-size:10px;letter-spacing:.14em;color:#4c515e}
+.alt-not{margin:4px 0 0;text-align:center;font-size:10.5px;letter-spacing:.1em;color:#5c6270}
 /* ── HABER: krem eskitme GAZETE teması (yalnız haber + makale ekranları) ── */
 #scr-haber,#scr-makale{background:#EDE2C6;color:#1d150a}
 #scr-haber::before,#scr-makale::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;z-index:0;
@@ -225,6 +239,32 @@ audio{width:100%;margin-top:10px}
 <div class="scr" id="scr-ornek"></div>
 
 <nav id="tabbar" aria-label="Uygulama menüsü"></nav>
+<div id="sheet-veil"></div>
+<div id="sheet" role="dialog" aria-label="Tam menü"><div class="tut"></div>
+  <div class="sbas">GEZİN</div>
+  <div class="sgrid">
+    <div class="sit" data-go="masa"><span class="i">🏠</span>Masa</div>
+    <div class="sit" data-go="arsiv"><span class="i">🗂</span>Gizli Arşiv</div>
+    <div class="sit" data-go="uret"><span class="i">◉</span>Dosya Üret</div>
+    <div class="sit" data-go="haber"><span class="i">📰</span>Tarih Ajansı</div>
+    <div class="sit" data-go="kesfet"><span class="i">✦</span>Keşfet</div>
+    <div class="sit" data-go="profil"><span class="i">👤</span>Profil</div>
+  </div>
+  <div class="sbas">İÇERİK</div>
+  <div class="sgrid">
+    <div class="sit" data-go="ornek"><span class="i">🎬</span>Örnek Üretimler</div>
+    <div class="sit" data-ders="0"><span class="i">🎓</span>Ücretsiz Ders</div>
+    <div class="sit" data-go="akademi"><span class="i">📖</span>Akademi</div>
+    <div class="sit" data-go="neden"><span class="i">🕵️</span>Biz Kimiz?</div>
+    <div class="sit" data-oynat="/kitaplik" data-ad="Dijital Kitaplık"><span class="i">📚</span>Kitaplık</div>
+    <div class="sit" data-go="oyun"><span class="i">♞</span>Oyun Tüneli</div>
+  </div>
+  <div class="sbas">HESAP</div>
+  <div class="sgrid">
+    <div class="sit" data-go="paket"><span class="i">🛍</span>Mağaza &amp; Paketler</div>
+    <div class="sit" data-go="paket"><span class="i">🧮</span>Hesap Makinesi</div>
+  </div>
+</div>
 <div id="toast" role="status"></div>
 
 <script src="/arsiv-data.js"></script>
@@ -390,7 +430,7 @@ function drawMasa() {
   var hero = DATA[hi] || { baslik: 'Gizli Arşiv', era: '' };
   el.innerHTML =
     '<div class="h-row"><div><b>' + selam + ', ' + esc(ad) + '</b><span class="alt">' + gun + ' · ' + now.getDate() + ' ' + ay + '</span></div>' +
-    '<span style="display:flex;gap:8px"><button class="kredi" data-go="kesfet">✦ Keşfet</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
+    '<span style="display:flex;gap:8px"><button class="kredi" data-sheet>☰</button><button class="kredi" data-go="kesfet">✦ Keşfet</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
     '<div class="hero" data-dosya="' + hi + '">' +
     '<img src="' + imgFor(hi) + '" alt="">' +
     '<span class="bd">GÜNÜN DOSYASI</span>' +
@@ -427,7 +467,7 @@ function drawArsiv() {
   var el = $('#scr-arsiv');
   el.innerHTML =
     '<div class="h-row"><div><b>Gizli Arşiv</b><span class="alt">' + DATA.length + ' VAKA DOSYASI</span></div>' +
-    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    '<span style="display:flex;gap:8px"><button class="kredi" data-sheet>☰</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
     '<div class="ara"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/></svg>' +
     '<input id="ar-q" type="search" placeholder="dosyalarda ara…" value="' + esc(arsivQ) + '" autocomplete="off"></div>' +
     '<div id="ar-liste"></div>';
@@ -514,7 +554,7 @@ function drawUret() {
   if (uret.sonuc) { drawSonuc(); return; }
   el.innerHTML =
     '<div class="h-row"><div><b>Yeni Dosya</b><span class="alt">KONU YAZ · TARZI SEÇ · ÜRET</span></div>' +
-    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    '<span style="display:flex;gap:8px"><button class="kredi" data-sheet>☰</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
     '<div class="pad"><textarea id="u-konu" class="inp" rows="3" placeholder="Bir olay, kişi ya da soru yaz — ör. Kanuni’nin Zigetvar seferi">' + esc(uret.konu) + '</textarea>' +
     '<button class="chip" id="u-oner" style="margin-top:9px">◈ SEN ÖNER</button></div>' +
     '<div class="sh"><b>ANLATIM TONU</b></div><div class="opt-grid">' +
@@ -760,7 +800,7 @@ function drawHaber() {
   el.innerHTML =
     '<div class="h-row"><div><b>Tarih Ajansı</b>' +
     '<span class="alt" style="display:inline-flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#c0524e;box-shadow:0 0 6px rgba(192,82,78,.9);animation:spin 0s"></span>CANLI YAYIN · TARİHİN KRONİK SERVİSİ</span></div>' +
-    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    '<span style="display:flex;gap:8px"><button class="kredi" data-sheet>☰</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
     // BAŞYAZI — günün manşeti
     (lead.baslik ? '<div class="hero" style="height:min(58vw,250px)" data-makale="' + MAKALE.indexOf(lead) + '">' +
       (lead.img ? '<img src="' + lead.img + '" alt="">' : '') +
@@ -836,7 +876,7 @@ var HABERLER = [
 function drawOyun() {
   $('#scr-oyun').innerHTML =
     '<div class="h-row"><div><b>Oyun Tüneli</b><span class="alt">RÜTBENİ KANITLA, AJAN</span></div>' +
-    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    '<span style="display:flex;gap:8px"><button class="kredi" data-sheet>☰</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
     [['◈','Zaman Görevi','Kronoloji & bilgi · 100 soru · jokerler','/oyun/sayi-tahmin/'],
      ['♞','Satranç 1402','Tarihî karşılaşmalar · Timur vs Bayezid','/oyun/satranc-1402/'],
      ['🏺','Mangala','Bin yıllık Türk stratejisi','/oyun/mangala/'],
@@ -928,7 +968,7 @@ function drawPaket() {
   var el = $('#scr-paket');
   el.innerHTML = '<div class="ust"><button class="geri" data-go="profil">‹</button><span>ÜYELİK &amp; MAĞAZA</span></div>' +
     '<div class="h-row" style="padding-top:0"><div><b>Paketler</b><span class="alt">SATIN ALIMLAR KREDİNİN ÜSTÜNE EKLENİR</span></div>' +
-    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    '<span style="display:flex;gap:8px"><button class="kredi" data-sheet>☰</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
     '<div id="h-kutu" style="padding:0 0 4px">' + hesapHtml() + '</div>' +
     '<div id="pk-liste" class="bos">Yükleniyor…</div>';
   hesapBagla();
@@ -1016,7 +1056,7 @@ function drawKesfet() {
   var el = $('#scr-kesfet');
   el.innerHTML =
     '<div class="h-row"><div><b>Keşfet</b><span class="alt">TARİH AJANI EVRENİ</span></div>' +
-    '<button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></div>' +
+    '<span style="display:flex;gap:8px"><button class="kredi" data-sheet>☰</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
     [['🕵️','Biz Kimiz?','Aynı konu, 5 farklı film — ChatGPT farkı, kanıtıyla','neden',''],
      ['🎬','Örnek Üretim Dinle','Gerçek Studio çıktısı: senaryo + profesyonel seslendirme','ornek',''],
      ['🎓','Ücretsiz Ders','Söylenti ile kaydı ayırmak — Akademi tanıtım dersi','ders1',''],
@@ -1173,8 +1213,15 @@ function drawProfil() {
   krediGetir();
 }
 
+/* ── alt menü (sheet) ── */
+function sheetAc() { document.body.classList.add('sheet-acik'); }
+function sheetKapat() { document.body.classList.remove('sheet-acik'); }
+$('#sheet-veil').addEventListener('click', sheetKapat);
+$('#sheet').addEventListener('click', function () { setTimeout(sheetKapat, 60); });
+
 /* ── global dokunuşlar ── */
 document.addEventListener('click', function (e) {
+  var sb2 = e.target.closest('[data-sheet]'); if (sb2) { sheetAc(); return; }
   var t = e.target.closest('[data-go]'); if (t) { go(t.getAttribute('data-go')); return; }
   var d = e.target.closest('[data-dosya]'); if (d) { drawDosya(+d.getAttribute('data-dosya')); return; }
   var g = e.target.closest('[data-geri]'); if (g) { history.back(); return; }
