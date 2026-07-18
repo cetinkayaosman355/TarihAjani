@@ -348,15 +348,19 @@
     { name: 'Mossbeard', desc: 'Vahşi, sinematik — premium ses', ev: 'bFrjFL4nlpeYNwNRhXxq', ov: 'onyx', premium: true, x: 4, check: true }
   ];
   var RATES = [{ v: 0.9, l: 'Yavaş' }, { v: 1, l: 'Normal' }, { v: 1.12, l: 'Hızlı' }];
+  // STYLES.en = görsel modeline giden "eğitilmiş" stil promptu (kamera/lens/ışık/
+  // doku/render + kalite çıpaları). STYLES.mo = image→video hareket ipucu (o stile
+  // uygun kamera hareketi & ritim). Motor ne olursa olsun bu tarz korunur.
   var STYLES = [
-    { id: 'ultra', name: 'Ultra Gerçekçi', desc: 'Hiper detay, kusursuz netlik', en: 'ultra realistic, hyper-detailed, 8k, tack-sharp focus, professional photography, lifelike skin and material texture, true-to-life color, crisp' },
-    { id: 'sinematik', name: 'Sinematik', desc: 'Film karesi, dramatik ışık', en: 'cinematic film still, dramatic volumetric lighting, shallow depth of field, anamorphic 35mm, color-graded, sharp focus, high detail' },
-    { id: 'fotogercek', name: 'Foto-gerçekçi', desc: 'Gerçek fotoğraf dokusu', en: 'photorealistic, natural light, ultra high detail, DSLR photograph, sharp focus, realistic textures' },
-    { id: 'belgesel', name: 'Belgesel', desc: 'Doğal, gözlemsel foto', en: 'documentary photography, candid observational moment, natural available light, photojournalistic, authentic, sharp and clear' },
-    { id: 'render3d', name: '3D Render', desc: 'Hacimli, sinematik render', en: 'high-end 3D render, volumetric light, octane render, subsurface scattering, crisp, ultra detailed' },
-    { id: 'illus', name: 'İllüstrasyon', desc: 'Modern dijital çizim', en: 'modern digital illustration, clean bold shapes, editorial style, polished, high detail' },
-    { id: 'anime', name: 'Animasyon', desc: 'Anime / çizgi film estetiği', en: 'high-quality animation still, anime / cartoon aesthetic, clean cel shading, vivid colors, studio-quality key visual, crisp lines' },
-    { id: 'minimal', name: 'Minimal', desc: 'Sade, zarif, geometrik', en: 'minimalist, elegant, geometric, refined negative space, clean, crisp' }
+    { id: 'ultra', name: 'Ultra Gerçekçi', desc: 'Hiper detay, kusursuz netlik', en: 'ultra realistic, hyper-detailed photograph, shot on 85mm f/1.4, tack-sharp focus, lifelike skin pores and micro-texture, physically accurate materials, soft natural key light with gentle rim light, true-to-life color science, 8k, no smoothing, no plastic look', mo: 'subtle lifelike motion, gentle handheld micro-movement, natural parallax, slow realistic push-in' },
+    { id: 'sinematik', name: 'Sinematik', desc: 'Film karesi, dramatik ışık', en: 'cinematic film still, anamorphic 35mm, dramatic volumetric lighting, teal-and-amber color grade, shallow depth of field with creamy bokeh, rule-of-thirds composition, atmospheric haze, filmic grain, high dynamic range', mo: 'slow cinematic dolly, smooth crane move, shallow-focus rack, epic controlled pacing' },
+    { id: 'fotogercek', name: 'Foto-gerçekçi', desc: 'Gerçek fotoğraf dokusu', en: 'photorealistic DSLR photograph, 50mm lens, natural available light, realistic textures and shadows, true color, sharp focus, editorial photography quality', mo: 'natural handheld feel, subtle breathing motion, believable everyday movement' },
+    { id: 'belgesel', name: 'Belgesel', desc: 'Doğal, gözlemsel foto', en: 'documentary photojournalism, candid observational moment, natural available light, 35mm reportage, authentic un-staged feel, honest color, sharp and clear', mo: 'observational handheld camera, gentle follow, unobtrusive real-world motion' },
+    { id: 'render3d', name: '3D Render', desc: 'Hacimli, sinematik render', en: 'high-end 3D render, Octane/Redshift, physically based materials, subsurface scattering, volumetric god rays, ultra-detailed, studio product-render lighting, crisp reflections', mo: 'smooth orbital camera, precise turntable motion, elegant slow reveal' },
+    { id: 'illus', name: 'İllüstrasyon', desc: 'Modern dijital çizim', en: 'modern editorial digital illustration, clean bold vector-like shapes, confident linework, harmonious limited palette, subtle grain, poster-grade composition, high detail', mo: 'graphic parallax layers, smooth 2.5D drift, playful accents' },
+    { id: 'anime', name: 'Anime', desc: 'Anime / çizgi film estetiği', en: 'high-quality anime key visual, crisp cel shading, expressive eyes, vivid saturated colors, detailed hand-painted background, studio-grade line art, dynamic composition', mo: 'anime-style camera pan, speed-line energy, dynamic sakuga motion' },
+    { id: 'pixar', name: 'Sinematik 3D Animasyon', desc: 'Pixar tarzı sinema animasyonu', en: 'cinematic 3D animated film still, Pixar/DreamWorks quality, appealing stylized characters, soft global illumination, warm cinematic lighting, rich subsurface skin, shallow depth of field, feature-film render polish', mo: 'smooth animated camera move, buttery cinematic dolly, expressive character motion' },
+    { id: 'minimal', name: 'Minimal', desc: 'Sade, zarif, geometrik', en: 'minimalist editorial composition, elegant negative space, refined geometry, single hero subject, soft even studio light, muted premium palette, crisp and clean', mo: 'slow elegant push-in, calm steady motion, refined restraint' }
   ];
   var MODES = [
     { name: 'Shorts / TikTok', desc: '15 sn · Dikey', sec: 15, aspect: '9:16', tone: 'enerjik' },
@@ -1570,7 +1574,9 @@
     if (!img) { toast('Önce sahne görselini üret'); return; }
     var r = S.result || {};
     var motion = (r.video_promptlar && r.video_promptlar[idx]) || (((r.gorsel_promptlar && r.gorsel_promptlar[idx]) || 'cinematic scene') + ', slow cinematic push-in with subtle parallax, smooth camera move, natural motion');
-    if (!REAL) { toast('Video gerçek modda (Grok) üretilir'); return; }
+    // Stile göre "eğitilmiş" kamera hareketi ipucunu ekle (sinematik/animasyon/3D…).
+    var _mo = styleObj().mo; if (_mo) motion += ' — ' + _mo;
+    if (!REAL) { toast('Video gerçek modda üretilir'); return; }
     if (!S.user) { openAuth(); return; }
     S.videoJobs[idx] = { state: 'submit' }; refreshTab();
     callFn({ action: 'video', image: img, prompt: motion, size: S.aspect, vsec: S.vsec, vprovider: S.vengine }).then(function (d) {
