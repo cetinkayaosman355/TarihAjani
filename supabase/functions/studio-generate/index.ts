@@ -698,6 +698,124 @@ async function loadJobResult(admin: any, userId: string, job: string): Promise<a
 }
 const cleanJob = (v: unknown) => String(v || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 60);
 
+// ── VIDEO (çoklu sağlayıcı: xAI Grok Imagine + Kling) ───────────────────
+// Sağlayıcı VIDEO_PROVIDER env'i ile seçilir ("grok" | "kling"; varsayılan grok).
+// İş kimliğine sağlayıcı ön eki eklenir ("grok:<id>" / "kling:<id>") ki poll doğru
+// API'ye gitsin. Async: submit (ücretlendirir) → video_status ile poll (ücretsiz).
+function videoCost(sec: number): number { return Math.max(120, Math.round(Math.min(15, Math.max(3, sec))) * 24); }
+function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "grok").toLowerCase(); }
+
+async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
+  if (videoProvider() === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
+  const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id } : r;
+}
+async function pollVideo(job: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+  if (job.indexOf("kling:") === 0) return pollKling(job.slice(6));
+  if (job.indexOf("grok:") === 0) return pollGrok(job.slice(5));
+  return pollGrok(job);
+}
+// ── Kling (Kuaishou) — image→video, JWT (HS256) auth ──
+async function klingToken(): Promise<string | null> {
+  const ak = Deno.env.get("KLING_ACCESS_KEY"), sk = Deno.env.get("KLING_SECRET_KEY");
+  if (!ak || !sk) return null;
+  const b64u = (s: string) => btoa(s).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const now = Math.floor(Date.now() / 1000);
+  const head = b64u(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+  const body = b64u(JSON.stringify({ iss: ak, exp: now + 1800, nbf: now - 5 }));
+  const data = head + "." + body;
+  const ck = await crypto.subtle.importKey("raw", new TextEncoder().encode(sk), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", ck, new TextEncoder().encode(data));
+  const sigStr = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  return data + "." + sigStr;
+}
+function klingBase(): string { return (Deno.env.get("KLING_BASE") || "https://api-singapore.klingai.com").replace(/\/+$/, ""); }
+async function submitKling(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
+  const tok = await klingToken();
+  if (!tok) return { err: "KLING_ACCESS_KEY / KLING_SECRET_KEY secret eksik." };
+  if (!imageUrl) return { err: "Kling image→video için sahne görseli gerekli." };
+  const body: Record<string, unknown> = {
+    model_name: Deno.env.get("KLING_MODEL") || "kling-v1-6",
+    image: imageUrl, prompt: (prompt || "").slice(0, 2000),
+    mode: Deno.env.get("KLING_MODE") || "std",
+    duration: dur > 7 ? "10" : "5", cfg_scale: 0.5,
+  };
+  void aspect;
+  try {
+    const r = await fetchT(klingBase() + "/v1/videos/image2video", {
+      method: "POST", headers: { Authorization: `Bearer ${tok}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
+    }, 60_000);
+    const d = await r.json().catch(() => ({} as any));
+    if (!r.ok || (d && typeof d.code === "number" && d.code !== 0)) return { err: (d && (d.message || d.msg)) || ("Kling " + r.status) };
+    const id = d.data?.task_id || d.data?.id || d.task_id;
+    if (!id) return { err: "Kling görev kimliği alınamadı." };
+    return { id: String(id) };
+  } catch (e) { return { err: String(e).slice(0, 160) }; }
+}
+async function pollKling(id: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+  const tok = await klingToken();
+  if (!tok) return { done: false, err: "Kling secret eksik." };
+  try {
+    const r = await fetchT(klingBase() + "/v1/videos/image2video/" + encodeURIComponent(id), { headers: { Authorization: `Bearer ${tok}` } }, 30_000);
+    const d = await r.json().catch(() => ({} as any));
+    if (!r.ok) return { done: false, err: "Kling " + r.status };
+    const data = d.data || {};
+    const status = String(data.task_status || "").toLowerCase();
+    if (status === "failed") return { done: false, failed: true, err: String(data.task_status_msg || "üretim başarısız") };
+    const vids = data.task_result?.videos;
+    const url = Array.isArray(vids) && vids[0] ? (vids[0].url || vids[0].video_url || "") : "";
+    if (url) return { done: true, url };
+    return { done: false };
+  } catch (e) { return { done: false, err: String(e).slice(0, 120) }; }
+}
+// ── xAI Grok Imagine — image→video / text→video ──
+async function submitGrok(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
+  const key = Deno.env.get("XAI_API_KEY");
+  if (!key) return { err: "XAI_API_KEY secret eksik." };
+  const body: Record<string, unknown> = imageUrl
+    ? { model: "grok-imagine-video-1.5", prompt: prompt || "", image: { url: imageUrl }, duration: dur }
+    : { model: "grok-imagine-video", prompt: prompt || "", duration: dur };
+  if (aspect) body.aspect_ratio = aspect;
+  try {
+    const r = await fetchT("https://api.x.ai/v1/videos/generations", {
+      method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
+    }, 60_000);
+    const d = await r.json().catch(() => ({} as any));
+    if (!r.ok) return { err: (d && (d.error?.message || d.error || d.message)) || ("xAI " + r.status) };
+    const id = d.id || d.request_id || d.data?.id;
+    if (!id) return { err: "xAI istek kimliği alınamadı." };
+    return { id: String(id) };
+  } catch (e) { return { err: String(e).slice(0, 160) }; }
+}
+async function pollGrok(id: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+  const key = Deno.env.get("XAI_API_KEY");
+  if (!key) return { done: false, err: "XAI_API_KEY eksik." };
+  try {
+    const r = await fetchT("https://api.x.ai/v1/videos/" + encodeURIComponent(id), { headers: { Authorization: `Bearer ${key}` } }, 30_000);
+    const d = await r.json().catch(() => ({} as any));
+    if (!r.ok) return { done: false, err: "xAI " + r.status };
+    const status = String(d.status || d.state || "").toLowerCase();
+    const url = d.url || d.video_url || d.output?.url || (Array.isArray(d.data) ? (d.data[0]?.url || d.data[0]?.video_url) : "") || "";
+    if (status.includes("fail") || status.includes("error") || status.includes("cancel")) return { done: false, failed: true, err: String(d.error?.message || d.error || "üretim başarısız") };
+    if (url) return { done: true, url };
+    return { done: false };
+  } catch (e) { return { done: false, err: String(e).slice(0, 120) }; }
+}
+// Üretilen mp4'ü Storage'a taşı (kalıcı, cihazlar-arası). Büyükse sağlayıcı URL'si kalır.
+async function uploadVideo(admin: any, userId: string, url: string): Promise<string> {
+  try {
+    if (!admin || !url || url.indexOf("http") !== 0) return url;
+    const r = await fetchT(url, {}, 90_000);
+    if (!r.ok) return url;
+    const bytes = new Uint8Array(await r.arrayBuffer());
+    if (bytes.length > 45_000_000) return url;
+    const path = "video/" + (userId || "anon") + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".mp4";
+    const up = await admin.storage.from("studio-ses").upload(path, bytes, { contentType: "video/mp4", upsert: false });
+    if (up.error) return url;
+    const pub = admin.storage.from("studio-ses").getPublicUrl(path);
+    return pub?.data?.publicUrl || url;
+  } catch (_e) { return url; }
+}
+
 Deno.serve(async (req) => {
   const origin = originFor(req);
   const json = jsonWith(origin);
@@ -711,8 +829,28 @@ Deno.serve(async (req) => {
     if (rateLimited("all:" + ip, 90)) return json({ ok: false, error: "Çok fazla istek — bir dakika sonra tekrar dene." }, 429);
     const isEdit = act === "edit";
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
-    // TTS'in prompt/konusu yok, yalnız seslendirme METNİ var — bu kontrolden muaf
-    if (!prompt && act !== "tts" && act !== "fetch_result") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
+    // TTS/video'nun prompt/konusu yok — bu kontrolden muaf
+    if (!prompt && act !== "tts" && act !== "fetch_result" && act !== "video" && act !== "video_status") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
+
+    // VIDEO DURUM SORGUSU (ücretsiz poll) — video zaten submit'te ücretlendi.
+    if (act === "video_status") {
+      const id = String(b.videoJob || "");
+      if (!id) return json({ ok: false, error: "videoJob eksik." }, 400);
+      const st = await pollVideo(id);
+      if (st.failed) return json({ ok: false, error: st.err || "Video üretilemedi." }, 502);
+      if (!st.done) return json({ ok: true, done: false });
+      let vurl = st.url || "";
+      try {
+        const U = Deno.env.get("SUPABASE_URL"), K = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        if (U && K && vurl) {
+          const adm = createClient(U, K);
+          const vjwt = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+          const { data: vud } = await adm.auth.getUser(vjwt);
+          vurl = await uploadVideo(adm, vud?.user?.id || "anon", vurl);
+        }
+      } catch (_e) { /* sağlayıcı URL'si döner */ }
+      return json({ ok: true, done: true, url: vurl });
+    }
 
     // KURTARMA UCU: bağlantısı kopan istemci, tamamlanmış üretimi buradan alır.
     // Ücretsiz; yalnız kendi sonucunu görebilsin diye giriş şarttır.
@@ -741,7 +879,9 @@ Deno.serve(async (req) => {
       ? ttsCostOf(ttsText.length) * (isPremiumVoice ? PREMIUM_MULT : 1)
       : isEdit
         ? EDIT_COST
-        : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
+        : act === "video"
+          ? videoCost(Number(b.vsec) || 5)
+          : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
 
     // G-01: ücretsiz AI uçları sınırlı — bot/istismar faturamızı şişiremesin.
     // GİRİŞLİ kullanıcıya 90/dk: uzun üretimde bölüm metinleri + sahne promptları
@@ -867,6 +1007,21 @@ Deno.serve(async (req) => {
         return json({ ok: true, url, charged: true, credits, cost, truncated: ttsTruncated });
       }
       return json({ ok: true, url, charged: false, cost, truncated: ttsTruncated });
+    }
+
+    // VIDEO ÜRETİMİ — sağlayıcıya (Grok/Kling) iş gönder; başarılıysa kredi düş.
+    // İş kimliği (videoJob) döner; istemci video_status ile poll eder. Async.
+    if (act === "video") {
+      const sec = Math.min(15, Math.max(3, Number(b.vsec) || 5));
+      const sub = await submitVideo(String(b.prompt || ""), String(b.image || ""), sec, String(b.size || ""));
+      if (!sub.id) {
+        logRun({ action: "video", ok: false, ms: Date.now() - t0, user_id: userId || null, err: (sub.err || "submit").slice(0, 60) });
+        return json({ ok: false, error: "Video başlatılamadı — " + (sub.err || "bilinmeyen hata") + " (kredi düşülmedi)" }, 502);
+      }
+      let credits: number | undefined;
+      if (cost > 0 && admin && userId) credits = await spendSafe(admin, userId, cost, "video");
+      logRun({ action: "video", ok: true, ms: Date.now() - t0, user_id: userId || null });
+      return json({ ok: true, videoJob: sub.id, charged: cost > 0, credits, cost });
     }
 
     // Üretim (metin)
