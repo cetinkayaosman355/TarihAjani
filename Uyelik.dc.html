@@ -19,7 +19,7 @@
 <meta name="twitter:description" content="Tarih Ajanı üyelik paketleri: Gözlemci, Ajan ve Başmüfettiş. Aylık kredi, Studio erişimi ve eğitimlerle tarihin gizli dosyalarını üret.">
 <meta name="twitter:image" content="https://tarihajani.com/assets/evidence-board.jpg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://tarihajani.com/#org","name":"Tarih Ajanı","url":"https://tarihajani.com/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Ana Sayfa","item":"https://tarihajani.com/"},{"@type":"ListItem","position":2,"name":"Üyelik","item":"https://tarihajani.com/uyelik"}]},{"@type":"Product","name":"Gözlemci Üyeliği","description":"Aylık 1.000 Studio kredisi, hazır hikâye arşivine erişim ve aylık yeni vaka dosyası.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"599","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}},{"@type":"Product","name":"Ajan Üyeliği","description":"Aylık 5.000 Studio kredisi, hazır hikâye arşivinin tamamı, eğitim programı modülleri ve üyelere özel e-kitap hediyeleri.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"1299","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}},{"@type":"Product","name":"Başmüfettiş Üyeliği","description":"Aylık 15.000 Studio kredisi, öncelikli üretim ve birebir mentorluk görüşmesi.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"1999","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}}]}
+{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://tarihajani.com/#org","name":"Tarih Ajanı","url":"https://tarihajani.com/"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Ana Sayfa","item":"https://tarihajani.com/"},{"@type":"ListItem","position":2,"name":"Üyelik","item":"https://tarihajani.com/uyelik"}]},{"@type":"Product","name":"Gözlemci Üyeliği","description":"Aylık 600 Studio kredisi, hazır hikâye arşivine erişim ve aylık yeni vaka dosyası.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"399","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}},{"@type":"Product","name":"Ajan Üyeliği","description":"Aylık 1.500 Studio kredisi, hazır hikâye arşivinin tamamı, eğitim programı modülleri ve üyelere özel e-kitap hediyeleri.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"899","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}},{"@type":"Product","name":"Başmüfettiş Üyeliği","description":"Aylık 3.000 Studio kredisi, öncelikli üretim ve birebir mentorluk görüşmesi.","brand":{"@id":"https://tarihajani.com/#org"},"offers":{"@type":"Offer","price":"1699","priceCurrency":"TRY","availability":"https://schema.org/InStock","url":"https://tarihajani.com/uyelik#seviyeler"}}]}
 </script>
 <script src="./support.js"></script>
 <script src="/fiyat-cache.js"></script>
@@ -182,7 +182,7 @@
             </div>
             <div style="display: flex; border: 1px solid rgba(193,154,82,.35);">
               <button onClick="{{ setBillAy }}" style="{{ billAyStyle }}">AYLIK</button>
-              <button onClick="{{ setBillYil }}" style="{{ billYilStyle }}">YILLIK · 2 AY HEDİYE</button>
+              <button onClick="{{ setBillYil }}" style="{{ billYilStyle }}">YILLIK · %10 İNDİRİM</button>
             </div>
           </div>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: stretch; margin-top: 46px;">
@@ -257,7 +257,7 @@
               </div>
               <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 18px 20px;">
                 <h4 style="margin: 0 0 7px; font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #e6c478;">Yıllık ödemenin avantajı</h4>
-                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Yıllık planda <span style="color: #a8c8a2;">2 ay bedava</span> — yani 12 ay yerine 10 ay ödersin (~%17 tasarruf). Seviyeni istediğin zaman yükseltebilir, kalan sürenin farkını mahsup ederek geçebilirsin.</p>
+                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Yıllık planda <span style="color: #a8c8a2;">%10 indirim</span> — 12 ayı peşin ödersin, kredin ay ay yenilenir, yıl boyu üretime devam edersin. Seviyeni istediğin zaman yükseltebilir, kalan sürenin farkını mahsup ederek geçebilirsin.</p>
               </div>
             </div>
           </div>
@@ -432,12 +432,12 @@ class Component extends DCLogic {
     const pr = (this.state && this.state.prices) || {};
     const ayOf = (slug, def) => (pr[slug] && !isNaN(parseFloat(pr[slug].price))) ? parseFloat(pr[slug].price) : def;
     return [
-      { id: 'gozlemci', name: 'GÖZLEMCİ', clearance: 'TEMEL ERİŞİM', ay: ayOf('uyelik-gozlemci', 599), kredi: 1000, videos: 30,
-        features: ['Hazır hikâye arşivine erişim', 'Aylık 1.000 Studio kredisi', 'Aylık yeni vaka dosyası'] },
-      { id: 'ajan', name: 'AJAN', clearance: 'GELİŞMİŞ ERİŞİM', ay: ayOf('uyelik-ajan', 1299), kredi: 5000, videos: 160, populer: true,
-        features: ['Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri', 'Üyelere özel e-kitap hediyeleri'] },
-      { id: 'basmufettis', name: 'BAŞMÜFETTİŞ', clearance: 'ÜST DÜZEY ERİŞİM', ay: ayOf('uyelik-basmufettis', 1999), kredi: 15000, videos: 500,
-        features: ['Ajan içeriğinin tamamı', 'Aylık 15.000 Studio kredisi', 'Öncelikli üretim', 'Birebir mentorluk görüşmesi'] }
+      { id: 'gozlemci', name: 'GÖZLEMCİ', clearance: 'TEMEL ERİŞİM', ay: ayOf('uyelik-gozlemci', 399), kredi: 600, videos: 20,
+        features: ['Hazır hikâye arşivine erişim', 'Aylık 600 Studio kredisi', 'Aylık yeni vaka dosyası'] },
+      { id: 'ajan', name: 'AJAN', clearance: 'GELİŞMİŞ ERİŞİM', ay: ayOf('uyelik-ajan', 899), kredi: 1500, videos: 50, populer: true,
+        features: ['Hazır hikâye arşivinin tamamı', 'Aylık 1.500 Studio kredisi', 'Eğitim programı modülleri', 'Üyelere özel e-kitap hediyeleri'] },
+      { id: 'basmufettis', name: 'BAŞMÜFETTİŞ', clearance: 'ÜST DÜZEY ERİŞİM', ay: ayOf('uyelik-basmufettis', 1699), kredi: 3000, videos: 100,
+        features: ['Ajan içeriğinin tamamı', 'Aylık 3.000 Studio kredisi', 'Öncelikli üretim', 'Birebir mentorluk görüşmesi'] }
     ];
   }
 
@@ -501,7 +501,7 @@ class Component extends DCLogic {
       const isCur = s.loggedIn && t.id === s.tier;
       const cream = !!t.populer && !isCur;
       const up = order[t.id] > order[s.tier];
-      const yearlyTotal = t.ay * 10;
+      const yearlyTotal = Math.round(t.ay * 12 * 0.9);
       return {
         name: t.name,
         clearance: t.clearance || '',
