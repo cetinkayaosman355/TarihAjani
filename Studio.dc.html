@@ -1478,6 +1478,8 @@ class Component extends DCLogic {
     super(props);
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}'); } catch (e) {}
+    // Kaldığın yerden devam: kaydedilmiş aktif dosya varsa doğrudan onu aç (kayıp yok)
+    const w = (saved.work && saved.work.result) ? saved.work : null;
     this.state = {
       screen: saved.agent ? 'studio' : 'login',
       agentDraft: '',
@@ -1490,18 +1492,18 @@ class Component extends DCLogic {
       editTarget: null, editLabel: '',
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
-      imgPrompt: '', imgQueue: [], sceneImgs: {}, imgStyle: null, savedImgs: [], imgSel: {},
+      imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, imgStyle: null, savedImgs: [], imgSel: {},
       imgAspect: null, imgZoom: '',
       vpPlaying: '', vpBusy: '',
-      step: 1,
-      idea: '', ideaWarn: '',
+      step: w ? 4 : 1,
+      idea: (w && w.idea) || '', ideaWarn: '',
       fromArsiv: false, arsivPick: false, chipSeed: this._pickChips(),
-      tone: 'merak', voice: 'kadir', style: 'sinematik', duration: 'dk4', model: 'claude', aspect: 'yatay', regenKey: null,
+      tone: (w && w.tone) || 'merak', voice: (w && w.voice) || 'kadir', style: (w && w.style) || 'sinematik', duration: (w && w.duration) || 'dk4', model: (w && w.model) || 'claude', aspect: (w && w.aspect) || 'yatay', regenKey: null,
       fineOpen: (typeof window === 'undefined') || window.innerWidth > 840,   // U-01: ince ayar mobilde kapalı gelir
       advOpen: false, batchBusy: false, batchDone: 0, batchTotal: 0,
       generating: false, genMsg: '', genError: '', genPct: 0, genWarn: '',
-      result: null, fileNo: '',
-      tab: 'senaryo',
+      result: (w && w.result) || null, fileNo: (w && w.fileNo) || '',
+      tab: (w && w.tab) || 'senaryo',
       tier: saved.tier || 'uye',
       credits: typeof saved.credits === 'number' ? saved.credits : (this.props.startCredits ?? 500),
       history: saved.history || [],
@@ -1509,7 +1511,7 @@ class Component extends DCLogic {
       creditModal: false,
       prices: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {},   // fiyat önbelleği (flicker/eskime yok)
       elKey: saved.elKey || '', ttsBusy: false, ttsError: '', audioUrl: '',
-      sysTtsBusy: false, sysTtsError: '', sysAudioUrl: '', audioDl: false,
+      sysTtsBusy: false, sysTtsError: '', sysAudioUrl: (w && w.sysAudioUrl) || '', audioDl: false,
       copied: {}
     };
   }
@@ -1523,6 +1525,7 @@ class Component extends DCLogic {
     // Admin'in güncel fiyatlarını çek → kredi modalı asla eskide kalmaz
     if (window.TAFiyat) window.TAFiyat.refresh(m => this.setState({ prices: m }));
     this.loadSavedImgs();   // kalıcı "Önceki Üretimler" galerisini yükle
+    this._resumeVideos();   // yarım kalan video işlerini kaldığı yerden sürdür
     // Lightbox klavye gezinme: ← önceki, → sonraki, Esc kapat
     this._zoomKey = (e) => {
       if (!this.state.imgZoom) return;
@@ -1618,13 +1621,29 @@ class Component extends DCLogic {
 
   persist(extra) {
     const s = { ...this.state, ...extra };
+    // AKTİF DOSYA (senaryo + üretilen görseller + videolar + ses) — sayfa yenilense
+    // ya da kullanıcı geri gelse bile KAYBOLMASIN. Görseller/videolar Storage URL'i
+    // olduğundan (data-uri değil) blob küçük kalır, localStorage'a rahat sığar.
+    const work = (s.result && s.mode === 'wizard') ? {
+      result: s.result, sceneImgs: s.sceneImgs || {}, fileNo: s.fileNo, tab: s.tab || 'senaryo',
+      idea: s.idea, tone: s.tone, voice: s.voice, style: s.style, aspect: s.aspect,
+      duration: s.duration, model: s.model, sysAudioUrl: s.sysAudioUrl || '', ts: Date.now()
+    } : null;
+    // Aktif dosyanın görsel/video/ses durumunu kendi geçmiş kaydına da işle → dosyayı
+    // Geçmiş/Arşiv'ten tekrar açınca üretilenler geri gelir (yalnız aktif kaydı günceller).
+    let hist = s.history || [];
+    if (s.fileNo && s.result) {
+      hist = hist.map(h => (h.fileNo && h.fileNo === s.fileNo) ? Object.assign({}, h, { sceneImgs: s.sceneImgs || {}, audioUrl: s.sysAudioUrl || h.audioUrl || '' }) : h);
+    }
+    const base = { agent: s.agentName, email: s.regEmail, credits: s.credits, tier: s.tier, elKey: s.elKey, pendingJob: s.pendingJob || null };
     try {
-      localStorage.setItem('ta_studio_v5', JSON.stringify({
-        agent: s.agentName, email: s.regEmail, credits: s.credits, tier: s.tier, history: s.history, elKey: s.elKey,
-        pendingJob: s.pendingJob || null   // sayfa yenilense bile TEKRAR DENE kredisiz kurtarabilsin
-      }));
-    } catch (e) {}
-    this._syncHistoryToServer(s.history);   // cihazlar arası: geçmişi sunucuya da yaz (debounce'lı)
+      localStorage.setItem('ta_studio_v5', JSON.stringify(Object.assign({}, base, { history: hist, work: work })));
+    } catch (e) {
+      // Kota aşıldıysa: work'ü koru (asıl değerli o), geçmişi kısalt
+      try { localStorage.setItem('ta_studio_v5', JSON.stringify(Object.assign({}, base, { history: hist.slice(0, 4), work: work }))); }
+      catch (e2) { try { localStorage.setItem('ta_studio_v5', JSON.stringify(Object.assign({}, base, { history: hist.slice(0, 4) }))); } catch (e3) {} }
+    }
+    this._syncHistoryToServer(hist);   // cihazlar arası: geçmişi sunucuya da yaz (debounce'lı)
   }
 
   // İki geçmiş listesini birleştir (mobil + web): fileNo/ts anahtarıyla tekilleştir,
@@ -2491,7 +2510,7 @@ class Component extends DCLogic {
     await this.runPool(scenes, async (it) => {
       if (this._batchStop) return;                                        // kredi bitti → kalanları başlatma
       if (this.state.credits < this.IMG_COST(it.i)) { this._batchStop = true; this.setState({ creditModal: true }); return; }
-      const ok = await this.makeImage(it.x.prompt, it.i, it.key);
+      const ok = await this.makeImage(it.x.prompt, it.i, it.key, this.state.aspect);   // DOSYA oranı (dikey/yatay) — panel kadrajına düşme
       if (ok) {
         const si = (this.state.sceneImgs || {})[it.key] || {};
         this.setSceneImg(it.key, { done: true, count: (si.count || 0) + 1 });
@@ -2601,7 +2620,10 @@ class Component extends DCLogic {
   // ── SATIR İÇİ görsel üretimi ── (Görsel Promptları sekmesinde, sekme değiştirmeden;
   // her prompt kendi görselini yanında tutar — kaybolmaz, tek sayfada üretilir)
   setSceneImg(key, patch) {
-    this.setState(st => ({ sceneImgs: { ...st.sceneImgs, [key]: { ...(st.sceneImgs[key] || {}), ...patch } } }));
+    this.setState(st => ({ sceneImgs: { ...st.sceneImgs, [key]: { ...(st.sceneImgs[key] || {}), ...patch } } }),
+      // Kalıcı alanlar (görsel/video URL'i, iş kimliği, üretildi işareti) değiştiyse
+      // hemen kaydet → sayfa yenilense/geri gelinse görsel & video KAYBOLMAZ.
+      () => { if (patch && ('url' in patch || 'done' in patch || 'vidUrl' in patch || 'vidJob' in patch || 'count' in patch)) this.persist(); });
   }
   // Prompttan görsel üret → doğrudan "Üretilenler" (Görsel Stüdyo rafı/imgQueue).
   // Sekme DEĞİŞMEZ, görsel altta çıkmaz; prompt yanında "aktarıldı" onayı gösterilir.
@@ -2686,7 +2708,9 @@ class Component extends DCLogic {
     const label = prov === 'kling' ? 'Kling' : 'Grok';
     this.setSceneImg(key, { vidBusy: true, vidMenuOpen: false, vidStatus: '🎬 ' + label + ' GÖNDERİLİYOR…' });
     this.videoServer(imageUrl, prompt, aspect, prov).then(job => {
-      this.setSceneImg(key, { vidStatus: '🎬 ' + label + ' HAZIRLANIYOR… (1-3 dk)' });
+      // İş kimliğini KAYDET → sayfa yenilense bile arka plandaki video kaybolmaz,
+      // açılışta poll kaldığı yerden devam eder (kredi zaten düşmüştü).
+      this.setSceneImg(key, { vidJob: job, vidBusy: true, vidStatus: '🎬 ' + label + ' HAZIRLANIYOR… (1-3 dk)' });
       this.pollVideo(key, job, 0);
     }).catch(e => {
       this.setSceneImg(key, { vidBusy: false, vidStatus: '' });
@@ -2707,7 +2731,9 @@ class Component extends DCLogic {
     return d.videoJob;
   }
   pollVideo(key, job, tries) {
-    if (tries > 48) { this.setSceneImg(key, { vidBusy: false, vidStatus: 'Video zaman aşımı — tekrar dene' }); return; }
+    // Zaman aşımında iş kimliğini TUTMA ama silme de — kullanıcı sayfayı yenilerse
+    // açılışta yeniden denenir; büsbütün kaybolmasın. Sadece "tekrar dene" göster.
+    if (tries > 90) { this.setSceneImg(key, { vidBusy: false, vidStatus: 'Video uzun sürdü — tekrar dene' }); return; }
     const s = this._sbUrlKey();
     const token = this._token() || s.key;
     setTimeout(() => {
@@ -2715,11 +2741,22 @@ class Component extends DCLogic {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ action: 'video_status', videoJob: job })
       }).then(r => r.json()).then(d => {
-        if (d && d.ok && d.done && d.url) { this.setSceneImg(key, { vidBusy: false, vidUrl: d.url, vidStatus: '' }); return; }
+        if (d && d.ok && d.done && d.url) { this.setSceneImg(key, { vidBusy: false, vidUrl: d.url, vidJob: '', vidStatus: '' }); return; }
         if (d && d.ok && !d.done) { this.setSceneImg(key, { vidStatus: '🎬 HAZIRLANIYOR… (' + (tries + 1) + ')' }); this.pollVideo(key, job, tries + 1); return; }
-        this.setSceneImg(key, { vidBusy: false, vidStatus: (d && d.error) ? ('Hata: ' + d.error) : '' });
+        this.setSceneImg(key, { vidBusy: false, vidJob: '', vidStatus: (d && d.error) ? ('Hata: ' + d.error) : '' });
       }).catch(() => { this.pollVideo(key, job, tries + 1); });
     }, 8000);
+  }
+  // Açılışta: yarım kalan video işlerini kaldığı yerden sürdür (kredi zaten düşmüştü)
+  _resumeVideos() {
+    const si = this.state.sceneImgs || {};
+    Object.keys(si).forEach(key => {
+      const v = si[key] || {};
+      if (v.vidJob && !v.vidUrl) {
+        this.setSceneImg(key, { vidBusy: true, vidStatus: '🎬 Devam ediyor…' });
+        this.pollVideo(key, v.vidJob, 0);
+      }
+    });
   }
 
   // Gerçek seslendirme — ElevenLabs (karakter başı ücretli). 1000 karakter = 15 KR
@@ -3698,9 +3735,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         no: a.no, era: a.era, teaser: a.teaser, title: this.dispTitle((a.result && a.result.baslik) || a.baslik || a.teaser),
         openFile: () => (a.bloklar || a.sayfalar) ? this.setState({ mode: 'arsiv', doc: a, docPage: 0 }) : this.setState({
           mode: 'wizard', step: 4, tab: 'senaryo',
-          result: a.result, fileNo: a.fileNo, idea: a.result.baslik,
+          result: a.result, fileNo: a.fileNo, idea: a.result.baslik, sceneImgs: a.sceneImgs || {},
           audioUrl: '', ttsError: '', genError: '', sysAudioUrl: '', sysTtsError: ''
-        }),
+        }, () => this.persist()),
         uret: () => this.uretFromArsiv(a)    // "Studio'da üret" — hazır dosyayı sonuçta aç
       })),
       historyEmpty: (s.history || []).length === 0,
@@ -3711,10 +3748,12 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         openFile: () => this.setState({
           mode: 'wizard', step: 4, tab: 'senaryo',
           result: h.result, fileNo: h.fileNo || '', idea: h.idea || '',
+          // Bu dosyanın kayıtlı görselleri/videoları da geri gelsin (varsa)
+          sceneImgs: h.sceneImgs || {},
           // K-04: eski dosyanın sesi/uyarısı yeni dosyaya taşınmaz; bu dosyanın kayıtlı sesi geri gelir
           sysAudioUrl: h.audioUrl || '', audioUrl: '', ttsError: '', sysTtsError: '', genWarn: '',
           ...(h.picks || {})
-        }),
+        }, () => this.persist()),
         isPartial: !!h.partial,
         del: () => { if (window.confirm('Bu üretimi geçmişten silmek istediğine emin misin?')) this.deleteHistory(i); }
       })),
@@ -4020,7 +4059,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       copyIgLabel: s.copied['ig'] ? 'KOPYALANDI ✓' : 'KOPYALA',
       copyAll: () => this.copy('all', fullText()),
       copyAllLabel: s.copied['all'] ? 'KOPYALANDI ✓' : 'TÜMÜNÜ KOPYALA',
-      newFile: () => this.setState({ step: 1, idea: '', result: null, audioUrl: '', genError: '', fromArsiv: false, arsivPick: false, sysAudioUrl: '', sysTtsError: '', ttsError: '', genWarn: '', fileNo: '' }),
+      newFile: () => this.setState({ step: 1, idea: '', result: null, sceneImgs: {}, audioUrl: '', genError: '', fromArsiv: false, arsivPick: false, sysAudioUrl: '', sysTtsError: '', ttsError: '', genWarn: '', fileNo: '' }, () => this.persist()),
 
       credits: s.credits,
       history: (s.history || []).map(h => ({ title: h.title, date: h.date, cost: (typeof h.cost === 'number') ? '−' + h.cost + ' KREDİ' : '—' })),
