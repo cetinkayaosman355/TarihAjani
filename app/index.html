@@ -973,7 +973,19 @@ function imgVar(kind, i) { var s = uret[kind === 'kapak' ? 'kapaklar' : kind ===
 function imgHtml(kind, i, alt) { var u = imgVar(kind, i); return u ? '<img class="scene-img" data-lb="' + kind + ':' + i + '" src="' + esc(u) + '" alt="' + esc(alt || '') + '">' : ''; }
 function drawSonuc() {
   var r = uret.sonuc;
-  var gorseller = r.gorsel_promptlar || [], karakterler = r.karakterler || [], kapaklar = r.kapak || [], videolar = r.video_promptlar || [];
+  var gorseller = r.gorsel_promptlar || [], karakterler = r.karakterler || [], kapaklar = r.kapak || [];
+  // Her GÖRSEL sahnesi mutlaka dolu bir VİDEO promptu alsın (boş/eksik kalmasın):
+  // LLM verdiyse onu, vermediyse sahneyi canlandıran kamera-hareketi şablonunu kullan.
+  // Kaynağı (r.video_promptlar) günceller → hem gösterim hem "kopyala" dolu olur.
+  if (gorseller.length) {
+    var vEski = Array.isArray(r.video_promptlar) ? r.video_promptlar : [];
+    r.video_promptlar = gorseller.map(function (g, i) {
+      var vp = vEski[i], p = vp && (vp.prompt || '').trim();
+      return { sahne: (vp && vp.sahne) || g.sahne || ('SAHNE ' + (i + 1)),
+        prompt: p ? vp.prompt : 'One slow cinematic camera move over 6 seconds — gentle push-in with subtle parallax — bringing this exact scene to life while keeping its composition, subject and lighting. Stable face and anatomy, no warping, no morphing, no flicker.' };
+    });
+  }
+  var videolar = r.video_promptlar || [];
   var yt = r.youtube || null, ig = r.instagram || null;
   var uretilenN = Object.keys(uret.gorseller || {}).length;
   var h =
