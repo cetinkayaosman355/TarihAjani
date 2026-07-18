@@ -190,8 +190,9 @@ async function callClaude(prompt: string, maxTokens?: number, jsonMode?: boolean
 }
 
 // Server-fixed credit prices; the client cannot change them.
-const IMAGE_COST = 12;
+const IMAGE_COST = 12;        // standart (medium) — gerçek ~2,5₺
 const IMAGE_COST_BULK = 8;
+const IMAGE_COST_HIGH = 45;   // yüksek (gpt-image high) — gerçek ~9-10₺
 function secsOf(duration: string): number {
   const m = /^s(\d+)$/.exec(duration || "");
   if (m) return Math.min(600, Math.max(30, parseInt(m[1], 10)));
@@ -212,7 +213,10 @@ function ttsCostOf(chars: number): number {
 
 // Real image generation — OpenAI gpt-image (base64 → data URI). Falls back to dall-e-3.
 const NO_TEXT = " — CRITICAL: the image must contain NO text, no letters, no words, no numbers, no captions, no logos, no watermark, no signature. Photographic clarity, sharp focus, high detail.";
-async function generateImage(promptRaw: string, size: string): Promise<string> {
+async function generateImage(promptRaw: string, size: string, quality?: string): Promise<string> {
+  // Kalite müşteri seçimi: 'yuksek'/'high' → gpt-image high (premium, pahalı);
+  // diğer her şey → medium (standart, ~4× ucuz, sosyal kare için yeterli).
+  const q = (quality === "yuksek" || quality === "high") ? "high" : "medium";
   const key = Deno.env.get("OPENAI_API_KEY");
   if (!key || !promptRaw.trim()) return "";
   const prompt = promptRaw + NO_TEXT;
@@ -228,7 +232,7 @@ async function generateImage(promptRaw: string, size: string): Promise<string> {
           prompt: prompt.slice(0, 30000),
           n: 1,
           size: gSize,
-          quality: "high",
+          quality: q,
           output_format: "jpeg",
           output_compression: 88,
         }),
@@ -250,7 +254,12 @@ async function generateImage(promptRaw: string, size: string): Promise<string> {
     }
   }
 
-  for (const model of ["gpt-image-1.5", "gpt-image-1"]) {
+  // Model tercihi env ile ayarlanabilir (varsayılan gpt-image-1.5 → 1). Yeni
+  // gpt-image-2'yi denemek için STORIA_IMAGE_MODELS="gpt-image-2,gpt-image-1.5,
+  // gpt-image-1" yeter; desteklenmeyen param 4xx verirse sıradaki modele düşer.
+  const IMG_MODELS = (Deno.env.get("STORIA_IMAGE_MODELS") || "gpt-image-1.5,gpt-image-1")
+    .split(",").map((s) => s.trim()).filter(Boolean);
+  for (const model of IMG_MODELS) {
     for (let attempt = 0; attempt < 2; attempt++) {
       const out = await tryGptImage(model);
       if (out && out !== "RETRY") return out;
@@ -831,6 +840,8 @@ Deno.serve(async (req) => {
         : act === "video"
           ? videoCost(Number(b.vsec) || 5)
           : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
+    // Görsel kalitesi müşteri seçimi: 'yüksek' premium fiyat.
+    if (act === "image" && (b.quality === "yuksek" || b.quality === "high")) cost = IMAGE_COST_HIGH;
 
     let authedUser = false;
     try {
@@ -877,7 +888,7 @@ Deno.serve(async (req) => {
     }
 
     if (String(b.action || "") === "image") {
-      let url = await generateImage(String(b.prompt || ""), String(b.size || ""));
+      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), String(b.quality || ""));
       if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
       if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
       logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "uretilemedi" });

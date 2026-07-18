@@ -19,7 +19,7 @@
     result: null, tab: 'senaryo', genJob: null,
     user: null, credits: REAL ? null : 500, creditMax: 500,
     images: {}, covers: {}, videos: {}, videoJobs: {}, chars: {}, audio: null, history: [], ttsRate: 1,
-    bgMusic: null, bgMusicName: '', musicVol: 0.5, capStyle: 'klasik', vengine: 'grok',
+    bgMusic: null, bgMusicName: '', musicVol: 0.5, capStyle: 'klasik', vengine: 'grok', imgQuality: 'standart',
     brand: { logo: '', color: '#d9bc80', name: '', handle: '', wm: true, outro: false, outroText: 'Abone ol · yeni içerik her gün' },
     chat: { open: false, msgs: [], busy: false },
     trend: { open: false, niche: '', busy: false, items: [] },
@@ -412,6 +412,14 @@
     }
     return seen.join(' | ');
   }
+  // Görsel kalite seçici (müşteri seçer — Grok/Kling mantığı). Standart = ucuz
+  // (medium), Yüksek = premium (gpt-image üst / 4K). Kredi farkı sunucuda uygulanır.
+  function imgQualHtml() {
+    return '<div class="veng-pick"><span class="cp-lbl">Görsel kalitesi</span><div class="cap-seg">' +
+      '<button class="' + (S.imgQuality === 'standart' ? 'on' : '') + '" data-act="imgQual" data-v="standart">Standart · 12kr</button>' +
+      '<button class="' + (S.imgQuality === 'yuksek' ? 'on' : '') + '" data-act="imgQual" data-v="yuksek">Yüksek · 45kr</button>' +
+      '</div></div>';
+  }
   var GRADS = [
     'linear-gradient(135deg,#efe6d2,#c2a160)', 'linear-gradient(135deg,#e0c588,#9c7b3b)',
     'linear-gradient(135deg,#f3ecdc,#d9bc80)', 'linear-gradient(135deg,#d8b98a,#8b6c31)',
@@ -661,7 +669,7 @@
           '<div class="gtxt">' + esc(p) + '</div><div class="gacts">' + acts + '</div></div></div>';
       }).join('');
       var doneCount = prompts.filter(function (_, i) { return S.images[i]; }).length;
-      return '<div class="tab-tools"><span class="tt-note"><b>' + esc(styleObj().name) + '</b> stilinde ' + prompts.length + ' görsel · ' + doneCount + ' üretildi</span><button class="btn btn-gold btn-sm" data-act="genAll">✦ Tümünü üret</button></div><div class="gallery">' + cards + '</div>';
+      return '<div class="tab-tools"><span class="tt-note"><b>' + esc(styleObj().name) + '</b> stilinde ' + prompts.length + ' görsel · ' + doneCount + ' üretildi</span>' + imgQualHtml() + '<button class="btn btn-gold btn-sm" data-act="genAll">✦ Tümünü üret</button></div><div class="gallery">' + cards + '</div>';
     }
     if (S.tab === 'storyboard') {
       var sc = r.senaryo || [];
@@ -772,7 +780,8 @@
           '<textarea class="field" id="imgPromptInput" placeholder="' + (isAvatar ? 'Örn: 30’lu yaşlarda gülümseyen bir barista, önlük, sıcak ışık' : 'Örn: gün batımında sisli bir dağ manzarası, kartal süzülüyor') + '" style="min-height:110px">' + esc(S.imgPrompt) + '</textarea></div>' +
         '<div class="opt-group"><div class="opt-title">Stil</div><div class="tiles">' + styleTiles + '</div></div>' +
         '<div class="opt-group"><div class="opt-title">Format</div><div class="aspects">' + aspects + '</div></div>' +
-        '<button class="btn btn-gold btn-lg" data-act="genImage" style="width:100%">✦ Görseli üret · 12 kredi</button>' +
+        '<div class="opt-group"><div class="opt-title">Görsel kalitesi</div>' + imgQualHtml() + '</div>' +
+        '<button class="btn btn-gold btn-lg" data-act="genImage" style="width:100%">✦ Görseli üret · ' + (S.imgQuality === 'yuksek' ? 45 : 12) + ' kredi</button>' +
       '</div><div>' +
         '<div class="pv-card" style="padding:16px"><div id="imgOut">' + out + '</div></div>' +
       '</div></div></div>';
@@ -929,6 +938,7 @@
       case 'exportVid': exportVideo(); break;
       case 'capStyle': S.capStyle = v; refreshTab(); break;
       case 'vengine': S.vengine = v; refreshTab(); toast(v === 'kling' ? 'Kling · sinematik seçildi' : 'Grok · hızlı seçildi'); break;
+      case 'imgQual': S.imgQuality = v; refreshTab(); toast(v === 'yuksek' ? 'Yüksek kalite · 45kr/görsel' : 'Standart kalite · 12kr/görsel'); break;
       case 'brandKit': openBrandModal(); break;
       case 'musicPick': openMusicModal(); break;
       case 'musicClear': if (S.bgMusic && S.bgMusic.indexOf('blob:') === 0) { try { URL.revokeObjectURL(S.bgMusic); } catch (e) {} } S.bgMusic = null; S.bgMusicName = ''; refreshTab(); break;
@@ -1176,7 +1186,7 @@
     if (!REAL) { S.images[idx] = demoImage(idx, S.aspect); persistMedia(); refreshTab(); toast('Demo görsel eklendi'); return; }
     if (!S.user) { openAuth(); return; }
     toast('Görsel üretiliyor…');
-    callFn({ action: 'image', prompt: full, size: S.aspect, imgIndex: idx }).then(function (d) {
+    callFn({ action: 'image', prompt: full, size: S.aspect, imgIndex: idx, quality: S.imgQuality }).then(function (d) {
       if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; persistMedia(); refreshTab(); chrome(); toast('Görsel üretildi'); }
       else toast((d && d.error) || 'Görsel üretilemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
@@ -1365,7 +1375,7 @@
     if (!REAL) { S.covers[idx] = demoImage(idx, '16:9'); persistMedia(); refreshTab(); toast('Demo kapak eklendi'); return; }
     if (!S.user) { openAuth(); return; }
     toast('Thumbnail üretiliyor…');
-    callFn({ action: 'image', prompt: full, size: '16:9', imgIndex: idx }).then(function (d) {
+    callFn({ action: 'image', prompt: full, size: '16:9', imgIndex: idx, quality: S.imgQuality }).then(function (d) {
       if (d && d.ok && d.url) { S.covers[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; persistMedia(); refreshTab(); chrome(); toast('Thumbnail üretildi'); }
       else toast((d && d.error) || 'Üretilemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
@@ -1378,7 +1388,7 @@
     if (!REAL) { S.chars[idx] = demoImage(idx, '1:1'); refreshTab(); toast('Demo portre eklendi'); return; }
     if (!S.user) { openAuth(); return; }
     toast('Portre üretiliyor…');
-    callFn({ action: 'image', prompt: full, size: '1:1', imgIndex: idx }).then(function (d) {
+    callFn({ action: 'image', prompt: full, size: '1:1', imgIndex: idx, quality: S.imgQuality }).then(function (d) {
       if (d && d.ok && d.url) { S.chars[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; refreshTab(); chrome(); toast('Portre üretildi'); }
       else toast((d && d.error) || 'Üretilemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
@@ -1604,7 +1614,7 @@
     (function next() {
       if (n >= idxs.length) { toast('Tüm görseller hazır'); return; }
       var idx = idxs[n++]; var full = prompts[idx] + ' — ' + styleObj().en;
-      callFn({ action: 'image', prompt: full, size: S.aspect, imgIndex: idx }).then(function (d) {
+      callFn({ action: 'image', prompt: full, size: S.aspect, imgIndex: idx, quality: S.imgQuality }).then(function (d) {
         if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; persistMedia(); refreshTab(); chrome(); }
         next();
       }).catch(function () { next(); });
@@ -1628,7 +1638,7 @@
     if (!S.user) { openAuth(); return; }
     toast('Görsel üretiliyor…');
     var out = document.getElementById('imgOut'); if (out) out.innerHTML = '<div class="ph" style="aspect-ratio:1;display:grid;place-items:center;border-radius:var(--r-md);background:var(--paper-2);color:var(--muted)">Üretiliyor…</div>';
-    callFn({ action: 'image', prompt: full, size: S.imgAspect, imgIndex: 0 }).then(function (d) {
+    callFn({ action: 'image', prompt: full, size: S.imgAspect, imgIndex: 0, quality: S.imgQuality }).then(function (d) {
       if (d && d.ok && d.url) { S.imgOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; render(); toast('Görsel üretildi'); }
       else { render(); toast((d && d.error) || 'Görsel üretilemedi'); }
     }).catch(function () { render(); toast('Bağlantı hatası'); });
