@@ -2593,7 +2593,7 @@ class Component extends DCLogic {
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Önizleme üretilemedi');
-    return data.url;
+    return { url: data.url, engine: data.engine || '', elevenErr: data.elevenErr || '' };
   }
   previewVoice(v) {
     v = v || {};
@@ -2616,9 +2616,17 @@ class Component extends DCLogic {
     if (cached) { play(cached); return; }
     if (this.state.vpBusy) return;
     this.setState({ vpBusy: id });
-    this.previewServer(v).then(url => {
-      try { if (String(url).indexOf('data:') === 0) localStorage.setItem('ta_vp_' + key, url); } catch (e) {}
+    const wantEleven = v.engine === 'eleven' && !!v.elId;
+    this.previewServer(v).then(res => {
+      const url = res.url;
+      const gotEleven = res.engine === 'eleven';
+      // Yedek sese düşen ElevenLabs örneğini ASLA gerçek ses gibi cache'leme (yoksa
+      // anahtar düzeltilse bile kullanıcı hep yanlış sesi duyar).
+      try { if ((!wantEleven || gotEleven) && String(url).indexOf('data:') === 0) localStorage.setItem('ta_vp_' + key, url); } catch (e) {}
       play(url);
+      if (wantEleven && !gotEleven) {
+        setTimeout(() => alert('⚠️ Bu ses ElevenLabs\'ten gelmedi — yedek sesle çalıyor.\n\nSebep: ' + (res.elevenErr || 'bilinmiyor') + '\n\nÇözüm: Supabase → Edge Functions → Secrets\'ta ELEVENLABS_API_KEY doğru mu ve seçtiğin ses ElevenLabs hesabında var mı kontrol et.'), 250);
+      }
     }).catch(e => {
       this.setState({ vpBusy: '' });
       alert('Ses önizlemesi alınamadı: ' + e.message);
@@ -2637,20 +2645,24 @@ class Component extends DCLogic {
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
     if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Ses üretilemedi');
     if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
-    return { url: data.url, truncated: !!data.truncated };
+    return { url: data.url, truncated: !!data.truncated, engine: data.engine || '', elevenErr: data.elevenErr || '' };
   }
   makeTts() {
     const text = (this.voiceText() || '').trim();
     if (!text || this.state.sysTtsBusy) return;
     const cost = this.ttsCost();
     if (this.state.credits < cost) { this.setState({ creditModal: true }); return; }
+    const wantEleven = !!(this.voiceEngine() || {}).voiceId;
     this.setState({ sysTtsBusy: true, sysTtsError: '' });
     this.ttsServer(text).then(res => {
       const url = res.url;
+      const fellBack = wantEleven && res.engine && res.engine !== 'eleven';
       // K-02: ödenen ses dosya kaydına da yazılır — sayfa yenilense de kaybolmaz
       this.setState(st => ({
         sysTtsBusy: false, sysAudioUrl: url,
-        sysTtsError: res.truncated ? 'Uyarı: metin çok uzundu; ses ilk ~11.500 karakteri kapsıyor. Kalanı için metni bölüp tekrar seslendir.' : '',
+        sysTtsError: fellBack
+          ? ('⚠️ ElevenLabs sesi kullanılamadı, yedek sesle üretildi. Sebep: ' + (res.elevenErr || 'bilinmiyor') + '. (Secrets → ELEVENLABS_API_KEY kontrol et.)')
+          : (res.truncated ? 'Uyarı: metin çok uzundu; ses ilk ~11.500 karakteri kapsıyor. Kalanı için metni bölüp tekrar seslendir.' : ''),
         history: (st.history || []).map(h => (h.fileNo && h.fileNo === st.fileNo) ? { ...h, audioUrl: url } : h)
       }), () => this.persist());
     }).catch(e => {

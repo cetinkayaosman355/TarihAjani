@@ -996,6 +996,70 @@ function uretBasla() {
 }
 function imgVar(kind, i) { var s = uret[kind === 'kapak' ? 'kapaklar' : kind === 'karakter' ? 'karakterGorsel' : 'gorseller'] || {}; return s[i]; }
 function imgHtml(kind, i, alt) { var u = imgVar(kind, i); return u ? '<img class="scene-img" data-lb="' + kind + ':' + i + '" src="' + esc(u) + '" alt="' + esc(alt || '') + '">' : ''; }
+// ── VİDEO (Grok/Kling) — sahne görselinden video; görsel yoksa gösterilmez ──
+function videoStore() { uret.videolar_uretilen = uret.videolar_uretilen || {}; return uret.videolar_uretilen; }
+function videoArea(kind, i) {
+  if (!imgVar(kind, i)) return '';   // önce görsel gerekli
+  var vurl = videoStore()[kind + ':' + i];
+  if (vurl) return '<video src="' + esc(vurl) + '" controls playsinline loop style="width:100%;border-radius:8px;margin-top:9px;border:1px solid rgba(146,87,238,.4)"></video>';
+  return '<div id="vid-' + kind + '-' + i + '" style="margin-top:9px"><button class="kopya" data-vidgo="' + kind + ':' + i + '" style="border-color:rgba(146,87,238,.55);color:#c4a7ff">🎬 VİDEO ÜRET ▾</button></div>';
+}
+function videoSecim(key) {
+  var p = key.split(':'), kind = p[0], i = +p[1];
+  var box = document.getElementById('vid-' + kind + '-' + i); if (!box) return;
+  box.innerHTML = '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+    '<button class="kopya" data-vgen="' + kind + ':' + i + ':grok" style="border-color:rgba(146,87,238,.55);color:#c4a7ff">⚡ Grok · 120 KR</button>' +
+    '<button class="kopya" data-vgen="' + kind + ':' + i + ':kling" style="border-color:rgba(230,196,120,.6);color:#e6c478">👑 Kling · 300 KR</button>' +
+    '<button class="kopya" data-vcancel="1">✕</button></div>';
+  box.querySelector('[data-vcancel]').addEventListener('click', function () { drawSonuc(); });
+  box.querySelectorAll('[data-vgen]').forEach(function (bb) { bb.addEventListener('click', function () { var q = bb.getAttribute('data-vgen').split(':'); videoUret(q[0], +q[1], q[2], box); }); });
+}
+function videoFallbackBtn(box, kind, i) {
+  box.innerHTML = '<button class="kopya" data-vidgo="' + kind + ':' + i + '" style="border-color:rgba(146,87,238,.55);color:#c4a7ff">🎬 VİDEO ÜRET ▾</button>';
+  var b = box.querySelector('[data-vidgo]'); if (b) b.addEventListener('click', function () { videoSecim(kind + ':' + i); });
+}
+function videoUret(kind, i, provider, box) {
+  if (!user) { uyeGoster('video'); return; }
+  var need = provider === 'kling' ? 300 : 120;
+  if (kredi != null && kredi < need) { toast('Yetersiz kredi (' + need + ' KR)'); videoFallbackBtn(box, kind, i); return; }
+  var imageUrl = imgVar(kind, i); if (!imageUrl) return;
+  var vp = (uret.sonuc.video_promptlar || [])[i], gp = (uret.sonuc.gorsel_promptlar || [])[i];
+  var prompt = (vp && vp.prompt) || (gp && gp.prompt) || '';
+  var aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[uret.oran || 'dikey'] || '9:16';
+  var etiket = provider === 'kling' ? 'Kling' : 'Grok';
+  box.innerHTML = '<div style="font-size:12px;color:#c4a7ff">🎬 ' + etiket + ' gönderiliyor…</div>';
+  fetch(FN, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
+    body: JSON.stringify({ action: 'video', image: imageUrl, prompt: prompt, size: aspect, vsec: 5, vprovider: provider })
+  }).then(function (r) { return r.json().then(function (d) { return { st: r.status, d: d }; }); }).then(function (r) {
+    if (!r.d || !r.d.ok || !r.d.videoJob) {
+      toast(r.st === 402 ? 'Yetersiz kredi' : ((r.d && r.d.error) || 'Video başlatılamadı'));
+      videoFallbackBtn(box, kind, i); return;
+    }
+    if (typeof r.d.credits === 'number') { kredi = r.d.credits; krediYaz(); }
+    box.innerHTML = '<div style="font-size:12px;color:#c4a7ff">🎬 ' + etiket + ' hazırlanıyor… (1-3 dk)</div>';
+    videoPoll(kind, i, r.d.videoJob, 0, box, etiket);
+  }).catch(function () { toast('Bağlantı hatası — tekrar dene'); videoFallbackBtn(box, kind, i); });
+}
+function videoPoll(kind, i, job, tries, box, etiket) {
+  if (tries > 48) { toast('Video zaman aşımı — tekrar dene'); videoFallbackBtn(box, kind, i); return; }
+  setTimeout(function () {
+    fetch(FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
+      body: JSON.stringify({ action: 'video_status', videoJob: job })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d && d.ok && d.done && d.url) {
+        videoStore()[kind + ':' + i] = d.url;
+        if (box && box.parentNode) box.innerHTML = '<video src="' + esc(d.url) + '" controls playsinline loop style="width:100%;border-radius:8px;border:1px solid rgba(146,87,238,.4)"></video>';
+        toast('Video hazır 🎬'); return;
+      }
+      if (d && d.ok && !d.done) { if (box && box.parentNode) box.innerHTML = '<div style="font-size:12px;color:#c4a7ff">🎬 ' + etiket + ' hazırlanıyor… (' + (tries + 1) + ')</div>'; videoPoll(kind, i, job, tries + 1, box, etiket); return; }
+      toast((d && d.error) || 'Video üretilemedi'); videoFallbackBtn(box, kind, i);
+    }).catch(function () { videoPoll(kind, i, job, tries + 1, box, etiket); });
+  }, 8000);
+}
 function drawSonuc() {
   var r = uret.sonuc;
   var gorseller = r.gorsel_promptlar || [], karakterler = r.karakterler || [], kapaklar = r.kapak || [];
@@ -1040,7 +1104,7 @@ function drawSonuc() {
         '<span style="display:flex;gap:6px"><button class="kopya" data-gorsel="' + i + '">' + (imgVar('gorsel', i) ? '✓ ÜRETİLDİ' : '◈ ÜRET · 12 KR') + '</button>' +
         '<button class="kopya" data-kopya="' + i + '">⧉</button></span></div>' +
         (g.anlatim ? '<div style="font-size:12.5px;line-height:1.55;color:#e8dcc0;font-style:italic;margin:2px 0 7px;border-left:2px solid rgba(193,154,82,.5);padding-left:9px">🎙 &ldquo;' + esc(g.anlatim) + '&rdquo;</div>' : '') +
-        '<div class="t" style="font-size:12px;color:#a8b2c2">' + esc(g.prompt || '') + '</div>' + imgHtml('gorsel', i, g.sahne) + '</div>';
+        '<div class="t" style="font-size:12px;color:#a8b2c2">' + esc(g.prompt || '') + '</div>' + imgHtml('gorsel', i, g.sahne) + videoArea('gorsel', i) + '</div>';
     }).join('') + '</div></div>';
   // KAPAK — 2 alternatif, yazı + üret
   if (kapaklar.length) {
@@ -1099,6 +1163,7 @@ function drawSonuc() {
   document.querySelectorAll('[data-kapak]').forEach(function (b) { b.addEventListener('click', function () { gorselUret('kapak', +b.getAttribute('data-kapak'), b); }); });
   document.querySelectorAll('[data-karakter]').forEach(function (b) { b.addEventListener('click', function () { gorselUret('karakter', +b.getAttribute('data-karakter'), b); }); });
   document.querySelectorAll('[data-lb]').forEach(function (im) { im.addEventListener('click', function () { var p = im.getAttribute('data-lb').split(':'); acGaleri(p[0], +p[1]); }); });
+  document.querySelectorAll('[data-vidgo]').forEach(function (b) { b.addEventListener('click', function () { videoSecim(b.getAttribute('data-vidgo')); }); });
 }
 /* native SESLENDİRME — uygulamadan çıkmadan mp3 üret ve dinle */
 // Seslendirme = SADECE okunacak temiz anlatı. Etiket, zaman damgası, sahne/teknik
@@ -1141,10 +1206,15 @@ function seslendir() {
       return;
     }
     if (typeof r.d.credits === 'number') { kredi = r.d.credits; krediYaz(); }
+    // ElevenLabs istendi ama yedek (OpenAI) sesle geldiyse SEBEBİNİ göster — sessiz kalma.
+    var fellBack = (v[2] === 'eleven') && r.d.engine && r.d.engine !== 'eleven';
+    var uyari = fellBack
+      ? '<div style="margin:0 0 10px;padding:9px 11px;border:1px solid rgba(224,138,128,.5);border-radius:8px;background:rgba(176,65,62,.12);color:#e8b4ad;font-size:12px;line-height:1.5">⚠️ ElevenLabs sesi kullanılamadı, yedek sesle üretildi.<br>Sebep: ' + esc(r.d.elevenErr || 'bilinmiyor') + '</div>'
+      : '';
     kutu.innerHTML = '<div class="sec ac" style="margin:0"><div class="sbh"><b>SESLENDİRME ✓</b></div><div class="ic">' +
-      sesKutu(r.d.url) +
+      uyari + sesKutu(r.d.url) +
       '<a class="cta ghost" style="margin-top:10px;display:flex" href="' + esc(r.d.url) + '" download="tarih-ajani.mp3">⬇ &nbsp;MP3 indir</a></div></div>';
-    toast('Seslendirme hazır 🎙');
+    toast(fellBack ? '⚠️ Yedek sesle üretildi' : 'Seslendirme hazır 🎙');
   }).catch(function () {
     btn.disabled = false; btn.textContent = '🎙  SESLENDİR · ' + ttsKredi() + ' KR';
     toast('Bağlantı hatası — tekrar dene');
@@ -1188,6 +1258,13 @@ function gorselUret(kind, i, btn) {
         img.className = 'scene-img'; img.src = r.d.url; img.setAttribute('data-lb', kind + ':' + i);
         img.addEventListener('click', function () { acGaleri(kind, i); });
         blk.appendChild(img);
+        // Sahne görseli üretildi → video üret düğmesini de ekle (Grok/Kling)
+        if (kind === 'gorsel' && !blk.querySelector('#vid-gorsel-' + i)) {
+          var vdiv = document.createElement('div');
+          vdiv.innerHTML = videoArea('gorsel', i);
+          var node = vdiv.firstChild;
+          if (node) { blk.appendChild(node); var vb = node.querySelector ? node.querySelector('[data-vidgo]') : null; if (vb) vb.addEventListener('click', function () { videoSecim('gorsel:' + i); }); }
+        }
       }
     }
     toast('Görsel hazır ◈');
