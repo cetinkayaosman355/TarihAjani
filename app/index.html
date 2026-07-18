@@ -513,6 +513,7 @@ $('#lb-kapat').addEventListener('click', imgLbKapat);
 $('#imglb').addEventListener('click', function (e) { if (e.target.id === 'imglb') imgLbKapat(); });
 $('#lb-prev').addEventListener('click', function (e) { e.stopPropagation(); imgLbStep(-1); });
 $('#lb-next').addEventListener('click', function (e) { e.stopPropagation(); imgLbStep(1); });
+$('#lb-dl').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); dlGorsel(imgLb.list[imgLb.idx] || ''); });
 $('#lb-dl').addEventListener('click', function (e) { e.stopPropagation(); });
 window.addEventListener('keydown', function (e) {
   if (!$('#imglb').classList.contains('on')) return;
@@ -1178,6 +1179,18 @@ function acGaleri(kind, i) {
   imgLb.list = keys.map(function (k) { return store[k]; });
   imgLb.idx = Math.max(0, keys.indexOf(i));
   imgLbYaz(); $('#imglb').classList.add('on');
+}
+/* Görseli GERÇEKTEN indir — cross-origin Storage URL'inde <a download> yok sayıldığı
+   için (yeni sekmede açıyordu), blob'a çevirip indiririz. data URI doğrudan iner. */
+async function dlGorsel(url) {
+  if (!url) return;
+  var ad = 'tarih-ajani-gorsel-' + Date.now() + (String(url).indexOf('png') >= 0 ? '.png' : '.jpg');
+  var tikla = function (href) { var a = document.createElement('a'); a.href = href; a.download = ad; document.body.appendChild(a); a.click(); a.remove(); };
+  if (url.indexOf('data:') === 0) { tikla(url); return; }
+  try {
+    var r = await fetch(url); var b = await r.blob(); var bu = URL.createObjectURL(b);
+    tikla(bu); setTimeout(function () { try { URL.revokeObjectURL(bu); } catch (e) {} }, 6000);
+  } catch (e) { window.open(url, '_blank'); }
 }
 function imgLbYaz() {
   var u = imgLb.list[imgLb.idx] || '';
