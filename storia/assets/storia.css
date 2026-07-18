@@ -149,7 +149,7 @@ h1, h2, h3, h4 {
 
 /* ---- Layout helpers ------------------------------------------------------ */
 .wrap { width: 100%; max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
-.section { padding-block: clamp(72px, 11vw, 148px); }
+.section { padding-block: clamp(44px, 6vw, 88px); }
 .stack > * + * { margin-top: var(--stack, 1rem); }
 .center { text-align: center; }
 .muted { color: var(--muted); }

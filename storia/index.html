@@ -258,7 +258,13 @@
   .filecard { position: relative; right: auto; top: auto; transform: none; margin: 0 auto; animation: none; width: 100%; }
   @keyframes floatcard { from{transform:none} to{transform:none} }
   .ribbon { display: none; }
-  .hero-art { min-height: auto; }
+  /* mobil hero: üstteki büyük boşluğu kes, içerik hemen görünsün */
+  .hero { padding-top: 8px; }
+  .hero-grid { padding-block: 6px 26px; gap: 18px; }
+  .hero h1 { margin-top: 12px; }
+  .hero .lead { margin-top: 16px; }
+  .hero-actions { margin-top: 22px; }
+  .hero-art { min-height: 300px; margin-top: 6px; }
 }
 </style>
 </head>
