@@ -7,6 +7,11 @@
 <meta name="description" content="Bir fikir yaz; STORIA senaryonu, seslendirmeni, görsellerini ve yayın paketini üretsin. YouTube, Instagram ve Shorts için premium yapay zekâ içerik stüdyosu.">
 <meta name="theme-color" content="#FBF8F2">
 <link rel="icon" type="image/svg+xml" href="/storia/assets/icon.svg">
+<link rel="manifest" href="/storia/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/storia/assets/icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Storia">
+<meta name="mobile-web-app-capable" content="yes">
 <meta property="og:type" content="website">
 <meta property="og:title" content="STORIA · Yapay Zekâ İçerik Stüdyosu">
 <meta property="og:description" content="Fikirden yayına tek akışta: senaryo, seslendirme, görsel ve yayın paketi.">
@@ -16,7 +21,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Hanken+Grotesk:wght@300..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/storia/assets/storia.css">
+<script>(function(){try{var t=localStorage.getItem('storia_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <style>
+.th-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; cursor: pointer; color: var(--ink-2); transition: all .2s var(--ease); }
+.th-btn:hover { border-color: var(--champ); color: var(--champ-deep); }
+.th-btn svg { width: 18px; height: 18px; }
+.th-btn .moon { display: none; }
+:root[data-theme="dark"] .th-btn .moon { display: block; }
+:root[data-theme="dark"] .th-btn .sun { display: none; }
+:root[data-theme="dark"] .filecard { background: rgba(30,26,19,.7); border-color: rgba(255,255,255,.08); }
+:root[data-theme="dark"] .showcase-frame { background: linear-gradient(160deg, var(--surface), var(--paper-2)); }
+:root[data-theme="dark"] .fc-lines span { background: linear-gradient(90deg, var(--paper-3), var(--paper-2)); }
+:root[data-theme="dark"] #mobileNav { background: rgba(18,15,10,.98); }
 /* ── HERO ─────────────────────────────────────────────────────────────── */
 .hero { position: relative; overflow: clip; padding-top: clamp(48px, 8vw, 96px); }
 .hero-glow {
@@ -247,6 +263,10 @@
       <a href="#fiyat">Fiyat</a>
     </nav>
     <div class="nav-cta">
+      <button class="th-btn" id="themeBtn" aria-label="Karanlık / aydınlık mod" title="Karanlık / aydınlık mod">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 14.5A7.5 7.5 0 019.5 4 7.5 7.5 0 1020 14.5z"/></svg>
+      </button>
       <a class="btn btn-ghost btn-sm" href="/storia/studio.html">Giriş yap</a>
       <a class="btn btn-gold btn-sm" href="/storia/studio.html">Studio'yu aç</a>
       <button class="nav-toggle" aria-label="Menü" aria-expanded="false" aria-controls="mobileNav">
@@ -563,5 +583,6 @@
 </footer>
 
 <script src="/storia/assets/ui.js" defer></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/storia/sw.js',{scope:'/storia/'}).catch(function(){});});}</script>
 </body>
 </html>

@@ -3,6 +3,16 @@
 (function () {
   'use strict';
 
+  // Theme toggle (landing)
+  var themeBtn = document.getElementById('themeBtn');
+  if (themeBtn) themeBtn.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', cur);
+    try { localStorage.setItem('storia_theme', cur); } catch (e) {}
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) tc.setAttribute('content', cur === 'dark' ? '#14110C' : '#FBF8F2');
+  });
+
   // Sticky header shadow after scroll
   var header = document.querySelector('.site-header');
   if (header) {

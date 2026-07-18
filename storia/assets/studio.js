@@ -558,9 +558,11 @@
       '.sc-v{font-family:Arial,sans-serif;font-size:12px;color:#8A7F6E;margin-top:4px}' +
       '.pub{font-family:Arial,sans-serif;font-size:14px}.pub b{color:#8B6C31}' +
       '.tags{font-family:Arial,sans-serif;font-size:12px;color:#8B6C31;margin-top:6px}' +
+      '.cover{width:100%;max-height:340px;object-fit:cover;border-radius:10px;margin:10px 0 14px}' +
       '.foot{margin-top:34px;font-family:Arial,sans-serif;font-size:11px;color:#B4A992;text-align:center}' +
       '</style></head><body>' +
       '<div class="brand">Storia · Yapay Zekâ İçerik Stüdyosu</div>' +
+      (function () { var cv = S.covers[0] || S.images[0]; return cv ? '<img class="cover" src="' + esc(cv) + '">' : ''; })() +
       '<h1>' + esc(r.baslik || S.idea) + '</h1>' +
       (r.logline ? '<p class="logline">' + esc(r.logline) + '</p>' : '') +
       '<div class="meta">' + esc(meta) + '</div>' +
@@ -809,10 +811,13 @@
     document.getElementById('editCancel').addEventListener('click', closeEdit);
     editModal.addEventListener('click', function (e) { if (e.target === editModal) closeEdit(); });
     document.getElementById('editText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) applyEdit(); });
+    // onboarding tour
+    document.getElementById('tourNext').addEventListener('click', tourNext);
+    document.getElementById('tourSkip').addEventListener('click', closeTour);
     // global keyboard
     document.addEventListener('keydown', function (e) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmd(); return; }
-      if (e.key === 'Escape') { closeCmd(); closeAuth(); closeEdit(); return; }
+      if (e.key === 'Escape') { closeCmd(); closeAuth(); closeEdit(); closeTour(); return; }
       var typing = /input|textarea/i.test((e.target.tagName || ''));
       var anyModal = document.querySelector('.modal-back.show');
       if (!typing && !anyModal && e.key.toLowerCase() === 'n') { startNew(); }
@@ -863,6 +868,18 @@
     });
   }
   function markSel() { var items = document.querySelectorAll('#cmdList .cmd-item'); items.forEach(function (x, i) { x.classList.toggle('sel', i === _cmdSel); if (i === _cmdSel) x.scrollIntoView({ block: 'nearest' }); }); }
+
+  // ── Onboarding tour ───────────────────────────────────────────────────
+  var TOUR = [
+    { t: 'Fikrini yaz', x: 'Aklındaki konuyu bir cümleyle yaz. İlham için "Sen öner"e bas ya da bir şablon seç — gerisini Storia kurar.' },
+    { t: 'Tarzını seç', x: 'Dil, ton, anlatıcı sesi, görsel stil, format ve süreyi ayarla. Sağdaki canlı önizlemede sonucu ve kredi maliyetini anında gör.' },
+    { t: 'Dosyanı al', x: 'Senaryo, seslendirme, görseller, storyboard ve yayın paketi elinde. PDF indir, ⌘K ile her yere hızlıca ulaş.' }
+  ];
+  var _tourI = 0;
+  function openTour() { _tourI = 0; tourGo(0); document.getElementById('tourModal').classList.add('show'); }
+  function closeTour() { document.getElementById('tourModal').classList.remove('show'); try { localStorage.setItem('storia_tour', '1'); } catch (e) {} }
+  function tourGo(i) { _tourI = i; var s = TOUR[i]; document.getElementById('tourBadge').textContent = (i + 1) + ' / ' + TOUR.length; document.getElementById('tourTitle').textContent = s.t; document.getElementById('tourText').textContent = s.x; document.getElementById('tourNext').textContent = (i === TOUR.length - 1 ? 'Başla ✦' : 'Devam →'); }
+  function tourNext() { if (_tourI < TOUR.length - 1) tourGo(_tourI + 1); else closeTour(); }
   function closeRail() { if (window._closeRail) window._closeRail(); }
   function switchAuth() {
     authMode = authMode === 'in' ? 'up' : 'in';
@@ -889,7 +906,7 @@
   // ── Boot ─────────────────────────────────────────────────────────────
   function boot() {
     setupChrome(); render();
-    try { if (!localStorage.getItem('storia_seen')) { localStorage.setItem('storia_seen', '1'); setTimeout(function () { toast('Hoş geldin ✦ Bir fikir yaz, gerisini Storia halletsin'); }, 900); } } catch (e) {}
+    try { if (!localStorage.getItem('storia_tour')) setTimeout(openTour, 600); } catch (e) {}
     if (REAL) {
       loadSupabase().then(function () { sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey); return sb.auth.getSession(); })
         .then(function (res) { var s = res && res.data && res.data.session; if (s && s.user) { S.user = s.user; loadCredits(); } chrome(); })
