@@ -218,9 +218,11 @@ function costFor(action: string, duration: string, imgIndex = 0): number {
   if (action === "regen") return 5;
   return 0;
 }
-// Seslendirme: 1000 karakter ≈ 1 dk ses ≈ 5 KR (taban 10) — client ile aynı formül
+// Seslendirme (ElevenLabs eleven_multilingual_v2 — karakter başı ücretli):
+// 1000 karakter ≈ 1 dk ses = 15 KR (taban 15). ElevenLabs kalitesine geçtik →
+// maliyeti karşılamak için yükseltildi. Client ile AYNI formül olmalı.
 function ttsCostOf(chars: number): number {
-  return Math.max(10, Math.ceil(chars / 1000) * 5);
+  return Math.max(15, Math.ceil(chars / 1000) * 15);
 }
 // Kapak hariç beklenen sahne — CLIENT fmtFor ile AYNI formül: 120·sn/(600+sn)
 // (30→6, 90→16, 4dk→37, 8dk→53, 10dk→60). Sahne promptları ayrı 'scenes'
@@ -390,7 +392,11 @@ const ELEVEN_ALLOWED = new Set([
 ]);
 async function generateSpeechEleven(text: string, voiceId: string, opts?: { stability?: number; style?: number }): Promise<Uint8Array | null> {
   const key = Deno.env.get("ELEVENLABS_API_KEY");
-  if (!key || !text.trim() || !ELEVEN_ALLOWED.has(voiceId)) return null;
+  // TEŞHİS: Kadir/ElevenLabs "gelmiyor" şikâyeti → neden başarısız olduğu Supabase
+  // function loglarında görünsün (sessiz OpenAI fallback'ini artık kör bırakmıyoruz).
+  if (!key) { console.error("[eleven] ELEVENLABS_API_KEY YOK → OpenAI'ya düşülüyor"); return null; }
+  if (!ELEVEN_ALLOWED.has(voiceId)) { console.error("[eleven] voiceId izinli değil: " + voiceId); return null; }
+  if (!text.trim()) return null;
   const chunks: string[] = [];
   let rest = text.trim();
   while (rest.length && chunks.length < 5) {
@@ -424,9 +430,14 @@ async function generateSpeechEleven(text: string, voiceId: string, opts?: { stab
           voice_settings: { stability: stab, similarity_boost: 0.85, style: sty, use_speaker_boost: true },
         }),
       });
-      if (!r.ok) return null;
+      if (!r.ok) {
+        const body = await r.text().catch(() => "");
+        // 401=API key hatalı · 404=ses hesapta yok · 422=parametre · 429=kota
+        console.error(`[eleven] HATA ${r.status} voice=${voiceId}: ${body.slice(0, 300)}`);
+        return null;
+      }
       parts.push(new Uint8Array(await r.arrayBuffer()));
-    } catch (_e) { return null; }
+    } catch (e) { console.error("[eleven] exception: " + String(e).slice(0, 200)); return null; }
   }
   if (!parts.length) return null;
   const total = parts.reduce((a, p) => a + p.length, 0);

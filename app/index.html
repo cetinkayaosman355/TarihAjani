@@ -868,12 +868,13 @@ function uretMesaj(m, pct) {
 }
 function buildUretPrompt() {
   var sec = uret.sure;
-  var bolum = Math.max(3, Math.round(sec / 60));          // ~1 bölüm/dakika
+  var bolum = Math.max(1, Math.round(sec / 75));          // kısa videoda 1 bölüm (30 sn'ye 3 bölüm SIĞMAZ)
   var kelime = Math.round(sec * 2.3);
+  var kmax = Math.round(sec * 2.6);                        // üst kelime sınırı (~2.4 kelime/sn okuma)
   var sahne = Math.max(4, Math.round(sec / 8));           // ~1 sahne / 8 sn (1dk≈7, 3dk≈22)
   return 'Sen "Tarih Ajanı" kanalının kıdemli senaristi ve araştırmacısısın. Aşağıdaki tarih konusu için PROFESYONEL, yayına hazır TAM bir video dosyası hazırla. Kalite çıtası: büyük bir belgesel kanalının seviyesi.\n' +
     'KONU: ' + uret.konu + '\n' +
-    'SÜRE: toplam ~' + sec + ' saniye seslendirme (~' + kelime + ' kelime, ' + bolum + ' akıcı bölüm). Bu süre KİLİTLİDİR — daha kısa yazma.\n' +
+    'SÜRE KİLİDİ (EN ÖNEMLİ): toplam ~' + sec + ' saniye seslendirme = ' + kelime + '-' + kmax + ' kelime, ' + bolum + ' akıcı bölüm. Türkçe ≈ 2.4 kelime/saniye okunur. Tüm senaryo[].metin kelimelerinin TOPLAMI ' + kmax + ' kelimeyi ASLA AŞMAZ — daha uzun yazarsan video süreyi aşar, bu KESİN HATADIR. Ne daha kısa, ne daha uzun; süreye TAM otur. Kısa videoda az sözle çok şey anlat, doldurma yapma.\n' +
     'ANLATIM TONU: ' + (TON_TARIF[uret.ton] || TON_TARIF.merak) + '\n' +
     ((uret.ozel || '').trim() ? 'KULLANICI ÖZEL İSTEĞİ (EN YÜKSEK ÖNCELİK — çelişki olursa buna uy; en-boy oranı/süre/tarz belirttiyse onu uygula): "' + (uret.ozel || '').trim().slice(0, 400) + '"\n' : '') +
     'MUTLAK KURALLAR:\n' +
@@ -890,6 +891,29 @@ function buildUretPrompt() {
     'YAYIN PAKETİ: youtube {baslik: 70 karakteri geçmeyen tıklanabilir başlık, aciklama: 3 dolu paragraf + "00:00 Giriş" biçiminde en az 3 zaman damgası, etiketler: TAM 15 arama-dostu etiket} ve instagram {aciklama: 1 hook satırı + 2 kısa paragraf + net CTA, hashtagler: TAM 5 güçlü hashtag (# ile)}.\n' +
     'Konu gerçek bir tarih konusu değilse ya da anlamsızsa SADECE şunu döndür: {"gecersiz":true,"mesaj":"..."}\n' +
     'ÇIKTI: SADECE geçerli tek JSON, başka hiçbir şey yazma. Şema: {"baslik":"...","logline":"...","karakterler":[{"ad":"Türkçe ad/rol","gorunum":"SABİT İngilizce görünüm tarifi"}],"senaryo":[{"bolum":"kısa bölüm adı","sure":"0:00-0:30","metin":"TAM akıcı seslendirme metni"}],"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","anlatim":"bu görselin anlattığı Türkçe seslendirme cümlesi","prompt":"İngilizce görsel"}],"video_promptlar":[{"sahne":"kısa Türkçe sahne adı","prompt":"İngilizce kamera hareketi"}],"kapak":[{"ad":"Kapak A","prompt":"İngilizce","yazi":"Türkçe kapak yazısı"},{"ad":"Kapak B","prompt":"İngilizce","yazi":"Türkçe kapak yazısı"}],"youtube":{"baslik":"...","aciklama":"...","etiketler":["..."]},"instagram":{"aciklama":"...","hashtagler":["..."]}}';
+}
+// Süre kilidi güvenlik ağı: LLM üst kelime sınırını aşarsa (30 sn seçip 100 sn'lik
+// senaryo yazması gibi) seslendirmeyi bütçeye CÜMLE sınırında kırp → hem süre tutar
+// hem ElevenLabs kredisi boşa yanmaz. Bütçedeyse dokunmaz.
+function clampSenaryo(secs, wmax) {
+  if (!Array.isArray(secs) || !secs.length) return secs;
+  var say = function (t) { return String(t || '').trim().split(/\s+/).filter(Boolean).length; };
+  var toplam = secs.reduce(function (a, s) { return a + say(s.metin); }, 0);
+  var limit = Math.round(wmax * 1.15);
+  if (toplam <= limit) return secs;
+  var out = [], kalan = limit;
+  for (var i = 0; i < secs.length && kalan > 0; i++) {
+    var cumleler = String(secs[i].metin || '').split(/(?<=[.!?…])\s+/);
+    var tut = [], kul = 0;
+    for (var j = 0; j < cumleler.length; j++) {
+      var w = say(cumleler[j]);
+      if (kul + w > kalan && tut.length) break;
+      tut.push(cumleler[j]); kul += w; kalan -= w;
+      if (kalan <= 0) break;
+    }
+    if (tut.length) { var kopya = {}; for (var k in secs[i]) kopya[k] = secs[i][k]; kopya.metin = tut.join(' ').trim(); out.push(kopya); }
+  }
+  return out.length ? out : secs;
 }
 function parseGen(text) {
   var t = String(text || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '');
@@ -940,6 +964,7 @@ function uretBasla() {
     clearInterval(mt);
     var obj = parseGen(d.result || d.text || '');
     if (!obj || !obj.baslik) { uret.busy = false; uret.hata = 'Dosya çözümlenemedi — TEKRAR DENE (tamamlandıysa kredisiz geri gelir).'; drawUret(); return; }
+    if (obj.senaryo) obj.senaryo = clampSenaryo(obj.senaryo, Math.round((uret.sure || 30) * 2.6));   // süreyi aşan seslendirmeyi bütçeye kırp
     if (typeof d.credits === 'number') { kredi = d.credits; krediYaz(); }
     if (bedava) uret.bedavaKullanildi = true;   // ücretsiz yeniden-üret hakkı tükendi
     uret.sonuc = obj; uret.busy = false;
@@ -1092,7 +1117,7 @@ function ttsMetin() {
   var ham = (uret.sonuc && uret.sonuc.senaryo || []).map(function (s) { return s.metin || ''; }).join('\n\n');
   return temizSeslendirme(ham).slice(0, 11500);
 }
-function ttsKredi() { return Math.max(10, Math.ceil(ttsMetin().length / 1000) * 5); }
+function ttsKredi() { return Math.max(15, Math.ceil(ttsMetin().length / 1000) * 15); }   // ElevenLabs: 1000 karakter = 15 KR
 function seslendir() {
   var kutu = $('#s-ses-kutu'), btn = $('#s-ses');
   if (!user) { uyeGoster('seslendirme'); return; }
@@ -1375,7 +1400,7 @@ var PK_DESC = {
 /* ── KREDİ HESAP MAKİNESİ — muhasebe defteri gibi kalem kalem ── */
 var hesap = { sure: 120, gorsel: 6, ses: true };
 function hFormul(sec) { return Math.max(30, Math.round((20 + sec / 4) / 5) * 5); }
-function hTts(sec) { return Math.max(10, Math.ceil((sec * 15) / 1000) * 5); }   // ~15 harf/sn seslendirme metni
+function hTts(sec) { return Math.max(15, Math.ceil((sec * 15) / 1000) * 15); }   // ~15 harf/sn · ElevenLabs 15 KR/1000 karakter
 function hesapHtml() {
   var u = hFormul(hesap.sure), s = hesap.ses ? hTts(hesap.sure) : 0, g = hesap.gorsel * 12;
   var toplam = u + s + g;
