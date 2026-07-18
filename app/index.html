@@ -765,6 +765,27 @@ var SESLER = [
   ['mossbeard', 'Mossbeard · Vahşi ⚡ (4× kredi)', 'eleven', 'bFrjFL4nlpeYNwNRhXxq', 'onyx', true, 'Özel', 0.45, 0.4]   // premium (pahalı ×4)
 ];
 var uret = { ton: 'merak', stil: 'sinematik', sure: 60, ses: 'kadir', oran: 'dikey', busy: false, sonuc: null, hata: '', konu: '', ozel: '' };
+// ── AKTİF DOSYA KALICILIĞI ── senaryo + üretilen görseller + videolar + ses
+// sayfa yenilense/uygulama kapansa bile KAYBOLMASIN (kredi/para boşa gitmesin).
+// Görsel/video Storage URL'i olduğundan blob küçük kalır.
+function uretKaydet() {
+  try {
+    localStorage.setItem('ta_uret_v1', JSON.stringify({
+      ton: uret.ton, stil: uret.stil, sure: uret.sure, ses: uret.ses, oran: uret.oran,
+      konu: uret.konu, ozel: uret.ozel, sonuc: uret.sonuc,
+      gorseller: uret.gorseller || {}, kapaklar: uret.kapaklar || {}, karakterGorsel: uret.karakterGorsel || {},
+      videolar_uretilen: uret.videolar_uretilen || {}, videoJobs: uret.videoJobs || {},
+      sesUrl: uret.sesUrl || '', bedavaKullanildi: uret.bedavaKullanildi, ts: Date.now()
+    }));
+  } catch (e) {}
+}
+function uretYukle() {
+  try {
+    var s = JSON.parse(localStorage.getItem('ta_uret_v1') || 'null');
+    if (s && s.sonuc) { Object.assign(uret, s); uret.busy = false; uret.hata = ''; }
+  } catch (e) {}
+}
+uretYukle();
 // GÖRSEL STÜDYO durumu — bağımsız görsel üretimi + kalıcı geçmiş
 var gs = { konu: '', stil: 'sinematik', oran: 'dikey', busy: false };
 function gsGecmis() { try { return JSON.parse(localStorage.getItem('ta_gorsel_v1') || '[]'); } catch (e) { return []; } }
@@ -1024,6 +1045,9 @@ function uretBasla() {
     if (typeof d.credits === 'number') { kredi = d.credits; krediYaz(); }
     if (bedava) uret.bedavaKullanildi = true;   // ücretsiz yeniden-üret hakkı tükendi
     uret.sonuc = obj; uret.busy = false;
+    // Yeni dosya → eski dosyanın görselleri/videoları/sesi taşınmasın
+    uret.gorseller = {}; uret.kapaklar = {}; uret.karakterGorsel = {}; uret.videolar_uretilen = {}; uret.videoJobs = {}; uret.sesUrl = '';
+    uretKaydet();
     try {
       var st = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}');
       st.history = [{ title: obj.baslik, date: new Date().toLocaleDateString('tr-TR'), ts: Date.now(), cost: uretKredi(), fileNo: 'TA-APP-' + Math.floor(100 + Math.random() * 900), result: obj, idea: uret.konu }].concat(st.history || []).slice(0, 12);
@@ -1094,6 +1118,8 @@ function videoUret(kind, i, provider, box) {
       videoFallbackBtn(box, kind, i); return;
     }
     if (typeof r.d.credits === 'number') { kredi = r.d.credits; krediYaz(); }
+    // İş kimliğini KAYDET → sayfa yenilense bile arka plandaki video kaybolmaz
+    uret.videoJobs = uret.videoJobs || {}; uret.videoJobs[kind + ':' + i] = r.d.videoJob; uretKaydet();
     box.innerHTML = '<div style="font-size:12px;color:#c4a7ff">🎬 ' + etiket + ' hazırlanıyor… (1-3 dk)</div>';
     videoPoll(kind, i, r.d.videoJob, 0, box, etiket);
   }).catch(function () { toast('Bağlantı hatası — tekrar dene'); videoFallbackBtn(box, kind, i); });
@@ -1108,6 +1134,8 @@ function videoPoll(kind, i, job, tries, box, etiket) {
     }).then(function (r) { return r.json(); }).then(function (d) {
       if (d && d.ok && d.done && d.url) {
         videoStore()[kind + ':' + i] = d.url;
+        if (uret.videoJobs) delete uret.videoJobs[kind + ':' + i];
+        uretKaydet();   // video kalıcı → yenilemede kaybolmaz
         if (box && box.parentNode) box.innerHTML = '<video src="' + esc(d.url) + '" controls playsinline loop style="width:100%;border-radius:8px;border:1px solid rgba(146,87,238,.4)"></video>';
         toast('Video hazır 🎬'); return;
       }
@@ -1197,17 +1225,27 @@ function drawSonuc() {
   }
   // AKSİYONLAR
   h += '<div style="padding:18px 14px 0;display:grid;gap:10px">' +
-    '<div id="s-ses-kutu"><button class="cta" id="s-ses">🎙 &nbsp;SESLENDİR · ' + ttsKredi() + ' KR</button></div>' +
+    '<div id="s-ses-kutu">' + (uret.sesUrl
+      ? '<div class="sec ac" style="margin:0"><div class="sbh"><b>SESLENDİRME ✓</b></div><div class="ic">' + sesKutu(uret.sesUrl) + '<a class="cta ghost" style="margin-top:10px;display:flex" href="' + esc(uret.sesUrl) + '" download="tarih-ajani.mp3">⬇ &nbsp;MP3 indir</a></div></div>'
+      : '<button class="cta" id="s-ses">🎙 &nbsp;SESLENDİR · ' + ttsKredi() + ' KR</button>') + '</div>' +
     (uret.bedavaKullanildi ? '' : '<button class="cta ghost" id="s-yenile">↻ &nbsp;Beğenmedim — yeniden üret (1 kez ücretsiz)</button>') +
     '<button class="cta ghost" id="s-yeni">+ &nbsp;Yeni dosya üret</button>' +
     '<button class="cta ghost" style="border-color:rgba(176,65,62,.5);color:#e08a80" id="s-sorun">⚑ &nbsp;Sorun bildir</button></div>' +
     '<p class="alt-not" style="margin-top:14px">Seslendirme yalnızca okunacak temiz anlatıyı kullanır. Dosyan uygulamada saklı.</p>';
   $('#scr-uret').innerHTML = h;
   $('#s-geri').addEventListener('click', function () { uret.sonuc = null; drawUret(); });
-  $('#s-yeni').addEventListener('click', function () { uret.sonuc = null; uret.konu = ''; uret.gorseller = {}; uret.kapaklar = {}; uret.karakterGorsel = {}; drawUret(); });
+  $('#s-yeni').addEventListener('click', function () { uret.sonuc = null; uret.konu = ''; uret.gorseller = {}; uret.kapaklar = {}; uret.karakterGorsel = {}; uret.videolar_uretilen = {}; uret.videoJobs = {}; uret.sesUrl = ''; try { localStorage.removeItem('ta_uret_v1'); } catch (e) {} drawUret(); });
   $('#s-sorun').addEventListener('click', function () { sorunBildir('Üretim: ' + (r.baslik || uret.konu)); });
-  var yb = $('#s-yenile'); if (yb) yb.addEventListener('click', function () { uret.bedava = true; uret.sonuc = null; uret.gorseller = {}; uret.kapaklar = {}; uret.karakterGorsel = {}; uretBasla(); });
-  $('#s-ses').addEventListener('click', seslendir);
+  var yb = $('#s-yenile'); if (yb) yb.addEventListener('click', function () { uret.bedava = true; uret.sonuc = null; uret.gorseller = {}; uret.kapaklar = {}; uret.karakterGorsel = {}; uret.videolar_uretilen = {}; uret.videoJobs = {}; uret.sesUrl = ''; uretBasla(); });
+  // Yarım kalan videoları kaldığı yerden sürdür (uygulama yenilendiyse)
+  if (uret.videoJobs) Object.keys(uret.videoJobs).forEach(function (k) {
+    var job = uret.videoJobs[k]; if (!job) return;
+    var p = k.split(':'), kind = p[0], i = +p[1];
+    if (videoStore()[k]) { delete uret.videoJobs[k]; return; }
+    var box = document.getElementById('vid-' + kind + '-' + i);
+    if (box) { box.innerHTML = '<div style="font-size:12px;color:#c4a7ff">🎬 Devam ediyor…</div>'; videoPoll(kind, i, job, 0, box, 'Video'); }
+  });
+  var _sb = $('#s-ses'); if (_sb) _sb.addEventListener('click', seslendir);   // ses zaten üretildiyse buton olmayabilir
   var hp = $('#s-hepsi'); if (hp) hp.addEventListener('click', tumGorselUret);
   document.querySelectorAll('[data-kopya]').forEach(function (b) { b.addEventListener('click', function () { kopyala((gorseller[+b.getAttribute('data-kopya')] || {}).prompt || ''); }); });
   document.querySelectorAll('[data-kkopya]').forEach(function (b) { b.addEventListener('click', function () { kopyala((karakterler[+b.getAttribute('data-kkopya')] || {}).gorunum || ''); }); });
@@ -1262,6 +1300,7 @@ function seslendir() {
       return;
     }
     if (typeof r.d.credits === 'number') { kredi = r.d.credits; krediYaz(); }
+    uret.sesUrl = r.d.url; uretKaydet();   // ses kalıcı → yenilemede kaybolmaz
     // ElevenLabs istendi ama yedek (OpenAI) sesle geldiyse SEBEBİNİ göster — sessiz kalma.
     var fellBack = (v[2] === 'eleven') && r.d.engine && r.d.engine !== 'eleven';
     var uyari = fellBack
@@ -1304,7 +1343,7 @@ function gorselUret(kind, i, btn) {
       return false;
     }
     if (typeof r.d.credits === 'number') { kredi = r.d.credits; krediYaz(); }
-    gorselStore(kind)[i] = r.d.url;
+    gorselStore(kind)[i] = r.d.url; uretKaydet();   // görsel kalıcı → yenilemede kaybolmaz
     gsKaydet({ url: r.d.url, prompt: (prompt || '').slice(0, 120), ar: (uret.oran || 'dikey'), ts: Date.now() });   // kalıcı geçmişe de ekle
     if (btn) {
       btn.textContent = kind === 'karakter' ? '✓ PORTRE' : '✓ ÜRETİLDİ';
