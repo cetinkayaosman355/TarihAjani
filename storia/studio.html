@@ -393,6 +393,11 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .hist-item .hi-title { font-family: var(--serif); font-size: 17px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hist-item .hi-meta { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
 .hist-item .hi-go { color: var(--champ-deep); font-size: 20px; }
+.hist-item .hi-th, .hist-item .hi-body, .hist-item .hi-go { cursor: pointer; }
+.hist-item .hi-del { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; opacity: 0; transition: all .2s var(--ease); }
+.hist-item:hover .hi-del { opacity: 1; }
+.hist-item .hi-del:hover { border-color: #d9736a; color: #d9736a; background: rgba(217,115,106,.08); }
+@media (hover: none) { .hist-item .hi-del { opacity: 1; } }
 
 /* image studio */
 .imgstudio { max-width: 900px; margin: 0 auto; }

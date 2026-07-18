@@ -25,16 +25,74 @@
   };
 
   // ── Data ─────────────────────────────────────────────────────────────
+  // Viral, çok-sektörlü fikir havuzu (tarih değil — her niş). "Sen öner" bunu
+  // kullanır; ayrıca AI arka planda taze fikirler ekleyip havuzu büyütür.
   var IDEAS = [
-    'Okyanusun en derin noktasında ne var?', 'Parayı kim, neden icat etti?',
-    'Rüyalar neden bu kadar tuhaf?', 'Evrenin sonu nasıl olacak?',
-    'Kahve vücuduna tam olarak ne yapıyor?', 'Yapay zekâ gerçekten düşünebilir mi?',
-    'Uykusuzluk beynine neler yapar?', 'Kayıp şehir Atlantis efsanesi',
-    'Kediler bizi neden evcilleştirdi?', 'Işık hızında gitseydik ne olurdu?',
-    'Beynini kandıran 3 psikolojik tuzak', 'Müzik beynini nasıl değiştirir?',
-    'Everest’in zirvesinde bir gün', 'Bir saniyede dünyada neler oluyor?',
-    'Zaman gerçekten var mı?', 'Milyarderlerin ortak 5 alışkanlığı'
+    // merak / bilim
+    'Okyanusun en derin noktasında ne var?', 'Rüyalar neden bu kadar tuhaf?',
+    'Evrenin sonu nasıl olacak?', 'Işık hızında gitseydik ne olurdu?',
+    'Zaman gerçekten var mı?', 'Bir saniyede dünyada neler oluyor?',
+    // psikoloji / kişisel gelişim
+    'Beynini kandıran 3 psikolojik tuzak', 'Sabah 5’te kalkmak hayatını değiştirir mi?',
+    'İnsanları 7 saniyede etkilemenin sırrı', 'Erteleme hastalığını bitiren tek kural',
+    'Zengin ve fakir zihniyeti arasındaki 5 fark',
+    // para / finans / girişim
+    'Parayı kim, neden icat etti?', 'Milyarderlerin ortak 5 alışkanlığı',
+    '20 yaşında bilmeni isterdim: para tuzakları', '0’dan marka kurmanın ilk 3 adımı',
+    'Neden hep parasız kalıyorsun? (gerçek sebep)',
+    // teknoloji / yapay zekâ
+    'Yapay zekâ gerçekten düşünebilir mi?', 'Telefonun seni nasıl bağımlı yapıyor?',
+    '5 yıl içinde yok olacak meslekler',
+    // sağlık / fitness / yemek
+    'Kahve vücuduna tam olarak ne yapıyor?', 'Uykusuzluk beynine neler yapar?',
+    'Şeker bıraktığında vücudunda olan 7 şey', 'Sadece 1 hafta su içersen ne olur?',
+    // ilişkiler / sosyal
+    'İlk buluşmada asla yapılmaması gereken 3 şey', 'Neden bazı insanları unutamıyoruz?',
+    // ürün / UGC / reklam
+    'Bu ürünü 30 saniyede nasıl satarım?', 'Bir kahve dükkânı için UGC reklam senaryosu',
+    'Müşteriyi ikna eden 3 saniyelik kanca',
+    // gizem / hikâye
+    'Kayıp şehir Atlantis efsanesi', 'Gerçekten yaşanmış 3 tüyler ürpertici olay',
+    // motivasyon
+    'Pes etmek üzereyken izlemen gereken video'
   ];
+  var _ideaShuffled = null, _ideaIdx = 0;
+  function ideaPool() {
+    var extra = [];
+    try { extra = JSON.parse(localStorage.getItem('storia_ideas') || '[]'); if (!Array.isArray(extra)) extra = []; } catch (e) { extra = []; }
+    return extra.concat(IDEAS);
+  }
+  function shuffledIdeas() {
+    if (_ideaShuffled) return _ideaShuffled;
+    var a = ideaPool().slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    _ideaShuffled = a; return a;
+  }
+  function pushIdea(txt) {
+    txt = (txt || '').trim().replace(/^["'\-•\d.\s]+/, '').replace(/["']+$/, '').slice(0, 120);
+    if (!txt || txt.length < 8) return;
+    var extra = [];
+    try { extra = JSON.parse(localStorage.getItem('storia_ideas') || '[]'); if (!Array.isArray(extra)) extra = []; } catch (e) { extra = []; }
+    var low = txt.toLowerCase();
+    if (extra.some(function (x) { return x.toLowerCase() === low; }) || IDEAS.some(function (x) { return x.toLowerCase() === low; })) return;
+    extra.unshift(txt); extra = extra.slice(0, 40);
+    try { localStorage.setItem('storia_ideas', JSON.stringify(extra)); } catch (e) {}
+    if (_ideaShuffled) _ideaShuffled.unshift(txt);
+  }
+  var _suggestBusy = false;
+  function suggestIdea() {
+    // anında öner (havuzdan), sonra arka planda AI'dan taze viral fikir çek
+    var pool = shuffledIdeas();
+    if (pool.length) { S.idea = pool[_ideaIdx % pool.length]; _ideaIdx++; render(); }
+    if (!REAL || _suggestBusy) return;
+    _suggestBusy = true;
+    var seen = pool.slice(0, 8).join(' | ');
+    var p = 'Sen viral kısa video fikirleri üreten bir içerik editörüsün. YouTube Shorts / TikTok / Reels için, HERHANGİ bir nişte (psikoloji, para, teknoloji, sağlık, ilişkiler, girişim, ürün reklamı, bilim, gizem) çok tıklanabilecek, merak uyandıran, ÖZGÜN tek bir video konusu öner. Şunları TEKRARLAMA: ' + seen + '. Sadece konu başlığını tek satırda yaz; tırnak, numara, açıklama yok.';
+    callFn({ action: '', prompt: p }).then(function (d) {
+      var t = d && (d.text || d.result);
+      if (t) pushIdea(String(t).split('\n')[0]);
+    }).catch(function () {}).then(function () { _suggestBusy = false; });
+  }
   var TONES = [
     { id: 'merak', name: 'Merak uyandıran' }, { id: 'dramatik', name: 'Dramatik' },
     { id: 'belgesel', name: 'Belgesel' }, { id: 'destansi', name: 'Destansı' },
@@ -134,7 +192,7 @@
 
   // ── Composer (step 1) ────────────────────────────────────────────────
   function renderComposer() {
-    var chips = IDEAS.slice(0, 5).map(function (t) { return '<button class="chip" data-act="useIdea" data-v="' + esc(t) + '"><span class="dot"></span>' + esc(t) + '</button>'; }).join('');
+    var chips = shuffledIdeas().slice(_ideaIdx, _ideaIdx + 5).concat(shuffledIdeas().slice(0, 5)).slice(0, 5).map(function (t) { return '<button class="chip" data-act="useIdea" data-v="' + esc(t) + '"><span class="dot"></span>' + esc(t) + '</button>'; }).join('');
     return '<div class="composer">' +
       '<span class="eyebrow">Yeni dosya</span>' +
       '<h1 class="display">Ne anlatmak<br>istiyorsun?</h1>' +
@@ -392,12 +450,14 @@
     return renderHistory();
   }
   function renderHistory() {
-    if (!S.history.length) return '<div class="empty"><div class="e-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg></div><h3>Henüz geçmiş yok</h3><p>Ürettiğin her dosya bu oturumda burada listelenir.</p><button class="btn btn-gold" data-act="goNew">＋ Yeni dosya</button></div>';
+    if (!S.history.length) return '<div class="empty"><div class="e-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg></div><h3>Henüz geçmiş yok</h3><p>Ürettiğin her dosya burada kalıcı olarak toplanır.</p><button class="btn btn-gold" data-act="goNew">＋ Yeni dosya</button></div>';
     var items = S.history.map(function (h, i) {
-      return '<div class="hist-item" data-act="openHist" data-v="' + i + '"><div class="hi-th" style="background:' + GRADS[i % GRADS.length] + '"></div>' +
-        '<div class="hi-body"><div class="hi-title">' + esc(h.result.baslik || h.idea) + '</div><div class="hi-meta">' + esc(h.meta) + '</div></div><div class="hi-go">→</div></div>';
+      var when = h.ts ? new Date(h.ts).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) : '';
+      return '<div class="hist-item"><div class="hi-th" data-act="openHist" data-v="' + i + '" style="background:' + GRADS[i % GRADS.length] + '"></div>' +
+        '<div class="hi-body" data-act="openHist" data-v="' + i + '"><div class="hi-title">' + esc((h.result && h.result.baslik) || h.idea || 'Dosya') + '</div><div class="hi-meta">' + esc(h.meta) + (when ? ' · ' + when : '') + '</div></div>' +
+        '<button class="hi-del" data-act="delHist" data-v="' + i + '" title="Sil" aria-label="Sil">✕</button><div class="hi-go" data-act="openHist" data-v="' + i + '">→</div></div>';
     }).join('');
-    return '<div class="room-head" style="max-width:760px"><h1>Geçmiş</h1><p>Bu oturumda ürettiğin dosyalar.</p></div><div class="hist">' + items + '</div>';
+    return '<div class="room-head" style="max-width:760px"><h1>Geçmiş</h1><p>Ürettiğin dosyalar bu cihazda kalıcı olarak saklanır.</p></div><div class="hist">' + items + '</div>';
   }
 
   // ── Dynamic bindings ─────────────────────────────────────────────────
@@ -434,7 +494,7 @@
     var act = el.getAttribute('data-act'), v = el.getAttribute('data-v');
     switch (act) {
       case 'useIdea': S.idea = v; render(); break;
-      case 'suggest': S.idea = IDEAS[Math.floor(Math.random() * IDEAS.length)]; render(); break;
+      case 'suggest': suggestIdea(); break;
       case 'toStep2': if (!S.idea.trim()) { toast('Önce bir fikir yaz'); break; } S.step = 2; render(); break;
       case 'back': S.step = 1; render(); break;
       case 'tone': S.tone = v; render(); break;
@@ -472,6 +532,7 @@
       case 'musicVol': break;
       case 'editImg': openEdit(parseInt(v, 10)); break;
       case 'openHist': openHist(parseInt(v, 10)); break;
+      case 'delHist': delHist(parseInt(v, 10)); break;
       case 'istyle': S.imgStyle = v; render(); break;
       case 'iaspect': S.imgAspect = v; render(); break;
       case 'genImage': genStandaloneImage(); break;
@@ -513,6 +574,7 @@
     if (typeof credits === 'number') S.credits = credits;
     else if (!REAL && charged) S.credits = Math.max(0, (S.credits || 0) - costGen(S.durationSec));
     S.history.unshift({ result: result, idea: S.idea, meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect, ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec });
+    saveHist();
     S.step = 4; render();
   }
   function demoGenerate() { setTimeout(function () { finishGen(synthDemo(), true); }, 5200); }
@@ -564,6 +626,12 @@
   function safeParse(t) { try { return JSON.parse(t); } catch (e) { return null; } }
 
   function openHist(i) { var h = S.history[i]; if (!h) return; S.result = h.result; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.audio = null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S.tab = 'senaryo'; S.view = 'new'; S.step = 4; render(); }
+  function delHist(i) { S.history.splice(i, 1); saveHist(); render(); toast('Dosya geçmişten silindi'); }
+  // Geçmiş kalıcılığı: tarayıcıda saklanır (yenilemede kaybolmaz). Kullanıcıya
+  // göre anahtarlanır ki farklı hesaplar birbirinin geçmişini görmesin.
+  function histKey() { return 'storia_hist_' + ((S.user && S.user.id) ? S.user.id.slice(0, 12) : 'guest'); }
+  function saveHist() { try { localStorage.setItem(histKey(), JSON.stringify(S.history.slice(0, 50))); } catch (e) {} }
+  function loadHist() { try { var h = JSON.parse(localStorage.getItem(histKey()) || '[]'); S.history = Array.isArray(h) ? h : []; } catch (e) { S.history = []; } }
 
   function downloadFile() {
     var r = S.result || {}; var lines = [];
@@ -1171,7 +1239,7 @@
     if (a === 'upgrade') { closeAcct(); openPlanModal(); }
     else if (a === 'theme') { toggleTheme(); }
     else if (a === 'auth') {
-      if (S.user) { if (sb) sb.auth.signOut(); S.user = null; S.credits = REAL ? null : 500; chrome(); closeAcct(); toast('Çıkış yapıldı'); }
+      if (S.user) { if (sb) sb.auth.signOut(); S.user = null; S.credits = REAL ? null : 500; loadHist(); chrome(); closeAcct(); toast('Çıkış yapıldı'); render(); }
       else { closeAcct(); openAuth(); }
     }
   }
@@ -1192,7 +1260,7 @@
     p.then(function (res) {
       btn.disabled = false; btn.textContent = authMode === 'in' ? 'Giriş yap' : 'Hesap oluştur';
       if (res.error) { toast(res.error.message || 'Giriş başarısız'); return; }
-      if (res.data && res.data.user) { S.user = res.data.user; closeAuth(); toast('Hoş geldin'); loadCredits(); chrome(); }
+      if (res.data && res.data.user) { S.user = res.data.user; loadHist(); closeAuth(); toast('Hoş geldin'); loadCredits(); chrome(); render(); }
       else toast('E-postanı kontrol et');
     }).catch(function () { btn.disabled = false; toast('Bağlantı hatası'); });
   }
@@ -1200,11 +1268,11 @@
 
   // ── Boot ─────────────────────────────────────────────────────────────
   function boot() {
-    setupChrome(); render();
+    loadHist(); setupChrome(); render();
     try { if (!localStorage.getItem('storia_tour')) setTimeout(openTour, 600); } catch (e) {}
     if (REAL) {
       loadSupabase().then(function () { sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey); return sb.auth.getSession(); })
-        .then(function (res) { var s = res && res.data && res.data.session; if (s && s.user) { S.user = s.user; loadCredits(); } chrome(); })
+        .then(function (res) { var s = res && res.data && res.data.session; if (s && s.user) { S.user = s.user; loadHist(); loadCredits(); if (S.view === 'history' || S.view === 'library') render(); } chrome(); })
         .catch(function () { toast('Sunucuya bağlanılamadı'); });
     }
   }
