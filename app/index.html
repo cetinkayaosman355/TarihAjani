@@ -1056,7 +1056,18 @@ function uretBasla() {
     drawUret();
   }
   function hataVer(m) { clearInterval(mt); uret.busy = false; uret.hata = m; drawUret(); }
-  call().then(function (r) {
+  // OTOMATİK YENİDEN DENEME: geçici sunucu hatasında (504/546/502/503) kullanıcı elle
+  // uğraşmasın diye 3 deneme + artan bekleme; job sabit olduğundan sunucu kredisiz dedup eder.
+  function callRetry(attempt) {
+    return call().then(function (r) {
+      if (r.d && r.d.ok) return r;
+      if ((r.st === 504 || r.st === 546 || r.st === 502 || r.st === 503) && attempt < 2) {
+        return new Promise(function (res) { setTimeout(res, (attempt + 1) * 3500); }).then(function () { return callRetry(attempt + 1); });
+      }
+      return r;
+    });
+  }
+  callRetry(0).then(function (r) {
     if (r.d && r.d.ok) return bitir(r.d);
     if (r.st === 401) return hataVer('Üretim için giriş yap (Profil sekmesi).');
     if (r.st === 402) return hataVer('Yetersiz kredi.');
