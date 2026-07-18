@@ -337,6 +337,17 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .sb-body h5 { font-family: var(--serif); font-size: 16px; margin: 5px 0 6px; color: var(--ink); line-height: 1.2; }
 .sb-body p { margin: 0; font-size: 13px; color: var(--ink-2); line-height: 1.5; max-height: 59px; overflow: hidden; }
 
+/* video hub */
+.vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(262px, 1fr)); gap: 16px; }
+.vcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; box-shadow: var(--sh-1); transition: box-shadow .3s var(--ease); }
+.vcard:hover { box-shadow: var(--sh-2); }
+.vmedia { background: var(--paper-2); }
+.vid { width: 100%; display: block; object-fit: cover; }
+.vph { display: grid; place-items: center; gap: 10px; color: var(--muted); font-size: 13px; text-align: center; padding: 12px; }
+.vbody { padding: 13px 15px 15px; }
+.vprompt { font-size: 12.5px; color: var(--ink-2); line-height: 1.5; margin: 6px 0 12px; max-height: 56px; overflow: hidden; }
+.mini-orb { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--champ-line); border-top-color: var(--champ); animation: spin 1s linear infinite; }
+
 /* panels */
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 26px 28px; box-shadow: var(--sh-1); margin-bottom: 18px; position: relative; }
 .panel h3 { font-size: 20px; margin-bottom: 8px; }

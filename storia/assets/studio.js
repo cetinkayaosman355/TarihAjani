@@ -18,7 +18,7 @@
     durationSec: 270, provider: 'claude', custom: '', template: null, lang: 'tr',
     result: null, tab: 'senaryo', genJob: null,
     user: null, credits: REAL ? null : 500, creditMax: 500,
-    images: {}, covers: {}, audio: null, history: [], ttsRate: 1,
+    images: {}, covers: {}, videos: {}, videoJobs: {}, audio: null, history: [], ttsRate: 1,
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null
   };
@@ -301,15 +301,32 @@
       return '<div class="tab-tools"><span class="tt-note">Film şeridi · ' + sc.length + ' sahne · ' + doneSb + ' görsel hazır</span><button class="btn btn-gold btn-sm" data-act="genAll">✦ Tümünü üret</button></div><div class="storyboard">' + sbCards + '</div>';
     }
     if (S.tab === 'video') {
-      var vids = (r.video_promptlar && r.video_promptlar.length) ? r.video_promptlar
-        : (r.gorsel_promptlar || []).map(function (p) { return p + ', slow cinematic camera move'; });
-      if (!vids.length) return emptyInline();
-      var vcards = vids.map(function (p, i) {
-        return '<div class="prompt-card"><div class="pc-body"><div class="pc-no">Hareket ' + (i + 1) + '</div>' +
-          '<div class="pc-txt">' + esc(p) + '</div><div class="pc-actions">' +
-          '<button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(p) + '">Kopyala</button></div></div></div>';
-      }).join('');
-      return '<div class="tab-tools"><span class="tt-note">Runway, Kling, Sora gibi video araçları için ' + vids.length + ' hareket/kamera promptu (İngilizce)</span><button class="btn btn-quiet btn-sm" data-act="copyVids">Tümünü kopyala</button></div>' + vcards;
+      var vsc = r.senaryo || [];
+      var mp = (r.video_promptlar && r.video_promptlar.length) ? r.video_promptlar : (r.gorsel_promptlar || []).map(function (p) { return p + ', slow cinematic camera move'; });
+      var vn = Math.max(vsc.length, mp.length);
+      if (!vn) return emptyInline();
+      var vratio = S.aspect === '9:16' ? '9/16' : S.aspect === '1:1' ? '1/1' : '16/9';
+      var vcards = '';
+      for (var vi = 0; vi < vn; vi++) {
+        var vurl = S.videos[vi], job = S.videoJobs[vi], vimg = S.images[vi], mprompt = mp[vi] || '';
+        var media, actions;
+        if (vurl) {
+          media = '<video class="vid" src="' + esc(vurl) + '" controls playsinline style="aspect-ratio:' + vratio + '"></video>';
+          actions = '<button class="btn btn-quiet btn-sm" data-act="video" data-v="' + vi + '">↻ Yeniden</button><button class="btn btn-quiet btn-sm" data-act="dl" data-v="' + esc(vurl) + '">↓ İndir</button>';
+        } else if (job) {
+          media = '<div class="vid vph" style="aspect-ratio:' + vratio + '"><span class="mini-orb"></span><span>Video render ediliyor…</span></div>';
+          actions = '<span class="tt-note">Bu ~1-2 dk sürebilir</span>';
+        } else if (vimg) {
+          media = '<img class="vid zoomable" src="' + esc(vimg) + '" data-act="zoom" data-v="' + esc(vimg) + '" style="aspect-ratio:' + vratio + '">';
+          actions = '<button class="btn btn-gold btn-sm" data-act="video" data-v="' + vi + '">🎬 Videoya çevir · 60kr</button>';
+        } else {
+          media = '<div class="vid vph" style="aspect-ratio:' + vratio + ';background:' + GRADS[vi % GRADS.length] + ';color:#fff">Önce görsel üret</div>';
+          actions = '<button class="btn btn-gold btn-sm" data-act="image" data-v="' + vi + '">✦ Görsel üret</button>';
+        }
+        vcards += '<div class="vcard"><div class="vmedia">' + media + '</div><div class="vbody"><div class="sb-no">Sahne ' + (vi + 1) + '</div>' +
+          '<div class="vprompt">' + esc(mprompt) + '</div><div class="th-acts">' + actions + '<button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(mprompt) + '">Prompt</button></div></div></div>';
+      }
+      return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>Grok</b> ile ~5 sn videoya çevir · ' + vn + ' sahne</span></div><div class="vgrid">' + vcards + '</div>';
     }
     if (S.tab === 'youtube') {
       var yt = r.youtube || {};
@@ -442,6 +459,7 @@
       case 'dlAudio': downloadFileUrl(S.audio, 'storia-seslendirme.mp3'); break;
       case 'genAll': genAll(); break;
       case 'cover': doCover(parseInt(v, 10)); break;
+      case 'video': doVideo(parseInt(v, 10)); break;
       case 'editImg': openEdit(parseInt(v, 10)); break;
       case 'openHist': openHist(parseInt(v, 10)); break;
       case 'istyle': S.imgStyle = v; render(); break;
@@ -454,7 +472,7 @@
 
   function applyMode(i) { var m = MODES[i]; if (!m) return; S.durationSec = m.sec; S.aspect = m.aspect; S.tone = m.tone; render(); toast(m.name + ' seçildi'); }
   function applyTemplate(i) { var t = TEMPLATES[i]; if (!t) return; S.template = i; S.tone = t.tone; S.style = t.style; S.durationSec = t.sec; S.aspect = t.aspect; render(); toast(t.name + ' şablonu · tarz ayarlandı'); }
-  function startNew() { S.result = null; S.images = {}; S.covers = {}; S.audio = null; S.idea = ''; S.custom = ''; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
+  function startNew() { S.result = null; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.audio = null; S.idea = ''; S.custom = ''; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
 
   // ── Generation ───────────────────────────────────────────────────────
   function startGenerate(isRegen) {
@@ -477,7 +495,7 @@
   }
   function finishGen(result, charged, credits) {
     _timers.forEach(clearTimeout);
-    S.result = result; S.images = {}; S.covers = {}; S.audio = null; S.tab = 'senaryo';
+    S.result = result; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.audio = null; S.tab = 'senaryo';
     if (typeof credits === 'number') S.credits = credits;
     else if (!REAL && charged) S.credits = Math.max(0, (S.credits || 0) - costGen(S.durationSec));
     S.history.unshift({ result: result, idea: S.idea, meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect, ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec });
@@ -531,7 +549,7 @@
   function genError(msg) { _timers.forEach(clearTimeout); S.step = 2; render(); toast(msg || 'Üretim başarısız — tekrar dene'); }
   function safeParse(t) { try { return JSON.parse(t); } catch (e) { return null; } }
 
-  function openHist(i) { var h = S.history[i]; if (!h) return; S.result = h.result; S.images = {}; S.covers = {}; S.audio = null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S.tab = 'senaryo'; S.view = 'new'; S.step = 4; render(); }
+  function openHist(i) { var h = S.history[i]; if (!h) return; S.result = h.result; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.audio = null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S.tab = 'senaryo'; S.view = 'new'; S.step = 4; render(); }
 
   function downloadFile() {
     var r = S.result || {}; var lines = [];
@@ -651,6 +669,33 @@
       else toast((d && d.error) || 'Üretilemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
+  // ── Video (Grok image→video) ──────────────────────────────────────────
+  function doVideo(idx) {
+    var img = S.images[idx];
+    if (!img) { toast('Önce sahne görselini üret'); return; }
+    var r = S.result || {};
+    var motion = (r.video_promptlar && r.video_promptlar[idx]) || (((r.gorsel_promptlar && r.gorsel_promptlar[idx]) || 'cinematic scene') + ', slow cinematic camera move');
+    if (!REAL) { toast('Video gerçek modda (Grok) üretilir'); return; }
+    if (!S.user) { openAuth(); return; }
+    S.videoJobs[idx] = { state: 'submit' }; refreshTab();
+    callFn({ action: 'video', image: img, prompt: motion, size: S.aspect, vsec: 5 }).then(function (d) {
+      if (!d || !d.ok || !d.videoJob) { delete S.videoJobs[idx]; refreshTab(); toast((d && d.error) || 'Video başlatılamadı'); return; }
+      if (typeof d.credits === 'number') S.credits = d.credits; chrome();
+      S.videoJobs[idx] = { state: 'render', job: d.videoJob }; refreshTab();
+      pollVideoJob(idx, d.videoJob, 0);
+    }).catch(function () { delete S.videoJobs[idx]; refreshTab(); toast('Bağlantı hatası'); });
+  }
+  function pollVideoJob(idx, job, tries) {
+    if (tries > 60) { delete S.videoJobs[idx]; refreshTab(); toast('Video zaman aşımı — tekrar dene'); return; }
+    setTimeout(function () {
+      callFn({ action: 'video_status', videoJob: job }).then(function (d) {
+        if (d && d.ok && d.done && d.url) { S.videos[idx] = d.url; delete S.videoJobs[idx]; refreshTab(); toast('Video hazır ✦'); }
+        else if (d && d.ok && !d.done) { pollVideoJob(idx, job, tries + 1); }
+        else { delete S.videoJobs[idx]; refreshTab(); toast((d && d.error) || 'Video üretilemedi'); }
+      }).catch(function () { pollVideoJob(idx, job, tries + 1); });
+    }, 5000);
+  }
+
   // ── Image editing ─────────────────────────────────────────────────────
   var _editIdx = null, _editStudio = false;
   function openEdit(idx) { if (S.images[idx] == null) return; _editStudio = false; _editIdx = idx; showEdit(); }
