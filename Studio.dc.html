@@ -169,19 +169,8 @@
     .ta-plan .kr:hover { box-shadow: 0 6px 22px rgba(230,196,120,.3); }
     @media (max-width: 840px) { .ta-side, .ta-shellbg { display: none; } .ta-body { display: block; } }
 
-    /* ── 3 SÜTUN: geniş ekranda AI asistan (Ajan Masası) sağda KALICI rayda ──
-       Menü | Çalışma | Asistan — tek bütün ortam. Dar ekranda kayan panel kalır. */
-    @media (min-width: 1280px) {
-      .ta-studio-wrap { padding-right: 376px; }
-      .ta-chatpanel {
-        transform: none !important; visibility: visible !important;
-        width: 376px !important; z-index: 30 !important; top: 0 !important;
-        box-shadow: -26px 0 60px -44px rgba(0,0,0,.7) !important;
-        border-left: 1px solid rgba(193,154,82,.15) !important;
-        background: linear-gradient(177deg, rgba(9,12,20,.97), rgba(4,6,12,.97)) !important; }
-      .ta-chatpanel .ta-chatback { display: none !important; }
-      .ta-chatfab { display: none !important; }
-    }
+    /* (Chat/Ajan Masası talep üzerine açılır — sağ alttaki buton/FAB ile.
+       Zorla açık sağ ray kaldırıldı.) */
 
     /* ── U-02: dosya sekmeleri — mobilde tek satır kaydırmalı ── */
     @media (max-width: 600px) {
