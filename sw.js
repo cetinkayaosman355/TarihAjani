@@ -5,7 +5,7 @@
    - Aynı köken görsel/font: önbellek öncelikli (stale-while-revalidate, ağır dosyalar)
    - Çapraz köken (Google Fonts, unpkg React): dokunma, doğrudan ağdan
    SÜRÜM değişince eski önbellekler temizlenir. Her deploy'da bump'la. */
-var VERSION = 'ta-v5';
+var VERSION = 'ta-v6';
 var STATIC = VERSION + '-static';
 var PAGES = VERSION + '-pages';
 var MEDIA = VERSION + '-media';
@@ -50,11 +50,18 @@ self.addEventListener('fetch', function (e) {
   if (!sameOrigin) return;
 
   // HTML gezinmesi → ağ öncelikli, HTTP önbelleğini ATLA (kod/HTML hep en taze),
-  // çevrimdışı yedeği SW önbelleği. no-store: tarayıcı HTTP önbelleği eski sürümü
-  // asla veremesin — "güncellemeyi görmüyorum" derdi kökten biter.
+  // çevrimdışı yedeği SW önbelleği.
   if (req.mode === 'navigate') {
     e.respondWith(
       fetch(req.url, { cache: 'no-store' }).then(function (res) {
+        // Yönlendirilmiş yanıt (ör. /app → /app/) navigasyonda DOĞRUDAN dönemez:
+        // "response served by the service worker has redirections" hatası verir.
+        // Bu yüzden gövdeyi temiz bir Response'a sarıp öyle döneriz.
+        if (res.redirected) {
+          return res.blob().then(function (body) {
+            return new Response(body, { status: res.status, statusText: res.statusText, headers: res.headers });
+          });
+        }
         var copy = res.clone();
         caches.open(PAGES).then(function (c) { c.put(req, copy); });
         return res;
