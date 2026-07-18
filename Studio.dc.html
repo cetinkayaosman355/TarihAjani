@@ -230,6 +230,110 @@
     }
     /* Basılma hissi: her buton tıklandığı anda görünür tepki verir */
     button:active { transform: scale(.96); filter: brightness(1.15); transition: transform .06s ease; }
+
+    /* ══════════════════════════════════════════════════════════════
+       STUDIO — AYDINLIK TEMA (yalnız bu sayfa · html[data-theme="light"])
+       Sol alttaki ☀/🌙 düğmesi (tema.js) ile değişir. tema.js site-geneli
+       SATIR-İÇİ koyu renkleri açığa çevirir; ama Studio'nun CLASS tabanlı
+       yüzeyleri (.ta-side / .ta-card / .ta-dossier / .ta-entry / .ta-plan /
+       .ta-shellbg) ile birkaç Studio'ya özel satır-içi rengi onun ağına
+       TAKILMAZ → koyu kalır, siyah üstü yazı okunmaz. Bu blok o boşluğu
+       kapatır: sıcak parşömen zemin + koyu mürekkep metin + okunur altın.
+       ══════════════════════════════════════════════════════════════ */
+    html[data-theme="light"] { color-scheme: light; }
+    /* Sinematik atmosfer → yumuşak gündüz hâlesi (koyu vinyet yok) */
+    html[data-theme="light"] .ta-shellbg {
+      background:
+        radial-gradient(120% 60% at 82% -6%, rgba(193,154,82,.16), transparent 60%),
+        radial-gradient(90% 50% at 8% 0%, rgba(150,120,60,.10), transparent 55%),
+        radial-gradient(140% 120% at 50% 122%, rgba(120,95,40,.05), transparent 60%) !important; }
+    /* ── Sol yan menü ── */
+    html[data-theme="light"] .ta-side {
+      background: linear-gradient(177deg, rgba(246,239,223,.95), rgba(237,228,209,.9)) !important;
+      border-right-color: rgba(150,116,52,.24) !important;
+      box-shadow: inset -1px 0 0 rgba(150,116,52,.1), 34px 0 60px -46px rgba(120,90,30,.2) !important; }
+    html[data-theme="light"] .ta-brand { border-bottom-color: rgba(150,116,52,.2) !important; }
+    html[data-theme="light"] .ta-brand .bn { color: #2a2419 !important; }
+    html[data-theme="light"] .ta-brand .bs { color: #8a6417 !important; }
+    html[data-theme="light"] .ta-side .ta-navbtn { color: #4a4234 !important; }
+    html[data-theme="light"] .ta-side .ta-navbtn:hover { color: #241f16 !important;
+      background: rgba(150,116,52,.12) !important; box-shadow: inset 2px 0 0 rgba(160,120,40,.6) !important; }
+    html[data-theme="light"] .ta-side .ta-navbtn .ic { color: #8a6417 !important;
+      background: rgba(193,154,82,.14) !important; border-color: rgba(150,116,52,.28) !important; }
+    html[data-theme="light"] .ta-side .ta-navbtn:hover .ic { background: rgba(193,154,82,.24) !important; color: #6f4f12 !important; }
+    html[data-theme="light"] .ta-side .ta-sublink { color: #6b6454 !important; }
+    html[data-theme="light"] .ta-side .ta-sublink:hover { color: #6f4f12 !important; background: rgba(150,116,52,.09) !important; }
+    html[data-theme="light"] .ta-side-head { color: #8a8168 !important; }
+    /* ── Kullanıcı / plan kartı ── */
+    html[data-theme="light"] .ta-plan { border-color: rgba(150,116,52,.3) !important;
+      background: linear-gradient(160deg, rgba(193,154,82,.16), rgba(193,154,82,.04)) !important;
+      box-shadow: 0 10px 30px -20px rgba(150,116,52,.5) !important; }
+    html[data-theme="light"] .ta-plan .av { background: #fbf6ea !important; color: #8a6417 !important;
+      border-color: rgba(150,116,52,.5) !important; box-shadow: 0 0 0 3px rgba(193,154,82,.12) !important; }
+    html[data-theme="light"] .ta-plan .nm { color: #2a2419 !important; }
+    html[data-theme="light"] .ta-plan .tr { color: #8a6417 !important; }
+    /* ── Dosya bandı / giriş / kalite kanıtı / içerik kartı ── */
+    html[data-theme="light"] .ta-dossier {
+      border-color: rgba(150,116,52,.32) !important;
+      background: linear-gradient(118deg, rgba(193,154,82,.16), rgba(250,245,235,.9) 56%) !important;
+      box-shadow: 0 24px 60px -46px rgba(120,90,30,.4), inset 0 1px 0 rgba(255,255,255,.5) !important; }
+    html[data-theme="light"] .ta-dossier::after { background: radial-gradient(circle, rgba(201,162,90,.22), transparent 66%) !important; }
+    html[data-theme="light"] .ta-stats .st { color: #5b5445 !important; }
+    html[data-theme="light"] .ta-stats .st b { color: #8a6417 !important; }
+    html[data-theme="light"] .ta-stats .st .ic { color: #a97e2e !important; }
+    html[data-theme="light"] .ta-entry {
+      border-color: rgba(150,116,52,.28) !important;
+      background: linear-gradient(168deg, #fbf6ec, #f3ebda) !important;
+      box-shadow: 0 26px 70px -54px rgba(120,90,30,.35), inset 0 1px 0 rgba(255,255,255,.5) !important; }
+    html[data-theme="light"] .ta-entry textarea { background: #fffdf8 !important; color: #241f16 !important; }
+    html[data-theme="light"] .ta-entry textarea:focus { border-color: rgba(160,120,40,.6) !important;
+      box-shadow: 0 0 0 3px rgba(193,154,82,.16), 0 0 30px -14px rgba(160,120,40,.3) !important; }
+    html[data-theme="light"] .ta-proof > div { border-color: rgba(150,116,52,.24) !important;
+      background: linear-gradient(160deg, rgba(193,154,82,.1), rgba(193,154,82,.02)) !important; }
+    html[data-theme="light"] .ta-proof .pt { color: #8a6417 !important; }
+    html[data-theme="light"] .ta-proof .ps { color: #6b6454 !important; }
+    html[data-theme="light"] .ta-card {
+      border-color: rgba(150,116,52,.26) !important;
+      background: linear-gradient(168deg, #faf5eb, #f3ecdb) !important;
+      box-shadow: 0 18px 46px -40px rgba(120,90,30,.38), inset 0 1px 0 rgba(255,255,255,.5) !important; }
+    html[data-theme="light"] .ta-card:hover { border-color: rgba(150,116,52,.44) !important;
+      box-shadow: 0 24px 56px -40px rgba(120,90,30,.5), 0 0 34px -22px rgba(201,162,90,.3) !important; }
+    /* ── Prompt/kod blokları: koyu cam → açık kağıt, metin koyu ── */
+    html[data-theme="light"] code[style*="rgba(255,255,255,.025)"] {
+      background: #f4edde !important; color: #34302a !important; border-color: rgba(150,116,52,.2) !important; }
+    /* ── Satır-içi renk yamaları (tema.js listesinde OLMAYAN Studio renkleri) ── */
+    /* gövde/kod/etiket metni → koyu mürekkep */
+    html[data-theme="light"] [style*="color: #c8cfdd"],
+    html[data-theme="light"] [style*="color: #e8dcc0"],
+    html[data-theme="light"] [style*="color: #e6dfcb"],
+    html[data-theme="light"] [style*="color: #ecd9a6"],
+    html[data-theme="light"] [style*="color: #b8bdc8"],
+    html[data-theme="light"] [style*="color: #b4b9c4"],
+    html[data-theme="light"] [style*="color: #8a8f9c"],
+    html[data-theme="light"] [style*="color: #9aa0ac"],
+    html[data-theme="light"] [style*="color: #7f858f"],
+    html[data-theme="light"] [style*="color: #7c828f"],
+    html[data-theme="light"] [style*="color: #6a6f7c"],
+    html[data-theme="light"] [style*="color: #7ba0c9"] { color: #34302a !important; }
+    /* "üretildi/hazır" yeşili → okunur koyu yeşil */
+    html[data-theme="light"] [style*="color: #9ed3a8"],
+    html[data-theme="light"] [style*="color: #a8c8a2"] { color: #2f7d43 !important; }
+    /* uyarı/hata kırmızısı → okunur koyu kırmızı */
+    html[data-theme="light"] [style*="color: #e8a9a9"],
+    html[data-theme="light"] [style*="color: #e08a80"],
+    html[data-theme="light"] [style*="color: #e0a58a"] { color: #b0413e !important; }
+    /* video paneli moru (kart üstü etiket) → koyu mor */
+    html[data-theme="light"] [style*="color: #c4a7ff"] { color: #6a3bd0 !important; }
+    /* soluk altın → okunur koyu altın */
+    html[data-theme="light"] [style*="color: #9a7d43"],
+    html[data-theme="light"] [style*="color: #d9a441"] { color: #8a6417 !important; }
+    /* ── Alt sekme çubuğu (mobil) + Ajan sohbet FAB ── */
+    html[data-theme="light"] #ta-tabbar { background: rgba(246,239,223,.97) !important; border-top-color: rgba(150,116,52,.3) !important; }
+    html[data-theme="light"] #ta-tabbar button { color: #8a8168 !important; }
+    html[data-theme="light"] #ta-tabbar button.on { color: #8a6417 !important; }
+    /* tema düğmesi aydınlıkta da görünür dursun */
+    html[data-theme="light"] #ta-tema-btn { background: #fbf6ea !important; color: #8a6417 !important;
+      border-color: rgba(150,116,52,.4) !important; box-shadow: 0 8px 24px rgba(120,90,30,.22) !important; }
 </style>
   <script>window.__taFadeBg='#06070d';</script>
   <script src="page-transition.js"></script>
