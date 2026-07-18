@@ -912,6 +912,45 @@
     }).catch(function () { toast('Bağlantı hatası'); });
   }
   function genChars() { ((S.result || {}).karakterler || []).forEach(function (_, i) { if (!S.chars[i]) doCharImage(i); }); }
+  // ── Ajanla konuş (sohbet + proaktif öneri) ───────────────────────────
+  function chatSystem() {
+    var ctx = '';
+    if (S.idea) ctx += 'Kullanıcının şu anki fikri: "' + S.idea + '". ';
+    if (S.result && S.result.baslik) ctx += 'Son ürettiği dosya: "' + S.result.baslik + '". ';
+    return 'Sen STORIA\'nın içerik ajanısın — YouTube Shorts, TikTok, Reels, faceless kanallar ve UGC reklamlar için VİRAL kısa video içerikleri üreten uzman, samimi bir yardımcı. Türkçe, net ve enerjik konuş. Kısa yaz (2-4 cümle). Her cevapta SOMUT bir sonraki adım ya da fikir ver; asla "yapamam" deyip bırakma. Bir video KONUSU önerdiğinde mesajının EN SON satırına ayrı olarak şu formatta yaz: KONU: <tek cümle konu>. ' + (ctx ? 'Bağlam: ' + ctx : '') + ' Not: kullanıcı bir fikir seçip Studio\'da senaryo+seslendirme+görsel+altyazı üretebiliyor.';
+  }
+  function renderChat() {
+    var log = document.getElementById('chatLog'); if (!log) return;
+    log.innerHTML = S.chat.msgs.map(function (m) {
+      if (m.r === 'u') return '<div class="cm cm-u">' + esc(m.t) + '</div>';
+      var body = m.t, topic = '';
+      var mm = /KONU:\s*(.+)\s*$/i.exec(m.t);
+      if (mm) { topic = mm[1].trim().replace(/^["'\s]+|["'\s]+$/g, ''); body = m.t.replace(/KONU:\s*.+\s*$/i, '').trim(); }
+      return '<div class="cm cm-a">' + esc(body).replace(/\n/g, '<br>') + (topic ? '<button class="btn btn-gold btn-sm cm-use" data-cact="use" data-v="' + esc(topic) + '">▶ Bu fikirle üret</button>' : '') + '</div>';
+    }).join('') + (S.chat.busy ? '<div class="cm cm-a cm-typing"><span></span><span></span><span></span></div>' : '');
+    log.scrollTop = log.scrollHeight;
+  }
+  function openChat() {
+    S.chat.open = true;
+    if (!S.chat.msgs.length) S.chat.msgs.push({ r: 'a', t: 'Merhaba! Ben STORIA ajanın. 🎬 Ne üretmek istersin? Bir konu söyle, ya da "sürpriz yap" yaz — senin için viral bir fikir bulup senaryoya götüreyim. İstersen nişini söyle (kahve dükkânı, fitness, teknoloji, oyun…), sana özel fikirler çıkarayım.' });
+    var p = document.getElementById('chatPanel'), s = document.getElementById('chatScrim');
+    if (p) p.classList.add('open'); if (s) s.classList.add('show');
+    renderChat();
+    setTimeout(function () { var i = document.getElementById('chatInput2'); if (i) i.focus(); }, 120);
+  }
+  function closeChat() { S.chat.open = false; var p = document.getElementById('chatPanel'), s = document.getElementById('chatScrim'); if (p) p.classList.remove('open'); if (s) s.classList.remove('show'); }
+  function sendChat(text) {
+    text = (text || '').trim(); if (!text || S.chat.busy) return;
+    S.chat.msgs.push({ r: 'u', t: text }); S.chat.busy = true; renderChat();
+    var convo = S.chat.msgs.map(function (m) { return (m.r === 'u' ? 'Kullanıcı' : 'Ajan') + ': ' + m.t; }).join('\n');
+    var prompt = chatSystem() + '\n\nKonuşma:\n' + convo + '\n\nAjan:';
+    if (!REAL) { setTimeout(function () { S.chat.msgs.push({ r: 'a', t: '(Demo) Harika! Örneğin şu çok tutar: sıradan bir günü sinematik bir hikâyeye çeviren bir video.\nKONU: Sıradan bir sabahı sinematik bir hikâyeye dönüştür' }); S.chat.busy = false; renderChat(); }, 700); return; }
+    callFn({ action: '', prompt: prompt }).then(function (d) {
+      var t = (d && (d.text || d.result)) ? String(d.text || d.result).trim() : 'Bir sorun oldu, tekrar dener misin?';
+      S.chat.msgs.push({ r: 'a', t: t }); S.chat.busy = false; renderChat();
+    }).catch(function () { S.chat.msgs.push({ r: 'a', t: 'Bağlantı hatası — tekrar dene.' }); S.chat.busy = false; renderChat(); });
+  }
+  function applyChatIdea(topic) { if (!topic) return; S.idea = topic; S.view = 'new'; S.step = 2; closeChat(); render(); toast('Fikir yüklendi — tarzını seç ve üret'); }
   // ── Video (Grok image→video) ──────────────────────────────────────────
   function doVideo(idx) {
     var img = S.images[idx];
@@ -1169,6 +1208,23 @@
       var mFile = document.getElementById('musicFile');
       document.getElementById('musicUploadBtn').addEventListener('click', function () { mFile.click(); });
       mFile.addEventListener('change', function () { handleMusicFile(mFile.files && mFile.files[0]); mFile.value = ''; });
+    }
+    // chat (Ajanla konuş)
+    var chatFab = document.getElementById('chatFab');
+    if (chatFab) {
+      chatFab.addEventListener('click', openChat);
+      document.getElementById('chatScrim').addEventListener('click', closeChat);
+      var cin = document.getElementById('chatInput2');
+      cin.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(cin.value); cin.value = ''; cin.style.height = 'auto'; } });
+      cin.addEventListener('input', function () { cin.style.height = 'auto'; cin.style.height = Math.min(120, cin.scrollHeight) + 'px'; });
+      document.getElementById('chatPanel').addEventListener('click', function (e) {
+        var el = e.target.closest('[data-cact]'); if (!el) return;
+        var a = el.getAttribute('data-cact'), v = el.getAttribute('data-v');
+        if (a === 'close') closeChat();
+        else if (a === 'send') { sendChat(cin.value); cin.value = ''; cin.style.height = 'auto'; }
+        else if (a === 'quick') sendChat(v);
+        else if (a === 'use') applyChatIdea(v);
+      });
     }
     // onboarding tour
     document.getElementById('tourNext').addEventListener('click', tourNext);

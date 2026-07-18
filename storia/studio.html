@@ -446,6 +446,40 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .music-src li { font-size: 13px; color: var(--ink-2); }
 .music-src li b { color: var(--ink); }
 .music-src span { display: block; margin-top: 10px; font-size: 12px; color: var(--muted); }
+
+/* Ajanla konuş — sohbet */
+.chat-fab { position: fixed; right: 22px; bottom: 22px; z-index: 350; display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px 12px 15px; border: 0; border-radius: 999px; background: var(--gold-sheen); color: #241a08; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 10px 30px rgba(120,90,30,.35); transition: transform .2s var(--ease), box-shadow .2s; }
+.chat-fab:hover { transform: translateY(-2px); box-shadow: 0 14px 38px rgba(120,90,30,.45); }
+.chat-fab svg { width: 20px; height: 20px; }
+.chat-scrim { position: fixed; inset: 0; z-index: 360; background: rgba(20,15,9,.4); backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .3s var(--ease); }
+.chat-scrim.show { opacity: 1; pointer-events: auto; }
+.chat-panel { position: fixed; top: 0; right: 0; z-index: 370; width: min(420px, 92vw); height: 100vh; height: 100dvh; background: var(--surface); border-left: 1px solid var(--line); box-shadow: -20px 0 60px rgba(30,22,10,.2); display: flex; flex-direction: column; transform: translateX(100%); transition: transform .32s var(--ease); }
+.chat-panel.open { transform: translateX(0); }
+.cp-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.cp-id { display: flex; align-items: center; gap: 11px; }
+.cp-orb { width: 38px; height: 38px; border-radius: 50%; background: var(--gold-sheen); color: #241a08; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; font-size: 17px; flex: none; }
+.cp-idt { display: flex; flex-direction: column; line-height: 1.2; }
+.cp-idt b { font-family: var(--serif); font-size: 16px; color: var(--ink); }
+.cp-idt span { font-size: 12px; color: var(--muted); }
+.cp-x { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; font-size: 14px; }
+.cp-x:hover { color: var(--ink); border-color: var(--line-strong); }
+.cp-log { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.cm { max-width: 86%; padding: 11px 14px; border-radius: 16px; font-size: 14.5px; line-height: 1.5; }
+.cm-a { align-self: flex-start; background: var(--champ-wash); color: var(--ink); border-bottom-left-radius: 5px; }
+.cm-u { align-self: flex-end; background: var(--gold-sheen); color: #241a08; border-bottom-right-radius: 5px; font-weight: 500; }
+.cm-use { display: block; margin-top: 10px; }
+.cm-typing { display: inline-flex; gap: 4px; align-items: center; }
+.cm-typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--champ); opacity: .5; animation: cdot 1s infinite; }
+.cm-typing span:nth-child(2) { animation-delay: .15s; } .cm-typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes cdot { 0%,60%,100% { transform: translateY(0); opacity: .4; } 30% { transform: translateY(-4px); opacity: 1; } }
+.cp-quick { display: flex; gap: 8px; padding: 0 18px 10px; flex-wrap: wrap; }
+.cp-quick button { font-size: 12.5px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--champ-line); background: var(--surface); color: var(--champ-deep); cursor: pointer; transition: all .2s; }
+.cp-quick button:hover { background: var(--champ-wash); }
+.cp-input { display: flex; gap: 9px; align-items: flex-end; padding: 12px 16px 16px; border-top: 1px solid var(--line); }
+.cp-input textarea { flex: 1; resize: none; max-height: 120px; padding: 11px 14px; border: 1px solid var(--line-2); border-radius: 14px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14.5px; }
+.cp-input textarea:focus { outline: none; border-color: var(--champ); }
+.cp-send { width: 42px; height: 42px; flex: none; border: 0; border-radius: 12px; background: var(--gold-sheen); color: #241a08; font-size: 16px; cursor: pointer; }
+@media (max-width: 640px){ .chat-fab { bottom: 78px; right: 16px; } }
 .export-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(20,15,9,.55); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; }
 .export-overlay.show { display: flex; animation: viewIn .25s var(--ease); }
 .eo-card { width: min(420px, 90vw); background: var(--surface); border: 1px solid var(--champ-line); border-radius: var(--r-xl); padding: 34px 30px; text-align: center; box-shadow: 0 30px 90px rgba(40,28,10,.28); }
@@ -628,6 +662,28 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
     <div class="alt"><a id="editCancel">Vazgeç</a></div>
   </div>
 </div>
+
+<button class="chat-fab" id="chatFab" aria-label="Ajanla konuş" title="Ajanla konuş">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.4 8.6 8.6 0 0 1-3.9-.9L3 21l1.9-5.1A8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5z"/></svg>
+  <span>Ajan</span>
+</button>
+<div class="chat-scrim" id="chatScrim"></div>
+<aside class="chat-panel" id="chatPanel" aria-label="STORIA Ajan sohbeti">
+  <header class="cp-head">
+    <div class="cp-id"><span class="cp-orb">S</span><div class="cp-idt"><b>STORIA Ajan</b><span>viral içerik yardımcın</span></div></div>
+    <button class="cp-x" data-cact="close" aria-label="Kapat">✕</button>
+  </header>
+  <div class="cp-log" id="chatLog"></div>
+  <div class="cp-quick">
+    <button data-cact="quick" data-v="Sürpriz yap, bana viral bir fikir ver">✦ Sürpriz yap</button>
+    <button data-cact="quick" data-v="Nişime özel 3 içerik fikri öner">Nişime özel</button>
+    <button data-cact="quick" data-v="Güçlü bir başlık ve ilk 3 saniye kancası öner">Başlık & hook</button>
+  </div>
+  <div class="cp-input">
+    <textarea id="chatInput2" rows="1" placeholder="Bir şey sor ya da konu iste…"></textarea>
+    <button class="cp-send" data-cact="send" aria-label="Gönder">➤</button>
+  </div>
+</aside>
 
 <div class="modal-back" id="musicModal">
   <div class="modal">
