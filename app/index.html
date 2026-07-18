@@ -325,6 +325,7 @@ audio{width:100%;margin-top:10px}
 <div class="scr" id="scr-kesfet"></div>
 <div class="scr" id="scr-hosgeldin"></div>
 <div class="scr" id="scr-ornek"></div>
+<div class="scr" id="scr-gorsel"></div>
 
 <nav id="tabbar" aria-label="Uygulama menüsü"></nav>
 <div id="sheet-veil"></div>
@@ -340,6 +341,8 @@ audio{width:100%;margin-top:10px}
   </div>
   <div class="sbas">İÇERİK</div>
   <div class="sgrid">
+    <div class="sit" data-go="uret"><span class="i">◉</span>Video Stüdyo</div>
+    <div class="sit" data-go="gorsel"><span class="i">🖼</span>Görsel Stüdyo</div>
     <div class="sit" data-go="ornek"><span class="i">🎬</span>Örnek Üretimler</div>
     <div class="sit" data-ders="0"><span class="i">🎓</span>Ücretsiz Ders</div>
     <div class="sit" data-go="akademi"><span class="i">📖</span>Akademi</div>
@@ -436,7 +439,7 @@ function go(k, push, sessiz) {
     b.classList.toggle('on', b.getAttribute('data-k') === k);
   });
   var draw = { masa: drawMasa, arsiv: drawArsiv, uret: drawUret, oyun: drawOyun, profil: drawProfil,
-               paket: drawPaket, akademi: drawAkademi, neden: drawNeden, haber: drawHaber, kesfet: drawKesfet, hosgeldin: drawHosgeldin, ornek: drawOrnek }[k];
+               paket: drawPaket, akademi: drawAkademi, neden: drawNeden, haber: drawHaber, kesfet: drawKesfet, hosgeldin: drawHosgeldin, ornek: drawOrnek, gorsel: drawGorsel }[k];
   if (draw) draw();
 }
 /* uygulama içi oynatıcı: oyunlar/kitaplık web'e ÇIKMADAN burada açılır */
@@ -725,6 +728,8 @@ function drawDosya(i, sessiz) {
 /* ── ÜRET: uygulamaya özel üretim akışı (Studio motoruyla) ── */
 var TONLAR = [['merak','🔍 Merak'],['dramatik','⚡ Dramatik'],['belgesel','📜 Belgesel'],['destansi','🏛 Destansı'],['duygusal','💛 Duygusal']];
 var STILLER = [['hollywood','🎬 Gerçekçi'],['sinematik','🌒 Sinematik'],['belgeselfoto','📷 Belgesel'],['gravur','🖋 Gravür'],['minyatur','🎨 Minyatür'],['animasyon','✨ Animasyon']];
+var ORANLAR = [['dikey','▯ Dikey 9:16'],['yatay','▭ Yatay 16:9'],['kare','◻ Kare 1:1']];
+var ORAN_TARIF = { dikey: 'vertical 9:16 full-frame composition, tall portrait orientation for mobile shorts', yatay: 'wide 16:9 horizontal cinematic framing, full-bleed landscape composition', kare: 'square 1:1 centered composition' };
 var TON_TARIF = {
   merak: 'meraklı ve sürükleyici bir belgesel anlatıcısı gibi; olayı bir sır çözer gibi merak uyandırarak, ama akıcı düzyazıyla anlat.',
   dramatik: 'yüksek gerilimli, sinematik bir anlatı; kısa vurucu cümlelerle uzun akan cümleleri dönüşümlü kullan, okuru anın içine sok.',
@@ -750,7 +755,12 @@ var SESLER = [
   ['kadin-belgesel', 'Kadın · Belgesel', 'eleven', 'EXAVITQu4vr4xnSDxMaL', 'nova'],
   ['kadin-olgun', 'Kadın · Olgun', 'eleven', '21m00Tcm4TlvDq8ikWAM', 'sage']
 ];
-var uret = { ton: 'merak', stil: 'sinematik', sure: 60, ses: 'kadir', busy: false, sonuc: null, hata: '', konu: '', ozel: '' };
+var uret = { ton: 'merak', stil: 'sinematik', sure: 60, ses: 'kadir', oran: 'dikey', busy: false, sonuc: null, hata: '', konu: '', ozel: '' };
+// GÖRSEL STÜDYO durumu — bağımsız görsel üretimi + kalıcı geçmiş
+var gs = { konu: '', stil: 'sinematik', oran: 'dikey', busy: false };
+function gsGecmis() { try { return JSON.parse(localStorage.getItem('ta_gorsel_v1') || '[]'); } catch (e) { return []; } }
+function gsKaydet(rec) { try { var a = gsGecmis(); a.unshift(rec); localStorage.setItem('ta_gorsel_v1', JSON.stringify(a.slice(0, 60))); } catch (e) {} }
+function gsSil(ts) { try { var a = gsGecmis().filter(function (r) { return r.ts !== ts; }); localStorage.setItem('ta_gorsel_v1', JSON.stringify(a)); } catch (e) {} }
 /* SEN ÖNER — anında, hatasız: yerel seçkin havuz (karışık sıra, tekrar yok) */
 var ONERI = (function () {
   var p = ['Hezârfen gerçekten uçtu mu? Boğaz’ı geçen adamın belge yüzü',
@@ -787,6 +797,8 @@ function drawUret() {
     TONLAR.map(function (t) { return '<button class="chip' + (uret.ton === t[0] ? ' on' : '') + '" data-ton="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
     '<div class="sh"><b>GÖRSEL STİL</b></div><div class="opt-grid">' +
     STILLER.map(function (t) { return '<button class="chip' + (uret.stil === t[0] ? ' on' : '') + '" data-stil="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="sh"><b>GÖRSEL BOYUTU</b></div><div class="opt-grid">' +
+    ORANLAR.map(function (o) { return '<button class="chip' + (uret.oran === o[0] ? ' on' : '') + '" data-uoran="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>' +
     '<div class="sh"><b>ANLATICI SESİ</b></div><div class="opt-grid">' +
     SESLER.map(function (v) { return '<button class="chip' + (uret.ses === v[0] ? ' on' : '') + '" data-ses="' + v[0] + '">🎙 ' + v[1] + '</button>'; }).join('') + '</div>' +
     '<div class="sh"><b>SÜRE</b></div><div class="sure">' +
@@ -816,6 +828,7 @@ function drawUret() {
   });
   el.querySelectorAll('[data-ton]').forEach(function (b) { b.addEventListener('click', function () { uret.ton = b.getAttribute('data-ton'); drawUret(); }); });
   el.querySelectorAll('[data-stil]').forEach(function (b) { b.addEventListener('click', function () { uret.stil = b.getAttribute('data-stil'); drawUret(); }); });
+  el.querySelectorAll('[data-uoran]').forEach(function (b) { b.addEventListener('click', function () { uret.oran = b.getAttribute('data-uoran'); drawUret(); }); });
   el.querySelectorAll('[data-ses]').forEach(function (b) { b.addEventListener('click', function () { uret.ses = b.getAttribute('data-ses'); drawUret(); }); });
   $('#u-go').addEventListener('click', uretBasla);
   krediGetir();
@@ -1108,7 +1121,7 @@ function gorselUret(kind, i, btn) {
   var etiket = kind === 'kapak' ? '◈ ÜRET · 12 KR' : kind === 'karakter' ? '◈ PORTRE · 12 KR' : '◈ ÜRET · 12 KR';
   if (btn) { btn.disabled = true; btn.textContent = '⟳ ÜRETİLİYOR…'; }
   var karakterMi = kind === 'karakter';
-  var body = { action: 'image', prompt: prompt + (karakterMi ? '. Character reference portrait, 9:16 vertical, neutral background, sharp detail.' : ''), size: 'dikey', imgIndex: i };
+  var body = { action: 'image', prompt: prompt + (karakterMi ? '. Character reference portrait, neutral background, sharp detail.' : ''), size: (uret.oran || 'dikey'), imgIndex: i };
   return fetch(FN, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
@@ -1122,6 +1135,7 @@ function gorselUret(kind, i, btn) {
     }
     if (typeof r.d.credits === 'number') { kredi = r.d.credits; krediYaz(); }
     gorselStore(kind)[i] = r.d.url;
+    gsKaydet({ url: r.d.url, prompt: (prompt || '').slice(0, 120), ar: (uret.oran || 'dikey'), ts: Date.now() });   // kalıcı geçmişe de ekle
     if (btn) {
       btn.textContent = kind === 'karakter' ? '✓ PORTRE' : '✓ ÜRETİLDİ';
       var blk = btn.closest('.blk');
@@ -1444,7 +1458,8 @@ function drawKesfet() {
   el.innerHTML =
     '<div class="h-row"><div><b>Keşfet</b><span class="alt">TARİH AJANI EVRENİ</span></div>' +
     '<span style="display:flex;gap:8px"><button class="kredi" data-sheet>☰</button><button class="kredi" data-go="profil">🪙 <span data-kredi>…</span></button></span></div>' +
-    [['🕵️','Biz Kimiz?','Aynı konu, 5 farklı film — ChatGPT farkı, kanıtıyla','neden',''],
+    [['🖼','Görsel Stüdyo','Boyut + stil seç, tek görsel üret — geçmişin saklı','gorsel',''],
+     ['🕵️','Biz Kimiz?','Aynı konu, 5 farklı film — ChatGPT farkı, kanıtıyla','neden',''],
      ['🎬','Örnek Üretim Dinle','Gerçek Studio çıktısı: senaryo + profesyonel seslendirme','ornek',''],
      ['🎓','Ücretsiz Ders','Söylenti ile kaydı ayırmak — Akademi tanıtım dersi','ders1',''],
      ['🧮','Kredi Hesap Makinesi','Ne üretirsin, kaça üretirsin — kalem kalem','paket',''],
@@ -1516,6 +1531,60 @@ function drawOrnek() {
     '<div style="padding:26px 16px 0"><button class="cta" data-go="uret">◉ &nbsp;Kendi konunla üret</button>' +
     '<p class="alt-not" style="margin-top:11px">Ücretsiz başla · 30 kredi hediye</p></div>';
   el.querySelectorAll('[data-vmod]').forEach(function (b) { b.addEventListener('click', function () { ornekMod = b.getAttribute('data-vmod'); drawOrnek(); }); });
+}
+/* ── GÖRSEL STÜDYO — bağımsız görsel üretimi (boyut + stil) + kalıcı geçmiş ── */
+function galeriAc(urls, idx) {
+  imgLb.list = (urls || []).filter(Boolean); if (!imgLb.list.length) return;
+  imgLb.idx = Math.max(0, Math.min(idx || 0, imgLb.list.length - 1)); imgLbYaz(); $('#imglb').classList.add('on');
+}
+function drawGorsel() {
+  var el = $('#scr-gorsel');
+  var gec = gsGecmis();
+  var urls = gec.map(function (r) { return r.url; });
+  el.innerHTML =
+    '<div class="ust"><button class="geri" data-go="kesfet">‹</button><span>GÖRSEL STÜDYO</span></div>' +
+    '<div style="padding:2px 20px 4px"><h2 class="serif" style="margin:0;font-size:21px">Tek görsel üret</h2>' +
+    '<p style="margin:7px 0 0;font-size:13px;line-height:1.6;color:var(--mut)">Ne istediğini yaz, boyutu ve stili seç — sinematik sahne görselin saniyeler içinde. Ürettiklerin aşağıda kalıcı saklanır.</p></div>' +
+    '<div class="pad" style="padding-top:12px"><textarea id="gs-konu" class="inp" rows="3" placeholder="Ne görmek istiyorsun? ör. Fatih’in surlara ilk girişi, meşale ışığında, tozlu hava">' + esc(gs.konu) + '</textarea></div>' +
+    '<div class="sh"><b>BOYUT / FORMAT</b></div><div class="opt-grid">' +
+    ORANLAR.map(function (o) { return '<button class="chip' + (gs.oran === o[0] ? ' on' : '') + '" data-goran="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="sh"><b>GÖRSEL STİL</b></div><div class="opt-grid">' +
+    STILLER.map(function (t) { return '<button class="chip' + (gs.stil === t[0] ? ' on' : '') + '" data-gstil="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<div style="padding:18px 16px 0"><button class="cta" id="gs-uret">◈ &nbsp;GÖRSEL ÜRET · 12 KR</button></div>' +
+    '<div id="gs-son"></div>' +
+    (gec.length
+      ? '<div class="sh"><b>ÜRETİLENLER · GEÇMİŞ (' + gec.length + ')</b></div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:6px 16px 0">' +
+        gec.map(function (r, i) {
+          return '<div style="position:relative"><img src="' + esc(r.url) + '" alt="" loading="lazy" data-gsi="' + i + '" style="width:100%;aspect-ratio:' + (r.ar === 'yatay' ? '16/9' : r.ar === 'kare' ? '1/1' : '3/4') + ';object-fit:cover;border-radius:11px;border:1px solid var(--line);cursor:zoom-in;display:block">' +
+            '<button data-gsdel="' + r.ts + '" style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(6,7,13,.8);color:#e08a80;font-size:13px;cursor:pointer">✕</button></div>';
+        }).join('') + '</div>'
+      : '<p class="alt-not" style="margin-top:16px">Henüz görsel üretmedin — yukarıdan başla.</p>');
+  $('#gs-konu').addEventListener('input', function (e) { gs.konu = e.target.value; });
+  el.querySelectorAll('[data-goran]').forEach(function (b) { b.addEventListener('click', function () { gs.oran = b.getAttribute('data-goran'); drawGorsel(); }); });
+  el.querySelectorAll('[data-gstil]').forEach(function (b) { b.addEventListener('click', function () { gs.stil = b.getAttribute('data-gstil'); drawGorsel(); }); });
+  $('#gs-uret').addEventListener('click', gsUret);
+  el.querySelectorAll('[data-gsi]').forEach(function (im) { im.addEventListener('click', function () { galeriAc(urls, +im.getAttribute('data-gsi')); }); });
+  el.querySelectorAll('[data-gsdel]').forEach(function (b) { b.addEventListener('click', function () { gsSil(+b.getAttribute('data-gsdel')); drawGorsel(); toast('Görsel silindi'); }); });
+  krediGetir();
+}
+function gsUret() {
+  if (!user) { uyeGoster('gorsel'); return; }
+  var konu = (gs.konu || '').trim();
+  if (konu.length < 4) { toast('Ne görmek istediğini yaz'); return; }
+  var btn = $('#gs-uret'); btn.disabled = true; btn.textContent = '⟳ ÜRETİLİYOR… (~15 sn)';
+  var prompt = STIL_CORE[gs.stil] + ', ' + konu + '. ' + ORAN_TARIF[gs.oran] + '. No modern text, no watermark, no distorted anatomy.';
+  fetch(FN, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
+    body: JSON.stringify({ action: 'image', prompt: prompt, size: gs.oran, imgIndex: 0 })
+  }).then(function (r) { return r.json().then(function (d) { return { st: r.status, d: d }; }); }).then(function (r) {
+    btn.disabled = false; btn.textContent = '◈  GÖRSEL ÜRET · 12 KR';
+    if (!r.d || !r.d.ok || !r.d.url) { toast(r.st === 402 ? 'Yetersiz kredi' : ((r.d && r.d.error) || 'Görsel üretilemedi (kredi düşmedi)')); return; }
+    if (typeof r.d.credits === 'number') { kredi = r.d.credits; krediYaz(); }
+    gsKaydet({ url: r.d.url, prompt: konu, ar: gs.oran, ts: Date.now() });
+    toast('Görsel hazır ◈'); drawGorsel();
+    var s = $('#scr-gorsel'); if (s) s.scrollTop = 0;
+  }).catch(function () { btn.disabled = false; btn.textContent = '◈  GÖRSEL ÜRET · 12 KR'; toast('Bağlantı hatası'); });
 }
 /* ── KARŞILAMA — girişsiz açılış ana sayfası ── */
 function drawHosgeldin() {
