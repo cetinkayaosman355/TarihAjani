@@ -139,6 +139,10 @@
 @media (max-width: 900px){ .creations { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px){ .creations { grid-template-columns: 1fr; } }
 .cre-note { margin-top: 16px; text-align: center; font-size: 13px; color: var(--muted); }
+.motion-band { margin-top: 16px; position: relative; border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--sh-2); aspect-ratio: 21/9; background: #0b0f14; }
+.motion-band video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.motion-band .mb-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 20px 16px; display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 600; font-size: 14.5px; background: linear-gradient(to top, rgba(8,10,14,.78), transparent); }
+.motion-band .mb-cap .dot { width: 8px; height: 8px; border-radius: 50%; background: #d9bc80; box-shadow: 0 0 0 4px rgba(217,188,128,.25); }
 
 /* ── showcase ─────────────────────────────────────────────────────────── */
 .showcase-frame {
@@ -373,6 +377,12 @@
       <figure class="cre"><span class="tag">Karakter</span><img loading="lazy" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260718_180049_328f28ff-e826-4366-8f82-f33094cff78e.png" alt="Sinematik anlatıcı portresi"><figcaption class="cap">Tutarlı karakter</figcaption></figure>
       <figure class="cre"><span class="tag">Teknoloji</span><img loading="lazy" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260718_180051_e673a3a7-6162-4eba-ac21-d62df4eba361.png" alt="Fütüristik şehir"><figcaption class="cap">Teknoloji & gelecek</figcaption></figure>
       <figure class="cre"><span class="tag">UGC / Reklam</span><img loading="lazy" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260718_180052_a77427db-4f31-4455-899f-a74ffca52a5c.png" alt="Sıcak kafe sahnesi"><figcaption class="cap">Ürün & yaşam tarzı</figcaption></figure>
+    </div>
+    <div class="motion-band reveal d2">
+      <video autoplay muted loop playsinline preload="metadata"
+        poster="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260718_180048_719fdd91-7f08-42af-a4d5-1f2edfacfe75.png"
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260718_180351_80ef379d-9368-425c-906d-01a3e3944651.mp4"></video>
+      <div class="mb-cap"><span class="dot"></span>Görseli videoya çevir — sahne, tek tıkla harekete geçer.</div>
     </div>
     <p class="cre-note">STORIA ile üretilmiş gerçek örnekler · her biri tek bir fikirden</p>
   </div>
