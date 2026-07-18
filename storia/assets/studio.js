@@ -19,7 +19,7 @@
     result: null, tab: 'senaryo', genJob: null,
     user: null, credits: REAL ? null : 500, creditMax: 500,
     images: {}, covers: {}, videos: {}, videoJobs: {}, chars: {}, audio: null, history: [], ttsRate: 1,
-    bgMusic: null, bgMusicName: '', musicVol: 0.5,
+    bgMusic: null, bgMusicName: '', musicVol: 0.5, capStyle: 'klasik',
     chat: { open: false, msgs: [], busy: false },
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null, imgMode: 'gorsel',
@@ -433,7 +433,10 @@
       var musicChip = S.bgMusic
         ? '<div class="music-on"><span class="mo-ic">🎵</span><span class="mo-name">' + esc(S.bgMusicName || 'Müzik') + '</span><label class="mo-vol">Ses <input type="range" min="0" max="100" value="' + Math.round(S.musicVol * 100) + '" data-act="musicVol"></label><button class="btn btn-quiet btn-sm" data-act="musicClear">Kaldır</button></div>'
         : '<button class="btn btn-quiet btn-sm" data-act="musicPick">🎵 Arka plan müziği ekle</button>';
-      var exportBar = '<div class="export-strip"><div class="es-txt"><b>Tek dosyada birleştir</b><span>Sahne görselleri + seslendirme + altyazı → Ken Burns efektli video (WebM). Ücretsiz, tarayıcıda oluşur.</span>' + musicChip + '</div><button class="btn btn-gold" data-act="exportVid"' + (doneImgs ? '' : ' disabled') + '>🎬 Video oluştur &amp; indir</button></div>';
+      var capSeg = Object.keys(CAP_STYLES).map(function (k) { return '<button class="' + (S.capStyle === k ? 'on' : '') + '" data-act="capStyle" data-v="' + k + '">' + esc(CAP_STYLES[k].name) + '</button>'; }).join('');
+      var exportBar = '<div class="export-strip"><div class="es-txt"><b>Tek dosyada birleştir</b><span>Sahne görselleri + seslendirme + altyazı → Ken Burns efektli video (WebM/MP4). Ücretsiz, tarayıcıda oluşur.</span>' +
+        '<div class="cap-pick"><span class="cp-lbl">Altyazı stili</span><div class="cap-seg">' + capSeg + '</div></div>' + musicChip + '</div>' +
+        '<button class="btn btn-gold" data-act="exportVid"' + (doneImgs ? '' : ' disabled') + '>🎬 Video oluştur &amp; indir</button></div>';
       return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>yapay zeka</b> ile ~5 sn videoya çevir · ' + vn + ' sahne</span></div>' + exportBar + '<div class="vgrid">' + vcards + '</div>';
     }
     if (S.tab === 'youtube') {
@@ -621,6 +624,7 @@
       case 'cover': doCover(parseInt(v, 10)); break;
       case 'video': doVideo(parseInt(v, 10)); break;
       case 'exportVid': exportVideo(); break;
+      case 'capStyle': S.capStyle = v; refreshTab(); break;
       case 'musicPick': openMusicModal(); break;
       case 'musicClear': if (S.bgMusic && S.bgMusic.indexOf('blob:') === 0) { try { URL.revokeObjectURL(S.bgMusic); } catch (e) {} } S.bgMusic = null; S.bgMusicName = ''; refreshTab(); break;
       case 'musicVol': break;
@@ -851,21 +855,36 @@
     var s = Math.max(W / iw, H / ih) * scale, dw = iw * s, dh = ih * s;
     ctx.drawImage(img, (W - dw) / 2 + panFrac * W, (H - dh) / 2, dw, dh);
   }
+  // Türkçe-uyumlu altyazı stil şablonları (canvas ile çizilir, font sorunu yok)
+  var CAP_STYLES = {
+    klasik:  { name: 'Klasik', up: false, fill: '#fff', stroke: 'rgba(15,11,6,.85)', sw: 0.16, size: 0.052, pos: 0.10 },
+    sari:    { name: 'Sarı Vurgu', up: true, fill: '#ffd21e', stroke: '#000', sw: 0.22, size: 0.056, pos: 0.11 },
+    kutu:    { name: 'Kutulu', up: false, fill: '#fff', stroke: null, sw: 0, size: 0.046, pos: 0.10, box: 'rgba(15,11,6,.74)' },
+    minimal: { name: 'Minimal', up: false, fill: '#fff', stroke: null, sw: 0, size: 0.044, pos: 0.09, shadow: true },
+    impact:  { name: 'Impact', up: true, fill: '#fff', stroke: '#000', sw: 0.26, size: 0.06, pos: 0.12 },
+    yok:     { name: 'Yok', none: true }
+  };
+  function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
   function drawCaption(ctx, text, W, H) {
     if (!text) return;
-    var fs = Math.round(W * 0.052);
+    var st = CAP_STYLES[S.capStyle] || CAP_STYLES.klasik;
+    if (st.none) return;
+    var body = st.up ? text.toLocaleUpperCase('tr-TR') : text;
+    var fs = Math.round(W * st.size);
     ctx.font = '700 ' + fs + 'px "Hanken Grotesk", Arial, "Helvetica Neue", sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    var maxW = W * 0.86, words = text.split(' '), lines = [], line = '';
+    var maxW = W * 0.84, words = body.split(' '), lines = [], line = '';
     for (var i = 0; i < words.length; i++) { var t = line ? line + ' ' + words[i] : words[i]; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = words[i]; } else line = t; }
     if (line) lines.push(line);
     lines = lines.slice(0, 3);
-    var lh = fs * 1.25, y0 = H - H * 0.10 - lines.length * lh;
+    var lh = fs * 1.28, y0 = H - H * st.pos - lines.length * lh;
     for (var j = 0; j < lines.length; j++) {
-      var y = y0 + j * lh + fs, x = W / 2;
-      ctx.lineWidth = fs * 0.16; ctx.strokeStyle = 'rgba(15,11,6,.85)'; ctx.lineJoin = 'round';
-      ctx.strokeText(lines[j], x, y);
-      ctx.fillStyle = '#fff'; ctx.fillText(lines[j], x, y);
+      var y = y0 + j * lh + fs, x = W / 2, tw = ctx.measureText(lines[j]).width;
+      if (st.box) { ctx.fillStyle = st.box; roundRect(ctx, x - tw / 2 - fs * 0.35, y - fs * 0.98, tw + fs * 0.7, fs * 1.34, fs * 0.24); ctx.fill(); }
+      if (st.shadow) { ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = fs * 0.35; ctx.shadowOffsetY = fs * 0.06; }
+      if (st.stroke) { ctx.lineWidth = fs * st.sw; ctx.strokeStyle = st.stroke; ctx.lineJoin = 'round'; ctx.miterLimit = 2; ctx.strokeText(lines[j], x, y); }
+      ctx.fillStyle = st.fill; ctx.fillText(lines[j], x, y);
+      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
     }
   }
   var _exporting = false;

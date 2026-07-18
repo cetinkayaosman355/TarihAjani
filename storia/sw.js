@@ -1,7 +1,7 @@
 /* STORIA — service worker (scope: /storia/)
    App-shell cache for offline + fast loads. Only handles same-origin /storia/
    GET requests; leaves fonts, Supabase and other cross-origin calls untouched. */
-const CACHE = 'storia-v22';
+const CACHE = 'storia-v23';
 const ASSETS = [
   '/storia/',
   '/storia/index.html',
