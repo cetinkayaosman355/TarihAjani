@@ -396,7 +396,12 @@ const ELEVEN_ALLOWED = new Set([
   "TxGEqnHWrfWFTfGW9XjX", // Erkek · Net
   "EXAVITQu4vr4xnSDxMaL", // Kadın · Belgesel
   "21m00Tcm4TlvDq8ikWAM", // Kadın · Olgun
+  "bFrjFL4nlpeYNwNRhXxq", // Sinematik · Premium (PAHALI — 3× kredi)
+  "DUnzBkwtjRWXPr6wRbmL", // Animasyon · Anlatıcı
 ]);
+// Premium (pahalı) sesler → TTS ücreti PREMIUM_MULT katına çıkar (sadece gerekliyse).
+const ELEVEN_PREMIUM = new Set(["bFrjFL4nlpeYNwNRhXxq"]);
+const PREMIUM_MULT = 3;
 async function generateSpeechEleven(text: string, voiceId: string, opts?: { stability?: number; style?: number }): Promise<Uint8Array | null> {
   const key = Deno.env.get("ELEVENLABS_API_KEY");
   // TEŞHİS: Kadir/ElevenLabs "gelmiyor" şikâyeti → neden başarısız olduğu Supabase
@@ -745,8 +750,9 @@ Deno.serve(async (req) => {
     const ttsText = ttsFull.slice(0, 11500);
     // GÜVENLİK: düzenleme ücreti artık İSTEMCİDEN GELMEZ (b.free hilesi kapatıldı).
     // Ücretsiz hak sunucuda, kullanıcının günlük kaydından belirlenir (aşağıda).
+    const isPremiumVoice = String(b.engine || "") === "eleven" && ELEVEN_PREMIUM.has(String(b.voiceId || ""));
     let cost = isPreview ? 0 : (act === "tts"
-      ? ttsCostOf(ttsText.length)
+      ? ttsCostOf(ttsText.length) * (isPremiumVoice ? PREMIUM_MULT : 1)
       : isEdit
         ? EDIT_COST
         : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));

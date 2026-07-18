@@ -755,7 +755,9 @@ var SESLER = [
   ['erkek-gizemli', 'Erkek · Gizemli', 'eleven', 'ErXwobaYiN019PkySvjV', 'echo'],
   ['erkek-net', 'Erkek · Net', 'eleven', 'TxGEqnHWrfWFTfGW9XjX', 'ash'],
   ['kadin-belgesel', 'Kadın · Belgesel', 'eleven', 'EXAVITQu4vr4xnSDxMaL', 'nova'],
-  ['kadin-olgun', 'Kadın · Olgun', 'eleven', '21m00Tcm4TlvDq8ikWAM', 'sage']
+  ['kadin-olgun', 'Kadın · Olgun', 'eleven', '21m00Tcm4TlvDq8ikWAM', 'sage'],
+  ['animasyon-ses', 'Animasyon · Anlatıcı', 'eleven', 'DUnzBkwtjRWXPr6wRbmL', 'nova'],
+  ['premium', 'Sinematik · Premium ⚡ (3× kredi)', 'eleven', 'bFrjFL4nlpeYNwNRhXxq', 'onyx', true]   // 6. eleman: premium (pahalı)
 ];
 var uret = { ton: 'merak', stil: 'sinematik', sure: 60, ses: 'kadir', oran: 'dikey', busy: false, sonuc: null, hata: '', konu: '', ozel: '' };
 // GÖRSEL STÜDYO durumu — bağımsız görsel üretimi + kalıcı geçmiş
@@ -1117,7 +1119,11 @@ function ttsMetin() {
   var ham = (uret.sonuc && uret.sonuc.senaryo || []).map(function (s) { return s.metin || ''; }).join('\n\n');
   return temizSeslendirme(ham).slice(0, 11500);
 }
-function ttsKredi() { return Math.max(15, Math.ceil(ttsMetin().length / 1000) * 15); }   // ElevenLabs: 1000 karakter = 15 KR
+function ttsKredi() {   // ElevenLabs: 1000 karakter = 15 KR · premium ses (6. eleman) 3×
+  var v = null; for (var i = 0; i < SESLER.length; i++) if (SESLER[i][0] === uret.ses) v = SESLER[i];
+  var mult = (v && v[5]) ? 3 : 1;
+  return Math.max(15, Math.ceil(ttsMetin().length / 1000) * 15) * mult;
+}
 function seslendir() {
   var kutu = $('#s-ses-kutu'), btn = $('#s-ses');
   if (!user) { uyeGoster('seslendirme'); return; }
