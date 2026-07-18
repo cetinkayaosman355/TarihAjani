@@ -841,6 +841,16 @@
                     </sc-if>
                   </div>
                 </sc-if>
+                <sc-if value="{{ hasScenePrompts }}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 4px;">
+                    <span style="color: #818797; font-size: 11.5px; margin-right: auto;">Eksik / hatalı sahne mi var? Ajan anında çözsün.</span>
+                    <button onClick="{{ makeScenePrompts }}" disabled="{{ scenesBusy }}" style="border: 1px solid rgba(193,154,82,.55); background: rgba(193,154,82,.09); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; padding: 8px 13px; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ scenesFixLabel }}</button>
+                    <button onClick="{{ reportProblem }}" style="border: 1px solid rgba(129,135,151,.4); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; padding: 8px 13px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">⚠ SORUN BİLDİR</button>
+                  </div>
+                  <sc-if value="{{ scenesErr }}" hint-placeholder-val="{{ false }}">
+                    <p style="margin: 0 0 6px; color: #e8a9a9; font-size: 12px; line-height: 1.5;">{{ scenesErr }}</p>
+                  </sc-if>
+                </sc-if>
                 <sc-for list="{{ resGorsel }}" as="gp" hint-placeholder-count="3">
                   <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 13px 16px; display: grid; gap: 7px;">
                     <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -2605,7 +2615,17 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         if (!j) throw new Error('parse');
         const g = (Array.isArray(j.gorsel_promptlar) ? j.gorsel_promptlar : []).filter(x => x && x.prompt);
         const v = (Array.isArray(j.video_promptlar) ? j.video_promptlar : []).filter(x => x && x.prompt);
-        if (g.length) return { gorsel: g, video: v.length ? v : g.map(x => ({ sahne: x.sahne, prompt: '' })) };
+        if (g.length) {
+          // Her GÖRSEL sahnesi mutlaka dolu bir VİDEO promptu alır (boş kalmaz):
+          // LLM o sahne için video verdiyse onu, vermediyse sahneyi canlandıran
+          // deterministik bir kamera-hareketi promptu kullan. Görselle birebir eşleşir.
+          const camTpl = 'One slow cinematic camera move over 6 seconds — gentle push-in with subtle parallax — bringing this exact scene to life while keeping its composition, subject and lighting. ' + cfg.vidTail;
+          const video = g.map((x, n) => ({
+            sahne: (v[n] && v[n].sahne) || x.sahne,
+            prompt: (v[n] && (v[n].prompt || '').trim()) ? v[n].prompt : camTpl
+          }));
+          return { gorsel: g, video: video };
+        }
       } catch (e) { /* dene tekrar → sonra geri dönüş */ }
     }
     return this.sceneFallback(section, k, idx, cfg, labelBase);
@@ -2698,6 +2718,16 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       this.setState({ scenesBusy: false, scenesErr: msg });
       if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
     }
+  }
+
+  // Sorun bildir — canlı Ajan sohbetini açar, dosya bağlamını hazır doldurur.
+  // Ajan o an yardımcı olur (eksik sahne, hata vb.) — kullanıcı sahipsiz kalmaz.
+  reportProblem() {
+    const t = (this.state.result && this.state.result.baslik) || 'bu dosya';
+    this.setState({
+      chatOpen: true,
+      chatInput: 'Sorun bildirimi — "' + t + '": '
+    });
   }
 
   qualityFix(result) {
@@ -3507,6 +3537,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       resGorsel: mkCopy(r.gorsel_promptlar, 'gp').map((x, i) => this.sceneExtras(x, i, 'gp')),
       resVideo: mkCopy(r.video_promptlar, 'vp').map((x, i) => this.sceneExtras(x, i, 'vp')),
       noScenePrompts: !!s.result && !(r.gorsel_promptlar || []).length,
+      hasScenePrompts: !!s.result && (r.gorsel_promptlar || []).length > 0,
+      scenesFixLabel: s.scenesBusy ? 'AJAN ÇÖZÜYOR…' : '✦ EKSİKLERİ AJAN TAMAMLASIN',
+      reportProblem: () => this.reportProblem(),
       sceneTargetCount: this.fmtFor(this.durationSec()).sahne,
       scenesBusy: !!s.scenesBusy,
       scenesErr: s.scenesErr || '',
