@@ -378,11 +378,20 @@ async function generateSpeech(text: string, voice: string): Promise<Uint8Array |
 // ElevenLabs seslendirme — yalnızca izinli ses kimlikleri (istismarı önler; site
 // ELEVENLABS_API_KEY'ini kullanır). Türkçeyi doğru okuyan eleven_multilingual_v2.
 const ELEVEN_ALLOWED = new Set([
+  // ── Erkek anlatıcılar ──
   "j82ax9yhzfYwq9lDvRWL", // Kadir Kayışçı · İmza
   "mF7tIc9VLrznhGooGjaT", // Seyfullah Kartal · Derin
   "gyxPK6bLXQAkBSCeAKvk", // Sultan · Tiyatral
+  "DsbR47WNEv8o9x37ib9X", // Emin · Derin & Yumuşak
+  "IuRRIAcbQK5AQk1XevPj", // Doğa · Canlı & Zengin
+  "J17lijyP1BHYcM7ld0Rg", // Adam · Koyu & Sert
+  "ktrGUw7rURIQyMrQZqCu", // Cassius · Kadifemsi
+  // ── Kadın anlatıcılar ──
   "8LQS4H6IYf1unP46qbKD", // Şevval Kılınç · Genç Kadın
+  "KbaseEXyT9EE0CQLEfbB", // Belma · Kadın Anlatıcı
   "yp3v9dmYlNwJf3mXPBLV", // Mahidevran · Sıcak Kadın
+  // ── Özel ──
+  "DUnzBkwtjRWXPr6wRbmL", // Animasyon · Anlatıcı
   "bFrjFL4nlpeYNwNRhXxq", // Mossbeard · Vahşi (PREMIUM — 4× kredi)
 ]);
 // Premium (pahalı) sesler → TTS ücreti PREMIUM_MULT katına çıkar (sadece gerekliyse).
