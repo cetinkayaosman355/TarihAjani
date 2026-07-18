@@ -1,63 +1,43 @@
 /* ============================================================================
-   STORIA — Studio (vanilla SPA)
-   Wizard: fikir → tarz → üretim → dosya.
-   Config'te Supabase dolu değilse DEMO MODU (kurulumsuz denenebilir).
-   Doluysa GERÇEK MOD: storia-generate edge function + Supabase auth/kredi.
+   STORIA — Studio app (vanilla SPA)
+   Görünümler: new (sihirbaz) · images (görsel stüdyo) · library · history
+   Sihirbaz: composer → kontrol odası (canlı önizleme) → üretim → dosya belgesi
+   Config boşsa DEMO MODU (kurulumsuz denenebilir); doluysa gerçek backend.
    ========================================================================= */
 (function () {
   'use strict';
   var CFG = window.STORIA_CONFIG || {};
   var REAL = !!(CFG.supabaseUrl && CFG.supabaseAnonKey);
   var FN = (CFG.functionName || 'storia-generate');
-  var app = document.getElementById('app');
+  var view = document.getElementById('view');
   var sb = null;
 
-  // ── State ────────────────────────────────────────────────────────────
   var S = {
-    step: 1,
-    idea: '',
-    tone: 'merak',
-    voiceIdx: 0,
-    style: 'sinematik',
-    aspect: '16:9',
-    durationSec: 270,
-    provider: 'claude',
-    custom: '',
-    result: null,
-    tab: 'senaryo',
-    genJob: null,
-    user: null,
-    credits: REAL ? null : 500,
-    images: {},   // idx -> url
-    audio: null
+    view: 'new', step: 1,
+    idea: '', tone: 'merak', voiceIdx: 0, style: 'sinematik', aspect: '16:9',
+    durationSec: 270, provider: 'claude', custom: '',
+    result: null, tab: 'senaryo', genJob: null,
+    user: null, credits: REAL ? null : 500, creditMax: 500,
+    images: {}, audio: null, history: [],
+    // image studio
+    imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null
   };
 
   // ── Data ─────────────────────────────────────────────────────────────
   var IDEAS = [
-    'Okyanusun en derin noktasında ne var?',
-    'Parayı kim, neden icat etti?',
-    'Rüyalar neden bu kadar tuhaf?',
-    'Evrenin sonu nasıl olacak?',
-    'Kahve vücuduna tam olarak ne yapıyor?',
-    'Yapay zekâ gerçekten düşünebilir mi?',
-    'Uykusuzluk beynine neler yapar?',
-    'Kayıp şehir Atlantis efsanesi',
-    'Kediler bizi neden evcilleştirdi?',
-    'Işık hızında gitseydik ne olurdu?',
-    'Beynini kandıran 3 psikolojik tuzak',
-    'Müzik beynini nasıl değiştirir?',
-    'Everest’in zirvesinde bir gün',
-    'Bir saniyede dünyada neler oluyor?',
-    'Zaman gerçekten var mı?',
-    'Milyarderlerin ortak 5 alışkanlığı'
+    'Okyanusun en derin noktasında ne var?', 'Parayı kim, neden icat etti?',
+    'Rüyalar neden bu kadar tuhaf?', 'Evrenin sonu nasıl olacak?',
+    'Kahve vücuduna tam olarak ne yapıyor?', 'Yapay zekâ gerçekten düşünebilir mi?',
+    'Uykusuzluk beynine neler yapar?', 'Kayıp şehir Atlantis efsanesi',
+    'Kediler bizi neden evcilleştirdi?', 'Işık hızında gitseydik ne olurdu?',
+    'Beynini kandıran 3 psikolojik tuzak', 'Müzik beynini nasıl değiştirir?',
+    'Everest’in zirvesinde bir gün', 'Bir saniyede dünyada neler oluyor?',
+    'Zaman gerçekten var mı?', 'Milyarderlerin ortak 5 alışkanlığı'
   ];
   var TONES = [
-    { id: 'merak', name: 'Merak uyandıran' },
-    { id: 'dramatik', name: 'Dramatik' },
-    { id: 'belgesel', name: 'Belgesel' },
-    { id: 'destansi', name: 'Destansı' },
-    { id: 'samimi', name: 'Samimi' },
-    { id: 'enerjik', name: 'Enerjik' }
+    { id: 'merak', name: 'Merak uyandıran' }, { id: 'dramatik', name: 'Dramatik' },
+    { id: 'belgesel', name: 'Belgesel' }, { id: 'destansi', name: 'Destansı' },
+    { id: 'samimi', name: 'Samimi' }, { id: 'enerjik', name: 'Enerjik' }
   ];
   var VOICES = [
     { name: 'Derin Erkek', desc: 'Sıcak, güven veren', ov: 'onyx' },
@@ -70,15 +50,15 @@
   var STYLES = [
     { id: 'sinematik', name: 'Sinematik', desc: 'Film karesi, dramatik ışık', en: 'cinematic film still, dramatic lighting, shallow depth of field, 35mm' },
     { id: 'fotogercek', name: 'Foto-gerçekçi', desc: 'Gerçek fotoğraf dokusu', en: 'photorealistic, natural light, high detail, DSLR photograph' },
-    { id: 'render3d', name: '3D Render', desc: 'Hacimli, sinematik render', en: 'high-end 3D render, volumetric light, octane, subsurface detail' },
+    { id: 'render3d', name: '3D Render', desc: 'Hacimli, sinematik render', en: 'high-end 3D render, volumetric light, octane render, subsurface detail' },
     { id: 'illus', name: 'İllüstrasyon', desc: 'Modern dijital çizim', en: 'modern digital illustration, clean shapes, editorial style' },
     { id: 'anime', name: 'Anime', desc: 'Japon animasyon estetiği', en: 'anime style, cel shading, vivid, studio-quality key visual' },
     { id: 'minimal', name: 'Minimal', desc: 'Sade, zarif, geometrik', en: 'minimalist, elegant, geometric, refined negative space' }
   ];
   var MODES = [
-    { name: 'Kısa Video', desc: '60 sn · Dikey 9:16', sec: 60, aspect: '9:16', tone: 'enerjik' },
-    { name: 'Uzun Video', desc: '8 dk · Yatay 16:9', sec: 480, aspect: '16:9', tone: 'merak' },
-    { name: 'Belgesel', desc: '10 dk · Yatay 16:9', sec: 600, aspect: '16:9', tone: 'belgesel' }
+    { name: 'Kısa Video', desc: '60 sn · Dikey', sec: 60, aspect: '9:16', tone: 'enerjik' },
+    { name: 'Uzun Video', desc: '8 dk · Yatay', sec: 480, aspect: '16:9', tone: 'merak' },
+    { name: 'Belgesel', desc: '10 dk · Yatay', sec: 600, aspect: '16:9', tone: 'belgesel' }
   ];
   var GRADS = [
     'linear-gradient(135deg,#efe6d2,#c2a160)', 'linear-gradient(135deg,#e0c588,#9c7b3b)',
@@ -93,152 +73,142 @@
   function sceneFor(sec) { return Math.max(6, Math.round(120 * sec / (600 + sec))); }
   function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function copy(text) { try { navigator.clipboard.writeText(text); toast('Kopyalandı'); } catch (e) { toast('Kopyalanamadı'); } }
-  function styleObj() { for (var i = 0; i < STYLES.length; i++) if (STYLES[i].id === S.style) return STYLES[i]; return STYLES[0]; }
+  function styleObj(id) { id = id || S.style; for (var i = 0; i < STYLES.length; i++) if (STYLES[i].id === id) return STYLES[i]; return STYLES[0]; }
+  function toneName(id) { id = id || S.tone; for (var i = 0; i < TONES.length; i++) if (TONES[i].id === id) return TONES[i].name; return TONES[0].name; }
 
-  // ── Header ───────────────────────────────────────────────────────────
-  function refreshHeader() {
-    document.getElementById('creditNum').textContent = (S.credits == null ? '—' : S.credits);
-    var badge = document.getElementById('modeBadge');
-    if (badge) badge.hidden = REAL;
-    var acct = document.getElementById('acctBtn');
-    if (S.user) { acct.textContent = 'Çıkış'; }
-    else { acct.textContent = REAL ? 'Giriş' : 'Demo'; }
+  // ── Chrome (rail + topbar) ───────────────────────────────────────────
+  function chrome() {
+    document.querySelectorAll('.rail-item').forEach(function (it) { it.classList.toggle('on', it.getAttribute('data-view') === S.view); });
+    var mp = document.getElementById('modePill'); if (mp) mp.hidden = REAL;
+    document.getElementById('crNum').textContent = (S.credits == null ? '—' : S.credits);
+    // plan card
+    var cr = (S.credits == null ? 0 : S.credits);
+    document.getElementById('planCr').textContent = (S.credits == null ? '—' : S.credits);
+    document.getElementById('planName').textContent = S.user ? 'Keşif planı' : 'Keşif planı';
+    document.getElementById('planBar').style.width = Math.max(6, Math.min(100, cr / (S.creditMax || 500) * 100)) + '%';
+    // account
+    var av = document.getElementById('acctAv'), nm = document.getElementById('acctName'), sub = document.getElementById('acctSub');
+    if (S.user) { av.textContent = (S.user.email || 'S').charAt(0).toUpperCase(); nm.textContent = (S.user.email || 'Hesap'); sub.textContent = 'Çıkış yap →'; }
+    else { av.textContent = 'S'; nm.textContent = 'Misafir'; sub.textContent = REAL ? 'Giriş yap →' : 'Demo modu'; }
+    // topbar context
+    var tb = document.getElementById('tbContext');
+    if (S.view === 'new') tb.innerHTML = miniSteps();
+    else tb.innerHTML = '<span class="tb-title">' + esc(viewTitle()) + '</span>';
   }
-
-  // ── Render dispatcher ────────────────────────────────────────────────
-  function render() {
-    var html = stepper();
-    if (S.step === 1) html += renderStep1();
-    else if (S.step === 2) html += renderStep2();
-    else if (S.step === 3) html += renderStep3();
-    else if (S.step === 4) html += renderStep4();
-    app.innerHTML = '<div class="st-main"><div class="step-panel">' + html + '</div></div>';
-    bindDynamic();
-    refreshHeader();
-  }
-
-  function stepper() {
-    var steps = ['Fikir', 'Tarz', 'Üretim', 'Dosya'];
-    var h = '<div class="stepper">';
-    for (var i = 0; i < steps.length; i++) {
-      var n = i + 1;
-      var cls = n === S.step ? 'on' : (n < S.step ? 'done' : '');
-      h += '<div class="s ' + cls + '"><span class="dot">' + (n < S.step ? '✓' : n) + '</span><span class="lbl">' + steps[i] + '</span></div>';
-      if (i < steps.length - 1) h += '<span class="bar"></span>';
+  function viewTitle() { return S.view === 'images' ? 'Görsel stüdyo' : S.view === 'library' ? 'Kütüphane' : S.view === 'history' ? 'Geçmiş' : 'Yeni dosya'; }
+  function miniSteps() {
+    var labels = ['Fikir', 'Tarz', 'Üretim', 'Dosya'];
+    var h = '<div class="mini-steps">';
+    for (var i = 0; i < 4; i++) {
+      var n = i + 1, cls = n === S.step ? 'on' : (n < S.step ? 'done' : '');
+      h += '<div class="ms ' + cls + '"><span class="n">' + (n < S.step ? '✓' : n) + '</span><span class="lb">' + labels[i] + '</span></div>';
+      if (i < 3) h += '<span class="sep"></span>';
     }
     return h + '</div>';
   }
 
-  // ── Step 1 — idea ────────────────────────────────────────────────────
-  function renderStep1() {
-    var chips = IDEAS.slice(0, 4).map(function (t) {
-      return '<button class="chip" data-act="useIdea" data-v="' + esc(t) + '"><span class="dot"></span>' + esc(t) + '</button>';
-    }).join('');
-    return '<div class="idea-wrap">' +
-      '<span class="eyebrow center" style="justify-content:center">Yeni dosya</span>' +
-      '<h1 class="display" style="margin-top:14px">Ne anlatmak<br>istiyorsun?</h1>' +
-      '<p class="sub">Bir cümle yeter. Gerisini Storia halleder.</p>' +
-      '<div class="idea-box">' +
-        '<textarea class="field" id="ideaInput" placeholder="Örn: Okyanusun en derin noktasında ne var?">' + esc(S.idea) + '</textarea>' +
-        '<div class="idea-tools">' +
+  // ── Render dispatcher ────────────────────────────────────────────────
+  function render() {
+    var html;
+    if (S.view === 'new') {
+      html = S.step === 1 ? renderComposer() : S.step === 2 ? renderRoom() : S.step === 3 ? renderGen() : renderDoc();
+    } else if (S.view === 'images') html = renderImages();
+    else if (S.view === 'library') html = renderLibrary();
+    else html = renderHistory();
+    view.innerHTML = html;
+    bindDynamic();
+    chrome();
+  }
+
+  // ── Composer (step 1) ────────────────────────────────────────────────
+  function renderComposer() {
+    var chips = IDEAS.slice(0, 5).map(function (t) { return '<button class="chip" data-act="useIdea" data-v="' + esc(t) + '"><span class="dot"></span>' + esc(t) + '</button>'; }).join('');
+    return '<div class="composer">' +
+      '<span class="eyebrow">Yeni dosya</span>' +
+      '<h1 class="display">Ne anlatmak<br>istiyorsun?</h1>' +
+      '<p class="sub">Bir cümle yeter. Gerisini Storia stüdyosu kurar.</p>' +
+      '<div class="compose-box">' +
+        '<textarea id="ideaInput" placeholder="Örn: Okyanusun en derin noktasında ne var?" rows="2">' + esc(S.idea) + '</textarea>' +
+        '<div class="compose-tools"><div class="left">' +
           '<button class="btn btn-quiet btn-sm" data-act="suggest">✦ Sen öner</button>' +
-          '<span style="font-size:13px;color:var(--muted)" id="ideaCount"></span>' +
+          '<span class="cnt" id="ideaCount"></span></div>' +
+          '<button class="btn btn-gold" data-act="toStep2">Tarzını seç →</button>' +
         '</div>' +
       '</div>' +
-      '<div class="idea-suggest">' + chips + '</div>' +
-      '<div class="idea-actions">' +
-        '<button class="btn btn-gold btn-lg" data-act="toStep2">Devam et →</button>' +
-      '</div>' +
+      '<div class="suggest-row">' + chips + '</div>' +
+      '<div class="composer-hint"><kbd>Enter</kbd> ile devam et · <kbd>⇧ Enter</kbd> yeni satır</div>' +
     '</div>';
   }
 
-  // ── Step 2 — style ───────────────────────────────────────────────────
-  function renderStep2() {
+  // ── Control room (step 2) ────────────────────────────────────────────
+  function renderRoom() {
     var sec = S.durationSec;
     var toneSeg = TONES.map(function (t) { return '<button class="' + (S.tone === t.id ? 'on' : '') + '" data-act="tone" data-v="' + t.id + '">' + esc(t.name) + '</button>'; }).join('');
-    var voiceTiles = VOICES.map(function (v, i) {
-      return '<div class="tile ' + (S.voiceIdx === i ? 'on' : '') + '" data-act="voice" data-v="' + i + '"><div class="t-name">' + esc(v.name) + '</div><div class="t-desc">' + esc(v.desc) + '</div></div>';
-    }).join('');
-    var styleTiles = STYLES.map(function (st) {
-      return '<div class="tile ' + (S.style === st.id ? 'on' : '') + '" data-act="style" data-v="' + st.id + '"><div class="t-name">' + esc(st.name) + '</div><div class="t-desc">' + esc(st.desc) + '</div></div>';
-    }).join('');
-    var aspects = [
-      { id: '16:9', w: 34, h: 20, lbl: 'Yatay 16:9' },
-      { id: '9:16', w: 20, h: 34, lbl: 'Dikey 9:16' },
-      { id: '1:1', w: 26, h: 26, lbl: 'Kare 1:1' }
-    ].map(function (a) {
-      return '<div class="aspect ' + (S.aspect === a.id ? 'on' : '') + '" data-act="aspect" data-v="' + a.id + '"><span class="frame" style="width:' + a.w + 'px;height:' + a.h + 'px"></span><span class="a-lbl">' + a.lbl + '</span></div>';
-    }).join('');
-    var modes = MODES.map(function (m, i) {
-      return '<button class="mode" data-act="mode" data-v="' + i + '"><div class="m-name">' + esc(m.name) + '</div><div class="m-desc">' + esc(m.desc) + '</div></button>';
-    }).join('');
-    var fill = Math.round((sec - 30) / (600 - 30) * 100);
-    var cost = costGen(sec);
+    var voiceTiles = VOICES.map(function (v, i) { return '<div class="tile ' + (S.voiceIdx === i ? 'on' : '') + '" data-act="voice" data-v="' + i + '"><div class="t-name">' + esc(v.name) + '</div><div class="t-desc">' + esc(v.desc) + '</div></div>'; }).join('');
+    var styleTiles = STYLES.map(function (st) { return '<div class="tile ' + (S.style === st.id ? 'on' : '') + '" data-act="style" data-v="' + st.id + '"><div class="t-name">' + esc(st.name) + '</div><div class="t-desc">' + esc(st.desc) + '</div></div>'; }).join('');
+    var aspects = [{ id: '16:9', w: 36, h: 21, l: 'Yatay' }, { id: '9:16', w: 21, h: 36, l: 'Dikey' }, { id: '1:1', w: 28, h: 28, l: 'Kare' }]
+      .map(function (a) { return '<div class="asp ' + (S.aspect === a.id ? 'on' : '') + '" data-act="aspect" data-v="' + a.id + '"><span class="fr" style="width:' + a.w + 'px;height:' + a.h + 'px"></span><span class="l">' + a.l + ' ' + a.id + '</span></div>'; }).join('');
+    var modes = MODES.map(function (m, i) { return '<button class="mode" data-act="mode" data-v="' + i + '"><div class="mn">' + esc(m.name) + '</div><div class="md">' + esc(m.desc) + '</div></button>'; }).join('');
+    var fill = Math.round((sec - 30) / 570 * 100);
 
-    return '<div style="max-width:860px;margin:0 auto">' +
-      '<div style="text-align:center;margin-top:10px"><span class="eyebrow center" style="justify-content:center">İkinci adım</span>' +
-      '<h1 class="h1" style="margin-top:12px">Tarzını seç</h1>' +
-      '<p class="sub" style="color:var(--muted);margin-top:10px">İstersen tek tıkla hazır bir mod seç.</p></div>' +
+    var left = '<div class="room-head"><h1>Tarzını seç</h1><p>Her ayarı önizleme kartında anında gör.</p></div>' +
+      '<div class="opt-group"><div class="opt-title">Hazır modlar</div><div class="modes">' + modes + '</div></div>' +
+      '<div class="opt-group"><div class="opt-title">Anlatım tonu</div><div class="seg">' + toneSeg + '</div></div>' +
+      '<div class="opt-group"><div class="opt-title">Anlatıcı sesi</div><div class="tiles">' + voiceTiles + '</div></div>' +
+      '<div class="opt-group"><div class="opt-title">Görsel stil</div><div class="tiles">' + styleTiles + '</div></div>' +
+      '<div class="opt-group"><div class="opt-title">Format</div><div class="aspects">' + aspects + '</div></div>' +
+      '<div class="opt-group"><div class="opt-title">Süre</div><div class="slider-card"><div class="sh"><span class="sv" id="durVal">' + fmtDur(sec) + '</span><span class="pc-cr">yaklaşık ' + costGen(sec) + ' kredi</span></div>' +
+        '<input type="range" id="durRange" min="30" max="600" step="15" value="' + sec + '" style="--fill:' + fill + '%"></div></div>' +
+      '<div class="opt-group"><div class="opt-title">Özel istek <span class="opt-x">(opsiyonel)</span></div>' +
+        '<textarea class="field" id="customInput" placeholder="Örn: giriş çok çarpıcı olsun; sonunda soru sorarak bitir…" style="min-height:64px">' + esc(S.custom) + '</textarea></div>';
 
-      '<div class="opt-row" style="margin-top:26px"><div class="opt-lbl">Hazır modlar</div><div class="modes">' + modes + '</div></div>' +
-
-      '<div class="opts">' +
-        '<div class="opt-row"><div class="opt-lbl">Anlatım tonu</div><div class="seg">' + toneSeg + '</div></div>' +
-        '<div class="opt-row"><div class="opt-lbl">Anlatıcı sesi</div><div class="grid-opt">' + voiceTiles + '</div></div>' +
-        '<div class="opt-row"><div class="opt-lbl">Görsel stil</div><div class="grid-opt">' + styleTiles + '</div></div>' +
-        '<div class="opt-row"><div class="opt-lbl">Format</div><div class="aspect-row">' + aspects + '</div></div>' +
-        '<div class="opt-row"><div class="opt-lbl">Süre</div>' +
-          '<div class="slider-wrap"><div class="slider-head"><span class="val" id="durVal">' + fmtDur(sec) + '</span><span class="cost">yaklaşık ' + cost + ' kredi</span></div>' +
-          '<input type="range" id="durRange" min="30" max="600" step="15" value="' + sec + '" style="--fill:' + fill + '%"></div>' +
-        '</div>' +
-        '<div class="opt-row"><div class="opt-lbl">Özel istek <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">(opsiyonel)</span></div>' +
-          '<textarea class="field" id="customInput" placeholder="Örn: giriş çok çarpıcı olsun, sonunda soru sorarak bitir..." style="min-height:70px">' + esc(S.custom) + '</textarea>' +
-        '</div>' +
-      '</div>' +
-
-      '<div class="gen-bar">' +
-        '<button class="btn btn-ghost" data-act="back">← Geri</button>' +
-        '<span class="summary"><b>' + fmtDur(sec) + '</b> · ' + esc(styleObj().name) + ' · ' + S.aspect + '</span>' +
-        '<button class="btn btn-gold btn-lg" data-act="generate">Dosyayı üret · ' + cost + ' kredi</button>' +
-      '</div>' +
-    '</div>';
+    return '<div class="room"><div>' + left + '</div>' + renderPreview() + '</div>';
   }
 
-  // ── Step 3 — generating ──────────────────────────────────────────────
+  function renderPreview() {
+    var sec = S.durationSec, scenes = sceneFor(sec), cost = costGen(sec);
+    var dim = S.aspect === '9:16' ? [92, 164] : S.aspect === '1:1' ? [130, 130] : [176, 99];
+    var title = S.idea.trim() ? esc(S.idea.trim().slice(0, 60)) : 'Dosya başlığın burada';
+    return '<div class="preview"><div class="pv-card">' +
+      '<div class="pv-canvas"><div class="pv-frame" style="width:' + dim[0] + 'px;height:' + dim[1] + 'px"><img class="pv-mark" src="/storia/assets/mark.svg" alt=""></div></div>' +
+      '<div class="pv-body">' +
+        '<div class="pv-eyebrow">Önizleme · ' + S.aspect + '</div>' +
+        '<div class="pv-title">' + title + '</div>' +
+        '<div class="pv-chips"><span>' + esc(toneName()) + '</span><span>' + esc(VOICES[S.voiceIdx].name) + '</span><span>' + esc(styleObj().name) + '</span></div>' +
+        '<div class="pv-stats">' +
+          '<div class="pv-stat"><div class="k">' + fmtDur(sec) + '</div><div class="l">Süre</div></div>' +
+          '<div class="pv-stat"><div class="k">~' + scenes + '</div><div class="l">Sahne</div></div>' +
+          '<div class="pv-stat"><div class="k">' + cost + '</div><div class="l">Kredi</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="pv-cta"><button class="btn btn-gold btn-lg" data-act="generate">Dosyayı üret →</button>' +
+      '<span class="pv-back" data-act="back">← Fikri düzenle</span></div>' +
+    '</div></div>';
+  }
+
+  // ── Generating (step 3) ──────────────────────────────────────────────
   var GEN_STEPS = ['Konu araştırılıyor', 'Senaryo yazılıyor', 'Sahneler kuruluyor', 'Yayın paketi hazırlanıyor'];
-  function renderStep3() {
-    var gs = GEN_STEPS.map(function (t, i) {
-      return '<div class="gs" id="gs' + i + '"><span class="ic">' + (i + 1) + '</span>' + esc(t) + '</div>';
-    }).join('');
-    return '<div class="gen-screen">' +
-      '<div class="gen-orb"><span class="ring"></span><span class="ring r2"></span><span class="core"></span></div>' +
-      '<h2>Dosyan hazırlanıyor</h2>' +
-      '<div class="gen-status" id="genStatus">Başlıyor…</div>' +
-      '<div class="gen-steps">' + gs + '</div>' +
-    '</div>';
+  function renderGen() {
+    var rows = GEN_STEPS.map(function (t, i) { return '<div class="gen-row" id="gr' + i + '"><span class="gi">' + (i + 1) + '</span>' + esc(t) + '</div>'; }).join('');
+    return '<div class="gen"><div class="orb"><span class="ring"></span><span class="ring r2"></span><span class="ring r3"></span><span class="core"></span></div>' +
+      '<h2>Dosyan hazırlanıyor</h2><div class="gen-status" id="genStatus">Başlıyor…</div>' +
+      '<div class="gen-list">' + rows + '</div></div>';
   }
 
-  // ── Step 4 — result ──────────────────────────────────────────────────
-  function renderStep4() {
+  // ── Result document (step 4) ─────────────────────────────────────────
+  function renderDoc() {
     var r = S.result || {};
-    var tabs = [
-      ['senaryo', 'Senaryo'], ['seslendirme', 'Seslendirme'], ['gorsel', 'Görsel promptları'],
-      ['youtube', 'YouTube'], ['instagram', 'Instagram'], ['kapak', 'Kapak & yayın']
-    ];
+    var tabs = [['senaryo', 'Senaryo'], ['seslendirme', 'Seslendirme'], ['gorsel', 'Görseller'], ['youtube', 'YouTube'], ['instagram', 'Instagram'], ['kapak', 'Kapak & yayın']];
     var tabBtns = tabs.map(function (t) { return '<button class="' + (S.tab === t[0] ? 'on' : '') + '" data-act="tab" data-v="' + t[0] + '">' + t[1] + '</button>'; }).join('');
     var meta = [fmtDur(S.durationSec), styleObj().name, S.aspect, VOICES[S.voiceIdx].name].map(function (m) { return '<span class="m">' + esc(m) + '</span>'; }).join('');
-
-    var head = '<div class="res-head"><div>' +
-      '<span class="eyebrow">Dosyan hazır</span>' +
-      '<h1 class="res-title" style="margin-top:12px">' + esc(r.baslik || S.idea) + '</h1>' +
-      (r.logline ? '<p class="res-logline">' + esc(r.logline) + '</p>' : '') +
-      '<div class="res-meta">' + meta + '</div>' +
-      '</div><div class="res-actions">' +
-        '<button class="btn btn-quiet btn-sm" data-act="restart">＋ Yeni dosya</button>' +
-        '<button class="btn btn-ghost btn-sm" data-act="regen">↻ Yeniden üret</button>' +
-      '</div></div>';
-
-    return head + '<div class="tabs">' + tabBtns + '</div><div class="tab-body" id="tabBody">' + renderTab() + '</div>';
+    var hero = '<div class="doc-hero"><div class="doc-eyebrow">✦ Dosyan hazır</div>' +
+      '<h1 class="doc-title">' + esc(r.baslik || S.idea) + '</h1>' +
+      (r.logline ? '<p class="doc-logline">' + esc(r.logline) + '</p>' : '') +
+      '<div class="doc-meta">' + meta + '</div>' +
+      '<div class="doc-acts"><button class="btn btn-gold btn-sm" data-act="restart">＋ Yeni dosya</button>' +
+        '<button class="btn btn-ghost btn-sm" data-act="regen" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↻ Yeniden üret</button>' +
+        '<button class="btn btn-ghost btn-sm" data-act="download" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↓ İndir</button></div></div>';
+    return '<div class="doc">' + hero + '<div class="tabs">' + tabBtns + '</div><div class="tab-body" id="tabBody">' + renderTab() + '</div></div>';
   }
 
   function renderTab() {
@@ -246,43 +216,37 @@
     if (S.tab === 'senaryo') {
       var scenes = (r.senaryo || []).map(function (sc, i) {
         var img = S.images[i];
-        var thumb = img ? '<img src="' + esc(img) + '" alt="">' : '<div class="ph" style="background:' + GRADS[i % GRADS.length] + '"></div>';
-        return '<div class="scene"><div class="th">' + thumb + '</div><div><div class="s-no">Sahne ' + (i + 1) + '</div>' +
-          '<h4>' + esc(sc.baslik || ('Sahne ' + (i + 1))) + '</h4>' +
-          '<p>' + esc(sc.anlatim || sc.metin || '') + '</p>' +
-          (sc.gorsel ? '<div class="s-vis">🎬 ' + esc(sc.gorsel) + '</div>' : '') +
-          '</div></div>';
+        var thumb = img ? '<img src="' + esc(img) + '" alt="">' : '<div class="ph" style="background:' + GRADS[i % GRADS.length] + '">Sahne ' + (i + 1) + '</div>';
+        var over = '<div class="gbtn" data-act="image" data-v="' + i + '"><span>' + (img ? 'Yeniden üret' : '✦ Görsel üret') + '</span></div>';
+        return '<div class="scene"><div class="th">' + thumb + over + '</div><div><div class="s-no">Sahne ' + (i + 1) + '</div>' +
+          '<h4>' + esc(sc.baslik || ('Sahne ' + (i + 1))) + '</h4><p>' + esc(sc.anlatim || sc.metin || '') + '</p>' +
+          (sc.gorsel ? '<div class="s-vis">🎬 <span>' + esc(sc.gorsel) + '</span></div>' : '') + '</div></div>';
       }).join('');
-      return '<button class="btn btn-quiet btn-sm copybtn" data-act="copyScript">Tümünü kopyala</button>' + (scenes || emptyMsg());
+      return '<div class="tab-tools"><span class="tt-note">' + (r.senaryo || []).length + ' sahne · her sahnenin görselini üstüne gelip üret</span><button class="btn btn-quiet btn-sm" data-act="copyScript">Tümünü kopyala</button></div>' + (scenes || emptyInline());
     }
     if (S.tab === 'seslendirme') {
       var vo = narrationText();
-      return '<div class="panel voice-panel"><h3>Seslendirme metni</h3>' +
-        '<p class="p-note">' + esc(r.seslendirme_notu || 'Doğal, akıcı bir anlatıma göre hazırlandı.') + '</p>' +
-        '<div class="vp-controls">' +
-          '<button class="btn btn-gold btn-sm" data-act="tts">▶ Seslendir (' + esc(VOICES[S.voiceIdx].name) + ')</button>' +
-          '<button class="btn btn-quiet btn-sm" data-act="copyVo">Metni kopyala</button>' +
-          '<span style="font-size:13px;color:var(--muted)">' + vo.length + ' karakter</span>' +
+      return '<div class="player"><div class="pl-top">' +
+          '<button class="pl-play" data-act="tts" aria-label="Seslendir"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>' +
+          '<div class="pl-meta"><div class="pl-name">' + esc(VOICES[S.voiceIdx].name) + '</div><div class="pl-sub">' + vo.length + ' karakter · ' + esc(toneName()) + ' ton</div></div></div>' +
+          '<div class="pl-wave">' + waveBars() + '</div>' +
+          '<div id="audioSlot">' + (S.audio ? '<audio controls src="' + esc(S.audio) + '"></audio>' : '') + '</div>' +
+          '<div class="pl-controls"><button class="btn btn-gold btn-sm" data-act="tts">▶ Seslendir</button><button class="btn btn-quiet btn-sm" data-act="copyVo" style="color:var(--on-ink);border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.06)">Metni kopyala</button></div>' +
         '</div>' +
-        '<div id="audioSlot">' + (S.audio ? audioEl(S.audio) : '') + '</div>' +
-        '<div class="panel-txt" style="margin-top:18px">' + esc(vo) + '</div>' +
-      '</div>';
+        '<div class="panel"><h3>Seslendirme metni</h3><p class="p-note">' + esc(r.seslendirme_notu || 'Doğal, akıcı bir anlatıma göre hazırlandı.') + '</p><div class="panel-txt">' + esc(vo) + '</div></div>';
     }
     if (S.tab === 'gorsel') {
       var prompts = (r.gorsel_promptlar || []);
-      if (!prompts.length) return emptyMsg();
+      if (!prompts.length) return emptyInline();
       var cards = prompts.map(function (p, i) {
         var img = S.images[i];
-        var box = img ? '<img src="' + esc(img) + '" alt="">' : '<div class="ph" style="background:' + GRADS[i % GRADS.length] + '">' + (REAL ? 'Görsel üret' : 'Örnek görsel') + '</div>';
-        return '<div class="prompt-card"><div class="pc-img">' + box + '</div><div class="pc-body">' +
-          '<div class="pc-no">Görsel ' + (i + 1) + '</div>' +
-          '<div class="pc-txt">' + esc(p) + '</div>' +
-          '<div class="pc-actions">' +
-            '<button class="btn btn-gold btn-sm" data-act="image" data-v="' + i + '">✦ Görsel üret · 12 kredi</button>' +
-            '<button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(p) + '">Promptu kopyala</button>' +
-          '</div></div></div>';
+        var box = img ? '<img src="' + esc(img) + '" alt="">' : '<div class="ph" style="background:' + GRADS[i % GRADS.length] + '">' + (REAL ? '✦ Üret' : 'Örnek görsel') + '</div>';
+        return '<div class="gcard"><div class="gimg">' + box + '</div><div class="gbody"><div class="gno">Görsel ' + (i + 1) + '</div>' +
+          '<div class="gtxt">' + esc(p) + '</div><div class="gacts">' +
+          '<button class="btn btn-gold btn-sm" data-act="image" data-v="' + i + '">✦ Üret · 12</button>' +
+          '<button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(p) + '">Kopyala</button></div></div></div>';
       }).join('');
-      return '<p class="p-note" style="margin-bottom:16px">Her prompt seçtiğin <b>' + esc(styleObj().name) + '</b> stiline göre hazırlandı. "Görsel üret" ile gerçek görseli oluştur.</p>' + cards;
+      return '<div class="tab-tools"><span class="tt-note"><b>' + esc(styleObj().name) + '</b> stilinde ' + prompts.length + ' görsel promptu</span></div><div class="gallery">' + cards + '</div>';
     }
     if (S.tab === 'youtube') {
       var yt = r.youtube || {};
@@ -296,56 +260,85 @@
       return '<div class="panel"><button class="btn btn-quiet btn-sm copybtn" data-act="copyIg">Kopyala</button><h3>Reels / Instagram metni</h3><div class="panel-txt">' + esc(ig.aciklama || '') + '</div>' + (htags ? '<div class="taglist">' + htags + '</div>' : '') + '</div>';
     }
     if (S.tab === 'kapak') {
-      var kapak = (r.kapak || []).map(function (k, i) { return '<div class="scene" style="padding:16px 0"><div><div class="s-no">Kapak fikri ' + (i + 1) + '</div><p style="margin-top:6px">' + esc(k) + '</p></div></div>'; }).join('');
+      var kapak = (r.kapak || []).map(function (k, i) { return '<div class="scene" style="grid-template-columns:1fr;padding:14px 0"><div><div class="s-no">Kapak fikri ' + (i + 1) + '</div><p style="margin-top:6px">' + esc(k) + '</p></div></div>'; }).join('');
       return '<div class="panel"><h3>Kapak fikirleri</h3><p class="p-note">Tıklanmayı artıracak thumbnail önerileri.</p>' + (kapak || '<p class="panel-txt">—</p>') + '</div>' +
         (r.uretim_notu ? '<div class="panel"><h3>Yapım notu</h3><div class="panel-txt">' + esc(r.uretim_notu) + '</div></div>' : '');
     }
     return '';
   }
-  function emptyMsg() { return '<div class="empty">İçerik bulunamadı.</div>'; }
-  function audioEl(url) { return '<audio controls src="' + esc(url) + '"></audio>'; }
-  function narrationText() {
-    var r = S.result || {};
-    if (r.seslendirme_metni) return r.seslendirme_metni;
-    return (r.senaryo || []).map(function (s) { return s.anlatim || s.metin || ''; }).filter(Boolean).join('\n\n');
+  function waveBars() { var h = ''; for (var i = 0; i < 48; i++) { var hh = 20 + Math.round(Math.abs(Math.sin(i * 0.7)) * 78); h += '<i style="height:' + hh + '%"></i>'; } return h; }
+  function emptyInline() { return '<div class="empty"><h3>İçerik yok</h3><p>Bu sekme için çıktı bulunamadı.</p></div>'; }
+  function narrationText() { var r = S.result || {}; if (r.seslendirme_metni) return r.seslendirme_metni; return (r.senaryo || []).map(function (s) { return s.anlatim || s.metin || ''; }).filter(Boolean).join('\n\n'); }
+
+  // ── Image studio ─────────────────────────────────────────────────────
+  function renderImages() {
+    var styleTiles = STYLES.map(function (st) { return '<div class="tile ' + (S.imgStyle === st.id ? 'on' : '') + '" data-act="istyle" data-v="' + st.id + '"><div class="t-name">' + esc(st.name) + '</div></div>'; }).join('');
+    var aspects = [{ id: '1:1', w: 28, h: 28, l: 'Kare' }, { id: '16:9', w: 36, h: 21, l: 'Yatay' }, { id: '9:16', w: 21, h: 36, l: 'Dikey' }]
+      .map(function (a) { return '<div class="asp ' + (S.imgAspect === a.id ? 'on' : '') + '" data-act="iaspect" data-v="' + a.id + '"><span class="fr" style="width:' + a.w + 'px;height:' + a.h + 'px"></span><span class="l">' + a.l + '</span></div>'; }).join('');
+    var out = S.imgOut ? '<img src="' + esc(S.imgOut) + '" alt="" style="width:100%;border-radius:var(--r-md);border:1px solid var(--line)">' :
+      '<div class="ph" style="aspect-ratio:1;display:grid;place-items:center;border-radius:var(--r-md);border:1px solid var(--line);background:linear-gradient(135deg,var(--paper-2),var(--paper-3));color:var(--muted);font-size:14px">Görselin burada belirir</div>';
+    return '<div class="imgstudio"><div class="room-head"><h1>Görsel stüdyo</h1><p>Tek bir prompt ile bağımsız görsel üret.</p></div>' +
+      '<div class="is-grid"><div>' +
+        '<div class="opt-group"><div class="opt-title">Ne görmek istiyorsun?</div>' +
+          '<textarea class="field" id="imgPromptInput" placeholder="Örn: gün batımında sisli bir dağ manzarası, kartal süzülüyor" style="min-height:110px">' + esc(S.imgPrompt) + '</textarea></div>' +
+        '<div class="opt-group"><div class="opt-title">Stil</div><div class="tiles">' + styleTiles + '</div></div>' +
+        '<div class="opt-group"><div class="opt-title">Format</div><div class="aspects">' + aspects + '</div></div>' +
+        '<button class="btn btn-gold btn-lg" data-act="genImage" style="width:100%">✦ Görseli üret · 12 kredi</button>' +
+      '</div><div>' +
+        '<div class="pv-card" style="padding:16px"><div id="imgOut">' + out + '</div></div>' +
+      '</div></div></div>';
   }
 
-  // ── Dynamic bindings (inputs that shouldn't trigger re-render) ────────
+  // ── Library / History ────────────────────────────────────────────────
+  function renderLibrary() {
+    if (!S.history.length) return '<div class="empty"><div class="e-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 5h10v14H4zM14 7h6v12h-6"/></svg></div><h3>Kütüphanen boş</h3><p>Ürettiğin dosyalar burada toplanır. İlk dosyanı oluşturmaya ne dersin?</p><button class="btn btn-gold" data-act="goNew">＋ Yeni dosya</button></div>';
+    return renderHistory();
+  }
+  function renderHistory() {
+    if (!S.history.length) return '<div class="empty"><div class="e-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg></div><h3>Henüz geçmiş yok</h3><p>Ürettiğin her dosya bu oturumda burada listelenir.</p><button class="btn btn-gold" data-act="goNew">＋ Yeni dosya</button></div>';
+    var items = S.history.map(function (h, i) {
+      return '<div class="hist-item" data-act="openHist" data-v="' + i + '"><div class="hi-th" style="background:' + GRADS[i % GRADS.length] + '"></div>' +
+        '<div class="hi-body"><div class="hi-title">' + esc(h.result.baslik || h.idea) + '</div><div class="hi-meta">' + esc(h.meta) + '</div></div><div class="hi-go">→</div></div>';
+    }).join('');
+    return '<div class="room-head" style="max-width:760px"><h1>Geçmiş</h1><p>Bu oturumda ürettiğin dosyalar.</p></div><div class="hist">' + items + '</div>';
+  }
+
+  // ── Dynamic bindings ─────────────────────────────────────────────────
   function bindDynamic() {
     var idea = document.getElementById('ideaInput');
     if (idea) {
       var cnt = document.getElementById('ideaCount');
       var upd = function () { S.idea = idea.value; if (cnt) cnt.textContent = idea.value.trim().length ? idea.value.trim().length + ' karakter' : ''; };
       idea.addEventListener('input', upd); upd();
+      idea.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (S.idea.trim()) { S.step = 2; render(); } else toast('Önce bir fikir yaz'); } });
+      setTimeout(function () { idea.focus(); }, 60);
     }
     var custom = document.getElementById('customInput');
     if (custom) custom.addEventListener('input', function () { S.custom = custom.value; });
+    var imgP = document.getElementById('imgPromptInput');
+    if (imgP) imgP.addEventListener('input', function () { S.imgPrompt = imgP.value; });
     var range = document.getElementById('durRange');
-    if (range) {
-      range.addEventListener('input', function () {
-        S.durationSec = parseInt(range.value, 10);
-        var fill = Math.round((S.durationSec - 30) / (600 - 30) * 100);
-        range.style.setProperty('--fill', fill + '%');
-        document.getElementById('durVal').textContent = fmtDur(S.durationSec);
-        var cst = document.querySelector('.slider-head .cost'); if (cst) cst.textContent = 'yaklaşık ' + costGen(S.durationSec) + ' kredi';
-        var sum = document.querySelector('.gen-bar .summary'); if (sum) sum.innerHTML = '<b>' + fmtDur(S.durationSec) + '</b> · ' + esc(styleObj().name) + ' · ' + S.aspect;
-        var gb = document.querySelector('.gen-bar .btn-gold'); if (gb) gb.textContent = 'Dosyayı üret · ' + costGen(S.durationSec) + ' kredi';
-      });
-    }
+    if (range) range.addEventListener('input', function () {
+      S.durationSec = parseInt(range.value, 10);
+      range.style.setProperty('--fill', Math.round((S.durationSec - 30) / 570 * 100) + '%');
+      var dv = document.getElementById('durVal'); if (dv) dv.textContent = fmtDur(S.durationSec);
+      var cc = range.closest('.slider-card').querySelector('.pc-cr'); if (cc) cc.textContent = 'yaklaşık ' + costGen(S.durationSec) + ' kredi';
+      updatePreview();
+    });
+  }
+  function updatePreview() {
+    var pv = document.querySelector('.preview'); if (!pv) return;
+    pv.outerHTML = renderPreview();
   }
 
-  // ── Event delegation ─────────────────────────────────────────────────
-  app.addEventListener('click', function (e) {
-    var el = e.target.closest('[data-act]');
-    if (!el) return;
-    var act = el.getAttribute('data-act');
-    var v = el.getAttribute('data-v');
+  // ── Events (view delegation) ─────────────────────────────────────────
+  view.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act]'); if (!el) return;
+    var act = el.getAttribute('data-act'), v = el.getAttribute('data-v');
     switch (act) {
       case 'useIdea': S.idea = v; render(); break;
       case 'suggest': S.idea = IDEAS[Math.floor(Math.random() * IDEAS.length)]; render(); break;
-      case 'toStep2':
-        if (!S.idea.trim()) { toast('Önce bir fikir yaz'); break; }
-        S.step = 2; render(); break;
+      case 'toStep2': if (!S.idea.trim()) { toast('Önce bir fikir yaz'); break; } S.step = 2; render(); break;
       case 'back': S.step = 1; render(); break;
       case 'tone': S.tone = v; render(); break;
       case 'voice': S.voiceIdx = parseInt(v, 10); render(); break;
@@ -354,95 +347,74 @@
       case 'mode': applyMode(parseInt(v, 10)); break;
       case 'generate': startGenerate(false); break;
       case 'regen': startGenerate(true); break;
-      case 'restart': S.result = null; S.images = {}; S.audio = null; S.step = 1; render(); break;
+      case 'restart': case 'goNew': startNew(); break;
       case 'tab': S.tab = v; document.querySelectorAll('.tabs button').forEach(function (b) { b.classList.remove('on'); }); el.classList.add('on'); document.getElementById('tabBody').innerHTML = renderTab(); break;
       case 'copyScript': copy((S.result.senaryo || []).map(function (s, i) { return (i + 1) + '. ' + (s.baslik || '') + '\n' + (s.anlatim || ''); }).join('\n\n')); break;
       case 'copyVo': copy(narrationText()); break;
       case 'copyOne': copy(v); break;
       case 'copyYt': var yt = S.result.youtube || {}; copy((yt.baslik || '') + '\n\n' + (yt.aciklama || '') + '\n\n' + (yt.etiketler || []).join(', ')); break;
       case 'copyIg': var ig = S.result.instagram || {}; copy((ig.aciklama || '') + '\n\n' + (ig.hashtagler || []).map(function (t) { return t[0] === '#' ? t : '#' + t; }).join(' ')); break;
+      case 'download': downloadFile(); break;
       case 'tts': doTts(); break;
       case 'image': doImage(parseInt(v, 10)); break;
+      case 'openHist': openHist(parseInt(v, 10)); break;
+      case 'istyle': S.imgStyle = v; render(); break;
+      case 'iaspect': S.imgAspect = v; render(); break;
+      case 'genImage': genStandaloneImage(); break;
+      case 'upgrade': window.location.href = '/storia/#fiyat'; break;
     }
   });
 
-  function applyMode(i) {
-    var m = MODES[i]; if (!m) return;
-    S.durationSec = m.sec; S.aspect = m.aspect; S.tone = m.tone;
-    render(); toast(m.name + ' seçildi');
-  }
+  function applyMode(i) { var m = MODES[i]; if (!m) return; S.durationSec = m.sec; S.aspect = m.aspect; S.tone = m.tone; render(); toast(m.name + ' seçildi'); }
+  function startNew() { S.result = null; S.images = {}; S.audio = null; S.idea = ''; S.custom = ''; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
 
   // ── Generation ───────────────────────────────────────────────────────
   function startGenerate(isRegen) {
     if (REAL && !S.user) { openAuth(); return; }
-    S.step = 3; render();
-    runGenAnimation();
+    S.step = 3; render(); runGenAnim();
     if (REAL) realGenerate(isRegen); else demoGenerate();
   }
-
-  var _animTimers = [];
-  function runGenAnimation() {
-    _animTimers.forEach(clearTimeout); _animTimers = [];
+  var _timers = [];
+  function runGenAnim() {
+    _timers.forEach(clearTimeout); _timers = [];
     var statuses = ['Güvenilir kaynaklar taranıyor…', 'Anlatı omurgası kuruluyor…', 'Sahneler ve görseller planlanıyor…', 'Başlık ve yayın paketi yazılıyor…', 'Son rötuşlar…'];
     var st = document.getElementById('genStatus');
-    statuses.forEach(function (s, i) { _animTimers.push(setTimeout(function () { if (st) st.textContent = s; }, i * 1400)); });
+    statuses.forEach(function (s, i) { _timers.push(setTimeout(function () { if (st) st.textContent = s; }, i * 1400)); });
     GEN_STEPS.forEach(function (_, i) {
-      _animTimers.push(setTimeout(function () {
-        var g = document.getElementById('gs' + i); if (g) g.classList.add('on');
-        if (i > 0) { var p = document.getElementById('gs' + (i - 1)); if (p) { p.classList.remove('on'); p.classList.add('done'); p.querySelector('.ic').textContent = '✓'; } }
+      _timers.push(setTimeout(function () {
+        var g = document.getElementById('gr' + i); if (g) g.classList.add('on');
+        if (i > 0) { var p = document.getElementById('gr' + (i - 1)); if (p) { p.classList.remove('on'); p.classList.add('done'); p.querySelector('.gi').textContent = '✓'; } }
       }, 700 + i * 1500));
     });
   }
-
   function finishGen(result, charged, credits) {
-    _animTimers.forEach(clearTimeout);
+    _timers.forEach(clearTimeout);
     S.result = result; S.images = {}; S.audio = null; S.tab = 'senaryo';
     if (typeof credits === 'number') S.credits = credits;
     else if (!REAL && charged) S.credits = Math.max(0, (S.credits || 0) - costGen(S.durationSec));
+    S.history.unshift({ result: result, idea: S.idea, meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect, ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec });
     S.step = 4; render();
   }
+  function demoGenerate() { setTimeout(function () { finishGen(synthDemo(), true); }, 5200); }
 
-  function demoGenerate() {
-    var wait = 5200;
-    setTimeout(function () { finishGen(synthDemo(), true); }, wait);
-  }
-
-  // Build strict-JSON instruction for the model (real mode)
   function buildPrompt() {
-    var scenes = sceneFor(S.durationSec);
-    var st = styleObj();
-    var tone = (TONES.filter(function (t) { return t.id === S.tone; })[0] || TONES[0]).name;
+    var scenes = sceneFor(S.durationSec), st = styleObj();
     return 'Sen içerik üreticileri için çalışan uzman bir senarist ve yapım yönetmenisin. İzleyiciyi ilk saniyeden yakalayan, akıcı ve DOĞRU içerik üret.\n\n' +
-      'KONU: ' + S.idea + '\n' +
-      'ANLATIM TONU: ' + tone + '\n' +
-      'GÖRSEL STİL: ' + st.name + ' (' + st.en + ')\n' +
+      'KONU: ' + S.idea + '\nANLATIM TONU: ' + toneName() + '\nGÖRSEL STİL: ' + st.name + ' (' + st.en + ')\n' +
       'FORMAT: ' + S.aspect + ' · SÜRE: ' + fmtDur(S.durationSec) + ' · SAHNE SAYISI: yaklaşık ' + scenes + '\n' +
       (S.custom ? 'ÖZEL İSTEK (en yüksek öncelik): ' + S.custom + '\n' : '') +
       '\nYalnızca aşağıdaki şemada, Türkçe ve GEÇERLİ JSON döndür (başka metin yok):\n' +
-      '{\n' +
-      '  "baslik": "çarpıcı video başlığı",\n' +
-      '  "logline": "tek cümlelik özet",\n' +
-      '  "karakterler": ["varsa anlatıdaki kişiler"],\n' +
-      '  "senaryo": [ { "baslik": "sahne başlığı", "anlatim": "seslendirilecek akıcı anlatım metni (2-4 cümle)", "gorsel": "sahnenin kısa görsel tarifi" } ],\n' +
-      '  "seslendirme_notu": "anlatıcıya kısa yönerge",\n' +
-      '  "youtube": { "baslik": "SEO başlığı", "aciklama": "açıklama metni", "etiketler": ["etiket1","etiket2"] },\n' +
-      '  "instagram": { "aciklama": "Reels metni", "hashtagler": ["hashtag1"] },\n' +
-      '  "kapak": ["thumbnail fikri 1","thumbnail fikri 2"],\n' +
-      '  "gorsel_promptlar": ["her ana sahne için İngilizce, ' + st.en + ' tarzında foto-gerçekçi görsel üretim promptu"],\n' +
-      '  "video_promptlar": ["opsiyonel kısa video/hareket promptları"],\n' +
-      '  "uretim_notu": "kısa yapım tavsiyesi"\n' +
-      '}\n' +
+      '{ "baslik":"çarpıcı başlık", "logline":"tek cümle özet", "karakterler":[], ' +
+      '"senaryo":[{"baslik":"sahne başlığı","anlatim":"seslendirilecek akıcı anlatım (2-4 cümle)","gorsel":"kısa görsel tarifi"}], ' +
+      '"seslendirme_notu":"anlatıcı yönergesi", "youtube":{"baslik":"SEO başlığı","aciklama":"açıklama","etiketler":["e1"]}, ' +
+      '"instagram":{"aciklama":"Reels metni","hashtagler":["h1"]}, "kapak":["fikir1"], ' +
+      '"gorsel_promptlar":["her sahne için İngilizce ' + st.en + ' tarzında görsel üretim promptu"], "video_promptlar":[], "uretim_notu":"kısa tavsiye" }\n' +
       'senaryo ve gorsel_promptlar en az ' + Math.min(scenes, 8) + ' öğe içersin. Konu anlamsızsa {"gecersiz":true,"mesaj":"..."} döndür.';
   }
-
   function realGenerate(isRegen) {
     var job = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    var prevJob = S.genJob;
-    S.genJob = job;
-    var body = {
-      action: 'generate', prompt: buildPrompt(), provider: S.provider,
-      topic: S.idea, duration: 's' + S.durationSec, max_tokens: 12000, job: job
-    };
+    var prevJob = S.genJob; S.genJob = job;
+    var body = { action: 'generate', prompt: buildPrompt(), provider: S.provider, topic: S.idea, duration: 's' + S.durationSec, max_tokens: 12000, job: job };
     if (isRegen && prevJob) { body.regen = true; body.prevJob = prevJob; }
     callFn(body).then(function (d) {
       if (!d || !d.ok) { genError(d && d.error); return; }
@@ -451,69 +423,75 @@
       finishGen(obj, d.charged, d.credits);
     }).catch(function () { genError('Bağlantı hatası.'); });
   }
-
-  function genError(msg) {
-    _animTimers.forEach(clearTimeout);
-    S.step = 2; render();
-    toast(msg || 'Üretim başarısız — tekrar dene');
-  }
-
+  function genError(msg) { _timers.forEach(clearTimeout); S.step = 2; render(); toast(msg || 'Üretim başarısız — tekrar dene'); }
   function safeParse(t) { try { return JSON.parse(t); } catch (e) { return null; } }
+
+  function openHist(i) { var h = S.history[i]; if (!h) return; S.result = h.result; S.images = {}; S.audio = null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S.tab = 'senaryo'; S.view = 'new'; S.step = 4; render(); }
+
+  function downloadFile() {
+    var r = S.result || {}; var lines = [];
+    lines.push(r.baslik || S.idea); lines.push('');
+    if (r.logline) { lines.push(r.logline); lines.push(''); }
+    lines.push('— SENARYO —');
+    (r.senaryo || []).forEach(function (s, i) { lines.push((i + 1) + '. ' + (s.baslik || '')); lines.push(s.anlatim || ''); if (s.gorsel) lines.push('[Görsel] ' + s.gorsel); lines.push(''); });
+    var yt = r.youtube || {}; lines.push('— YOUTUBE —'); lines.push(yt.baslik || ''); lines.push(yt.aciklama || ''); lines.push('Etiketler: ' + (yt.etiketler || []).join(', ')); lines.push('');
+    var ig = r.instagram || {}; lines.push('— INSTAGRAM —'); lines.push(ig.aciklama || ''); lines.push((ig.hashtagler || []).map(function (t) { return '#' + t; }).join(' ')); lines.push('');
+    lines.push('— GÖRSEL PROMPTLARI —'); (r.gorsel_promptlar || []).forEach(function (p, i) { lines.push((i + 1) + '. ' + p); });
+    var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (r.baslik || 'storia-dosya').replace(/[^\wğüşiöçİĞÜŞÖÇ -]/g, '').slice(0, 60) + '.txt'; a.click();
+    toast('Dosya indirildi');
+  }
 
   // ── Images ───────────────────────────────────────────────────────────
   function doImage(idx) {
-    var r = S.result || {};
-    var prompt = (r.gorsel_promptlar || [])[idx];
-    if (!prompt) return;
+    var r = S.result || {}; var prompt = (r.gorsel_promptlar || [])[idx]; if (!prompt) return;
     var full = prompt + ' — ' + styleObj().en;
-    if (!REAL) {
-      // demo: draw a gradient placeholder canvas
-      S.images[idx] = demoImage(idx);
-      refreshCurrentTab(); toast('Demo görsel eklendi');
-      return;
-    }
+    if (!REAL) { S.images[idx] = demoImage(idx, S.aspect); refreshTab(); toast('Demo görsel eklendi'); return; }
     if (!S.user) { openAuth(); return; }
-    var btn = document.querySelector('[data-act="image"][data-v="' + idx + '"]');
-    if (btn) { btn.textContent = 'Üretiliyor…'; btn.disabled = true; }
+    toast('Görsel üretiliyor…');
     callFn({ action: 'image', prompt: full, size: S.aspect, imgIndex: idx }).then(function (d) {
-      if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; refreshCurrentTab(); toast('Görsel üretildi'); }
-      else { toast((d && d.error) || 'Görsel üretilemedi'); if (btn) { btn.textContent = '✦ Görsel üret · 12 kredi'; btn.disabled = false; } }
-    }).catch(function () { toast('Bağlantı hatası'); if (btn) { btn.textContent = '✦ Görsel üret · 12 kredi'; btn.disabled = false; } });
+      if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; refreshTab(); chrome(); toast('Görsel üretildi'); }
+      else toast((d && d.error) || 'Görsel üretilemedi');
+    }).catch(function () { toast('Bağlantı hatası'); });
   }
-
-  function demoImage(idx) {
-    var c = document.createElement('canvas'); c.width = 400; c.height = S.aspect === '9:16' ? 600 : S.aspect === '1:1' ? 400 : 250;
+  function refreshTab() { var tb = document.getElementById('tabBody'); if (tb) tb.innerHTML = renderTab(); }
+  function demoImage(idx, aspect) {
+    var c = document.createElement('canvas'); c.width = 500; c.height = aspect === '9:16' ? 780 : aspect === '16:9' ? 300 : 500;
     var x = c.getContext('2d');
     var pal = [['#efe6d2', '#c2a160'], ['#e0c588', '#9c7b3b'], ['#f3ecdc', '#d9bc80'], ['#d8b98a', '#8b6c31'], ['#ead9b6', '#b4914d']][idx % 5];
     var g = x.createLinearGradient(0, 0, c.width, c.height); g.addColorStop(0, pal[0]); g.addColorStop(1, pal[1]);
     x.fillStyle = g; x.fillRect(0, 0, c.width, c.height);
-    x.fillStyle = 'rgba(255,255,255,.85)'; x.font = '600 15px Hanken Grotesk, sans-serif'; x.textAlign = 'center';
-    x.fillText('STORIA · demo görsel', c.width / 2, c.height / 2 - 8);
-    x.font = '400 12px Hanken Grotesk, sans-serif'; x.fillText('Sahne ' + (idx + 1), c.width / 2, c.height / 2 + 14);
-    return c.toDataURL('image/jpeg', 0.8);
+    x.fillStyle = 'rgba(255,255,255,.9)'; x.textAlign = 'center';
+    x.font = '600 17px Hanken Grotesk, sans-serif'; x.fillText('STORIA', c.width / 2, c.height / 2 - 6);
+    x.font = '400 13px Hanken Grotesk, sans-serif'; x.fillText('demo görsel · sahne ' + (idx + 1), c.width / 2, c.height / 2 + 16);
+    return c.toDataURL('image/jpeg', 0.82);
   }
-
-  function refreshCurrentTab() { var tb = document.getElementById('tabBody'); if (tb) tb.innerHTML = renderTab(); }
+  function genStandaloneImage() {
+    if (!S.imgPrompt.trim()) { toast('Önce bir görsel tarifi yaz'); return; }
+    var full = S.imgPrompt + ' — ' + styleObj(S.imgStyle).en;
+    if (!REAL) { S.imgOut = demoImage(0, S.imgAspect); render(); toast('Demo görsel üretildi'); return; }
+    if (!S.user) { openAuth(); return; }
+    toast('Görsel üretiliyor…');
+    var out = document.getElementById('imgOut'); if (out) out.innerHTML = '<div class="ph" style="aspect-ratio:1;display:grid;place-items:center;border-radius:var(--r-md);background:var(--paper-2);color:var(--muted)">Üretiliyor…</div>';
+    callFn({ action: 'image', prompt: full, size: S.imgAspect, imgIndex: 0 }).then(function (d) {
+      if (d && d.ok && d.url) { S.imgOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; render(); toast('Görsel üretildi'); }
+      else { render(); toast((d && d.error) || 'Görsel üretilemedi'); }
+    }).catch(function () { render(); toast('Bağlantı hatası'); });
+  }
 
   // ── TTS ──────────────────────────────────────────────────────────────
   function doTts() {
-    var text = narrationText();
-    if (!text) { toast('Seslendirilecek metin yok'); return; }
+    var text = narrationText(); if (!text) { toast('Seslendirilecek metin yok'); return; }
     if (!REAL) {
-      // demo: browser speech synthesis
       if (!('speechSynthesis' in window)) { toast('Tarayıcı seslendirmeyi desteklemiyor'); return; }
       window.speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(text.slice(0, 600));
-      u.lang = 'tr-TR'; u.rate = 0.98;
-      window.speechSynthesis.speak(u);
-      toast('Demo seslendirme (gerçek modda indirilebilir mp3)');
-      return;
+      var u = new SpeechSynthesisUtterance(text.slice(0, 600)); u.lang = 'tr-TR'; u.rate = 0.98;
+      window.speechSynthesis.speak(u); toast('Demo seslendirme (gerçek modda indirilebilir mp3)'); return;
     }
     if (!S.user) { openAuth(); return; }
-    var slot = document.getElementById('audioSlot');
-    if (slot) slot.innerHTML = '<p class="p-note" style="margin-top:14px">Ses üretiliyor…</p>';
+    var slot = document.getElementById('audioSlot'); if (slot) slot.innerHTML = '<p style="color:var(--on-ink-muted);font-size:13px;margin-top:12px">Ses üretiliyor…</p>';
     callFn({ action: 'tts', text: text, engine: 'openai', voice: VOICES[S.voiceIdx].ov }).then(function (d) {
-      if (d && d.ok && d.url) { S.audio = d.url; if (typeof d.credits === 'number') S.credits = d.credits; if (slot) slot.innerHTML = audioEl(d.url); toast('Seslendirme hazır'); }
+      if (d && d.ok && d.url) { S.audio = d.url; if (typeof d.credits === 'number') S.credits = d.credits; if (slot) slot.innerHTML = '<audio controls src="' + esc(d.url) + '"></audio>'; chrome(); toast('Seslendirme hazır'); }
       else { if (slot) slot.innerHTML = ''; toast((d && d.error) || 'Ses üretilemedi'); }
     }).catch(function () { if (slot) slot.innerHTML = ''; toast('Bağlantı hatası'); });
   }
@@ -533,127 +511,96 @@
       ['Kapanış', 'İzleyiciye düşündürecek bir soruyla ve güçlü bir çağrıyla bitiriyoruz.']
     ].slice(0, n);
     var st = styleObj();
-    var senaryo = beats.map(function (b, i) {
-      return { baslik: b[0], anlatim: b[1], gorsel: 'Sahne ' + (i + 1) + ' için ' + st.name.toLowerCase() + ' bir kare' };
-    });
-    var prompts = beats.map(function (b, i) {
-      return 'Scene ' + (i + 1) + ': ' + b[0].toLowerCase() + ' depicting "' + topic + '", ' + st.en + ', aspect ' + S.aspect + ', highly detailed, atmospheric';
-    });
+    var senaryo = beats.map(function (b, i) { return { baslik: b[0], anlatim: b[1], gorsel: 'Sahne ' + (i + 1) + ' için ' + st.name.toLowerCase() + ' bir kare' }; });
+    var prompts = beats.map(function (b, i) { return 'Scene ' + (i + 1) + ': ' + b[0].toLowerCase() + ' depicting "' + topic + '", ' + st.en + ', aspect ' + S.aspect + ', highly detailed, atmospheric'; });
     return {
       baslik: topic.replace(/\?$/, '') + ' — Bilmediğin Gerçek',
-      logline: topic + ' Bu videoda merakını gidereceğiz.',
-      karakterler: [],
-      senaryo: senaryo,
-      seslendirme_notu: (TONES.filter(function (t) { return t.id === S.tone; })[0] || {}).name + ' bir tonda, doğal tempoda oku.',
-      youtube: {
-        baslik: topic.replace(/\?$/, '') + ' | Storia',
-        aciklama: 'Bu videoda ' + topic.toLowerCase() + ' sorusunu adım adım cevaplıyoruz. Beğenmeyi ve abone olmayı unutma!\n\n00:00 Giriş\n00:30 İlk ipucu\n02:00 Derinleşme',
-        etiketler: ['storia', 'belgesel', 'merak', topic.split(' ')[0].toLowerCase(), 'bilgi']
-      },
-      instagram: {
-        aciklama: topic + ' 👀 Cevabı videoda. Kaydet, sonra izle!',
-        hashtagler: ['storia', 'kesfet', 'bilgi', 'merak', 'reels']
-      },
+      logline: topic + ' Bu videoda merakını gidereceğiz.', karakterler: [], senaryo: senaryo,
+      seslendirme_notu: toneName() + ' bir tonda, doğal tempoda oku.',
+      youtube: { baslik: topic.replace(/\?$/, '') + ' | Storia', aciklama: 'Bu videoda ' + topic.toLowerCase() + ' sorusunu adım adım cevaplıyoruz. Beğenmeyi ve abone olmayı unutma!\n\n00:00 Giriş\n00:30 İlk ipucu\n02:00 Derinleşme', etiketler: ['storia', 'belgesel', 'merak', topic.split(' ')[0].toLowerCase(), 'bilgi'] },
+      instagram: { aciklama: topic + ' 👀 Cevabı videoda. Kaydet, sonra izle!', hashtagler: ['storia', 'kesfet', 'bilgi', 'merak', 'reels'] },
       kapak: ['Büyük soru işareti + çarpıcı görsel, sıcak ışık', 'Yakın plan detay + kalın başlık metni'],
-      gorsel_promptlar: prompts,
-      video_promptlar: prompts.map(function (p) { return p + ', slow cinematic camera move'; }),
+      gorsel_promptlar: prompts, video_promptlar: prompts.map(function (p) { return p + ', slow cinematic camera move'; }),
       uretim_notu: 'İlk 5 saniyeye en güçlü görseli koy; geçişleri müzikle senkronla. (Bu bir DEMO çıktısıdır.)'
     };
   }
 
-  // ── Backend call ─────────────────────────────────────────────────────
+  // ── Backend ──────────────────────────────────────────────────────────
   function fnUrl() { return CFG.supabaseUrl.replace(/\/$/, '') + '/functions/v1/' + FN; }
   function callFn(body) {
     return getToken().then(function (token) {
-      return fetch(fnUrl(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify(body)
-      }).then(function (r) { return r.json(); });
+      return fetch(fnUrl(), { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(body) }).then(function (r) { return r.json(); });
     });
   }
-  function getToken() {
-    if (!sb) return Promise.resolve(CFG.supabaseAnonKey);
-    return sb.auth.getSession().then(function (res) {
-      var s = res && res.data && res.data.session;
-      return (s && s.access_token) || CFG.supabaseAnonKey;
-    });
-  }
+  function getToken() { if (!sb) return Promise.resolve(CFG.supabaseAnonKey); return sb.auth.getSession().then(function (res) { var s = res && res.data && res.data.session; return (s && s.access_token) || CFG.supabaseAnonKey; }); }
 
-  // ── Auth (real mode) ─────────────────────────────────────────────────
+  // ── Auth ─────────────────────────────────────────────────────────────
   var authMode = 'in';
-  function openAuth() {
-    if (!REAL) { toast('Demo modu — kurulum sonrası giriş aktifleşir'); return; }
-    document.getElementById('authModal').classList.add('show');
-  }
+  function openAuth() { if (!REAL) { toast('Demo modu — kurulum sonrası giriş aktifleşir'); return; } document.getElementById('authModal').classList.add('show'); }
   function closeAuth() { document.getElementById('authModal').classList.remove('show'); }
-  function setupAuthUI() {
-    var modal = document.getElementById('authModal');
-    document.getElementById('acctBtn').addEventListener('click', function () {
-      if (S.user) { if (sb) sb.auth.signOut(); S.user = null; S.credits = null; refreshHeader(); toast('Çıkış yapıldı'); }
+  function setupChrome() {
+    // rail nav
+    document.getElementById('railNav').addEventListener('click', function (e) {
+      var it = e.target.closest('.rail-item'); if (!it) return;
+      var v = it.getAttribute('data-view');
+      if (v === 'new' && S.step === 4) startNew(); else { S.view = v; render(); }
+      closeRail();
+    });
+    document.getElementById('acctRow').addEventListener('click', function () {
+      if (S.user) { if (sb) sb.auth.signOut(); S.user = null; S.credits = REAL ? null : 500; chrome(); toast('Çıkış yapıldı'); }
       else openAuth();
     });
+    // mobile rail
+    var rail = document.getElementById('rail'), scrim = document.getElementById('railScrim');
+    document.getElementById('burger').addEventListener('click', function () { rail.classList.add('open'); scrim.classList.add('show'); });
+    document.getElementById('railClose').addEventListener('click', closeRail);
+    scrim.addEventListener('click', closeRail);
+    function _close() { rail.classList.remove('open'); scrim.classList.remove('show'); }
+    window._closeRail = _close;
+    // auth modal
+    var modal = document.getElementById('authModal');
     document.getElementById('authClose').addEventListener('click', closeAuth);
     modal.addEventListener('click', function (e) { if (e.target === modal) closeAuth(); });
-    document.getElementById('authSwitch').addEventListener('click', function () {
-      authMode = authMode === 'in' ? 'up' : 'in';
-      document.getElementById('authTitle').textContent = authMode === 'in' ? 'Giriş yap' : 'Kayıt ol';
-      document.getElementById('authSubmit').textContent = authMode === 'in' ? 'Giriş yap' : 'Hesap oluştur';
-      document.getElementById('authAlt').innerHTML = authMode === 'in' ? 'Hesabın yok mu? <a id="authSwitch2">Kayıt ol</a>' : 'Zaten hesabın var mı? <a id="authSwitch2">Giriş yap</a>';
-      var s2 = document.getElementById('authSwitch2'); if (s2) s2.addEventListener('click', function () { document.getElementById('authSwitch').click(); });
-    });
+    document.getElementById('authSwitch').addEventListener('click', switchAuth);
     document.getElementById('authSubmit').addEventListener('click', doAuth);
+    // keyboard: N = new
+    document.addEventListener('keydown', function (e) {
+      if (e.key.toLowerCase() === 'n' && !/input|textarea/i.test((e.target.tagName || '')) && !document.getElementById('authModal').classList.contains('show')) { startNew(); }
+    });
+  }
+  function closeRail() { if (window._closeRail) window._closeRail(); }
+  function switchAuth() {
+    authMode = authMode === 'in' ? 'up' : 'in';
+    document.getElementById('authTitle').textContent = authMode === 'in' ? 'Giriş yap' : 'Kayıt ol';
+    document.getElementById('authSubmit').textContent = authMode === 'in' ? 'Giriş yap' : 'Hesap oluştur';
+    document.getElementById('authAlt').innerHTML = (authMode === 'in' ? 'Hesabın yok mu? ' : 'Zaten hesabın var mı? ') + '<a id="authSwitch">' + (authMode === 'in' ? 'Kayıt ol' : 'Giriş yap') + '</a>';
+    document.getElementById('authSwitch').addEventListener('click', switchAuth);
   }
   function doAuth() {
     if (!sb) { toast('Supabase yüklenemedi'); return; }
-    var email = document.getElementById('authEmail').value.trim();
-    var pass = document.getElementById('authPass').value;
+    var email = document.getElementById('authEmail').value.trim(), pass = document.getElementById('authPass').value;
     if (!email || !pass) { toast('E-posta ve parola gir'); return; }
     var btn = document.getElementById('authSubmit'); btn.disabled = true; btn.textContent = 'Bekle…';
-    var p = authMode === 'in'
-      ? sb.auth.signInWithPassword({ email: email, password: pass })
-      : sb.auth.signUp({ email: email, password: pass });
+    var p = authMode === 'in' ? sb.auth.signInWithPassword({ email: email, password: pass }) : sb.auth.signUp({ email: email, password: pass });
     p.then(function (res) {
       btn.disabled = false; btn.textContent = authMode === 'in' ? 'Giriş yap' : 'Hesap oluştur';
       if (res.error) { toast(res.error.message || 'Giriş başarısız'); return; }
-      if (res.data && res.data.user) { S.user = res.data.user; closeAuth(); toast('Hoş geldin'); loadCredits(); }
-      else { toast('E-postanı kontrol et'); }
+      if (res.data && res.data.user) { S.user = res.data.user; closeAuth(); toast('Hoş geldin'); loadCredits(); chrome(); }
+      else toast('E-postanı kontrol et');
     }).catch(function () { btn.disabled = false; toast('Bağlantı hatası'); });
   }
-  function loadCredits() {
-    // Balance is read via the function's refresh (server-authoritative). A no-op
-    // generate isn't ideal; we lazily show credits after the first paid action.
-    if (!S.user) return;
-    // Optional: fetch profile row directly (RLS allows own read)
-    if (sb) sb.from('profiles').select('credits,tier').eq('id', S.user.id).single().then(function (res) {
-      if (res && res.data && typeof res.data.credits === 'number') { S.credits = res.data.credits; refreshHeader(); }
-    }, function () {});
-  }
+  function loadCredits() { if (!S.user || !sb) return; sb.from('profiles').select('credits,tier,monthly_quota').eq('id', S.user.id).single().then(function (res) { if (res && res.data) { if (typeof res.data.credits === 'number') S.credits = res.data.credits; if (res.data.monthly_quota) S.creditMax = Math.max(res.data.monthly_quota, res.data.credits || 0) || 500; chrome(); } }, function () {}); }
 
   // ── Boot ─────────────────────────────────────────────────────────────
   function boot() {
-    setupAuthUI();
-    render();
+    setupChrome(); render();
     if (REAL) {
-      loadSupabase().then(function () {
-        sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey);
-        return sb.auth.getSession();
-      }).then(function (res) {
-        var s = res && res.data && res.data.session;
-        if (s && s.user) { S.user = s.user; loadCredits(); }
-        refreshHeader();
-      }).catch(function () { toast('Sunucuya bağlanılamadı'); });
+      loadSupabase().then(function () { sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey); return sb.auth.getSession(); })
+        .then(function (res) { var s = res && res.data && res.data.session; if (s && s.user) { S.user = s.user; loadCredits(); } chrome(); })
+        .catch(function () { toast('Sunucuya bağlanılamadı'); });
     }
   }
-  function loadSupabase() {
-    return new Promise(function (resolve, reject) {
-      if (window.supabase) return resolve();
-      var s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-      s.onload = resolve; s.onerror = reject;
-      document.head.appendChild(s);
-    });
-  }
+  function loadSupabase() { return new Promise(function (resolve, reject) { if (window.supabase) return resolve(); var s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'; s.onload = resolve; s.onerror = reject; document.head.appendChild(s); }); }
 
   boot();
 })();
