@@ -14,8 +14,11 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-// Storage bucket for generated media + job recovery (create it in the setup SQL).
-const BUCKET = "storia-media";
+// Storage bucket for generated media + job recovery.
+// Default reuses the existing "studio-ses" bucket so STORIA can run on the same
+// Supabase project as Tarih Ajanı with ZERO new SQL. Set STORIA_BUCKET to use a
+// dedicated bucket on a standalone project instead.
+const BUCKET = Deno.env.get("STORIA_BUCKET") || "studio-ses";
 
 // imagescript is only needed to crop 9:16 / 16:9 and it loads a WASM codec.
 // Imported lazily so a load failure never crashes the whole function at boot.
