@@ -380,15 +380,9 @@ async function generateSpeech(text: string, voice: string): Promise<Uint8Array |
 const ELEVEN_ALLOWED = new Set([
   "j82ax9yhzfYwq9lDvRWL", // Kadir Kayışçı · İmza
   "mF7tIc9VLrznhGooGjaT", // Seyfullah Kartal · Derin
-  "gyxPK6bLXQAkBSCeAKvk", // Sultan · Tiyatral Anlatıcı
-  "DsbR47WNEv8o9x37ib9X", // Emin · Derin & Yumuşak
-  "IuRRIAcbQK5AQk1XevPj", // Doğa · Canlı & Zengin
-  "J17lijyP1BHYcM7ld0Rg", // Adam · Koyu & Sert
+  "gyxPK6bLXQAkBSCeAKvk", // Sultan · Tiyatral
   "8LQS4H6IYf1unP46qbKD", // Şevval Kılınç · Genç Kadın
-  "KbaseEXyT9EE0CQLEfbB", // Belma · Kadın Anlatıcı
-  "yp3v9dmYlNwJf3mXPBLV", // Mahidevran · Sıcak Fısıltı
-  "ktrGUw7rURIQyMrQZqCu", // Cassius · Kadifemsi (TR: dinle-onayla)
-  "DUnzBkwtjRWXPr6wRbmL", // Animasyon · Anlatıcı
+  "yp3v9dmYlNwJf3mXPBLV", // Mahidevran · Sıcak Kadın
   "bFrjFL4nlpeYNwNRhXxq", // Mossbeard · Vahşi (PREMIUM — 4× kredi)
 ]);
 // Premium (pahalı) sesler → TTS ücreti PREMIUM_MULT katına çıkar (sadece gerekliyse).
