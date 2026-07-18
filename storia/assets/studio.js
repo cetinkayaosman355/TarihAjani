@@ -323,7 +323,7 @@
           '<h4>' + esc(sc.baslik || ('Sahne ' + (i + 1))) + '</h4><p>' + esc(sc.anlatim || sc.metin || '') + '</p>' +
           (sc.gorsel ? '<div class="s-vis">🎬 <span>' + esc(sc.gorsel) + '</span></div>' : '') + '</div></div>';
       }).join('');
-      return '<div class="tab-tools"><span class="tt-note">' + (r.senaryo || []).length + ' sahne · görsele tıkla → büyüt, gez, indir</span><button class="btn btn-quiet btn-sm" data-act="copyScript">Tümünü kopyala</button></div>' + (scenes || emptyInline());
+      return '<div class="tab-tools"><span class="tt-note">' + (r.senaryo || []).length + ' sahne · görsele tıkla → büyüt, gez, indir</span><div style="display:flex;gap:8px"><button class="btn btn-quiet btn-sm" data-act="addScene">＋ Ek sahne</button><button class="btn btn-quiet btn-sm" data-act="copyScript">Tümünü kopyala</button></div></div>' + (scenes || emptyInline());
     }
     if (S.tab === 'seslendirme') {
       var vo = narrationText();
@@ -557,6 +557,7 @@
       case 'genAll': genAll(); break;
       case 'charImg': doCharImage(parseInt(v, 10)); break;
       case 'genChars': genChars(); break;
+      case 'addScene': openSceneModal(); break;
       case 'cover': doCover(parseInt(v, 10)); break;
       case 'video': doVideo(parseInt(v, 10)); break;
       case 'exportVid': exportVideo(); break;
@@ -951,6 +952,31 @@
     }).catch(function () { S.chat.msgs.push({ r: 'a', t: 'Bağlantı hatası — tekrar dene.' }); S.chat.busy = false; renderChat(); });
   }
   function applyChatIdea(topic) { if (!topic) return; S.idea = topic; S.view = 'new'; S.step = 2; closeChat(); render(); toast('Fikir yüklendi — tarzını seç ve üret'); }
+  // ── Ek sahne ─────────────────────────────────────────────────────────
+  function openSceneModal() { var m = document.getElementById('sceneModal'); if (m) { m.classList.add('show'); setTimeout(function () { var t = document.getElementById('sceneText'); if (t) { t.value = ''; t.focus(); } }, 100); } }
+  function closeSceneModal() { var m = document.getElementById('sceneModal'); if (m) m.classList.remove('show'); }
+  function addScene() {
+    var t = document.getElementById('sceneText'); var brief = t ? t.value.trim() : '';
+    if (!brief) { toast('Önce sahneyi kısaca yaz'); return; }
+    var r = S.result || {}; if (!r.senaryo) r.senaryo = [];
+    var st = styleObj(), no = r.senaryo.length + 1;
+    var btn = document.getElementById('sceneAdd'); if (btn) { btn.disabled = true; btn.textContent = 'Ekleniyor…'; }
+    function append(baslik, anlatim, gorsel) {
+      r.senaryo.push({ baslik: baslik, anlatim: anlatim, gorsel: gorsel });
+      if (!r.gorsel_promptlar) r.gorsel_promptlar = [];
+      r.gorsel_promptlar.push(gorsel + ', ' + st.en);
+      saveHist(); closeSceneModal(); if (btn) { btn.disabled = false; btn.textContent = 'Sahneyi ekle'; }
+      S.tab = 'senaryo'; refreshTab(); toast('Ek sahne eklendi · Sahne ' + no);
+    }
+    if (!REAL) { setTimeout(function () { append('Sahne ' + no, brief, brief); }, 500); return; }
+    var lang = S.lang === 'en' ? 'English' : 'Türkçe';
+    var p = 'A video scene brief: "' + brief + '". Return ONLY valid JSON (in ' + lang + '): {"baslik":"short scene title","anlatim":"one short narration sentence","gorsel":"rich English image prompt: subject, composition, lighting, atmosphere"}. No text/watermark in the image.';
+    callFn({ action: '', prompt: p }).then(function (d) {
+      var o = null; try { o = JSON.parse((d && (d.text || d.result) || '').replace(/^[^{]*/, '').replace(/[^}]*$/, '')); } catch (e) {}
+      if (o && o.gorsel) append(o.baslik || ('Sahne ' + no), o.anlatim || brief, o.gorsel);
+      else append('Sahne ' + no, brief, brief);
+    }).catch(function () { append('Sahne ' + no, brief, brief); });
+  }
   // ── Video (Grok image→video) ──────────────────────────────────────────
   function doVideo(idx) {
     var img = S.images[idx];
@@ -1208,6 +1234,13 @@
       var mFile = document.getElementById('musicFile');
       document.getElementById('musicUploadBtn').addEventListener('click', function () { mFile.click(); });
       mFile.addEventListener('change', function () { handleMusicFile(mFile.files && mFile.files[0]); mFile.value = ''; });
+    }
+    // ek sahne modal
+    var sceneModal = document.getElementById('sceneModal');
+    if (sceneModal) {
+      sceneModal.addEventListener('click', function (e) { if (e.target === sceneModal) closeSceneModal(); });
+      document.getElementById('sceneAdd').addEventListener('click', addScene);
+      document.getElementById('sceneCancel').addEventListener('click', closeSceneModal);
     }
     // chat (Ajanla konuş)
     var chatFab = document.getElementById('chatFab');
