@@ -106,13 +106,14 @@
     L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) [style*="-webkit-background-clip: text"],' +
     L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) [style*="background-clip: text"]' +
       '{-webkit-text-fill-color:#e6c478 !important;color:#e6c478 !important;background:none !important;}' +
-    // ── LOGO (SİTE GENELİ): altın/krem amblem + beyaz dedektif silüeti açık zeminde
-    //    soluyordu. KUTU YOK; bunun yerine ince koyu bir kontur (üst üste drop-shadow)
-    //    logonun açık kısımlarına aydınlık zeminde tanım verir → logo aynı kalır,
-    //    sadece belirginleşir. Doğrudan img'e uygulanır; her sayfada geçerli. ──
+    // ── LOGO (SİTE GENELİ): aydınlık modda logo TAM ŞEFFAF görünür — arkasında
+    //    kutu/plaka/hâle YOK, ekstra kontur da YOK (kullanıcı isteği: "arka plansız,
+    //    bu şekilde"). Referans logo krem/beyaz zeminde zaten net okunuyor; herhangi
+    //    bir arka plan/filtre eklemek onu "kutulu" gösteriyordu. Doğrudan img'e
+    //    uygulanır; tema.js her sayfada yüklü olduğundan site geneli geçerli. ──
     L + 'img[src*="logo.webp"],' + L + 'img[src*="ta-logo"]{' +
-      'filter:drop-shadow(0 0 1px rgba(58,40,12,.75)) drop-shadow(0 0 1px rgba(58,40,12,.6)) drop-shadow(0 1px 2px rgba(0,0,0,.2)) !important;' +
-      'background:none !important;border:0 !important;padding:0 !important;border-radius:0 !important;}';
+      'filter:none !important;background:none !important;background-color:transparent !important;' +
+      'border:0 !important;padding:0 !important;border-radius:0 !important;box-shadow:none !important;}';
 
   function ensureCss() {
     if (document.getElementById('ta-tema-css')) return;
