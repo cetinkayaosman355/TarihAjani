@@ -103,6 +103,21 @@ body { background: var(--paper); overflow: hidden; }
 .tour-nav a { color: var(--muted); font-size: 14px; font-weight: 500; cursor: pointer; }
 .tour-nav a:hover { color: var(--ink); }
 .tour-nav .btn { min-width: 120px; }
+.plan-modal { max-width: 760px; }
+.plan-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 6px; }
+.plan-c { border: 1px solid var(--line); border-radius: var(--r-md); padding: 20px 18px; display: flex; flex-direction: column; background: var(--surface); position: relative; }
+.plan-c.feat { border-color: var(--champ); background: var(--champ-wash); }
+.plan-c .pc-badge { position: absolute; top: -10px; left: 18px; background: var(--gold-sheen); color: #241a08; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; }
+.plan-c .pn { font-family: var(--serif); font-size: 20px; color: var(--ink); }
+.plan-c .pp { margin: 8px 0 2px; display: flex; align-items: baseline; gap: 4px; }
+.plan-c .pp b { font-family: var(--serif); font-size: 28px; color: var(--ink); font-weight: 500; }
+.plan-c .pp span { font-size: 13px; color: var(--muted); }
+.plan-c .pcr { font-size: 12.5px; color: var(--champ-deep); font-weight: 600; margin-bottom: 12px; }
+.plan-c ul { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 8px; }
+.plan-c li { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; align-items: flex-start; }
+.plan-c li::before { content: "✓"; color: var(--champ-deep); font-weight: 700; }
+.plan-c .btn { margin-top: auto; width: 100%; }
+@media (max-width: 640px){ .plan-cards { grid-template-columns: 1fr; } }
 .cr-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--champ-line); font-size: 13.5px; font-weight: 600; color: var(--champ-deep); box-shadow: var(--sh-1); }
 .cr-pill svg { width: 15px; height: 15px; }
 
@@ -494,6 +509,15 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
     <h3 id="tourTitle"></h3>
     <p id="tourText"></p>
     <div class="tour-nav"><a id="tourSkip">Atla</a><button class="btn btn-gold" id="tourNext">Devam</button></div>
+  </div>
+</div>
+
+<div class="modal-back" id="planModal">
+  <div class="modal plan-modal">
+    <h3>Planını yükselt</h3>
+    <p>Daha fazla kredi, öncelikli üretim ve premium anlatıcı sesleri.</p>
+    <div class="plan-cards" id="planCards"></div>
+    <div class="alt"><a id="planClose">Şimdilik kapat</a></div>
   </div>
 </div>
 

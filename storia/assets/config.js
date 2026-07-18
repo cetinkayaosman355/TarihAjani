@@ -10,5 +10,12 @@ window.STORIA_CONFIG = {
   supabaseUrl: "",       // örn: https://xxxx.supabase.co
   supabaseAnonKey: "",   // örn: eyJhbGciOiJIUzI1NiIsInR5cCI6...
   functionName: "storia-generate",
-  brand: "Storia"
+  brand: "Storia",
+  // İsteğe bağlı: iyzico/Stripe "ödeme linki" URL'lerini buraya yapıştırınca
+  // "Planı yükselt" butonu doğrudan ödemeye götürür (API entegrasyonu gerekmez).
+  checkout: {
+    yaratici: "",
+    profesyonel: "",
+    studio: ""
+  }
 };

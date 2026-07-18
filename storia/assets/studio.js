@@ -433,7 +433,7 @@
       case 'iaspect': S.imgAspect = v; render(); break;
       case 'genImage': genStandaloneImage(); break;
       case 'editStudio': openEditStudio(); break;
-      case 'upgrade': window.location.href = '/storia/#fiyat'; break;
+      case 'upgrade': openPlanModal(); break;
     }
   });
 
@@ -814,10 +814,16 @@
     // onboarding tour
     document.getElementById('tourNext').addEventListener('click', tourNext);
     document.getElementById('tourSkip').addEventListener('click', closeTour);
+    // plan / upgrade
+    var upBtn = document.querySelector('#planCard [data-act="upgrade"]');
+    if (upBtn) upBtn.addEventListener('click', openPlanModal);
+    var planModal = document.getElementById('planModal');
+    document.getElementById('planClose').addEventListener('click', closePlan);
+    planModal.addEventListener('click', function (e) { if (e.target === planModal) closePlan(); var c = e.target.closest('[data-act="checkout"]'); if (c) openCheckout(c.getAttribute('data-v')); });
     // global keyboard
     document.addEventListener('keydown', function (e) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmd(); return; }
-      if (e.key === 'Escape') { closeCmd(); closeAuth(); closeEdit(); closeTour(); return; }
+      if (e.key === 'Escape') { closeCmd(); closeAuth(); closeEdit(); closeTour(); closePlan(); return; }
       var typing = /input|textarea/i.test((e.target.tagName || ''));
       var anyModal = document.querySelector('.modal-back.show');
       if (!typing && !anyModal && e.key.toLowerCase() === 'n') { startNew(); }
@@ -831,7 +837,8 @@
       { ic: '◱', label: 'Görsel stüdyo', run: function () { S.view = 'images'; render(); } },
       { ic: '▤', label: 'Kütüphane', run: function () { S.view = 'library'; render(); } },
       { ic: '◷', label: 'Geçmiş', run: function () { S.view = 'history'; render(); } },
-      { ic: '◐', label: (document.documentElement.getAttribute('data-theme') === 'dark' ? 'Aydınlık mod' : 'Karanlık mod'), run: toggleTheme }
+      { ic: '◐', label: (document.documentElement.getAttribute('data-theme') === 'dark' ? 'Aydınlık mod' : 'Karanlık mod'), run: toggleTheme },
+      { ic: '✦', label: 'Planı yükselt', run: openPlanModal }
     ];
     if (S.result) {
       c.push({ ic: '↓', label: 'PDF olarak indir', run: exportPDF });
@@ -880,6 +887,28 @@
   function closeTour() { document.getElementById('tourModal').classList.remove('show'); try { localStorage.setItem('storia_tour', '1'); } catch (e) {} }
   function tourGo(i) { _tourI = i; var s = TOUR[i]; document.getElementById('tourBadge').textContent = (i + 1) + ' / ' + TOUR.length; document.getElementById('tourTitle').textContent = s.t; document.getElementById('tourText').textContent = s.x; document.getElementById('tourNext').textContent = (i === TOUR.length - 1 ? 'Başla ✦' : 'Devam →'); }
   function tourNext() { if (_tourI < TOUR.length - 1) tourGo(_tourI + 1); else closeTour(); }
+
+  // ── Plan / upgrade ────────────────────────────────────────────────────
+  var PLANS = [
+    { id: 'yaratici', name: 'Yaratıcı', price: '599₺', cr: '1.000', feats: ['Sınırsız senaryo & yayın paketi', 'Seslendirme & görsel üretimi', 'Tüm formatlar (16:9 · 9:16 · 1:1)'] },
+    { id: 'profesyonel', name: 'Profesyonel', price: '1.299₺', cr: '5.000', feat: true, feats: ['Yaratıcı’daki her şey', 'Öncelikli üretim hızı', 'Premium anlatıcı sesleri', 'Cihazlar arası kütüphane'] },
+    { id: 'studio', name: 'Stüdyo', price: '1.999₺', cr: '15.000', feats: ['Profesyonel’deki her şey', 'En yüksek kredi havuzu', 'Ekip & öncelikli destek'] }
+  ];
+  function openPlanModal() { renderPlanCards(); document.getElementById('planModal').classList.add('show'); }
+  function closePlan() { document.getElementById('planModal').classList.remove('show'); }
+  function renderPlanCards() {
+    document.getElementById('planCards').innerHTML = PLANS.map(function (pl) {
+      return '<div class="plan-c' + (pl.feat ? ' feat' : '') + '">' + (pl.feat ? '<span class="pc-badge">En popüler</span>' : '') +
+        '<div class="pn">' + pl.name + '</div><div class="pp"><b>' + pl.price + '</b><span>/ ay</span></div>' +
+        '<div class="pcr">' + pl.cr + ' kredi / ay</div><ul>' + pl.feats.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' +
+        '<button class="btn ' + (pl.feat ? 'btn-gold' : 'btn-quiet') + ' btn-sm" data-act="checkout" data-v="' + pl.id + '">Seç</button></div>';
+    }).join('');
+  }
+  function openCheckout(id) {
+    var url = (CFG.checkout || {})[id] || '';
+    if (url) { window.open(url, '_blank', 'noopener'); closePlan(); }
+    else toast('Ödeme bağlantısı henüz ayarlı değil — kurulum sonrası aktifleşir');
+  }
   function closeRail() { if (window._closeRail) window._closeRail(); }
   function switchAuth() {
     authMode = authMode === 'in' ? 'up' : 'in';
