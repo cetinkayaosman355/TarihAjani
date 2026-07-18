@@ -428,6 +428,18 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .export-strip .es-txt b { font-family: var(--serif); font-size: 17px; }
 .export-strip .es-txt span { font-size: 13px; color: var(--muted); max-width: 46ch; }
 .export-strip .btn[disabled] { opacity: .45; cursor: not-allowed; }
+.export-strip .es-txt > .btn-quiet, .export-strip .music-on { margin-top: 10px; }
+.music-on { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 8px 8px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--champ-line); box-shadow: var(--sh-1); }
+.music-on .mo-ic { font-size: 15px; }
+.music-on .mo-name { font-size: 13px; font-weight: 600; color: var(--ink); max-width: 20ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.music-on .mo-vol { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.music-on .mo-vol input[type=range] { width: 92px; }
+.music-src { text-align: left; margin-top: 18px; padding: 16px 18px; border-radius: var(--r-md); background: var(--champ-wash); border: 1px solid var(--champ-line); }
+.music-src h4 { font-size: 14px; margin: 0 0 8px; color: var(--champ-deep); }
+.music-src ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+.music-src li { font-size: 13px; color: var(--ink-2); }
+.music-src li b { color: var(--ink); }
+.music-src span { display: block; margin-top: 10px; font-size: 12px; color: var(--muted); }
 .export-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(20,15,9,.55); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; }
 .export-overlay.show { display: flex; animation: viewIn .25s var(--ease); }
 .eo-card { width: min(420px, 90vw); background: var(--surface); border: 1px solid var(--champ-line); border-radius: var(--r-xl); padding: 34px 30px; text-align: center; box-shadow: 0 30px 90px rgba(40,28,10,.28); }
@@ -608,6 +620,27 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
     <textarea class="field" id="editText" placeholder="Örn: gökyüzünü gün batımına çevir; sağ alta bir kartal ekle" style="min-height:92px;margin-bottom:12px"></textarea>
     <button class="btn btn-gold" id="editApply">Uygula</button>
     <div class="alt"><a id="editCancel">Vazgeç</a></div>
+  </div>
+</div>
+
+<div class="modal-back" id="musicModal">
+  <div class="modal">
+    <img class="m-mark" src="/storia/assets/mark.svg" alt="">
+    <h3>Arka plan müziği</h3>
+    <p>Kendi telifsiz müziğini yükle — videonun altına karışır. Seslendirme varken müzik otomatik kısılır (ducking).</p>
+    <button class="btn btn-gold" id="musicUploadBtn">Müzik dosyası seç (mp3, wav…)</button>
+    <input type="file" id="musicFile" accept="audio/*" hidden>
+    <div class="music-src">
+      <h4>Telifsiz müzik nereden bulunur?</h4>
+      <ul>
+        <li><b>Pixabay Music</b> — pixabay.com/music · CC0, tamamen ücretsiz, atıf gerekmez</li>
+        <li><b>YouTube Audio Library</b> — YouTube Studio › Ses kitaplığı</li>
+        <li><b>Free Music Archive</b> — freemusicarchive.org</li>
+        <li><b>Chosic</b> — chosic.com/free-music</li>
+      </ul>
+      <span>İndirdiğin mp3/wav dosyasını yukarıdaki butonla seç. (En fazla 25 MB)</span>
+    </div>
+    <div class="alt"><a id="musicCancel">Kapat</a></div>
   </div>
 </div>
 

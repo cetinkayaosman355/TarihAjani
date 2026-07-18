@@ -19,6 +19,7 @@
     result: null, tab: 'senaryo', genJob: null,
     user: null, credits: REAL ? null : 500, creditMax: 500,
     images: {}, covers: {}, videos: {}, videoJobs: {}, audio: null, history: [], ttsRate: 1,
+    bgMusic: null, bgMusicName: '', musicVol: 0.5,
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null
   };
@@ -327,7 +328,10 @@
           '<div class="vprompt">' + esc(mprompt) + '</div><div class="th-acts">' + actions + '<button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(mprompt) + '">Prompt</button></div></div></div>';
       }
       var doneImgs = (r.senaryo || []).filter(function (s, i) { return S.images[i]; }).length;
-      var exportBar = '<div class="export-strip"><div class="es-txt"><b>Tek dosyada birleştir</b><span>Sahne görselleri + seslendirme + altyazı → Ken Burns efektli video (WebM). Ücretsiz, tarayıcıda oluşur.</span></div><button class="btn btn-gold" data-act="exportVid"' + (doneImgs ? '' : ' disabled') + '>🎬 Video oluştur &amp; indir</button></div>';
+      var musicChip = S.bgMusic
+        ? '<div class="music-on"><span class="mo-ic">🎵</span><span class="mo-name">' + esc(S.bgMusicName || 'Müzik') + '</span><label class="mo-vol">Ses <input type="range" min="0" max="100" value="' + Math.round(S.musicVol * 100) + '" data-act="musicVol"></label><button class="btn btn-quiet btn-sm" data-act="musicClear">Kaldır</button></div>'
+        : '<button class="btn btn-quiet btn-sm" data-act="musicPick">🎵 Arka plan müziği ekle</button>';
+      var exportBar = '<div class="export-strip"><div class="es-txt"><b>Tek dosyada birleştir</b><span>Sahne görselleri + seslendirme + altyazı → Ken Burns efektli video (WebM). Ücretsiz, tarayıcıda oluşur.</span>' + musicChip + '</div><button class="btn btn-gold" data-act="exportVid"' + (doneImgs ? '' : ' disabled') + '>🎬 Video oluştur &amp; indir</button></div>';
       return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>Grok</b> ile ~5 sn videoya çevir · ' + vn + ' sahne</span></div>' + exportBar + '<div class="vgrid">' + vcards + '</div>';
     }
     if (S.tab === 'youtube') {
@@ -463,6 +467,9 @@
       case 'cover': doCover(parseInt(v, 10)); break;
       case 'video': doVideo(parseInt(v, 10)); break;
       case 'exportVid': exportVideo(); break;
+      case 'musicPick': openMusicModal(); break;
+      case 'musicClear': if (S.bgMusic && S.bgMusic.indexOf('blob:') === 0) { try { URL.revokeObjectURL(S.bgMusic); } catch (e) {} } S.bgMusic = null; S.bgMusicName = ''; refreshTab(); break;
+      case 'musicVol': break;
       case 'editImg': openEdit(parseInt(v, 10)); break;
       case 'openHist': openHist(parseInt(v, 10)); break;
       case 'istyle': S.imgStyle = v; render(); break;
@@ -471,6 +478,10 @@
       case 'editStudio': openEditStudio(); break;
       case 'upgrade': openPlanModal(); break;
     }
+  });
+  view.addEventListener('input', function (e) {
+    var el = e.target.closest('[data-act]'); if (!el) return;
+    if (el.getAttribute('data-act') === 'musicVol') S.musicVol = (parseInt(el.value, 10) || 0) / 100;
   });
 
   function applyMode(i) { var m = MODES[i]; if (!m) return; S.durationSec = m.sec; S.aspect = m.aspect; S.tone = m.tone; render(); toast(m.name + ' seçildi'); }
@@ -712,14 +723,21 @@
     Promise.all(scenes.map(function (s, i) { return loadImgEl(S.images[i]).catch(function () { return null; }); })).then(function (imgs) {
       imgsRef = imgs;
       var AC = window.AudioContext || window.webkitAudioContext, actx = null;
-      var audioP = S.audio ? (function () { actx = new AC(); try { actx.resume(); } catch (e) {} return fetch(S.audio).then(function (rr) { return rr.arrayBuffer(); }).then(function (ab) { return actx.decodeAudioData(ab); }).catch(function () { return null; }); })() : Promise.resolve(null);
-      audioP.then(function (buf) {
-        var total = buf ? buf.duration : n * 3.2, per = total / n;
+      function decodeUrl(url) { if (!actx) { actx = new AC(); try { actx.resume(); } catch (e) {} } return fetch(url).then(function (rr) { return rr.arrayBuffer(); }).then(function (ab) { return actx.decodeAudioData(ab); }).catch(function () { return null; }); }
+      Promise.all([S.audio ? decodeUrl(S.audio) : Promise.resolve(null), S.bgMusic ? decodeUrl(S.bgMusic) : Promise.resolve(null)]).then(function (bufs) {
+        var voBuf = bufs[0], muBuf = bufs[1];
+        var total = voBuf ? voBuf.duration : n * 3.2, per = total / n;
         drawFrame(0, 0); // captureStream'den önce ilk kareyi çiz
-        var vstream = canvas.captureStream(30), vtrack = vstream.getVideoTracks()[0], src = null;
+        var vstream = canvas.captureStream(30), vtrack = vstream.getVideoTracks()[0], srcs = [];
         // Ses ancak gerçekten varsa parçaya eklenir — boş/sessiz ses izi kaydı bloke edebilir.
         var tracks = vstream.getVideoTracks();
-        if (buf && actx) { var dest = actx.createMediaStreamDestination(); src = actx.createBufferSource(); src.buffer = buf; src.connect(dest); tracks = tracks.concat(dest.stream.getAudioTracks()); }
+        if ((voBuf || muBuf) && actx) {
+          var dest = actx.createMediaStreamDestination();
+          if (voBuf) { var vs = actx.createBufferSource(); vs.buffer = voBuf; var vg = actx.createGain(); vg.gain.value = 1; vs.connect(vg); vg.connect(dest); srcs.push(vs); }
+          // müzik: seslendirme varken kısılır (ducking), yoksa daha yüksek; sona kadar döner
+          if (muBuf) { var ms = actx.createBufferSource(); ms.buffer = muBuf; ms.loop = true; var mg = actx.createGain(); mg.gain.value = (voBuf ? 0.30 : 0.85) * S.musicVol; ms.connect(mg); mg.connect(dest); srcs.push(ms); }
+          tracks = tracks.concat(dest.stream.getAudioTracks());
+        }
         var mstream = new MediaStream(tracks);
         var mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].filter(function (m) { return MediaRecorder.isTypeSupported(m); })[0] || 'video/webm';
         var rec = new MediaRecorder(mstream, { mimeType: mime, videoBitsPerSecond: 6000000 }), chunks = [];
@@ -734,7 +752,7 @@
           hideExport(); _exporting = false; toast('Video indirildi (WebM)');
         };
         var start = performance.now();
-        try { if (src) src.start(); } catch (e) {}
+        srcs.forEach(function (s) { try { s.start(); } catch (e) {} });
         rec.start(1000); // saniyede bir parça yaz — daha güvenilir
         (function frame() {
           var el = (performance.now() - start) / 1000;
@@ -747,6 +765,17 @@
         })();
       });
     }).catch(function () { if (canvas.parentNode) canvas.parentNode.removeChild(canvas); hideExport(); _exporting = false; toast('Video oluşturulamadı — görsellere erişilemedi'); });
+  }
+  // ── Arka plan müziği ──────────────────────────────────────────────────
+  function openMusicModal() { var m = document.getElementById('musicModal'); if (m) m.classList.add('show'); }
+  function closeMusicModal() { var m = document.getElementById('musicModal'); if (m) m.classList.remove('show'); }
+  function handleMusicFile(file) {
+    if (!file) return;
+    if (!/^audio\//.test(file.type) && !/\.(mp3|m4a|aac|ogg|wav|webm)$/i.test(file.name)) { toast('Lütfen bir ses dosyası seç'); return; }
+    if (file.size > 25 * 1024 * 1024) { toast('Dosya çok büyük (en fazla 25 MB)'); return; }
+    if (S.bgMusic && S.bgMusic.indexOf('blob:') === 0) { try { URL.revokeObjectURL(S.bgMusic); } catch (e) {} }
+    S.bgMusic = URL.createObjectURL(file); S.bgMusicName = file.name.replace(/\.[^.]+$/, '').slice(0, 40);
+    closeMusicModal(); refreshTab(); toast('Müzik eklendi · ' + S.bgMusicName);
   }
 
   function doCover(idx) {
@@ -1009,6 +1038,15 @@
     document.getElementById('editCancel').addEventListener('click', closeEdit);
     editModal.addEventListener('click', function (e) { if (e.target === editModal) closeEdit(); });
     document.getElementById('editText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) applyEdit(); });
+    // background music modal
+    var musicModal = document.getElementById('musicModal');
+    if (musicModal) {
+      musicModal.addEventListener('click', function (e) { if (e.target === musicModal) closeMusicModal(); });
+      document.getElementById('musicCancel').addEventListener('click', closeMusicModal);
+      var mFile = document.getElementById('musicFile');
+      document.getElementById('musicUploadBtn').addEventListener('click', function () { mFile.click(); });
+      mFile.addEventListener('change', function () { handleMusicFile(mFile.files && mFile.files[0]); mFile.value = ''; });
+    }
     // onboarding tour
     document.getElementById('tourNext').addEventListener('click', tourNext);
     document.getElementById('tourSkip').addEventListener('click', closeTour);
