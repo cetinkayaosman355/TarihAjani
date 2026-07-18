@@ -226,7 +226,8 @@
       '<div class="doc-meta">' + meta + '</div>' +
       '<div class="doc-acts"><button class="btn btn-gold btn-sm" data-act="restart">＋ Yeni dosya</button>' +
         '<button class="btn btn-ghost btn-sm" data-act="regen" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↻ Yeniden üret</button>' +
-        '<button class="btn btn-ghost btn-sm" data-act="download" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↓ İndir</button></div></div>';
+        '<button class="btn btn-ghost btn-sm" data-act="exportPdf" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↓ PDF</button>' +
+        '<button class="btn btn-ghost btn-sm" data-act="download" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↓ Metin</button></div></div>';
     return '<div class="doc">' + hero + '<div class="tabs">' + tabBtns + '</div><div class="tab-body" id="tabBody">' + renderTab() + '</div></div>';
   }
 
@@ -404,6 +405,7 @@
       case 'copyYt': var yt = S.result.youtube || {}; copy((yt.baslik || '') + '\n\n' + (yt.aciklama || '') + '\n\n' + (yt.etiketler || []).join(', ')); break;
       case 'copyIg': var ig = S.result.instagram || {}; copy((ig.aciklama || '') + '\n\n' + (ig.hashtagler || []).map(function (t) { return t[0] === '#' ? t : '#' + t; }).join(' ')); break;
       case 'download': downloadFile(); break;
+      case 'exportPdf': exportPDF(); break;
       case 'tts': doTts(); break;
       case 'voicePrev': previewVoice(parseInt(v, 10)); break;
       case 'ttsRate': S.ttsRate = parseFloat(v); document.querySelectorAll('.rate-seg button').forEach(function (x) { x.classList.remove('on'); }); el.classList.add('on'); break;
@@ -494,6 +496,53 @@
     var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
     var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (r.baslik || 'storia-dosya').replace(/[^\wğüşiöçİĞÜŞÖÇ -]/g, '').slice(0, 60) + '.txt'; a.click();
     toast('Dosya indirildi');
+  }
+
+  function exportPDF() {
+    var r = S.result || {};
+    var w = window.open('', '_blank');
+    if (!w) { toast('PDF için açılır pencereye izin ver'); return; }
+    var meta = [fmtDur(S.durationSec), styleObj().name, S.aspect, VOICES[S.voiceIdx].name].join(' · ');
+    var scenes = (r.senaryo || []).map(function (s, i) {
+      var img = S.images[i] ? '<img class="sc-img" src="' + esc(S.images[i]) + '">' : '';
+      return '<div class="sc"><div class="sc-n">Sahne ' + (i + 1) + '</div><h3>' + esc(s.baslik || '') + '</h3>' + img +
+        '<p>' + esc(s.anlatim || s.metin || '') + '</p>' + (s.gorsel ? '<div class="sc-v">Görsel: ' + esc(s.gorsel) + '</div>' : '') + '</div>';
+    }).join('');
+    var yt = r.youtube || {}, ig = r.instagram || {};
+    var tags = (yt.etiketler || []).join(', ');
+    var htags = (ig.hashtagler || []).map(function (t) { return t[0] === '#' ? t : '#' + t; }).join(' ');
+    var doc = '<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>' + esc(r.baslik || 'Storia') + '</title>' +
+      '<style>' +
+      '@page{margin:22mm 18mm}' +
+      'body{font-family:Georgia,"Times New Roman",serif;color:#1B1712;line-height:1.6;max-width:760px;margin:0 auto;padding:20px}' +
+      '.brand{font-family:Arial,sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#8B6C31;font-weight:700}' +
+      'h1{font-size:34px;line-height:1.12;margin:8px 0 6px}' +
+      '.logline{font-style:italic;color:#4B4339;font-size:16px;margin:0 0 8px}' +
+      '.meta{font-family:Arial,sans-serif;font-size:12px;color:#8A7F6E;border-bottom:2px solid #E4D7BC;padding-bottom:14px;margin-bottom:22px}' +
+      'h2{font-family:Arial,sans-serif;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#8B6C31;margin:28px 0 12px;border-top:1px solid #EAE2D3;padding-top:16px}' +
+      '.sc{margin:0 0 20px;page-break-inside:avoid}' +
+      '.sc-n{font-family:Arial,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B6C31;font-weight:700}' +
+      '.sc h3{font-size:18px;margin:3px 0 8px}' +
+      '.sc-img{width:100%;max-height:300px;object-fit:cover;border-radius:8px;margin:6px 0}' +
+      '.sc p{margin:6px 0}' +
+      '.sc-v{font-family:Arial,sans-serif;font-size:12px;color:#8A7F6E;margin-top:4px}' +
+      '.pub{font-family:Arial,sans-serif;font-size:14px}.pub b{color:#8B6C31}' +
+      '.tags{font-family:Arial,sans-serif;font-size:12px;color:#8B6C31;margin-top:6px}' +
+      '.foot{margin-top:34px;font-family:Arial,sans-serif;font-size:11px;color:#B4A992;text-align:center}' +
+      '</style></head><body>' +
+      '<div class="brand">Storia · Yapay Zekâ İçerik Stüdyosu</div>' +
+      '<h1>' + esc(r.baslik || S.idea) + '</h1>' +
+      (r.logline ? '<p class="logline">' + esc(r.logline) + '</p>' : '') +
+      '<div class="meta">' + esc(meta) + '</div>' +
+      '<h2>Senaryo</h2>' + scenes +
+      '<h2>Seslendirme metni</h2><p>' + esc(narrationText()).replace(/\n/g, '<br>') + '</p>' +
+      '<h2>YouTube</h2><div class="pub"><b>Başlık:</b> ' + esc(yt.baslik || '') + '<br><br>' + esc(yt.aciklama || '').replace(/\n/g, '<br>') + '<div class="tags">' + esc(tags) + '</div></div>' +
+      '<h2>Instagram</h2><div class="pub">' + esc(ig.aciklama || '').replace(/\n/g, '<br>') + '<div class="tags">' + esc(htags) + '</div></div>' +
+      '<div class="foot">storia · ' + esc(meta) + '</div>' +
+      '</body></html>';
+    w.document.open(); w.document.write(doc); w.document.close();
+    setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 500);
+    toast('PDF hazırlanıyor — yazdır penceresinden "PDF olarak kaydet" seç');
   }
 
   // ── Images ───────────────────────────────────────────────────────────
@@ -647,15 +696,16 @@
   var authMode = 'in';
   function openAuth() { if (!REAL) { toast('Demo modu — kurulum sonrası giriş aktifleşir'); return; } document.getElementById('authModal').classList.add('show'); }
   function closeAuth() { document.getElementById('authModal').classList.remove('show'); }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', cur);
+    try { localStorage.setItem('storia_theme', cur); } catch (e) {}
+    toast(cur === 'dark' ? 'Karanlık mod' : 'Aydınlık mod');
+  }
   function setupChrome() {
-    // theme toggle (dark focus mode)
     var themeBtn = document.getElementById('themeBtn');
-    if (themeBtn) themeBtn.addEventListener('click', function () {
-      var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', cur);
-      try { localStorage.setItem('storia_theme', cur); } catch (e) {}
-      toast(cur === 'dark' ? 'Karanlık mod' : 'Aydınlık mod');
-    });
+    if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+    setupCmd();
     // rail nav
     document.getElementById('railNav').addEventListener('click', function (e) {
       var it = e.target.closest('.rail-item'); if (!it) return;
@@ -686,11 +736,60 @@
     document.getElementById('editCancel').addEventListener('click', closeEdit);
     editModal.addEventListener('click', function (e) { if (e.target === editModal) closeEdit(); });
     document.getElementById('editText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) applyEdit(); });
-    // keyboard: N = new
+    // global keyboard
     document.addEventListener('keydown', function (e) {
-      if (e.key.toLowerCase() === 'n' && !/input|textarea/i.test((e.target.tagName || '')) && !document.getElementById('authModal').classList.contains('show')) { startNew(); }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmd(); return; }
+      if (e.key === 'Escape') { closeCmd(); closeAuth(); closeEdit(); return; }
+      var typing = /input|textarea/i.test((e.target.tagName || ''));
+      var anyModal = document.querySelector('.modal-back.show');
+      if (!typing && !anyModal && e.key.toLowerCase() === 'n') { startNew(); }
     });
   }
+
+  // ── Command palette (⌘K) ──────────────────────────────────────────────
+  function commands() {
+    var c = [
+      { ic: '＋', label: 'Yeni dosya', k: 'N', run: startNew },
+      { ic: '◱', label: 'Görsel stüdyo', run: function () { S.view = 'images'; render(); } },
+      { ic: '▤', label: 'Kütüphane', run: function () { S.view = 'library'; render(); } },
+      { ic: '◷', label: 'Geçmiş', run: function () { S.view = 'history'; render(); } },
+      { ic: '◐', label: (document.documentElement.getAttribute('data-theme') === 'dark' ? 'Aydınlık mod' : 'Karanlık mod'), run: toggleTheme }
+    ];
+    if (S.result) {
+      c.push({ ic: '↓', label: 'PDF olarak indir', run: exportPDF });
+      c.push({ ic: '↓', label: 'Metin olarak indir', run: downloadFile });
+    }
+    if (REAL && !S.user) c.push({ ic: '→', label: 'Giriş yap', run: openAuth });
+    return c;
+  }
+  var _cmdSel = 0, _cmdFiltered = [];
+  function openCmd() { var m = document.getElementById('cmdModal'); m.classList.add('show'); var inp = document.getElementById('cmdInput'); inp.value = ''; renderCmd(''); setTimeout(function () { inp.focus(); }, 40); }
+  function closeCmd() { document.getElementById('cmdModal').classList.remove('show'); }
+  function renderCmd(q) {
+    q = (q || '').toLowerCase().trim();
+    _cmdFiltered = commands().filter(function (c) { return !q || c.label.toLowerCase().indexOf(q) >= 0; });
+    _cmdSel = 0;
+    var list = document.getElementById('cmdList');
+    if (!_cmdFiltered.length) { list.innerHTML = '<div class="cmd-empty">Komut bulunamadı</div>'; return; }
+    list.innerHTML = _cmdFiltered.map(function (c, i) {
+      return '<div class="cmd-item' + (i === 0 ? ' sel' : '') + '" data-ci="' + i + '"><span class="ci-ic">' + c.ic + '</span>' + esc(c.label) + (c.k ? '<span class="ci-k">' + c.k + '</span>' : '') + '</div>';
+    }).join('');
+  }
+  function runCmd(i) { var c = _cmdFiltered[i]; if (!c) return; closeCmd(); setTimeout(c.run, 60); }
+  function setupCmd() {
+    document.getElementById('cmdBtn').addEventListener('click', openCmd);
+    var modal = document.getElementById('cmdModal');
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeCmd(); });
+    modal.addEventListener('click', function (e) { var it = e.target.closest('[data-ci]'); if (it) runCmd(parseInt(it.getAttribute('data-ci'), 10)); });
+    var inp = document.getElementById('cmdInput');
+    inp.addEventListener('input', function () { renderCmd(inp.value); });
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); _cmdSel = Math.min(_cmdSel + 1, _cmdFiltered.length - 1); markSel(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); _cmdSel = Math.max(_cmdSel - 1, 0); markSel(); }
+      else if (e.key === 'Enter') { e.preventDefault(); runCmd(_cmdSel); }
+    });
+  }
+  function markSel() { var items = document.querySelectorAll('#cmdList .cmd-item'); items.forEach(function (x, i) { x.classList.toggle('sel', i === _cmdSel); if (i === _cmdSel) x.scrollIntoView({ block: 'nearest' }); }); }
   function closeRail() { if (window._closeRail) window._closeRail(); }
   function switchAuth() {
     authMode = authMode === 'in' ? 'up' : 'in';
@@ -717,6 +816,7 @@
   // ── Boot ─────────────────────────────────────────────────────────────
   function boot() {
     setupChrome(); render();
+    try { if (!localStorage.getItem('storia_seen')) { localStorage.setItem('storia_seen', '1'); setTimeout(function () { toast('Hoş geldin ✦ Bir fikir yaz, gerisini Storia halletsin'); }, 900); } } catch (e) {}
     if (REAL) {
       loadSupabase().then(function () { sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey); return sb.auth.getSession(); })
         .then(function (res) { var s = res && res.data && res.data.session; if (s && s.user) { S.user = s.user; loadCredits(); } chrome(); })

@@ -81,6 +81,18 @@ body { background: var(--paper); overflow: hidden; }
 .icon-btn .moon { display: none; }
 :root[data-theme="dark"] .icon-btn .moon { display: block; }
 :root[data-theme="dark"] .icon-btn .sun { display: none; }
+.cmd-open { width: auto; gap: 7px; padding: 0 11px; }
+.cmd-kbd { font-size: 10px; font-weight: 600; color: var(--faint); border: 1px solid var(--line-2); border-radius: 5px; padding: 1px 4px; }
+@media (max-width: 620px){ .cmd-open .cmd-kbd { display: none; } }
+.cmd { max-width: 540px; padding: 0; overflow: hidden; }
+.cmd-input { width: 100%; border: 0; border-bottom: 1px solid var(--line); padding: 18px 20px; font-size: 16px; background: transparent; outline: none; color: var(--ink); font-family: var(--sans); }
+.cmd-input::placeholder { color: var(--faint); }
+.cmd-list { max-height: 340px; overflow-y: auto; padding: 8px; }
+.cmd-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; cursor: pointer; font-size: 14.5px; color: var(--ink-2); }
+.cmd-item .ci-ic { width: 30px; height: 30px; border-radius: 8px; background: var(--champ-wash); border: 1px solid var(--champ-line); display: grid; place-items: center; color: var(--champ-deep); flex: none; font-size: 14px; }
+.cmd-item.sel, .cmd-item:hover { background: var(--champ-wash); color: var(--champ-deep); }
+.cmd-item .ci-k { margin-left: auto; font-size: 11px; color: var(--faint); }
+.cmd-empty { padding: 24px; text-align: center; color: var(--muted); font-size: 14px; }
 .cr-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--champ-line); font-size: 13.5px; font-weight: 600; color: var(--champ-deep); box-shadow: var(--sh-1); }
 .cr-pill svg { width: 15px; height: 15px; }
 
@@ -417,6 +429,10 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
         <div id="tbContext"></div>
       </div>
       <div class="tb-right">
+        <button class="icon-btn cmd-open" id="cmdBtn" aria-label="Komut paleti" title="Komut paleti (⌘K)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <span class="cmd-kbd">⌘K</span>
+        </button>
         <button class="icon-btn" id="themeBtn" aria-label="Karanlık / aydınlık mod" title="Karanlık / aydınlık mod">
           <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
           <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 14.5A7.5 7.5 0 019.5 4 7.5 7.5 0 1020 14.5z"/></svg>
@@ -441,6 +457,13 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
     <button class="btn btn-gold" id="authSubmit">Devam et</button>
     <div class="alt" id="authAlt">Hesabın yok mu? <a id="authSwitch">Kayıt ol</a></div>
     <div class="alt"><a id="authClose">Kapat</a></div>
+  </div>
+</div>
+
+<div class="modal-back" id="cmdModal">
+  <div class="modal cmd">
+    <input class="cmd-input" id="cmdInput" placeholder="Komut ara… (örn: karanlık, yeni, görsel)" autocomplete="off">
+    <div class="cmd-list" id="cmdList"></div>
   </div>
 </div>
 
