@@ -105,7 +105,14 @@
     // hero içindeki gradient (clip:text) başlıklar koyu zeminde AÇIK altın kalır
     L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) [style*="-webkit-background-clip: text"],' +
     L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) [style*="background-clip: text"]' +
-      '{-webkit-text-fill-color:#e6c478 !important;color:#e6c478 !important;background:none !important;}';
+      '{-webkit-text-fill-color:#e6c478 !important;color:#e6c478 !important;background:none !important;}' +
+    // ── LOGO (SİTE GENELİ): altın/krem amblem açık zeminde solmasın diye KOYU moddaki
+    //    tanıdık koyu levhasında durur → her sayfada logo görünümü birebir korunur.
+    //    (Doğrudan img'e uygulanır; sarmalayıcıdan bağımsız çalışır.) ──
+    L + 'img[src*="logo.webp"],' + L + 'img[src*="ta-logo"]{' +
+      'background:linear-gradient(162deg,#0e1119,#0a0d15) !important;' +
+      'border:1px solid rgba(193,154,82,.28) !important;border-radius:10px !important;' +
+      'padding:5px 8px !important;box-shadow:0 8px 22px -16px rgba(0,0,0,.5) !important;box-sizing:content-box !important;}';
 
   function ensureCss() {
     if (document.getElementById('ta-tema-css')) return;
