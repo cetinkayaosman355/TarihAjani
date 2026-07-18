@@ -749,13 +749,20 @@ var STIL_CORE = {
 };
 // Sesler — HEPSİ ElevenLabs (eleven_multilingual_v2 · Türkçe); web Studio ile birebir.
 // 5. eleman yalnız sunucuda SESSİZ yedek (ElevenLabs anlık hata verirse ses kesilmesin).
+// [id, ad, motor, elevenId, oa-yedek, premium?, kategori, stability, style]
 var SESLER = [
-  ['kadir', 'Kadir Kayışçı · İmza', 'eleven', 'j82ax9yhzfYwq9lDvRWL', 'onyx'],
-  ['seyfullah', 'Seyfullah Kartal · Derin', 'eleven', 'mF7tIc9VLrznhGooGjaT', 'onyx'],
-  ['sultan', 'Sultan · Tiyatral', 'eleven', 'gyxPK6bLXQAkBSCeAKvk', 'echo'],
-  ['sevval', 'Şevval Kılınç · Genç Kadın', 'eleven', '8LQS4H6IYf1unP46qbKD', 'nova'],
-  ['mahidevran', 'Mahidevran · Sıcak Kadın', 'eleven', 'yp3v9dmYlNwJf3mXPBLV', 'sage'],
-  ['mossbeard', 'Mossbeard · Vahşi ⚡ (4× kredi)', 'eleven', 'bFrjFL4nlpeYNwNRhXxq', 'onyx', true]   // premium (pahalı ×4)
+  ['kadir', 'Kadir Kayışçı · İmza', 'eleven', 'j82ax9yhzfYwq9lDvRWL', 'onyx', false, 'Erkek Sesler', 0.5, 0.15],
+  ['seyfullah', 'Seyfullah Kartal · Derin', 'eleven', 'mF7tIc9VLrznhGooGjaT', 'onyx', false, 'Erkek Sesler', 0.5, 0.2],
+  ['sultan', 'Sultan · Tiyatral', 'eleven', 'gyxPK6bLXQAkBSCeAKvk', 'echo', false, 'Erkek Sesler', 0.42, 0.45],
+  ['emin', 'Emin · Derin & Yumuşak', 'eleven', 'DsbR47WNEv8o9x37ib9X', 'onyx', false, 'Erkek Sesler', 0.5, 0.25],
+  ['doga', 'Doğa · Canlı & Zengin', 'eleven', 'IuRRIAcbQK5AQk1XevPj', 'ash', false, 'Erkek Sesler', 0.48, 0.35],
+  ['adam', 'Adam · Koyu & Sert', 'eleven', 'J17lijyP1BHYcM7ld0Rg', 'onyx', false, 'Erkek Sesler', 0.5, 0.35],
+  ['sevval', 'Şevval Kılınç · Genç Kadın', 'eleven', '8LQS4H6IYf1unP46qbKD', 'nova', false, 'Kadın Sesler', 0.5, 0.35],
+  ['belma', 'Belma · Kadın Anlatıcı', 'eleven', 'KbaseEXyT9EE0CQLEfbB', 'shimmer', false, 'Kadın Sesler', 0.5, 0.35],
+  ['mahidevran', 'Mahidevran · Sıcak Kadın', 'eleven', 'yp3v9dmYlNwJf3mXPBLV', 'sage', false, 'Kadın Sesler', 0.6, 0.25],
+  ['cassius', 'Cassius · Kadifemsi', 'eleven', 'ktrGUw7rURIQyMrQZqCu', 'onyx', false, 'Özel', 0.5, 0.3],
+  ['animasyon-ses', 'Animasyon · Anlatıcı', 'eleven', 'DUnzBkwtjRWXPr6wRbmL', 'nova', false, 'Özel', 0.45, 0.4],
+  ['mossbeard', 'Mossbeard · Vahşi ⚡ (4× kredi)', 'eleven', 'bFrjFL4nlpeYNwNRhXxq', 'onyx', true, 'Özel', 0.45, 0.4]   // premium (pahalı ×4)
 ];
 var uret = { ton: 'merak', stil: 'sinematik', sure: 60, ses: 'kadir', oran: 'dikey', busy: false, sonuc: null, hata: '', konu: '', ozel: '' };
 // GÖRSEL STÜDYO durumu — bağımsız görsel üretimi + kalıcı geçmiş
@@ -785,6 +792,54 @@ var ONERI = (function () {
 })();
 var oneriIdx = 0;
 function uretKredi() { return Math.max(30, Math.round((20 + uret.sure / 4) / 5) * 5); }
+// ── Seslendirme paneli: kategori başlıklı, her satırda ▶ önizleme ──
+function sesPanelHtml() {
+  var cats = [], map = {};
+  SESLER.forEach(function (v) { var c = v[6] || 'Sesler'; if (!map[c]) { map[c] = []; cats.push(c); } map[c].push(v); });
+  var h = '<div style="margin:0 16px;border:1px solid rgba(193,154,82,.22);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.02)">';
+  cats.forEach(function (c) {
+    h += '<div style="color:#c19a52;font-family:\'Special Elite\',monospace;font-size:9px;letter-spacing:.18em;padding:11px 13px 6px;background:rgba(193,154,82,.05);border-bottom:1px solid rgba(193,154,82,.12)">' + esc(c.toLocaleUpperCase('tr')) + '</div>';
+    map[c].forEach(function (v) {
+      var on = uret.ses === v[0];
+      h += '<div style="display:flex;align-items:center;gap:11px;padding:10px 13px;border-bottom:1px solid rgba(129,135,151,.1);' + (on ? 'background:rgba(193,154,82,.12);box-shadow:inset 3px 0 0 #e6c478' : '') + '">' +
+        '<button data-sesdinle="' + v[0] + '" aria-label="Dinle" style="flex:none;width:38px;height:38px;border-radius:50%;border:1px solid rgba(193,154,82,.45);background:rgba(193,154,82,.06);color:#e6c478;font-size:13px;display:grid;place-items:center">▶</button>' +
+        '<button data-ses="' + v[0] + '" style="flex:1;min-width:0;text-align:left;background:transparent;border:0;padding:0;color:inherit">' +
+        '<span style="display:block;font-weight:700;font-size:13.5px;color:' + (on ? '#e6c478' : '#e9dfc8') + '">' + esc(v[1]) + '</span></button>' +
+        (on ? '<span style="flex:none;color:#e6c478;font-family:\'Special Elite\',monospace;font-size:9px;letter-spacing:.1em">● SEÇİLİ</span>' : '') +
+        '</div>';
+    });
+  });
+  return h + '</div>';
+}
+var _sesAudio = null, _sesCalan = '';
+function sesOnizle(id, btn) {
+  var v = null; for (var i = 0; i < SESLER.length; i++) if (SESLER[i][0] === id) v = SESLER[i];
+  if (!v) return;
+  // Çalıyorsa durdur (aynı sese tekrar basınca)
+  if (_sesAudio) { try { _sesAudio.pause(); } catch (e) {} _sesAudio = null; }
+  if (_sesCalan === id) { _sesCalan = ''; if (btn) btn.textContent = '▶'; return; }
+  document.querySelectorAll('[data-sesdinle]').forEach(function (b) { b.textContent = '▶'; });
+  _sesCalan = id;
+  var play = function (url) {
+    try { var a = new Audio(url); _sesAudio = a; a.onended = function () { if (_sesCalan === id) { _sesCalan = ''; if (btn) btn.textContent = '▶'; } };
+      a.play().catch(function () {}); if (btn) btn.textContent = '⏸'; }
+    catch (e) { _sesCalan = ''; if (btn) btn.textContent = '▶'; }
+  };
+  var ck = 'ta_vp2_el_' + v[3];
+  var cached = null; try { cached = localStorage.getItem(ck); } catch (e) {}
+  if (cached) { play(cached); return; }
+  if (btn) btn.textContent = '⏳';
+  var body = { action: 'tts', preview: true, voice: v[4] };
+  if (v[2] === 'eleven') { body.engine = 'eleven'; body.voiceId = v[3]; if (v[7] != null) body.stability = v[7]; if (v[8] != null) body.style = v[8]; }
+  fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) }, body: JSON.stringify(body) })
+    .then(function (r) { return r.json(); }).then(function (d) {
+      if (!d || !d.ok || !d.url) { _sesCalan = ''; if (btn) btn.textContent = '▶'; toast((d && d.error) || 'Önizleme alınamadı'); return; }
+      var gotEleven = d.engine === 'eleven';
+      try { if ((v[2] !== 'eleven' || gotEleven) && String(d.url).indexOf('data:') === 0) localStorage.setItem(ck, d.url); } catch (e) {}
+      play(d.url);
+      if (v[2] === 'eleven' && !gotEleven) toast('⚠️ ElevenLabs gelmedi, yedek ses: ' + (d.elevenErr || 'bilinmiyor'));
+    }).catch(function () { _sesCalan = ''; if (btn) btn.textContent = '▶'; toast('Bağlantı hatası'); });
+}
 function drawUret() {
   var el = $('#scr-uret');
   if (uret.busy) { drawUretBusy(); return; }
@@ -801,8 +856,8 @@ function drawUret() {
     STILLER.map(function (t) { return '<button class="chip' + (uret.stil === t[0] ? ' on' : '') + '" data-stil="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
     '<div class="sh"><b>GÖRSEL BOYUTU</b></div><div class="opt-grid">' +
     ORANLAR.map(function (o) { return '<button class="chip' + (uret.oran === o[0] ? ' on' : '') + '" data-uoran="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>' +
-    '<div class="sh"><b>ANLATICI SESİ</b></div><div class="opt-grid">' +
-    SESLER.map(function (v) { return '<button class="chip' + (uret.ses === v[0] ? ' on' : '') + '" data-ses="' + v[0] + '">🎙 ' + v[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="sh"><b>ANLATICI SESİ</b> <span style="color:#8a8f9c;font-weight:400;font-size:11px">▶ dinle, beğendiğini seç</span></div>' +
+    sesPanelHtml() +
     '<div class="sh"><b>SÜRE</b></div><div class="sure">' +
     '<input id="u-sure" type="range" min="30" max="600" step="30" value="' + uret.sure + '">' +
     '<div class="val"><span>30 sn</span><b id="u-sure-v">' + sureText() + ' · ' + uretKredi() + ' KR</b><span>10 dk</span></div></div>' +
@@ -832,6 +887,7 @@ function drawUret() {
   el.querySelectorAll('[data-stil]').forEach(function (b) { b.addEventListener('click', function () { uret.stil = b.getAttribute('data-stil'); drawUret(); }); });
   el.querySelectorAll('[data-uoran]').forEach(function (b) { b.addEventListener('click', function () { uret.oran = b.getAttribute('data-uoran'); drawUret(); }); });
   el.querySelectorAll('[data-ses]').forEach(function (b) { b.addEventListener('click', function () { uret.ses = b.getAttribute('data-ses'); drawUret(); }); });
+  el.querySelectorAll('[data-sesdinle]').forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); sesOnizle(b.getAttribute('data-sesdinle'), b); }); });
   $('#u-go').addEventListener('click', uretBasla);
   krediGetir();
 }
@@ -1194,7 +1250,7 @@ function seslendir() {
   var v = null; for (var i = 0; i < SESLER.length; i++) if (SESLER[i][0] === uret.ses) v = SESLER[i];
   v = v || SESLER[0];
   var govde = { action: 'tts', text: ttsMetin(), voice: v[4] };   // OpenAI yedeği
-  if (v[2] === 'eleven') { govde.engine = 'eleven'; govde.voiceId = v[3]; }   // Kadir vb. → ElevenLabs (stabil)
+  if (v[2] === 'eleven') { govde.engine = 'eleven'; govde.voiceId = v[3]; if (v[7] != null) govde.stability = v[7]; if (v[8] != null) govde.style = v[8]; }   // Kadir vb. → ElevenLabs (ses-başı ayar)
   fetch(FN, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
