@@ -129,6 +129,17 @@
 .step p { font-size: 15.5px; margin: 0; color: var(--ink-2); }
 .step .line { width: 40px; height: 2px; background: var(--gold-grad); margin-top: 20px; border-radius: 2px; }
 
+/* ── creations gallery (gerçek üretim örnekleri) ──────────────────────── */
+.creations { margin-top: 44px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.cre { position: relative; border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--sh-2); aspect-ratio: 16/10; background: var(--paper-2); transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
+.cre:hover { transform: translateY(-4px); box-shadow: var(--sh-3); }
+.cre img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cre .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 15px 13px; color: #fff; font-size: 13.5px; font-weight: 600; letter-spacing: .01em; background: linear-gradient(to top, rgba(12,9,6,.82), transparent); }
+.cre .tag { position: absolute; top: 11px; left: 11px; font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #241a08; background: var(--gold-sheen); padding: 3px 9px; border-radius: 999px; }
+@media (max-width: 900px){ .creations { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px){ .creations { grid-template-columns: 1fr; } }
+.cre-note { margin-top: 16px; text-align: center; font-size: 13px; color: var(--muted); }
+
 /* ── showcase ─────────────────────────────────────────────────────────── */
 .showcase-frame {
   margin-top: 56px; border-radius: var(--r-xl);
@@ -346,6 +357,24 @@
     <div class="items">
       <span>YouTube</span><span>Instagram</span><span>TikTok</span><span>Reels</span><span>Shorts</span><span>Podcast</span>
     </div>
+  </div>
+</section>
+
+<!-- ── Creations gallery ──────────────────────────────────────────────── -->
+<section class="section" id="uretimler">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="eyebrow center">Ne üretebilirsin</span>
+      <h2 class="h2">Fikrin, sinematik bir dünyaya dönüşür.</h2>
+      <p class="lead">Her niş için ultra-gerçekçi, sinematik ve tutarlı görseller — tek bir cümleden.</p>
+    </div>
+    <div class="creations reveal d1">
+      <figure class="cre"><span class="tag">Belgesel</span><img loading="lazy" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260718_180048_719fdd91-7f08-42af-a4d5-1f2edfacfe75.png" alt="Sinematik okyanus sahnesi"><figcaption class="cap">Merak & belgesel</figcaption></figure>
+      <figure class="cre"><span class="tag">Karakter</span><img loading="lazy" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260718_180049_328f28ff-e826-4366-8f82-f33094cff78e.png" alt="Sinematik anlatıcı portresi"><figcaption class="cap">Tutarlı karakter</figcaption></figure>
+      <figure class="cre"><span class="tag">Teknoloji</span><img loading="lazy" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260718_180051_e673a3a7-6162-4eba-ac21-d62df4eba361.png" alt="Fütüristik şehir"><figcaption class="cap">Teknoloji & gelecek</figcaption></figure>
+      <figure class="cre"><span class="tag">UGC / Reklam</span><img loading="lazy" src="https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/hf_20260718_180052_a77427db-4f31-4455-899f-a74ffca52a5c.png" alt="Sıcak kafe sahnesi"><figcaption class="cap">Ürün & yaşam tarzı</figcaption></figure>
+    </div>
+    <p class="cre-note">STORIA ile üretilmiş gerçek örnekler · her biri tek bir fikirden</p>
   </div>
 </section>
 
