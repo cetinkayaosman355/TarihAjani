@@ -336,9 +336,20 @@ async function generateSpeech(text: string, voice: string): Promise<Uint8Array |
 
 // ElevenLabs TTS — allowlisted voice IDs only. Set STORIA_VOICE_IDS (comma-separated)
 // to your own ElevenLabs voices; multilingual_v2 reads Turkish well.
+// Uygulamanın kendi ElevenLabs seslerinin voice_id'leri. STORIA_VOICE_IDS env'i
+// verilirse onu kullanır; yoksa bu varsayılan liste (env kurmadan çalışsın diye).
+const DEFAULT_VOICE_IDS = [
+  "mF7tIc9VLrznhGooGjaT", "DsbR47WNEv8o9x37ib9X", "j82ax9yhzfYwq9lDvRWL",
+  "gyxPK6bLXQAkBSCeAKvk", "8LQS4H6IYf1unP46qbKD", "KbaseEXyT9EE0CQLEfbB",
+  "yp3v9dmYlNwJf3mXPBLV", "IuRRIAcbQK5AQk1XevPj", "J17lijyP1BHYcM7ld0Rg",
+  "ktrGUw7rURIQyMrQZqCu", "bFrjFL4nlpeYNwNRhXxq",
+];
+// Premium sesler kredi çarpanı (pahalı sesler daha çok kredi düşürür).
+const VOICE_COST_X: Record<string, number> = { "bFrjFL4nlpeYNwNRhXxq": 4 }; // Mossbeard
+function voiceMult(b: Record<string, unknown>): number { return VOICE_COST_X[String(b.voiceId || "")] || 1; }
 function elevenAllowed(): Set<string> {
   const ids = (Deno.env.get("STORIA_VOICE_IDS") || "").split(",").map((s) => s.trim()).filter(Boolean);
-  return new Set(ids);
+  return new Set(ids.length ? ids : DEFAULT_VOICE_IDS);
 }
 async function generateSpeechEleven(text: string, voiceId: string, opts?: { stability?: number; style?: number }): Promise<Uint8Array | null> {
   const key = Deno.env.get("ELEVENLABS_API_KEY");
@@ -774,7 +785,7 @@ Deno.serve(async (req) => {
     const ttsTruncated = ttsFull.length > 11500;
     const ttsText = ttsFull.slice(0, 11500);
     let cost = isPreview ? 0 : (act === "tts"
-      ? ttsCostOf(ttsText.length)
+      ? ttsCostOf(ttsText.length) * voiceMult(b)
       : isEdit
         ? EDIT_COST
         : act === "video"

@@ -20,6 +20,7 @@
     user: null, credits: REAL ? null : 500, creditMax: 500,
     images: {}, covers: {}, videos: {}, videoJobs: {}, audio: null, history: [], ttsRate: 1,
     bgMusic: null, bgMusicName: '', musicVol: 0.5,
+    chat: { open: false, msgs: [], busy: false },
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null
   };
@@ -98,13 +99,21 @@
     { id: 'belgesel', name: 'Belgesel' }, { id: 'destansi', name: 'Destansı' },
     { id: 'samimi', name: 'Samimi' }, { id: 'enerjik', name: 'Enerjik' }
   ];
+  // ElevenLabs sesleri (eleven_multilingual_v2 — Türkçe'yi doğal okur). ev =
+  // ElevenLabs voice_id (backend allowlist'inde). ov = ElevenLabs erişilemezse
+  // OpenAI yedeği. x = kredi çarpanı (premium sesler daha pahalı).
   var VOICES = [
-    { name: 'Derin Erkek', desc: 'Sıcak, güven veren', ov: 'onyx' },
-    { name: 'Anlatıcı', desc: 'Net, dengeli', ov: 'echo' },
-    { name: 'Gizemli', desc: 'Alçak, merak uyandıran', ov: 'ash', premium: true },
-    { name: 'Enerjik', desc: 'Genç, dinamik', ov: 'nova' },
-    { name: 'Belgesel Kadın', desc: 'Olgun, akıcı', ov: 'sage', premium: true },
-    { name: 'Sıcak Kadın', desc: 'Samimi, davetkâr', ov: 'shimmer' }
+    { name: 'Seyfullah Kartal', desc: 'Güçlü, net anlatıcı', ev: 'mF7tIc9VLrznhGooGjaT', ov: 'onyx' },
+    { name: 'Emin', desc: 'Derin, yumuşak ve sakin', ev: 'DsbR47WNEv8o9x37ib9X', ov: 'onyx' },
+    { name: 'Kadir Kayışcı', desc: 'Olgun, derin, güven veren', ev: 'j82ax9yhzfYwq9lDvRWL', ov: 'echo' },
+    { name: 'Sultan', desc: 'Tiyatral, destansı anlatıcı', ev: 'gyxPK6bLXQAkBSCeAKvk', ov: 'echo' },
+    { name: 'Şevval Kılınç', desc: 'Canlı, öğretici kadın sesi', ev: '8LQS4H6IYf1unP46qbKD', ov: 'nova' },
+    { name: 'Belma', desc: 'Sıcak, doğal kadın sesi', ev: 'KbaseEXyT9EE0CQLEfbB', ov: 'shimmer' },
+    { name: 'Mahidevran', desc: 'Fısıltılı, sıcak', ev: 'yp3v9dmYlNwJf3mXPBLV', ov: 'sage' },
+    { name: 'Doğa', desc: 'Doğal, dengeli', ev: 'IuRRIAcbQK5AQk1XevPj', ov: 'echo' },
+    { name: 'Adam', desc: 'Klasik erkek anlatıcı', ev: 'J17lijyP1BHYcM7ld0Rg', ov: 'echo', check: true },
+    { name: 'Cassius', desc: 'Kadifemsi, otoriter (İngilizce ağırlıklı)', ev: 'ktrGUw7rURIQyMrQZqCu', ov: 'onyx', check: true },
+    { name: 'Mossbeard', desc: 'Vahşi, sinematik — premium ses', ev: 'bFrjFL4nlpeYNwNRhXxq', ov: 'onyx', premium: true, x: 4, check: true }
   ];
   var RATES = [{ v: 0.9, l: 'Yavaş' }, { v: 1, l: 'Normal' }, { v: 1.12, l: 'Hızlı' }];
   var STYLES = [
@@ -218,11 +227,12 @@
     var sec = S.durationSec;
     var toneSeg = TONES.map(function (t) { return '<button class="' + (S.tone === t.id ? 'on' : '') + '" data-act="tone" data-v="' + t.id + '">' + esc(t.name) + '</button>'; }).join('');
     var voiceTiles = VOICES.map(function (v, i) {
-      var prem = v.premium ? '<span class="prem">Premium</span>' : '';
+      var prem = v.premium ? '<span class="prem">Premium' + (v.x > 1 ? ' ×' + v.x : '') + '</span>' : '';
+      var chk = v.check ? '<span class="v-chk" title="Türkçe telaffuzu önizlemeyle test et">TR?</span>' : '';
       return '<div class="tile voice-tile ' + (S.voiceIdx === i ? 'on' : '') + '" data-act="voice" data-v="' + i + '">' +
         '<button class="v-prev" data-act="voicePrev" data-v="' + i + '" aria-label="Sesi önizle" title="Önizle">' +
         '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
-        '<div class="t-name">' + esc(v.name) + prem + '</div><div class="t-desc">' + esc(v.desc) + '</div></div>';
+        '<div class="t-name">' + esc(v.name) + prem + chk + '</div><div class="t-desc">' + esc(v.desc) + '</div></div>';
     }).join('');
     var styleTiles = STYLES.map(function (st) { return '<div class="tile ' + (S.style === st.id ? 'on' : '') + '" data-act="style" data-v="' + st.id + '"><div class="t-name">' + esc(st.name) + '</div><div class="t-desc">' + esc(st.desc) + '</div></div>'; }).join('');
     var aspects = [{ id: '16:9', w: 36, h: 21, l: 'Yatay' }, { id: '9:16', w: 21, h: 36, l: 'Dikey' }, { id: '1:1', w: 28, h: 28, l: 'Kare' }]
@@ -974,7 +984,7 @@
     var v = VOICES[i]; var sample = S.lang === 'en' ? 'Storia brings your story to life. This voice could be your narrator.' : 'Storia ile hikâyen hayat buluyor. Bu ses senin anlatıcın olabilir.';
     if (!REAL) { if (!speak(sample, S.ttsRate)) toast('Tarayıcı seslendirmeyi desteklemiyor'); else toast('Önizleme · ' + v.name); return; }
     toast('Önizleme hazırlanıyor…');
-    callFn({ action: 'tts', preview: true, engine: 'openai', voice: v.ov }).then(function (d) {
+    callFn({ action: 'tts', preview: true, engine: 'eleven', voiceId: v.ev, voice: v.ov }).then(function (d) {
       if (d && d.ok && d.url) { try { new Audio(d.url).play(); } catch (e) {} } else toast('Önizleme alınamadı');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
@@ -991,7 +1001,7 @@
     }
     if (!S.user) { openAuth(); return; }
     var slot = document.getElementById('audioSlot'); if (slot) slot.innerHTML = '<p style="color:var(--on-ink-muted);font-size:13px;margin-top:12px">Ses üretiliyor…</p>';
-    callFn({ action: 'tts', text: text, engine: 'openai', voice: VOICES[S.voiceIdx].ov, speed: S.ttsRate }).then(function (d) {
+    callFn({ action: 'tts', text: text, engine: 'eleven', voiceId: VOICES[S.voiceIdx].ev, voice: VOICES[S.voiceIdx].ov, speed: S.ttsRate }).then(function (d) {
       if (d && d.ok && d.url) { S.audio = d.url; if (typeof d.credits === 'number') S.credits = d.credits; if (slot) slot.innerHTML = '<audio controls src="' + esc(d.url) + '"></audio>'; chrome(); toast('Seslendirme hazır'); }
       else { if (slot) slot.innerHTML = ''; toast((d && d.error) || 'Ses üretilemedi'); }
     }).catch(function () { if (slot) slot.innerHTML = ''; toast('Bağlantı hatası'); });
