@@ -2015,14 +2015,25 @@ class Component extends DCLogic {
     }
     throw lastErr || new Error('Görsel üretilemedi');
   }
-  // Görseli indir: data URI ise dosya olarak, uzak URL ise yeni sekmede
-  dlImage(url) {
+  // Görseli GERÇEKTEN indir (yeni sekmede açmaz): data URI doğrudan, Storage/uzak
+  // URL blob olarak indirilir. Hem mobil hem web'de tek tıkla dosya iner.
+  async dlImage(url) {
     if (!url) return;
-    if (url.indexOf('data:') === 0) {
+    const tara = (b) => {
       const a = document.createElement('a');
-      a.href = url; a.download = 'tarih-ajani-gorsel-' + Date.now() + '.jpg';
+      a.href = b; a.download = 'tarih-ajani-gorsel-' + Date.now() + (String(url).indexOf('png') >= 0 ? '.png' : '.jpg');
       document.body.appendChild(a); a.click(); a.remove();
-    } else { window.open(url, '_blank'); }
+    };
+    if (url.indexOf('data:') === 0) { tara(url); return; }
+    try {
+      const r = await fetch(url);
+      const blob = await r.blob();
+      const bu = URL.createObjectURL(blob);
+      tara(bu);
+      setTimeout(() => { try { URL.revokeObjectURL(bu); } catch (e) {} }, 6000);
+    } catch (e) {
+      window.open(url, '_blank');   // CORS/ağ hatası → son çare yeni sekme
+    }
   }
   // Tüm sahne/kapak/üretilen küçük görsellerini tek, dengeli bir "kutu" içinde
   // tut — web'de dev açılmasını ve kutuya oturmamasını önler (mobil bozulmaz).
@@ -2155,7 +2166,11 @@ class Component extends DCLogic {
     return this._imgDB;
   }
   async saveImg(rec) {
-    if (!rec || !rec.url || rec.url.indexOf('data:') !== 0) return;   // yalnız kalıcı data URI saklanır
+    // Kalıcı olanları sakla: data URI (eski) VEYA Storage URL'i (cihazlar-arası).
+    // Geçici (dall-e ~1 saat) URL'leri saklama — yenilenince kırık görünmesin.
+    if (!rec || !rec.url) return;
+    const u = String(rec.url);
+    if (u.indexOf('data:') !== 0 && u.indexOf('/storage/v1/object/') < 0) return;
     try {
       const db = await this._openImgDB();
       await new Promise((res) => { const tx = db.transaction('imgs', 'readwrite'); tx.objectStore('imgs').put(rec); tx.oncomplete = res; tx.onerror = res; });
@@ -2212,8 +2227,9 @@ class Component extends DCLogic {
   runEdit(item) {
     const text = (item.editText || '').trim();
     if (!text || item.editBusy) return;
-    // yalnız data URI (sistemde üretilmiş) görseller düzenlenebilir
-    if (!/^data:image\//.test(item.url || '')) { this.setImgItem(item.id, { editErr: 'Bu görsel düzenlenemiyor (bağlantı süreli). Yeni görsel üretip düzenleyebilirsin.' }); return; }
+    // data URI (eski) VEYA kalıcı Storage görselleri düzenlenebilir; geçici URL değil
+    const u = String(item.url || '');
+    if (!/^data:image\//.test(u) && u.indexOf('/storage/v1/object/') < 0) { this.setImgItem(item.id, { editErr: 'Bu görsel düzenlenemiyor (bağlantı süreli). Yeni görsel üretip düzenleyebilirsin.' }); return; }
     // Ücret sunucuda belirlenir: günde ilk 3 düzenleme ücretsiz, sonrası 8 kredi.
     // Talimatı, orijinali koruyacak tam bir düzenleme promptuna çevir — böylece
     // "kısa yazınca alakasız görsel" sorunu yerine SADECE istenen değişir.

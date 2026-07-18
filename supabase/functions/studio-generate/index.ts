@@ -229,6 +229,15 @@ function sceneFor(sec: number): number {
   return Math.max(6, Math.round(120 * sec / (600 + sec)));
 }
 
+// Her görsel promptuna eklenen ZORUNLU render kuralı. gpt-image zaman zaman
+// diptik/split-screen/kolaj (yan yana panel) üretiyordu ("2 resim" şikâyeti) →
+// tek, bütünleşik bir fotoğraf zorlanır.
+const NO_SPLIT =
+  "\n\nRENDER RULES: Output ONE single unified photograph taken by one camera — a single continuous scene. " +
+  "Absolutely NO split-screen, NO diptych or triptych, NO collage or grid, NO side-by-side panels, " +
+  "NO before/after comparison, NO internal borders, frames or dividing lines. The main subject appears only once. " +
+  "Fill the entire frame edge-to-edge with a single coherent, photorealistic image.";
+
 // Gerçek görsel üretimi — OpenAI gpt-image-1.5 (base64 → data URI, süresiz).
 // Başarısız olursa dall-e-3'e (url) düşer. Boş dönerse üretim başarısız sayılır.
 async function generateImage(prompt: string, size: string): Promise<string> {
@@ -236,6 +245,7 @@ async function generateImage(prompt: string, size: string): Promise<string> {
   if (!key || !prompt.trim()) return "";
   // gpt-image oranları: kare / yatay (3:2) / dikey (2:3)
   const gSize = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
+  const p = prompt.trim().slice(0, 29000) + NO_SPLIT;   // anti-split kural (kesilmeye karşı sonda, prompt kırpılmış)
 
   // gpt-image tek denemesi. Başarı → data URI; başarısızsa hatayı LOG'la (Supabase
   // function loglarında görünür, teşhis için) ve boş dön ki sıradaki yol denensin.
@@ -246,13 +256,13 @@ async function generateImage(prompt: string, size: string): Promise<string> {
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model,
-          prompt: prompt.slice(0, 30000),
+          prompt: p,
           n: 1,
           size: gSize,
           quality: "high",              // kalite > maliyet (ChatGPT ile aynı kademe;
                                         // medium kalabalık sahnede saydam/hayalet insan üretiyordu)
-          output_format: "jpeg",        // daha küçük data URI (png ~çok büyük)
-          output_compression: 88,
+          output_format: "jpeg",        // Storage'a yüklenir → boyut sorun değil, netlik önce
+          output_compression: 94,
           moderation: "low",            // tarihî sahne (savaş/ölüm) yanlış engelini azalt
         }),
       }, 120_000);
@@ -292,7 +302,7 @@ async function generateImage(prompt: string, size: string): Promise<string> {
     const r = await fetchT("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "dall-e-3", prompt: prompt.slice(0, 3800), n: 1, size: dSize, quality: "hd" }),
+      body: JSON.stringify({ model: "dall-e-3", prompt: (prompt.trim().slice(0, 3400) + NO_SPLIT).slice(0, 3990), n: 1, size: dSize, quality: "hd" }),
     }, 90_000);
     if (r.ok) {
       const d = await r.json();
@@ -582,13 +592,25 @@ const EDIT_COST = 8;
 async function editImage(imageUri: string, prompt: string, size: string): Promise<string> {
   const key = Deno.env.get("OPENAI_API_KEY");
   if (!key || !prompt.trim()) return "";
-  const parsed = dataUriToBytes(imageUri);
-  if (!parsed) return "";   // yalnız data URI (üretilen görseller) düzenlenebilir
+  // data URI (eski) VEYA kalıcı Storage/https URL'i kabul et. Cihazlar-arası
+  // düzeltmede görseller Storage'da https URL olarak durur → indirip byte'a çevir.
+  let parsed = dataUriToBytes(imageUri);
+  if (!parsed && /^https?:\/\//i.test(imageUri)) {
+    try {
+      const img = await fetchT(imageUri, {}, 60_000);
+      if (img.ok) {
+        const bytes = new Uint8Array(await img.arrayBuffer());
+        const ct = img.headers.get("content-type") || "image/png";
+        parsed = { bytes, type: ct };
+      }
+    } catch (_e) { /* indirilemezse aşağıda boş döner */ }
+  }
+  if (!parsed) return "";
   const gSize = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
   const ext = parsed.type.indexOf("png") >= 0 ? "png" : "jpg";
   const fd = new FormData();
   fd.append("model", "gpt-image-1");
-  fd.append("prompt", prompt.slice(0, 30000));
+  fd.append("prompt", (prompt.trim().slice(0, 29000) + NO_SPLIT));
   fd.append("size", gSize);
   fd.append("n", "1");
   fd.append("image", new Blob([parsed.bytes], { type: parsed.type }), "image." + ext);
