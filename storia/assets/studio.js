@@ -405,7 +405,7 @@
     }
     if (S.tab === 'video') {
       var vsc = r.senaryo || [];
-      var mp = (r.video_promptlar && r.video_promptlar.length) ? r.video_promptlar : (r.gorsel_promptlar || []).map(function (p) { return p + ', slow cinematic camera move'; });
+      var mp = (r.video_promptlar && r.video_promptlar.length) ? r.video_promptlar : (r.gorsel_promptlar || []).map(function (p) { return p + ', slow cinematic push-in with subtle parallax, smooth camera move, natural motion'; });
       var vn = Math.max(vsc.length, mp.length);
       if (!vn) return emptyInline();
       var vratio = S.aspect === '9:16' ? '9/16' : S.aspect === '1:1' ? '1/1' : '16/9';
@@ -602,7 +602,7 @@
       case 'copyScript': copy((S.result.senaryo || []).map(function (s, i) { return (i + 1) + '. ' + (s.baslik || '') + '\n' + (s.anlatim || ''); }).join('\n\n')); break;
       case 'copyVo': copy(narrationText()); break;
       case 'copyOne': copy(v); break;
-      case 'copyVids': var vp = (S.result.video_promptlar && S.result.video_promptlar.length) ? S.result.video_promptlar : (S.result.gorsel_promptlar || []).map(function (x) { return x + ', slow cinematic camera move'; }); copy(vp.map(function (x, i) { return (i + 1) + '. ' + x; }).join('\n')); break;
+      case 'copyVids': var vp = (S.result.video_promptlar && S.result.video_promptlar.length) ? S.result.video_promptlar : (S.result.gorsel_promptlar || []).map(function (x) { return x + ', slow cinematic push-in with subtle parallax, smooth camera move, natural motion'; }); copy(vp.map(function (x, i) { return (i + 1) + '. ' + x; }).join('\n')); break;
       case 'copyYt': var yt = S.result.youtube || {}; copy((yt.baslik || '') + '\n\n' + (yt.aciklama || '') + '\n\n' + (yt.etiketler || []).join(', ')); break;
       case 'copyIg': var ig = S.result.instagram || {}; copy((ig.aciklama || '') + '\n\n' + (ig.hashtagler || []).map(function (t) { return t[0] === '#' ? t : '#' + t; }).join(' ')); break;
       case 'download': downloadFile(); break;
@@ -693,8 +693,9 @@
         '"senaryo":[{"baslik":"scene title","anlatim":"short narration that fits the duration (1 sentence for short videos)","gorsel":"RICH visual description: subject, action, composition, lighting, atmosphere, mood"}], ' +
         '"seslendirme_notu":"note to the narrator", "youtube":{"baslik":"SEO title","aciklama":"description","etiketler":["tag1"]}, ' +
         '"instagram":{"aciklama":"FULL Reels caption: hook + value + clear CTA (2-4 sentences, fitting emoji)","hashtagler":["hashtag1","hashtag2","hashtag3"]}, "kapak":["striking thumbnail idea"], ' +
-        '"gorsel_promptlar":["DETAILED English image prompt for each scene: subject + action + composition + lighting + atmosphere + ' + st.en + '. The image must contain NO text, letters, words, logos or watermark."], "video_promptlar":[], "uretim_notu":"short production tip" }\n' +
-        'RULES: senaryo and gorsel_promptlar must contain at least ' + min + ' items. If the story has clear character(s), fill "karakterler" and describe that character with the SAME physical traits in EVERY scene prompt (character consistency); if none, leave "karakterler" empty. Keep visual descriptions concrete and clear. If the topic is nonsense return {"gecersiz":true,"mesaj":"..."}.';
+        '"gorsel_promptlar":["DETAILED English image prompt for each scene: subject + action + composition (rule of thirds, foreground/background) + camera angle & lens (e.g. wide 24mm, close-up 85mm, low angle) + lighting + atmosphere + ' + st.en + '. The image must contain NO text, letters, words, logos or watermark."], ' +
+        '"video_promptlar":["per-scene cinematic MOTION prompt for image-to-video (one per scene, same subject as the image): describe ONE clear camera movement (slow push-in, dolly, pan left/right, tilt up, orbit, tracking) + subtle subject/environment motion + mood; smooth, cinematic, natural physics, no text"], "uretim_notu":"short production tip" }\n' +
+        'RULES: senaryo, gorsel_promptlar and video_promptlar must EACH contain the SAME number of items — one per scene, at least ' + min + '. They are INDEX-ALIGNED and INTEGRATED: gorsel_promptlar[i] is the detailed image prompt for senaryo[i].gorsel (exact same scene), and video_promptlar[i] animates THAT exact image (same subject, same framing). Scene text → image → motion must be ONE coherent moment per index. If the story has clear character(s), fill "karakterler" and describe that character with the SAME physical traits in EVERY gorsel/video prompt (character consistency); if none, leave "karakterler" empty. If the topic is nonsense return {"gecersiz":true,"mesaj":"..."}.';
     }
     return 'Sen içerik üreticileri için çalışan uzman bir senarist ve yapım yönetmenisin. İzleyiciyi ilk saniyeden yakalayan, akıcı ve DOĞRU içerik üret.\n\n' +
       'KONU: ' + S.idea + '\nANLATIM TONU: ' + toneName() + '\nGÖRSEL STİL: ' + st.name + ' (' + st.en + ')\n' +
@@ -707,8 +708,9 @@
       '"senaryo":[{"baslik":"sahne başlığı","anlatim":"süreye uygun KISA anlatım (kısa videoda tek cümle)","gorsel":"sahnenin ZENGİN görsel tarifi: özne, aksiyon, kompozisyon, ışık, atmosfer, duygu"}], ' +
       '"seslendirme_notu":"anlatıcı yönergesi", "youtube":{"baslik":"SEO başlığı","aciklama":"açıklama","etiketler":["e1"]}, ' +
       '"instagram":{"aciklama":"kancayla başlayıp değer veren ve CTA ile biten TAM Reels metni (2-4 cümle, uygun emoji)","hashtagler":["h1","h2","h3"]}, "kapak":["çarpıcı thumbnail fikri"], ' +
-      '"gorsel_promptlar":["her sahne için DETAYLI İngilizce görsel üretim promptu: özne + aksiyon + kompozisyon + ışık + atmosfer + ' + st.en + '. Görselin İÇİNDE kesinlikle yazı/harf/kelime/logo/watermark OLMASIN."], "video_promptlar":[], "uretim_notu":"kısa tavsiye" }\n' +
-      'KURALLAR: senaryo ve gorsel_promptlar en az ' + min + ' öğe içersin. Hikayede belirgin karakter(ler) varsa "karakterler" dizisini doldur ve gorsel_promptlar içinde o karakteri HER SAHNEDE aynı fiziksel özelliklerle betimle (karakter tutarlılığı); karakter yoksa "karakterler" boş kalsın. Görsel tarifleri somut ve net olsun. Konu anlamsızsa {"gecersiz":true,"mesaj":"..."} döndür.';
+      '"gorsel_promptlar":["her sahne için DETAYLI İngilizce görsel üretim promptu: özne + aksiyon + kompozisyon (üçler kuralı, ön/arka plan) + kamera açısı & lens (ör. wide 24mm, close-up 85mm, low angle) + ışık + atmosfer + ' + st.en + '. Görselin İÇİNDE kesinlikle yazı/harf/kelime/logo/watermark OLMASIN."], ' +
+      '"video_promptlar":["her sahne için sinematik HAREKET promptu — image-to-video (sahne başına bir tane, görselle aynı özne): TEK net kamera hareketi (yavaş push-in, dolly, sağa/sola kaydırma, tilt, yörünge, takip) + hafif özne/ortam hareketi + atmosfer; İngilizce yaz, akıcı ve sinematik, gerçekçi fizik, yazısız"], "uretim_notu":"kısa tavsiye" }\n' +
+      'KURALLAR: senaryo, gorsel_promptlar ve video_promptlar AYNI sayıda öğe içersin — sahne başına bir tane, en az ' + min + '. Bunlar İNDEKS-HİZALI ve ENTEGRE: gorsel_promptlar[i], senaryo[i].gorsel için detaylı görsel prompttur (birebir aynı sahne); video_promptlar[i] ise O görseli canlandırır (aynı özne, aynı çerçeve). Yani sahne metni → görsel → hareket, her indekste TEK ve tutarlı bir an olsun. Hikayede belirgin karakter(ler) varsa "karakterler"i doldur ve o karakteri HER görsel/video promptunda aynı fiziksel özelliklerle betimle (tutarlılık); yoksa boş bırak. Konu anlamsızsa {"gecersiz":true,"mesaj":"..."} döndür.';
   }
   function realGenerate(isRegen) {
     var job = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1046,7 +1048,7 @@
     var img = S.images[idx];
     if (!img) { toast('Önce sahne görselini üret'); return; }
     var r = S.result || {};
-    var motion = (r.video_promptlar && r.video_promptlar[idx]) || (((r.gorsel_promptlar && r.gorsel_promptlar[idx]) || 'cinematic scene') + ', slow cinematic camera move');
+    var motion = (r.video_promptlar && r.video_promptlar[idx]) || (((r.gorsel_promptlar && r.gorsel_promptlar[idx]) || 'cinematic scene') + ', slow cinematic push-in with subtle parallax, smooth camera move, natural motion');
     if (!REAL) { toast('Video gerçek modda (Grok) üretilir'); return; }
     if (!S.user) { openAuth(); return; }
     S.videoJobs[idx] = { state: 'submit' }; refreshTab();
@@ -1232,7 +1234,7 @@
       youtube: { baslik: topic.replace(/\?$/, '') + ' | Storia', aciklama: 'In this video we answer "' + topic.toLowerCase() + '" step by step. Like and subscribe!\n\n00:00 Intro\n00:30 First clue\n02:00 Going deeper', etiketler: ['storia', 'documentary', 'curiosity', topic.split(' ')[0].toLowerCase(), 'facts'] },
       instagram: { aciklama: topic + ' 👀 Answer in the video. Save it for later!', hashtagler: ['storia', 'explore', 'facts', 'curiosity', 'reels'] },
       kapak: ['Big question mark + striking visual, warm light', 'Close-up detail + bold title text'],
-      gorsel_promptlar: prompts, video_promptlar: prompts.map(function (p) { return p + ', slow cinematic camera move'; }),
+      gorsel_promptlar: prompts, video_promptlar: prompts.map(function (p) { return p + ', slow cinematic push-in with subtle parallax, smooth camera move, natural motion'; }),
       uretim_notu: 'Put the strongest visual in the first 5 seconds; sync transitions to the music. (This is a DEMO output.)'
     };
     return {
@@ -1242,7 +1244,7 @@
       youtube: { baslik: topic.replace(/\?$/, '') + ' | Storia', aciklama: 'Bu videoda ' + topic.toLowerCase() + ' sorusunu adım adım cevaplıyoruz. Beğenmeyi ve abone olmayı unutma!\n\n00:00 Giriş\n00:30 İlk ipucu\n02:00 Derinleşme', etiketler: ['storia', 'belgesel', 'merak', topic.split(' ')[0].toLowerCase(), 'bilgi'] },
       instagram: { aciklama: topic + ' 👀 Cevabı videoda. Kaydet, sonra izle!', hashtagler: ['storia', 'kesfet', 'bilgi', 'merak', 'reels'] },
       kapak: ['Büyük soru işareti + çarpıcı görsel, sıcak ışık', 'Yakın plan detay + kalın başlık metni'],
-      gorsel_promptlar: prompts, video_promptlar: prompts.map(function (p) { return p + ', slow cinematic camera move'; }),
+      gorsel_promptlar: prompts, video_promptlar: prompts.map(function (p) { return p + ', slow cinematic push-in with subtle parallax, smooth camera move, natural motion'; }),
       uretim_notu: 'İlk 5 saniyeye en güçlü görseli koy; geçişleri müzikle senkronla. (Bu bir DEMO çıktısıdır.)'
     };
   }
