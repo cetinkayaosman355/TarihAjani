@@ -1148,13 +1148,21 @@
     for (var i = 0; i < vs.length; i++) { if (new RegExp('^' + lc, 'i').test(vs[i].lang)) { u.voice = vs[i]; break; } }
     window.speechSynthesis.speak(u); return true;
   }
+  var _prevAudio = null, _prevToken = 0;
+  function stopPreview() {
+    if (_prevAudio) { try { _prevAudio.pause(); _prevAudio.currentTime = 0; } catch (e) {} _prevAudio = null; }
+    try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
+  }
   function previewVoice(i) {
+    stopPreview();                       // önceki önizlemeyi hemen durdur (üst üste binmesin)
+    var tok = ++_prevToken;              // sadece EN SON tık çalsın
     var v = VOICES[i]; var sample = S.lang === 'en' ? 'Storia brings your story to life. This voice could be your narrator.' : 'Storia ile hikâyen hayat buluyor. Bu ses senin anlatıcın olabilir.';
     if (!REAL) { if (!speak(sample, S.ttsRate)) toast('Tarayıcı seslendirmeyi desteklemiyor'); else toast('Önizleme · ' + v.name); return; }
-    toast('Önizleme hazırlanıyor…');
+    toast('Önizleme · ' + v.name + '…');
     callFn({ action: 'tts', preview: true, engine: 'eleven', voiceId: v.ev, voice: v.ov }).then(function (d) {
-      if (d && d.ok && d.url) { try { new Audio(d.url).play(); } catch (e) {} if (d.engine && d.engine !== 'eleven') toast('⚠ OpenAI önizleme — ElevenLabs: ' + String(d.elevenErr || '?').slice(0, 80)); } else toast('Önizleme alınamadı');
-    }).catch(function () { toast('Bağlantı hatası'); });
+      if (tok !== _prevToken) return;    // daha yeni bir önizleme istendi → bunu çalma
+      if (d && d.ok && d.url) { try { _prevAudio = new Audio(d.url); _prevAudio.play(); } catch (e) {} if (d.engine && d.engine !== 'eleven') toast('⚠ OpenAI önizleme — ElevenLabs: ' + String(d.elevenErr || '?').slice(0, 80)); } else toast('Önizleme alınamadı');
+    }).catch(function () { if (tok === _prevToken) toast('Bağlantı hatası'); });
   }
   function doTts() {
     var text = narrationText(); if (!text) { toast('Seslendirilecek metin yok'); return; }
