@@ -105,6 +105,17 @@ body { background: var(--paper); overflow: hidden; }
 .tour-nav .btn { min-width: 120px; }
 .plan-modal { max-width: 760px; }
 .plan-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 6px; }
+.iban-pay { text-align: left; padding: 6px 2px; }
+.iban-pay .ib-head { font-family: var(--serif); font-size: 20px; color: var(--ink); }
+.iban-pay .ib-note { font-size: 13px; color: var(--muted); margin: 6px 0 16px; }
+.iban-pay .ib-box { border: 1px solid var(--champ-line); background: var(--champ-wash); border-radius: var(--r-md); padding: 14px 16px; display: grid; gap: 10px; }
+.iban-pay .ib-row { display: flex; align-items: center; gap: 12px; }
+.iban-pay .ib-lbl { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--champ-deep); width: 78px; flex: none; }
+.iban-pay .ib-val { font-size: 15px; color: var(--ink); font-weight: 500; }
+.iban-pay .ib-val.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: .02em; font-size: 14px; }
+.iban-pay .ib-row .btn { margin-left: auto; }
+.iban-pay .ib-help { font-size: 13px; color: var(--ink-2); margin: 14px 0 0; line-height: 1.5; }
+.iban-pay .ib-acts { display: flex; gap: 10px; margin-top: 16px; }
 .plan-c { border: 1px solid var(--line); border-radius: var(--r-md); padding: 20px 18px; display: flex; flex-direction: column; background: var(--surface); position: relative; }
 .plan-c.feat { border-color: var(--champ); background: var(--champ-wash); }
 .plan-c .pc-badge { position: absolute; top: -10px; left: 18px; background: var(--gold-sheen); color: #241a08; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; }
@@ -141,6 +152,9 @@ body { background: var(--paper); overflow: hidden; }
 .mini-steps .ms.on { color: var(--ink); }
 .mini-steps .ms.on .n { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
 .mini-steps .ms.done .n { background: var(--champ-wash); border-color: var(--champ); color: var(--champ-deep); }
+.mini-steps .ms.clk { cursor: pointer; }
+.mini-steps .ms.clk:hover { color: var(--champ-deep); }
+.mini-steps .ms.clk:hover .n { border-color: var(--champ); }
 .mini-steps .sep { width: 20px; height: 1px; background: var(--line-2); }
 @media (max-width: 760px){ .mini-steps .ms .lb { display: none; } }
 

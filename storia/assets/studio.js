@@ -194,7 +194,9 @@
     var h = '<div class="mini-steps">';
     for (var i = 0; i < 4; i++) {
       var n = i + 1, cls = n === S.step ? 'on' : (n < S.step ? 'done' : '');
-      h += '<div class="ms ' + cls + '"><span class="n">' + (n < S.step ? '✓' : n) + '</span><span class="lb">' + labels[i] + '</span></div>';
+      // 1, 2 ve (sonuç varsa) 4 tıklanabilir — geri/ileri gidiş. 3 (üretim animasyonu) asla.
+      var clk = n !== S.step && n !== 3 && (n === 1 || n === 2 || (n === 4 && !!S.result));
+      h += '<div class="ms ' + cls + (clk ? ' clk' : '') + '"' + (clk ? ' data-act="goStep" data-v="' + n + '"' : '') + '><span class="n">' + (n < S.step ? '✓' : n) + '</span><span class="lb">' + labels[i] + '</span></div>';
       if (i < 3) h += '<span class="sep"></span>';
     }
     return h + '</div>';
@@ -591,6 +593,7 @@
       case 'suggest': suggestIdea(); break;
       case 'toStep2': if (!S.idea.trim()) { toast('Önce bir fikir yaz'); break; } S.step = 2; render(); break;
       case 'back': S.step = 1; render(); break;
+      case 'goStep': var _gn = parseInt(v, 10); if (_gn === 4 && !S.result) break; if (_gn === 3) break; S.step = _gn; render(); break;
       case 'tone': S.tone = v; render(); break;
       case 'voice': S.voiceIdx = parseInt(v, 10); render(); break;
       case 'style': S.style = v; render(); break;
@@ -1292,6 +1295,13 @@
     if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
     setupCmd();
     // rail nav
+    var tbc = document.getElementById('tbContext');
+    if (tbc) tbc.addEventListener('click', function (e) {
+      var el = e.target.closest('[data-act="goStep"]'); if (!el) return;
+      var gn = parseInt(el.getAttribute('data-v'), 10);
+      if ((gn === 4 && !S.result) || gn === 3) return;
+      S.step = gn; render();
+    });
     document.getElementById('railNav').addEventListener('click', function (e) {
       var it = e.target.closest('.rail-item'); if (!it) return;
       var v = it.getAttribute('data-view');
@@ -1374,12 +1384,19 @@
     if (upBtn) upBtn.addEventListener('click', openPlanModal);
     var planModal = document.getElementById('planModal');
     document.getElementById('planClose').addEventListener('click', closePlan);
-    planModal.addEventListener('click', function (e) { if (e.target === planModal) closePlan(); var c = e.target.closest('[data-act="checkout"]'); if (c) openCheckout(c.getAttribute('data-v')); });
+    planModal.addEventListener('click', function (e) {
+      if (e.target === planModal) { closePlan(); return; }
+      var c = e.target.closest('[data-act]'); if (!c) return;
+      var a = c.getAttribute('data-act'), v = c.getAttribute('data-v');
+      if (a === 'checkout') openCheckout(v);
+      else if (a === 'copyIban') { copy(String(v).replace(/\s+/g, '')); toast('IBAN kopyalandı'); }
+      else if (a === 'backPlans') renderPlanCards();
+    });
     // global keyboard
     document.addEventListener('keydown', function (e) {
       if (lbOpen()) { if (e.key === 'ArrowLeft') { e.preventDefault(); lbNav(-1); return; } if (e.key === 'ArrowRight') { e.preventDefault(); lbNav(1); return; } if (e.key === 'Escape') { closeLb(); return; } }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmd(); return; }
-      if (e.key === 'Escape') { closeCmd(); closeAuth(); closeEdit(); closeTour(); closePlan(); closeAcct(); return; }
+      if (e.key === 'Escape') { closeCmd(); closeAuth(); closeEdit(); closeTour(); closePlan(); closeAcct(); closeMusicModal(); closeSceneModal(); if (S.chat.open) closeChat(); return; }
       var typing = /input|textarea/i.test((e.target.tagName || ''));
       var anyModal = document.querySelector('.modal-back.show');
       if (!typing && !anyModal && e.key.toLowerCase() === 'n') { startNew(); }
@@ -1463,8 +1480,31 @@
   }
   function openCheckout(id) {
     var url = (CFG.checkout || {})[id] || '';
-    if (url) { window.open(url, '_blank', 'noopener'); closePlan(); }
-    else toast('Ödeme bağlantısı henüz ayarlı değil — kurulum sonrası aktifleşir');
+    if (url) { window.open(url, '_blank', 'noopener'); closePlan(); return; }
+    showIban(id);   // ödeme linki yoksa Havale/EFT (IBAN) akışı
+  }
+  function showIban(id) {
+    var pl = PLANS.filter(function (p) { return p.id === id; })[0]; if (!pl) return;
+    var iban = CFG.iban || '', name = CFG.ibanName || '', mail = CFG.contactEmail || '';
+    var uMail = (S.user && S.user.email) || '';
+    var subj = encodeURIComponent('STORIA ' + pl.name + ' — ödeme dekontu');
+    var bodym = encodeURIComponent('Merhaba, ' + pl.name + ' planı (' + pl.price + '/ay) için ödemeyi yaptım. Hesap e-postam: ' + (uMail || '...') + '. Dekont ektedir.');
+    document.getElementById('planCards').innerHTML =
+      '<div class="iban-pay">' +
+        '<div class="ib-head"><b>' + esc(pl.name) + '</b> · ' + esc(pl.price) + '/ay · ' + esc(pl.cr) + ' kredi</div>' +
+        '<p class="ib-note">Havale/EFT ile öde — kredin elle yüklenir. (Kartla ödeme yakında.)</p>' +
+        '<div class="ib-box">' +
+          '<div class="ib-row"><span class="ib-lbl">IBAN</span><span class="ib-val mono">' + esc(iban) + '</span><button class="btn btn-quiet btn-sm" data-act="copyIban" data-v="' + esc(iban) + '">Kopyala</button></div>' +
+          '<div class="ib-row"><span class="ib-lbl">Alıcı</span><span class="ib-val">' + esc(name) + '</span></div>' +
+          '<div class="ib-row"><span class="ib-lbl">Tutar</span><span class="ib-val">' + esc(pl.price) + '</span></div>' +
+          '<div class="ib-row"><span class="ib-lbl">Açıklama</span><span class="ib-val">' + esc(uMail || 'kayıtlı e-postan') + '</span></div>' +
+        '</div>' +
+        '<p class="ib-help">Açıklamaya <b>' + esc(uMail || 'e-postanı') + '</b> yaz. Ödeme sonrası dekontu ilet; kredin <b>24 saat içinde</b> yüklenir.</p>' +
+        '<div class="ib-acts">' +
+          (mail ? '<a class="btn btn-gold btn-sm" href="mailto:' + esc(mail) + '?subject=' + subj + '&body=' + bodym + '">Dekont ilet</a>' : '') +
+          '<button class="btn btn-quiet btn-sm" data-act="backPlans">← Planlar</button>' +
+        '</div>' +
+      '</div>';
   }
 
   // ── Account panel ─────────────────────────────────────────────────────

@@ -13,8 +13,13 @@ window.STORIA_CONFIG = {
   supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzemJkbnVzc3Zkem1ia3VpbHNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzNzQyMzYsImV4cCI6MjA5OTk1MDIzNn0.ZHuLmhIAMPFIfTwp8CDJ60-OtfUyFEYHTwrbRfrfDTw",
   functionName: "storia-generate",
   brand: "Storia",
-  // İsteğe bağlı: iyzico/Stripe "ödeme linki" URL'lerini buraya yapıştırınca
-  // "Planı yükselt" butonu doğrudan ödemeye götürür (API entegrasyonu gerekmez).
+  // Ödeme: şimdilik Havale/EFT (IBAN). Kullanıcı planı seçince IBAN + alıcı
+  // gösterilir; dekont iletince kredi elle yüklenir. İstersen bu değerleri değiştir.
+  iban: "TR06 0004 6002 6388 8000 0717 57",
+  ibanName: "Osman Çetinkaya",
+  contactEmail: "cetinkayaosman355@gmail.com",
+  // İsteğe bağlı: iyzico/Stripe "ödeme linki" URL'lerini buraya koyarsan
+  // IBAN yerine doğrudan karta yönlendirir (API gerekmez).
   checkout: {
     yaratici: "",
     profesyonel: "",

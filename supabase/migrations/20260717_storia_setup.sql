@@ -173,3 +173,10 @@ end $$;
 drop trigger if exists ensure_profile_trg on auth.users;
 create trigger ensure_profile_trg after insert on auth.users
   for each row execute function public.ensure_profile();
+
+-- 11b) BACKFILL: migration'dan ÖNCE kayıt olmuş kullanıcılar için profil + 150 kredi
+-- (idempotent — profili olan atlanır). Tekrar çalıştırmak güvenli.
+insert into public.profiles (id, email, tier, monthly_quota, credits, credits_reset_at)
+select u.id, u.email, 'kesif', 0, 150, now()
+from auth.users u
+on conflict (id) do nothing;
