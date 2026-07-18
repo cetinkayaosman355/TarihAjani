@@ -3073,6 +3073,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const prompt = 'Bir Türkçe tarih belgeselinin "' + bolum + '" (bölüm ' + idx + '/' + totalSecs + ') kısmı için TAM ' + k + ' sahnelik GÖRSEL ve VİDEO promptu üret. Bu bölümün seslendirme metnini (aşağıdaki BÖLÜM METNİ) TAM ' + k + ' ardışık parçaya SIRAYLA böl; sahne j, j. parçayı görselleştirir — görseller seslendirmeyle birebir aynı sırada akar. Her sahnede "anlatim" = o parçanın Türkçe seslendirme cümlesi (metinden birebir/kısaltılmış, ≤160 karakter). GÖRSEL PROMPT tam olarak o "anlatim"daki somut kişi + mekân + aksiyonu gösterir; jenerik/dekoratif sahne YASAK — metinde o an ne oluyorsa onu göster.\n' +
       bibleLine +
       'GÖRSEL PROMPT: İngilizce, "' + cfg.stilStr + '" ile BAŞLAR, "' + cfg.oran + '" içerir; ana özne+aksiyon, dönem-doğru mekân/kıyafet/nesne (anakronizm YOK), ışık/atmosfer, kompozisyon/kamera, renk/duygu, doku katmanları (~50-80 kelime), şu satırla BİTER: "' + cfg.anti + '". Tanınmış tarihî kişi geçiyorsa jenerik yazma: belgelenmiş görünümünü (yüz şekli, burun, sakal/bıyık, yaş, başlık/kıyafet) portre kaynaklarına göre tarif et.\n' +
+      '🎬 ÇEŞİTLİLİK (EN ÖNEMLİ KURAL — görseller BİRBİRİNİN AYNISI olmasın): Bu bölümdeki ' + k + ' sahnenin HER BİRİ FARKLI bir çekim türü + kadraj + açı + mesafe kullanır. Şu çekim türlerini sahneler arasında DÖNDÜR, arka arkaya aynısını KULLANMA: wide establishing shot (mekânı/kalabalığı göster, insanlar küçük), over-the-shoulder, low-angle kahraman çekimi, extreme close-up (eller / bir belge / bir nesne / bir detay), profil ya da üç-çeyrek açı, hareket hâlinde aksiyon çekimi (yürürken/dövüşürken/at üstünde), high-angle kuşbakışı, insansız atmosferik mekân/manzara çekimi. HEPSİ ortada duran, göğüsten yukarı, karşıya bakan portre OLMAYACAK — en çok BİR sahne yakın portre olabilir.\n' +
+      '👁 BAKIŞ KURALI: Özneler kameraya/lense BAKMAZ. Anın içinde, kendi eylemine dalmış, doğal biçimde yakalanır (candid documentary moment, subject NOT looking at the camera, no eye contact with the lens, gaze directed within the scene). Tek istisna: anlatım doğrudan bir hitap/meydan okumaysa. Aynı kişi birden çok sahnede geçse bile HER SEFERİNDE farklı an, farklı açı, farklı mesafe, farklı eylem.\n' +
       'VİDEO PROMPT: tek kamera hareketi/aksiyon 5-8 sn (~30-50 kelime), şu satırla biter: "' + cfg.vidTail + '". Bir karakter sahnede geçiyorsa yukarıdaki SABİT kimlik tarifini promptun başında birebir tekrarla (tutarlı yüz için).\n' +
       'ÇIKTI: SADECE geçerli tek JSON, ilk karakter { son karakter }. Şema: {"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","anlatim":"bu görselin anlattığı Türkçe seslendirme cümlesi","prompt":"İngilizce görsel"}],"video_promptlar":[{"sahne":"aynı sahne adı","prompt":"İngilizce video"}]}. Her dizi TAM ' + k + ' öğe.\n\nBÖLÜM METNİ:\n' + (metin || bolum);
     const maxTok = Math.min(4000, 800 + k * 260);
@@ -3110,14 +3112,24 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const metin = ((section && section.metin) || '').trim();
     const cumleler = metin ? metin.split(/(?<=[.!?…])\s+/).map(s => s.trim()).filter(Boolean) : [];
     const per = cumleler.length ? Math.ceil(cumleler.length / k) : 0;
+    // Çekim türü döngüsü → fallback bile hep aynı portre olmasın; sahneler çeşitlensin
+    const shots = [
+      'wide establishing shot, subjects small within a rich period environment, low camera angle',
+      'dynamic mid-action shot capturing movement, three-quarter angle, subject not looking at camera',
+      'extreme close-up on hands, a document or a symbolic object, shallow depth of field',
+      'over-the-shoulder composition looking into the scene, subject seen from behind or in profile',
+      'high-angle overview of the location and figures, atmospheric depth',
+      'candid profile shot, subject absorbed in action, gaze directed within the scene'
+    ];
     const gorsel = [], video = [];
     for (let j = 0; j < k; j++) {
       const label = bolum + ' — sahne ' + (base + j + 1);
       const anlatim = per ? cumleler.slice(j * per, (j + 1) * per).join(' ').slice(0, 160) : '';
+      const shot = shots[(base + j) % shots.length];
       gorsel.push({
         sahne: label,
         anlatim: anlatim,
-        prompt: cfg.stilStr + ', ' + cfg.oran + ', cinematic historical scene from "' + topic + '" (' + bolum + ')' + (anlatim ? ', depicting: ' + anlatim : '') + ', period-accurate setting with authentic costumes, architecture and objects, dramatic directional lighting, atmospheric depth, rich color palette, detailed textures, film grain, rule of thirds, shallow depth of field. ' + cfg.anti
+        prompt: cfg.stilStr + ', ' + cfg.oran + ', ' + shot + ', cinematic historical scene from "' + topic + '" (' + bolum + ')' + (anlatim ? ', depicting: ' + anlatim : '') + ', period-accurate setting with authentic costumes, architecture and objects, dramatic directional lighting, atmospheric depth, rich color palette, detailed textures, film grain, subjects candid and NOT looking at the camera. ' + cfg.anti
       });
       video.push({
         sahne: label,
@@ -3356,9 +3368,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         fileNo: no, result, idea: this.state.idea, partial,
         picks: { tone: this.state.tone, voice: this.state.voice, style: this.state.style, duration: this.state.duration, model: this.state.model }
       };
+      // Claude istendi ama sunucu OpenAI'ya düştüyse SEBEBİNİ göster (sessiz kalma) —
+      // ElevenLabs'taki gibi: kullanıcı neden Claude gelmediğini bilsin.
+      const wantClaude = s.model === 'claude';
+      const claudeFellBack = wantClaude && genCharge && genCharge.provider && genCharge.provider !== 'claude';
       this.setState(st => ({
         generating: false, genPct: 100, result, fileNo: no, step: 4, tab: 'senaryo', fromArsiv: false, pendingJob: null,
-        genWarn: partial ? 'Dosyan hazır ve kaydedildi — ama sahne promptları tamamlanamadı. Görsel Promptları sekmesinden “Sahne promptlarını üret” ile ek kredi olmadan tamamlayabilirsin.' : '',
+        genWarn: partial
+          ? 'Dosyan hazır ve kaydedildi — ama sahne promptları tamamlanamadı. Görsel Promptları sekmesinden “Sahne promptlarını üret” ile ek kredi olmadan tamamlayabilirsin.'
+          : (claudeFellBack ? ('⚠️ Claude kullanılamadı, yedek model (OpenAI) ile üretildi. Sebep: ' + (genCharge.providerNote || 'bilinmiyor') + '. (Secrets → ANTHROPIC_API_KEY kontrol et.)') : ''),
         history: [entry, ...st.history].slice(0, 12), audioUrl: '', ttsError: '', sysAudioUrl: '', sysTtsError: ''
       }), () => this.persist());
       // Kredi düşme: yeni studio-generate sunucuda düştüyse dönen bakiyeyi kullan;
@@ -4330,7 +4348,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           if (r.status >= 500) continue;   // geçici sunucu hatası → yeniden dene
           throw lastErr;                    // 4xx kalıcı → durdur
         }
-        this._lastGen = { charged: !!data.charged, credits: data.credits };
+        this._lastGen = { charged: !!data.charged, credits: data.credits, provider: data.provider || '', providerNote: data.providerNote || '' };
         return norm(data.text || data.result || '');
       } catch (e) {
         if (e.message === 'YETERSIZ_KREDI') throw e;

@@ -1094,13 +1094,20 @@ ${prompt}`;
     // Üretimde jsonMode: Claude prefill + OpenAI response_format json_object
     // DAYANIKLILIK: birincil sağlayıcı hata verirse (aşırı yük / bakiye / model)
     // diğerine DÜŞ — biri çökse bile üretim/sohbet sürsün, kullanıcı 500 görmesin.
+    let usedProvider = "";      // gerçekten HANGİ model üretti (teşhis: Claude mı OpenAI mı)
+    let providerNote = "";      // Claude istendi ama yedeğe düşüldüyse SEBEBİ
     const gen = async (): Promise<string> => {
       try {
-        return useClaude ? await callClaude(genPrompt, capTok, isGen) : await callOpenAI(genPrompt, capTok, isGen);
+        const out = useClaude ? await callClaude(genPrompt, capTok, isGen) : await callOpenAI(genPrompt, capTok, isGen);
+        usedProvider = useClaude ? "claude" : "openai";
+        return out;
       } catch (e) {
-        console.error("birincil saglayici hatasi, yedege dusuluyor: " + String(e).slice(0, 160));
+        providerNote = String((e as any)?.message || e).slice(0, 160);
+        console.error("birincil saglayici hatasi, yedege dusuluyor: " + providerNote);
         try {
-          return useClaude ? await callOpenAI(genPrompt, capTok, isGen) : await callClaude(genPrompt, capTok, isGen);
+          const out = useClaude ? await callOpenAI(genPrompt, capTok, isGen) : await callClaude(genPrompt, capTok, isGen);
+          usedProvider = useClaude ? "openai" : "claude";   // YEDEĞE düşüldü
+          return out;
         } catch (e2) {
           // İkisi de düştü → asıl nedeni yukarı taşı (catch bloğu ipucu üretsin)
           throw new Error(String((e2 as any)?.message || e2));
@@ -1147,7 +1154,7 @@ ${prompt}`;
       // Sonucu KAYDET: bağlantı kopmuş olsa bile istemci fetch_result / aynı
       // job ile üretimi kredisiz geri alabilir (mobil "Load failed" telafisi).
       if (isGen && job) await saveJobResult(admin, userId, job, { result, credits, charged: true, grounded, ts: Date.now() });
-      return json({ ok: true, result, text: result, charged: true, credits, grounded });
+      return json({ ok: true, result, text: result, charged: true, credits, grounded, provider: usedProvider, providerNote: (useClaude && usedProvider !== "claude") ? providerNote : undefined });
     }
 
     // ÜCRETSİZ YENİDEN ÜRET: kredi düşülmez; önceki job'ın bedava hakkı tüketilir
