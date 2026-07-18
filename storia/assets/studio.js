@@ -19,7 +19,7 @@
     result: null, tab: 'senaryo', genJob: null,
     user: null, credits: REAL ? null : 500, creditMax: 500,
     images: {}, covers: {}, videos: {}, videoJobs: {}, chars: {}, audio: null, history: [], ttsRate: 1,
-    bgMusic: null, bgMusicName: '', musicVol: 0.5, capStyle: 'klasik', vengine: 'grok', imgQuality: 'standart',
+    bgMusic: null, bgMusicName: '', musicVol: 0.5, capStyle: 'klasik', vengine: 'grok', imgQuality: 'standart', vsec: 5,
     brand: { logo: '', color: '#d9bc80', name: '', handle: '', wm: true, outro: false, outroText: 'Abone ol · yeni içerik her gün' },
     chat: { open: false, msgs: [], busy: false },
     trend: { open: false, niche: '', busy: false, items: [] },
@@ -414,6 +414,8 @@
   }
   // Görsel kalite seçici (müşteri seçer — Grok/Kling mantığı). Standart = ucuz
   // (medium), Yüksek = premium (gpt-image üst / 4K). Kredi farkı sunucuda uygulanır.
+  // AI video klip maliyeti (backend videoCost ile birebir): 30 kr/sn, taban 150.
+  function vcost(sec) { return Math.max(150, Math.round(Math.min(15, Math.max(3, sec))) * 30); }
   function imgQualHtml() {
     return '<div class="veng-pick"><span class="cp-lbl">Görsel kalitesi</span><div class="cap-seg">' +
       '<button class="' + (S.imgQuality === 'standart' ? 'on' : '') + '" data-act="imgQual" data-v="standart">Standart · 12kr</button>' +
@@ -708,7 +710,7 @@
           actions = '<span class="tt-note">Bu ~1-2 dk sürebilir</span>';
         } else if (vimg) {
           media = '<img class="vid zoomable" src="' + esc(vimg) + '" data-act="zoom" data-v="' + esc(vimg) + '" style="aspect-ratio:' + vratio + '">';
-          actions = '<button class="btn btn-gold btn-sm" data-act="video" data-v="' + vi + '">🎬 Videoya çevir · 150kr</button>';
+          actions = '<button class="btn btn-gold btn-sm" data-act="video" data-v="' + vi + '">🎬 Videoya çevir · ' + vcost(S.vsec) + 'kr</button>';
         } else {
           media = '<div class="vid vph" style="aspect-ratio:' + vratio + ';background:' + GRADS[vi % GRADS.length] + ';color:#fff">Önce görsel üret</div>';
           actions = '<button class="btn btn-gold btn-sm" data-act="image" data-v="' + vi + '">✦ Görsel üret</button>';
@@ -729,7 +731,11 @@
         '<button class="' + (S.vengine === 'grok' ? 'on' : '') + '" data-act="vengine" data-v="grok">Grok · hızlı</button>' +
         '<button class="' + (S.vengine === 'kling' ? 'on' : '') + '" data-act="vengine" data-v="kling">Kling · sinematik</button>' +
         '</div></div>';
-      return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>yapay zeka</b> ile ~5 sn videoya çevir · ' + vn + ' sahne</span>' + engSeg + '</div>' + exportBar + '<div class="vgrid">' + vcards + '</div>';
+      var durSeg = '<div class="veng-pick"><span class="cp-lbl">Klip süresi</span><div class="cap-seg">' +
+        '<button class="' + (S.vsec === 5 ? 'on' : '') + '" data-act="vsec" data-v="5">5 sn · ' + vcost(5) + 'kr</button>' +
+        '<button class="' + (S.vsec === 10 ? 'on' : '') + '" data-act="vsec" data-v="10">10 sn · ' + vcost(10) + 'kr</button>' +
+        '</div></div>';
+      return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>yapay zeka</b> ile ~' + S.vsec + ' sn videoya çevir · ' + vn + ' sahne</span>' + engSeg + durSeg + '</div>' + exportBar + '<div class="vgrid">' + vcards + '</div>';
     }
     if (S.tab === 'youtube') {
       var yt = r.youtube || {};
@@ -939,6 +945,7 @@
       case 'capStyle': S.capStyle = v; refreshTab(); break;
       case 'vengine': S.vengine = v; refreshTab(); toast(v === 'kling' ? 'Kling · sinematik seçildi' : 'Grok · hızlı seçildi'); break;
       case 'imgQual': S.imgQuality = v; refreshTab(); toast(v === 'yuksek' ? 'Yüksek kalite · 45kr/görsel' : 'Standart kalite · 12kr/görsel'); break;
+      case 'vsec': S.vsec = parseInt(v, 10) || 5; refreshTab(); toast(S.vsec + ' sn klip · ' + vcost(S.vsec) + 'kr'); break;
       case 'brandKit': openBrandModal(); break;
       case 'musicPick': openMusicModal(); break;
       case 'musicClear': if (S.bgMusic && S.bgMusic.indexOf('blob:') === 0) { try { URL.revokeObjectURL(S.bgMusic); } catch (e) {} } S.bgMusic = null; S.bgMusicName = ''; refreshTab(); break;
@@ -1556,7 +1563,7 @@
     if (!REAL) { toast('Video gerçek modda (Grok) üretilir'); return; }
     if (!S.user) { openAuth(); return; }
     S.videoJobs[idx] = { state: 'submit' }; refreshTab();
-    callFn({ action: 'video', image: img, prompt: motion, size: S.aspect, vsec: 5, vprovider: S.vengine }).then(function (d) {
+    callFn({ action: 'video', image: img, prompt: motion, size: S.aspect, vsec: S.vsec, vprovider: S.vengine }).then(function (d) {
       if (!d || !d.ok || !d.videoJob) { delete S.videoJobs[idx]; refreshTab(); toast((d && d.error) || 'Video başlatılamadı'); return; }
       if (typeof d.credits === 'number') S.credits = d.credits; chrome();
       S.videoJobs[idx] = { state: 'render', job: d.videoJob }; refreshTab();
