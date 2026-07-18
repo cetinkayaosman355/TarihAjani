@@ -332,7 +332,7 @@
         ? '<div class="music-on"><span class="mo-ic">🎵</span><span class="mo-name">' + esc(S.bgMusicName || 'Müzik') + '</span><label class="mo-vol">Ses <input type="range" min="0" max="100" value="' + Math.round(S.musicVol * 100) + '" data-act="musicVol"></label><button class="btn btn-quiet btn-sm" data-act="musicClear">Kaldır</button></div>'
         : '<button class="btn btn-quiet btn-sm" data-act="musicPick">🎵 Arka plan müziği ekle</button>';
       var exportBar = '<div class="export-strip"><div class="es-txt"><b>Tek dosyada birleştir</b><span>Sahne görselleri + seslendirme + altyazı → Ken Burns efektli video (WebM). Ücretsiz, tarayıcıda oluşur.</span>' + musicChip + '</div><button class="btn btn-gold" data-act="exportVid"' + (doneImgs ? '' : ' disabled') + '>🎬 Video oluştur &amp; indir</button></div>';
-      return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>Grok</b> ile ~5 sn videoya çevir · ' + vn + ' sahne</span></div>' + exportBar + '<div class="vgrid">' + vcards + '</div>';
+      return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>yapay zeka</b> ile ~5 sn videoya çevir · ' + vn + ' sahne</span></div>' + exportBar + '<div class="vgrid">' + vcards + '</div>';
     }
     if (S.tab === 'youtube') {
       var yt = r.youtube || {};
@@ -739,21 +739,27 @@
           tracks = tracks.concat(dest.stream.getAudioTracks());
         }
         var mstream = new MediaStream(tracks);
-        var mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].filter(function (m) { return MediaRecorder.isTypeSupported(m); })[0] || 'video/webm';
-        var rec = new MediaRecorder(mstream, { mimeType: mime, videoBitsPerSecond: 6000000 }), chunks = [];
+        // Safari MediaRecorder'da WebM DESTEKLEMEZ, yalnızca MP4/H.264 → önce mp4
+        // adaylarını da dene. Chrome/Firefox webm'i seçer, Safari mp4'ü.
+        var isSup = function (m) { try { return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m); } catch (e) { return false; } };
+        var mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4;codecs=avc1.640028,mp4a.40.2', 'video/mp4;codecs=avc1', 'video/mp4'].filter(isSup)[0] || '';
+        var ext = mime.indexOf('mp4') >= 0 ? 'mp4' : 'webm', outType = mime.indexOf('mp4') >= 0 ? 'video/mp4' : 'video/webm';
+        var rec, chunks = [];
+        try { rec = mime ? new MediaRecorder(mstream, { mimeType: mime, videoBitsPerSecond: 6000000 }) : new MediaRecorder(mstream); }
+        catch (e1) { try { rec = new MediaRecorder(mstream); ext = 'webm'; outType = 'video/webm'; } catch (e2) { if (canvas.parentNode) canvas.parentNode.removeChild(canvas); try { if (actx) actx.close(); } catch (e3) {} hideExport(); _exporting = false; toast('Tarayıcın video kaydını desteklemiyor — Chrome dene'); return; } }
         rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
         rec.onstop = function () {
           try { if (actx) actx.close(); } catch (e) {}
           if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
           if (!chunks.length) { hideExport(); _exporting = false; toast('Video oluşturulamadı — tekrar dene'); return; }
-          var blob = new Blob(chunks, { type: 'video/webm' }), u = URL.createObjectURL(blob), a = document.createElement('a');
-          a.href = u; a.download = (r.baslik || 'storia-video').replace(/[^\w\sğüşiöçİĞÜŞÖÇ-]/g, '').slice(0, 50).trim() + '.webm';
+          var blob = new Blob(chunks, { type: outType }), u = URL.createObjectURL(blob), a = document.createElement('a');
+          a.href = u; a.download = (r.baslik || 'storia-video').replace(/[^\w\sğüşiöçİĞÜŞÖÇ-]/g, '').slice(0, 50).trim() + '.' + ext;
           document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(u); a.remove(); }, 2000);
-          hideExport(); _exporting = false; toast('Video indirildi (WebM)');
+          hideExport(); _exporting = false; toast('Video indirildi (' + ext.toUpperCase() + ')');
         };
         var start = performance.now();
         srcs.forEach(function (s) { try { s.start(); } catch (e) {} });
-        rec.start(1000); // saniyede bir parça yaz — daha güvenilir
+        try { rec.start(1000); } catch (e) { try { rec.start(); } catch (e2) {} } // saniyede bir parça; olmazsa tek parça
         (function frame() {
           var el = (performance.now() - start) / 1000;
           if (el >= total) { try { if (rec.state !== 'inactive') rec.stop(); } catch (e) {} return; }

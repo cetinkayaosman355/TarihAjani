@@ -596,11 +596,84 @@ async function loadJobResult(admin: any, userId: string, job: string): Promise<a
 }
 const cleanJob = (v: unknown) => String(v || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 60);
 
-// ── VIDEO (xAI Grok Imagine — text→video / image→video) ─────────────────
-// Async: POST /v1/videos/generations → request id; GET /v1/videos/{id} → durum/URL.
-// Sağlayıcı config'te tek noktadan; şimdilik xAI Grok Imagine (ucuz + hazır API).
+// ── VIDEO (çoklu sağlayıcı: xAI Grok Imagine + Kling) ───────────────────
+// Sağlayıcı VIDEO_PROVIDER env'i ile seçilir ("grok" | "kling"; varsayılan grok).
+// İş kimliğine sağlayıcı ön eki eklenir ("grok:<id>" / "kling:<id>") ki poll
+// doğru API'ye gitsin. Kredi maliyeti her ikisinde aynı (marj sağlayıcıda değişir).
 function videoCost(sec: number): number { return Math.max(60, Math.round(Math.min(15, Math.max(3, sec))) * 12); }
+function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "grok").toLowerCase(); }
+
+// Sağlayıcı-bağımsız giriş noktaları — handler bunları çağırır.
 async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
+  if (videoProvider() === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
+  const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id } : r;
+}
+async function pollVideo(job: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+  if (job.indexOf("kling:") === 0) return pollKling(job.slice(6));
+  if (job.indexOf("grok:") === 0) return pollGrok(job.slice(5));
+  return pollGrok(job); // ön eksiz eski işler → Grok
+}
+
+// ── Kling (Kuaishou) — image→video, JWT (HS256) auth ────────────────────
+async function klingToken(): Promise<string | null> {
+  const ak = Deno.env.get("KLING_ACCESS_KEY"), sk = Deno.env.get("KLING_SECRET_KEY");
+  if (!ak || !sk) return null;
+  const b64u = (s: string) => btoa(s).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const now = Math.floor(Date.now() / 1000);
+  const head = b64u(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+  const body = b64u(JSON.stringify({ iss: ak, exp: now + 1800, nbf: now - 5 }));
+  const data = head + "." + body;
+  const ck = await crypto.subtle.importKey("raw", new TextEncoder().encode(sk), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", ck, new TextEncoder().encode(data));
+  const sigStr = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  return data + "." + sigStr;
+}
+function klingBase(): string { return (Deno.env.get("KLING_BASE") || "https://api-singapore.klingai.com").replace(/\/+$/, ""); }
+async function submitKling(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
+  const tok = await klingToken();
+  if (!tok) return { err: "KLING_ACCESS_KEY / KLING_SECRET_KEY secret eksik." };
+  if (!imageUrl) return { err: "Kling image→video için sahne görseli gerekli." };
+  const body: Record<string, unknown> = {
+    model_name: Deno.env.get("KLING_MODEL") || "kling-v1-6",
+    image: imageUrl,
+    prompt: (prompt || "").slice(0, 2000),
+    mode: Deno.env.get("KLING_MODE") || "std",
+    duration: dur > 7 ? "10" : "5",
+    cfg_scale: 0.5,
+  };
+  // image→video'da çerçeve görselden gelir; aspect_ratio göndermeyiz (katı
+  // doğrulayıcı 400 verebilir). Metin→video ileride eklenirse orada kullanılır.
+  void aspect;
+  try {
+    const r = await fetchT(klingBase() + "/v1/videos/image2video", {
+      method: "POST", headers: { Authorization: `Bearer ${tok}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
+    }, 60_000);
+    const d = await r.json().catch(() => ({} as any));
+    if (!r.ok || (d && typeof d.code === "number" && d.code !== 0)) return { err: (d && (d.message || d.msg)) || ("Kling " + r.status) };
+    const id = d.data?.task_id || d.data?.id || d.task_id;
+    if (!id) return { err: "Kling görev kimliği alınamadı." };
+    return { id: String(id) };
+  } catch (e) { return { err: String(e).slice(0, 160) }; }
+}
+async function pollKling(id: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+  const tok = await klingToken();
+  if (!tok) return { done: false, err: "Kling secret eksik." };
+  try {
+    const r = await fetchT(klingBase() + "/v1/videos/image2video/" + encodeURIComponent(id), { headers: { Authorization: `Bearer ${tok}` } }, 30_000);
+    const d = await r.json().catch(() => ({} as any));
+    if (!r.ok) return { done: false, err: "Kling " + r.status };
+    const data = d.data || {};
+    const status = String(data.task_status || "").toLowerCase();
+    if (status === "failed") return { done: false, failed: true, err: String(data.task_status_msg || "üretim başarısız") };
+    const vids = data.task_result?.videos;
+    const url = Array.isArray(vids) && vids[0] ? (vids[0].url || vids[0].video_url || "") : "";
+    if (status === "succeed" && url) return { done: true, url };
+    if (url) return { done: true, url };
+    return { done: false };
+  } catch (e) { return { done: false, err: String(e).slice(0, 120) }; }
+}
+
+async function submitGrok(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
   const key = Deno.env.get("XAI_API_KEY");
   if (!key) return { err: "XAI_API_KEY secret eksik." };
   const body: Record<string, unknown> = imageUrl
@@ -618,7 +691,7 @@ async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect
     return { id: String(id) };
   } catch (e) { return { err: String(e).slice(0, 160) }; }
 }
-async function pollVideo(id: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+async function pollGrok(id: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
   const key = Deno.env.get("XAI_API_KEY");
   if (!key) return { done: false, err: "XAI_API_KEY eksik." };
   try {
