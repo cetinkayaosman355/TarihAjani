@@ -2699,6 +2699,20 @@ class Component extends DCLogic {
     if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Önizleme üretilemedi');
     return { url: data.url, engine: data.engine || '', elevenErr: data.elevenErr || '' };
   }
+  // Eski (v1) önizleme cache'ini bir kez temizle — hatalı dönemde saklanan
+  // yedek sesleri sil, hem yer aç hem de yanlış ses bir daha çalmasın.
+  _purgeOldPreviewCache() {
+    if (this._vpPurged) return;
+    this._vpPurged = true;
+    try {
+      const rm = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf('ta_vp_') === 0) rm.push(k);
+      }
+      rm.forEach(k => localStorage.removeItem(k));
+    } catch (e) {}
+  }
   previewVoice(v) {
     v = v || {};
     const id = v.id;
@@ -2715,8 +2729,12 @@ class Component extends DCLogic {
         this.setState({ vpPlaying: id, vpBusy: '' });
       } catch (e) { this.setState({ vpPlaying: '', vpBusy: '' }); }
     };
+    // Cache anahtarı v2: ElevenLabs 401 döneminde yedek (OpenAI) sesle üretilip
+    // yanlışlıkla Kadir vb. adıyla saklanan ESKİ önizlemeler bir kez geçersiz kılınır
+    // → anahtar düzeldikten sonra deneme sesleri taze, doğru sesle yeniden üretilir.
+    this._purgeOldPreviewCache();
     let cached = null;
-    try { cached = localStorage.getItem('ta_vp_' + key); } catch (e) {}
+    try { cached = localStorage.getItem('ta_vp2_' + key); } catch (e) {}
     if (cached) { play(cached); return; }
     if (this.state.vpBusy) return;
     this.setState({ vpBusy: id });
@@ -2726,7 +2744,7 @@ class Component extends DCLogic {
       const gotEleven = res.engine === 'eleven';
       // Yedek sese düşen ElevenLabs örneğini ASLA gerçek ses gibi cache'leme (yoksa
       // anahtar düzeltilse bile kullanıcı hep yanlış sesi duyar).
-      try { if ((!wantEleven || gotEleven) && String(url).indexOf('data:') === 0) localStorage.setItem('ta_vp_' + key, url); } catch (e) {}
+      try { if ((!wantEleven || gotEleven) && String(url).indexOf('data:') === 0) localStorage.setItem('ta_vp2_' + key, url); } catch (e) {}
       play(url);
       if (wantEleven && !gotEleven) {
         setTimeout(() => alert('⚠️ Bu ses ElevenLabs\'ten gelmedi — yedek sesle çalıyor.\n\nSebep: ' + (res.elevenErr || 'bilinmiyor') + '\n\nÇözüm: Supabase → Edge Functions → Secrets\'ta ELEVENLABS_API_KEY doğru mu ve seçtiğin ses ElevenLabs hesabında var mı kontrol et.'), 250);
