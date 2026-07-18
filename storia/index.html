@@ -203,6 +203,23 @@
 .price.feat li svg { stroke: var(--champ-2); }
 .price .btn { margin-top: auto; width: 100%; }
 .price-note { text-align: center; margin-top: 26px; font-size: 14px; color: var(--muted); }
+.p-vid { font-family: var(--serif); font-size: 21px; color: var(--champ-deep); font-weight: 500; margin-top: 2px; }
+.price.feat .p-vid { color: var(--champ-2); }
+.p-cred { font-size: 12.5px; color: var(--muted); font-weight: 500; margin-bottom: 22px; }
+/* Kredi neye yeter + hesaplayıcı */
+.credit-info { max-width: 900px; margin: 64px auto 0; text-align: center; }
+.credit-info h3, .calc h3 { font-family: var(--serif); font-size: 26px; color: var(--ink); }
+.credit-info > p { font-size: 15px; color: var(--muted); margin-top: 8px; }
+.credit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 28px; }
+.ci { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; text-align: left; display: flex; flex-direction: column; gap: 4px; }
+.ci-k { font-family: var(--serif); font-size: 24px; color: var(--champ-deep); }
+.ci-l { font-size: 13.5px; color: var(--ink-2); line-height: 1.35; }
+.calc { max-width: 720px; margin: 48px auto 0; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 32px; text-align: center; }
+.calc label { display: block; font-size: 15px; color: var(--ink-2); margin: 18px 0 14px; }
+.calc label b { color: var(--champ-deep); font-size: 20px; }
+.calc input[type=range] { width: 100%; accent-color: var(--champ); }
+.calc-out { margin-top: 22px; font-size: 15px; color: var(--ink); line-height: 1.7; }
+.calc-out .rec { display: inline-block; margin-top: 8px; background: var(--champ-wash); border: 1px solid var(--champ); border-radius: 999px; padding: 8px 18px; font-weight: 600; color: var(--champ-deep); }
 
 /* ── faq ──────────────────────────────────────────────────────────────── */
 .faq { max-width: 780px; margin: 52px auto 0; }
@@ -511,10 +528,11 @@
         <div class="p-name">Yaratıcı</div>
         <div class="p-desc">Düzenli içerik üreten bireyler için.</div>
         <div class="p-price"><span class="p-amt">599₺</span><span class="p-per">/ ay</span></div>
-        <div class="p-cred">1.000 kredi / ay</div>
+        <div class="p-vid">≈ 8 tam video / ay</div>
+        <div class="p-cred">1.000 kredi havuzu · dilediğin işe harca</div>
         <ul>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Sınırsız senaryo &amp; yayın paketi</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Seslendirme &amp; görsel üretimi</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Senaryo + görsel + seslendirme + yayın metni</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Standart anlatıcı sesleri</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Tüm formatlar (16:9 · 9:16 · 1:1)</li>
         </ul>
         <a class="btn btn-quiet" href="/storia/studio.html">Başla</a>
@@ -524,12 +542,13 @@
         <div class="p-name">Profesyonel</div>
         <div class="p-desc">Kanalını ciddiye alan üreticiler için.</div>
         <div class="p-price"><span class="p-amt">1.299₺</span><span class="p-per">/ ay</span></div>
-        <div class="p-cred">5.000 kredi / ay</div>
+        <div class="p-vid">≈ 40 tam video / ay</div>
+        <div class="p-cred">5.000 kredi havuzu · dilediğin işe harca</div>
         <ul>
           <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Yaratıcı'daki her şey</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Öncelikli üretim hızı</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Premium anlatıcı sesleri</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Cihazlar arası kütüphane</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Premium anlatıcı sesleri (ElevenLabs)</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Karakter &amp; görsel devamlılığı</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Öncelikli üretim + cihazlar arası kütüphane</li>
         </ul>
         <a class="btn btn-gold" href="/storia/studio.html">Profesyonel'e geç</a>
       </div>
@@ -537,16 +556,41 @@
         <div class="p-name">Stüdyo</div>
         <div class="p-desc">Yüksek hacimli ekipler ve ajanslar için.</div>
         <div class="p-price"><span class="p-amt">1.999₺</span><span class="p-per">/ ay</span></div>
-        <div class="p-cred">15.000 kredi / ay</div>
+        <div class="p-vid">≈ 80 tam video / ay</div>
+        <div class="p-cred">10.000 kredi havuzu · dilediğin işe harca</div>
         <ul>
           <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Profesyonel'deki her şey</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> En yüksek kredi havuzu</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Ekip &amp; öncelikli destek</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Ekip kullanımı &amp; marka profilleri</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l5 5L20 6"/></svg> Öncelikli destek</li>
         </ul>
         <a class="btn btn-quiet" href="/storia/studio.html">Başla</a>
       </div>
     </div>
-    <p class="price-note">Ücretsiz <b>Keşif</b> planıyla başla — hoş geldin kredisiyle ilk dosyanı bugün üret.</p>
+    <p class="price-note">Ücretsiz <b>Keşif</b> planıyla başla — 150 kredi hoş geldin hediyesiyle ilk dosyanı bugün üret. Kredi yalnızca <b>başarılı üretimde</b> düşer.</p>
+
+    <!-- Kredi neye yeter -->
+    <div class="credit-info reveal">
+      <h3>Kredi neye yeter?</h3>
+      <p>Kredin esnek: ister çok görselli tek video, ister onlarca senaryo. Tipik maliyetler:</p>
+      <div class="credit-grid">
+        <div class="ci"><span class="ci-k">30–170</span><span class="ci-l">Senaryo + yayın paketi (süreye göre — 60 sn ≈ 35)</span></div>
+        <div class="ci"><span class="ci-k">12</span><span class="ci-l">Görsel — Standart kalite</span></div>
+        <div class="ci"><span class="ci-k">45</span><span class="ci-l">Görsel — Yüksek kalite (4K)</span></div>
+        <div class="ci"><span class="ci-k">10–20</span><span class="ci-l">Seslendirme (dakika başına)</span></div>
+        <div class="ci"><span class="ci-k">150</span><span class="ci-l">AI video klip — 5 saniye</span></div>
+        <div class="ci"><span class="ci-k">300</span><span class="ci-l">AI video klip — 10 saniye</span></div>
+        <div class="ci"><span class="ci-k">Ücretsiz</span><span class="ci-l">Ken Burns efektli video birleştirme</span></div>
+        <div class="ci"><span class="ci-k">8 / 5</span><span class="ci-l">Görsel düzenleme / yeniden üretim</span></div>
+      </div>
+    </div>
+
+    <!-- Kredi hesaplayıcı -->
+    <div class="calc reveal">
+      <h3>Sana hangi paket uyar?</h3>
+      <label>Ayda kaç <b id="calcN">10</b> tam kısa video üretmek istersin?</label>
+      <input type="range" id="calcRange" min="1" max="120" value="10" aria-label="Aylık video sayısı">
+      <div class="calc-out" id="calcOut"></div>
+    </div>
   </div>
 </section>
 
@@ -629,5 +673,23 @@
 
 <script src="/storia/assets/ui.js" defer></script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/storia/sw.js',{scope:'/storia/'}).catch(function(){});});}</script>
+<script>
+/* Kredi hesaplayıcı — tam kısa video ≈ 127 kredi (senaryo 35 + 6 görsel 72 + premium ses 20) */
+(function(){
+  var r=document.getElementById('calcRange'), n=document.getElementById('calcN'), out=document.getElementById('calcOut');
+  if(!r||!out) return;
+  var CR=127, PLANS=[{n:'Yaratıcı',cr:1000,p:'599₺'},{n:'Profesyonel',cr:5000,p:'1.299₺'},{n:'Stüdyo',cr:10000,p:'1.999₺'}];
+  function upd(){
+    var v=parseInt(r.value,10)||1; if(n)n.textContent=v;
+    var cr=v*CR, rec=null;
+    for(var i=0;i<PLANS.length;i++){ if(cr<=PLANS[i].cr){ rec=PLANS[i]; break; } }
+    var html='Ayda ≈ <b>'+v+'</b> tam video ≈ <b>'+cr.toLocaleString('tr-TR')+'</b> kredi.<br>';
+    html+= rec ? '<span class="rec">Önerilen paket: '+rec.n+' · '+rec.p+' / ay</span>'
+               : '<span class="rec">Bu hacim için Stüdyo + ek paket — iletişime geç</span>';
+    out.innerHTML=html;
+  }
+  r.addEventListener('input',upd); upd();
+})();
+</script>
 </body>
 </html>
