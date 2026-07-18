@@ -375,7 +375,7 @@ var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 var FN = SB_URL + '/functions/v1/studio-generate';
 var sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
 var DATA = window.__ARSIV__ || [];
-var user = null, kredi = null;
+var user = null, kredi = null, krediUye = null, krediKalici = 0;
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function(){});
 
@@ -538,6 +538,7 @@ function krediGetir(force) {
     body: JSON.stringify({ action: 'balance' })
   }).then(function (r) { return r.json(); }).then(function (d) {
     if (d && typeof d.credits === 'number') { kredi = d.credits; krediYaz(); }
+    if (d && typeof d.subscription === 'number') { krediUye = d.subscription; krediKalici = d.topup || 0; }
     if (d && d.tier) { uyelik = { tier: d.tier, kota: d.monthly_quota, vade: d.expires_at }; if (cur === 'profil') drawProfil(); }
   }).catch(function () {});
 }
@@ -1361,9 +1362,12 @@ function hesapHtml() {
   var bakiyeSatir = '';
   if (user && kredi != null) {
     var adet = Math.floor(kredi / Math.max(1, toplam));
+    var ayrim = (krediKalici > 0)
+      ? '<div style="margin-top:5px;font-size:11px;color:#c9c2ae">' + (krediUye != null ? krediUye : kredi) + ' üyelik (ay dönünce yenilenir) + <b style="color:#e6c478">' + krediKalici + ' kalıcı</b> (asla yanmaz)</div>'
+      : '';
     bakiyeSatir = '<div style="margin-top:11px;padding:11px 13px;border-radius:11px;background:rgba(193,154,82,.09);border:1px solid rgba(193,154,82,.3);font-size:12.5px;color:#e6c478">' +
       '🪙 Bakiyen <b>' + kredi + ' KR</b> → bu tarifle <b>' + adet + ' tam video</b>' +
-      (adet < 1 ? ' — bir paket seçmen gerekir 👇' : ' üretebilirsin') + '</div>';
+      (adet < 1 ? ' — bir paket seçmen gerekir 👇' : ' üretebilirsin') + ayrim + '</div>';
   }
   return '<div class="kart" style="margin-top:0"><div style="padding:15px">' +
     '<b class="serif" style="font-size:16px;color:#ede4cf">🧮 Kredi Hesap Makinesi</b>' +
