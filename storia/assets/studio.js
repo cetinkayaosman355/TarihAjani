@@ -22,6 +22,8 @@
     bgMusic: null, bgMusicName: '', musicVol: 0.5, capStyle: 'klasik', vengine: 'grok',
     brand: { logo: '', color: '#d9bc80', name: '', handle: '', wm: true, outro: false, outroText: 'Abone ol · yeni içerik her gün' },
     chat: { open: false, msgs: [], busy: false },
+    trend: { open: false, niche: '', busy: false, items: [] },
+    series: { open: false, topic: '', count: 5, busy: false, running: false, eps: [], done: 0 },
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null, imgMode: 'gorsel',
     // ses stüdyo
@@ -108,6 +110,144 @@
         if (fresh.length > 8) { pushIdea(fresh); _shownIdeas.push(fresh); if (S.step === 1 && S.idea === _lastSuggest) { S.idea = fresh; _lastSuggest = fresh; render(); } }
       }
     }).catch(function () {}).then(function () { _suggestBusy = false; });
+  }
+  // ── Trend & hook bulucu ──────────────────────────────────────────────
+  function renderTrend() {
+    var t = S.trend;
+    var nicheChips = NICHES.slice(0, 12).map(function (n) {
+      return '<button class="chip' + (t.niche === n ? ' on' : '') + '" data-act="trendNiche" data-v="' + esc(n) + '">' + esc(n) + '</button>';
+    }).join('');
+    var results = '';
+    if (t.busy) {
+      results = '<div class="trend-loading"><span class="mini-orb"></span> Trend konular ve hook\'lar bulunuyor…</div>';
+    } else if (t.items && t.items.length) {
+      results = '<div class="trend-grid">' + t.items.map(function (it, i) {
+        return '<div class="trend-card">' +
+          '<div class="tc-topic">' + esc(it.konu || '') + '</div>' +
+          (it.hook ? '<div class="tc-hook"><span class="tc-lbl">İlk 3 sn</span>' + esc(it.hook) + '</div>' : '') +
+          (it.neden ? '<div class="tc-why">' + esc(it.neden) + '</div>' : '') +
+          '<div class="tc-acts"><button class="btn btn-gold btn-sm" data-act="useTrend" data-v="' + i + '">▶ Bu fikirle üret</button>' +
+          '<button class="btn btn-quiet btn-sm" data-act="copyHook" data-v="' + esc(it.hook || it.konu || '') + '">Hook\'u kopyala</button></div>' +
+        '</div>';
+      }).join('') + '</div>';
+    }
+    return '<div class="trend-panel">' +
+      '<div class="trend-head"><b>🔥 Trend & hook bulucu</b><span>Nişini seç, sana tıklanacak konular ve ilk-3-saniye kancaları çıkarayım.</span></div>' +
+      '<div class="trend-niches">' + nicheChips + '</div>' +
+      '<div class="trend-run"><input id="trendNiche" placeholder="ya da kendi nişini yaz (ör. vegan yemek)" value="' + esc(t.niche) + '">' +
+      '<button class="btn btn-gold btn-sm" data-act="trendGo">Bul</button>' +
+      '<button class="btn btn-quiet btn-sm" data-act="trendClose">Kapat</button></div>' +
+      results + '</div>';
+  }
+  function findTrends() {
+    var t = S.trend;
+    var custom = document.getElementById('trendNiche');
+    if (custom && custom.value.trim()) t.niche = custom.value.trim();
+    if (!t.niche) { toast('Önce bir niş seç ya da yaz'); return; }
+    if (t.busy) return;
+    t.busy = true; t.items = []; render();
+    if (!REAL) {
+      setTimeout(function () {
+        t.items = [
+          { konu: t.niche + ' hakkında herkesin yanlış bildiği 3 şey', hook: '"Bunu hâlâ yapıyorsan, durman lazım."', neden: 'Yanlış-inanç kırma formatı yüksek tutar.' },
+          { konu: t.niche + ' dünyasının kimsenin konuşmadığı sırrı', hook: '"Sana kimsenin söylemediği bir şey var…"', neden: 'Merak boşluğu + gizli bilgi.' },
+          { konu: '30 günde ' + t.niche + ' — gerçekte ne oluyor?', hook: '"30 gün denedim. Sonuç şoke etti."', neden: 'Deney/dönüşüm anlatısı.' },
+          { konu: t.niche + ' için 5 saniyede işe yarayan hile', hook: '"Bunu bilseydim yıllar önce…"', neden: 'Hızlı fayda, kaydetme tetikler.' }
+        ];
+        t.busy = false; render();
+      }, 800);
+      return;
+    }
+    var p = 'Sen viral kısa video stratejistisin. "' + t.niche + '" nişi için, YouTube Shorts/TikTok/Reels\'te ŞU AN tıklanma potansiyeli yüksek 6 ÖZGÜN video fikri üret. Her fikir için: 1) konu (tek cümle, spesifik ve çarpıcı), 2) hook = ilk 3 saniyede söylenecek/gösterilecek kanca cümlesi (merak boşluğu ya da cesur iddia), 3) neden = neden tutar (kısa). Klişe olmasın. SADECE geçerli JSON dizi döndür: [{"konu":"...","hook":"...","neden":"..."}]. Başka metin yok.';
+    callFn({ action: '', prompt: p, max_tokens: 2000 }).then(function (d) {
+      var txt = d && (d.text || d.result) ? String(d.text || d.result) : '';
+      var arr = null;
+      try { var m = /\[[\s\S]*\]/.exec(txt); if (m) arr = JSON.parse(m[0]); } catch (_e) {}
+      if (Array.isArray(arr) && arr.length) t.items = arr.slice(0, 8);
+      else t.items = [{ konu: t.niche + ' hakkında çarpıcı bir video', hook: 'Merak uyandıran bir açılış cümlesi', neden: 'Tekrar dene — daha spesifik bir niş yaz.' }];
+      t.busy = false; render();
+    }).catch(function () { t.busy = false; t.items = [{ konu: 'Bağlantı hatası', hook: 'Tekrar dene', neden: '' }]; render(); });
+  }
+  function useTrend(i) {
+    var it = S.trend.items[i]; if (!it) return;
+    S.idea = it.konu || ''; if (it.hook) S.custom = 'İlk 3 saniye kancası: ' + it.hook;
+    S.trend.open = false; S.step = 2; render();
+    toast('Fikir yüklendi — tarzını seç ve üret');
+  }
+  // ── Otomatik seri modu (tek konudan çoklu bölüm) ─────────────────────
+  function renderSeries() {
+    var s = S.series;
+    if (s.running) {
+      var total = s.eps.filter(function (e) { return e.on !== false; }).length;
+      return '<div class="trend-panel"><div class="trend-head"><b>📚 Seri üretiliyor…</b><span>' + s.done + ' / ' + total + ' bölüm hazır — bittiğinde Kütüphane\'de toplanır.</span></div>' +
+        '<div class="series-prog"><div class="series-bar" style="width:' + (total ? Math.round(s.done / total * 100) : 0) + '%"></div></div></div>';
+    }
+    var eps = '';
+    if (s.busy) {
+      eps = '<div class="trend-loading"><span class="mini-orb"></span> Bölümler planlanıyor…</div>';
+    } else if (s.eps.length) {
+      eps = '<div class="series-list">' + s.eps.map(function (e, i) {
+        return '<label class="series-ep' + (e.on !== false ? ' on' : '') + '"><input type="checkbox" data-act="seriesToggle" data-v="' + i + '"' + (e.on !== false ? ' checked' : '') + '>' +
+          '<span class="se-body"><span class="se-title">' + esc(e.baslik || ('Bölüm ' + (i + 1))) + '</span><span class="se-konu">' + esc(e.konu || '') + '</span></span></label>';
+      }).join('') + '</div>' +
+      '<div class="series-go"><button class="btn btn-gold btn-sm" data-act="seriesRun">✦ Seçili bölümleri üret</button>' +
+      '<span class="se-note">Her bölüm ayrı bir dosya olarak Kütüphane\'ye eklenir. Kredi bölüm başına düşer.</span></div>';
+    }
+    return '<div class="trend-panel">' +
+      '<div class="trend-head"><b>📚 Seri üret (çoklu bölüm)</b><span>Bir ana konu ver, sana birbirini tamamlayan bölümler planlayıp hepsini üreteyim.</span></div>' +
+      '<div class="trend-run"><input id="seriesTopic" placeholder="Ana konu (ör. antik Roma\'nın sırları)" value="' + esc(s.topic) + '">' +
+      '<input id="seriesCount" type="number" min="2" max="10" value="' + s.count + '" style="width:70px" title="Bölüm sayısı">' +
+      '<button class="btn btn-gold btn-sm" data-act="seriesPlan">Bölümleri planla</button>' +
+      '<button class="btn btn-quiet btn-sm" data-act="seriesClose">Kapat</button></div>' + eps + '</div>';
+  }
+  function planSeries() {
+    var s = S.series;
+    var ti = document.getElementById('seriesTopic'); if (ti && ti.value.trim()) s.topic = ti.value.trim();
+    var ci = document.getElementById('seriesCount'); if (ci) s.count = Math.min(10, Math.max(2, parseInt(ci.value, 10) || 5));
+    if (!s.topic) { toast('Önce seri konusunu yaz'); return; }
+    if (s.busy) return;
+    s.busy = true; s.eps = []; render();
+    if (!REAL) {
+      setTimeout(function () {
+        s.eps = []; for (var i = 0; i < s.count; i++) s.eps.push({ baslik: s.topic + ' — Bölüm ' + (i + 1), konu: s.topic + ' hakkında ' + (i + 1) + '. çarpıcı gerçek', on: true });
+        s.busy = false; render();
+      }, 700);
+      return;
+    }
+    var p = 'Sen bir içerik serisi editörüsün. "' + s.topic + '" ana konusundan, birbirini tamamlayan ama her biri TEK BAŞINA izlenebilen ' + s.count + ' kısa video bölümü planla. Her bölüm farklı bir açı/alt-konu olsun; tekrar olmasın, sıralı bir mantığı olsun. SADECE geçerli JSON dizi döndür: [{"baslik":"bölüm başlığı","konu":"tek cümle spesifik konu"}]. Başka metin yok.';
+    callFn({ action: '', prompt: p, max_tokens: 2000 }).then(function (d) {
+      var txt = d && (d.text || d.result) ? String(d.text || d.result) : ''; var arr = null;
+      try { var m = /\[[\s\S]*\]/.exec(txt); if (m) arr = JSON.parse(m[0]); } catch (_e) {}
+      if (Array.isArray(arr) && arr.length) s.eps = arr.slice(0, s.count).map(function (e) { e.on = true; return e; });
+      else s.eps = [{ baslik: s.topic, konu: s.topic, on: true }];
+      s.busy = false; render();
+    }).catch(function () { s.busy = false; toast('Bölümler planlanamadı — tekrar dene'); render(); });
+  }
+  function pushSeriesEntry(result, ep) {
+    var ent = { result: result, idea: ep.konu || ep.baslik, meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect + ' · seri', ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec, images: {}, covers: {}, videos: {}, audio: null };
+    S.history.unshift(ent); saveHist();
+  }
+  function runSeries() {
+    var s = S.series;
+    var eps = s.eps.filter(function (e) { return e.on !== false; });
+    if (!eps.length) { toast('En az bir bölüm seç'); return; }
+    if (REAL && !S.user) { openAuth(); return; }
+    s.running = true; s.done = 0; render();
+    var savedIdea = S.idea, i = 0;
+    (function next() {
+      if (i >= eps.length) {
+        S.idea = savedIdea; s.running = false; s.open = false; s.eps = [];
+        S.view = 'history'; render();
+        toast(eps.length + ' bölüm üretildi ✦ Kütüphane\'de');
+        return;
+      }
+      var ep = eps[i++]; S.idea = ep.konu || ep.baslik;
+      if (!REAL) { pushSeriesEntry(synthDemo(), ep); s.done = i; render(); setTimeout(next, 450); return; }
+      callFn({ action: 'generate', prompt: buildPrompt(), provider: S.provider, topic: S.idea, duration: 's' + S.durationSec, max_tokens: 12000 }).then(function (d) {
+        if (d && d.ok) { var obj = typeof d.result === 'string' ? safeParse(d.result) : d.result; if (obj && !obj.gecersiz) { pushSeriesEntry(obj, ep); if (typeof d.credits === 'number') S.credits = d.credits; } }
+        s.done = i; chrome(); render(); next();
+      }).catch(function () { s.done = i; render(); next(); });
+    })();
   }
   var TONES = [
     { id: 'merak', name: 'Merak uyandıran' }, { id: 'dramatik', name: 'Dramatik' },
@@ -230,10 +370,14 @@
         '<textarea id="ideaInput" placeholder="Örn: Okyanusun en derin noktasında ne var?" rows="2">' + esc(S.idea) + '</textarea>' +
         '<div class="compose-tools"><div class="left">' +
           '<button class="btn btn-quiet btn-sm" data-act="suggest">✦ Sen öner</button>' +
+          '<button class="btn btn-quiet btn-sm" data-act="trendFind">🔥 Trend & hook</button>' +
+          '<button class="btn btn-quiet btn-sm" data-act="seriesFind">📚 Seri üret</button>' +
           '<span class="cnt" id="ideaCount"></span></div>' +
           '<button class="btn btn-gold" data-act="toStep2">Tarzını seç →</button>' +
         '</div>' +
       '</div>' +
+      (S.trend.open ? renderTrend() : '') +
+      (S.series.open ? renderSeries() : '') +
       '<div class="suggest-row">' + chips + '</div>' +
       '<div class="tmpl-row"><span class="tmpl-lbl">Şablon</span>' +
         TEMPLATES.map(function (t, i) { return '<button class="tmpl' + (S.template === i ? ' on' : '') + '" data-act="template" data-v="' + i + '">' + esc(t.name) + '</button>'; }).join('') +
@@ -600,6 +744,17 @@
     switch (act) {
       case 'useIdea': S.idea = v; render(); break;
       case 'suggest': suggestIdea(); break;
+      case 'trendFind': S.trend.open = !S.trend.open; render(); break;
+      case 'trendNiche': S.trend.niche = v; render(); setTimeout(findTrends, 0); break;
+      case 'trendGo': findTrends(); break;
+      case 'trendClose': S.trend.open = false; render(); break;
+      case 'useTrend': useTrend(parseInt(v, 10)); break;
+      case 'copyHook': copy(v); toast('Hook kopyalandı'); break;
+      case 'seriesFind': S.series.open = !S.series.open; render(); break;
+      case 'seriesPlan': planSeries(); break;
+      case 'seriesToggle': var _ep = S.series.eps[parseInt(v, 10)]; if (_ep) _ep.on = !(_ep.on !== false); break;
+      case 'seriesRun': runSeries(); break;
+      case 'seriesClose': S.series.open = false; render(); break;
       case 'toStep2': if (!S.idea.trim()) { toast('Önce bir fikir yaz'); break; } S.step = 2; render(); break;
       case 'back': S.step = 1; render(); break;
       case 'goStep': var _gn = parseInt(v, 10); if (_gn === 4 && !S.result) break; if (_gn === 3) break; S.step = _gn; render(); break;
