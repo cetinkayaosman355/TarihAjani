@@ -82,18 +82,28 @@
     try { localStorage.setItem('storia_ideas', JSON.stringify(extra)); } catch (e) {}
     if (_ideaShuffled) _ideaShuffled.unshift(txt);
   }
-  var _suggestBusy = false;
+  var _suggestBusy = false, _lastSuggest = '', _shownIdeas = [];
+  var NICHES = ['psikoloji', 'para ve finans', 'girişimcilik', 'teknoloji', 'yapay zekâ', 'sağlık ve fitness', 'ilişkiler', 'yemek', 'bilim', 'uzay', 'gizem ve komplo', 'tarih', 'spor', 'oyun', 'kişisel gelişim', 'ürün reklamı / UGC', 'seyahat', 'motivasyon', 'sanat', 'doğa ve hayvanlar'];
   function suggestIdea() {
-    // anında öner (havuzdan), sonra arka planda AI'dan taze viral fikir çek
+    // anında rastgele öner (son gösterilenleri tekrarlama), sonra AI taze fikirle değiştir
     var pool = shuffledIdeas();
-    if (pool.length) { S.idea = pool[_ideaIdx % pool.length]; _ideaIdx++; render(); }
+    if (pool.length) {
+      var pick = pool[Math.floor(Math.random() * pool.length)], g = 0;
+      while (_shownIdeas.indexOf(pick) >= 0 && pool.length > _shownIdeas.length && g++ < 12) pick = pool[Math.floor(Math.random() * pool.length)];
+      _shownIdeas.push(pick); if (_shownIdeas.length > 12) _shownIdeas.shift();
+      _lastSuggest = pick; S.idea = pick; render();
+    }
     if (!REAL || _suggestBusy) return;
     _suggestBusy = true;
-    var seen = pool.slice(0, 8).join(' | ');
-    var p = 'Sen viral kısa video fikirleri üreten bir içerik editörüsün. YouTube Shorts / TikTok / Reels için, HERHANGİ bir nişte (psikoloji, para, teknoloji, sağlık, ilişkiler, girişim, ürün reklamı, bilim, gizem) çok tıklanabilecek, merak uyandıran, ÖZGÜN tek bir video konusu öner. Şunları TEKRARLAMA: ' + seen + '. Sadece konu başlığını tek satırda yaz; tırnak, numara, açıklama yok.';
+    var niche = NICHES[Math.floor(Math.random() * NICHES.length)];
+    var seen = _shownIdeas.slice(-8).join(' | ');
+    var p = 'Sen viral kısa video fikirleri üreten bir içerik editörüsün. "' + niche + '" nişinde, YouTube Shorts / TikTok / Reels için çok tıklanabilecek, merak uyandıran, ÖZGÜN ve TAZE tek bir video konusu öner. Şu konuları KESİNLİKLE TEKRARLAMA: ' + seen + '. Klişe olmasın, spesifik ve çarpıcı olsun. Sadece konu başlığını tek satırda yaz; tırnak, numara, açıklama yok.';
     callFn({ action: '', prompt: p }).then(function (d) {
       var t = d && (d.text || d.result);
-      if (t) pushIdea(String(t).split('\n')[0]);
+      if (t) {
+        var fresh = String(t).split('\n')[0].trim().replace(/^["'•\-\d.\s]+/, '').replace(/["']+$/, '').slice(0, 120);
+        if (fresh.length > 8) { pushIdea(fresh); _shownIdeas.push(fresh); if (S.step === 1 && S.idea === _lastSuggest) { S.idea = fresh; _lastSuggest = fresh; render(); } }
+      }
     }).catch(function () {}).then(function () { _suggestBusy = false; });
   }
   var TONES = [
@@ -106,15 +116,15 @@
   // OpenAI yedeği. x = kredi çarpanı (premium sesler daha pahalı).
   var VOICES = [
     { name: 'Seyfullah Kartal', desc: 'Güçlü, net anlatıcı', ev: 'mF7tIc9VLrznhGooGjaT', ov: 'onyx' },
-    { name: 'Emin', desc: 'Derin, yumuşak ve sakin', ev: 'DsbR47WNEv8o9x37ib9X', ov: 'onyx' },
+    { name: 'Emin', desc: 'Derin, yumuşak ve sakin', ev: 'DsbR47WNEv8o9x37ib9X', ov: 'ash' },
     { name: 'Kadir Kayışcı', desc: 'Olgun, derin, güven veren', ev: 'j82ax9yhzfYwq9lDvRWL', ov: 'echo' },
-    { name: 'Sultan', desc: 'Tiyatral, destansı anlatıcı', ev: 'gyxPK6bLXQAkBSCeAKvk', ov: 'echo' },
+    { name: 'Sultan', desc: 'Tiyatral, destansı anlatıcı', ev: 'gyxPK6bLXQAkBSCeAKvk', ov: 'alloy' },
     { name: 'Şevval Kılınç', desc: 'Canlı, öğretici kadın sesi', ev: '8LQS4H6IYf1unP46qbKD', ov: 'nova' },
     { name: 'Belma', desc: 'Sıcak, doğal kadın sesi', ev: 'KbaseEXyT9EE0CQLEfbB', ov: 'shimmer' },
     { name: 'Mahidevran', desc: 'Fısıltılı, sıcak', ev: 'yp3v9dmYlNwJf3mXPBLV', ov: 'sage' },
     { name: 'Doğa', desc: 'Doğal, dengeli', ev: 'IuRRIAcbQK5AQk1XevPj', ov: 'echo' },
-    { name: 'Adam', desc: 'Klasik erkek anlatıcı', ev: 'J17lijyP1BHYcM7ld0Rg', ov: 'echo', check: true },
-    { name: 'Cassius', desc: 'Kadifemsi, otoriter (İngilizce ağırlıklı)', ev: 'ktrGUw7rURIQyMrQZqCu', ov: 'onyx', check: true },
+    { name: 'Adam', desc: 'Klasik erkek anlatıcı', ev: 'J17lijyP1BHYcM7ld0Rg', ov: 'alloy', check: true },
+    { name: 'Cassius', desc: 'Kadifemsi, otoriter (İngilizce ağırlıklı)', ev: 'ktrGUw7rURIQyMrQZqCu', ov: 'ash', check: true },
     { name: 'Mossbeard', desc: 'Vahşi, sinematik — premium ses', ev: 'bFrjFL4nlpeYNwNRhXxq', ov: 'onyx', premium: true, x: 4, check: true }
   ];
   var RATES = [{ v: 0.9, l: 'Yavaş' }, { v: 1, l: 'Normal' }, { v: 1.12, l: 'Hızlı' }];
