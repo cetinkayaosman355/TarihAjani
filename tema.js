@@ -129,18 +129,21 @@
     if (b) { b.textContent = t === 'light' ? '🌙' : '☀'; b.title = t === 'light' ? 'Karanlık moda geç' : 'Aydınlık moda geç'; }
   }
 
-  // Tema düğmesi konumu — sabit köşeler çakışmasın:
-  //  • Studio (sol 250px sidebar + sağ-altta sohbet/AJANLA KONUŞ FAB) masaüstünde
-  //    düğme sidebar'ın SAĞINA, boş sol-alt köşeye alınır.
-  //  • Studio mobilde (≤840px) sidebar gizli, altta sekme çubuğu var → çubuğun ÜSTÜNE.
-  //  • Diğer sayfalarda varsayılan sol-alt köşe (sohbet butonu sağ-altta).
+  // Studio gibi kendi arayüzüne tema düğmesi koyan sayfalar bu global üzerinden
+  // aynı tema durumunu değiştirir (tek kaynak: localStorage + data-theme).
+  try {
+    window.__taThemeToggle = function () { var n = get() === 'light' ? 'dark' : 'light'; save(n); apply(n); return n; };
+    window.__taThemeGet = get;
+  } catch (e) { /* window yoksa sorun değil */ }
+
+  // Yüzen tema düğmesi konumu. Studio kendi header düğmesini kullandığından orada
+  // yüzen buton GİZLENİR (aksi halde sabit köşelerde — sidebar / alt sekme çubuğu /
+  // sohbet FAB'ı — boşlukta "saçma" duruyordu). Diğer sayfalarda sol-alt köşe.
   function placeBtn(b) {
     var studio = !!document.querySelector('.ta-studio-wrap');
-    var narrow = window.matchMedia('(max-width: 840px)').matches;
-    var left = '16px', bottom = '16px';
-    if (studio && !narrow) { left = '266px'; bottom = '18px'; }   // 250px sidebar'ın sağı
-    else if (studio && narrow) { left = '16px'; bottom = '80px'; } // sekme çubuğunun üstü
-    b.style.left = left; b.style.right = 'auto'; b.style.bottom = bottom; b.style.top = 'auto';
+    if (studio) { b.style.display = 'none'; return; }
+    b.style.display = '';
+    b.style.left = '16px'; b.style.right = 'auto'; b.style.bottom = '16px'; b.style.top = 'auto';
   }
 
   function ensureButton() {
