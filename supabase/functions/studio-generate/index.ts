@@ -390,18 +390,22 @@ async function generateSpeech(text: string, voice: string): Promise<Uint8Array |
 // ElevenLabs seslendirme — yalnızca izinli ses kimlikleri (istismarı önler; site
 // ELEVENLABS_API_KEY'ini kullanır). Türkçeyi doğru okuyan eleven_multilingual_v2.
 const ELEVEN_ALLOWED = new Set([
-  "j82ax9yhzfYwq9lDvRWL", // Kadir Kayışçı (imza ses)
-  "pNInz6obpgDQGcFmaJgB", // Erkek · Anlatıcı
-  "ErXwobaYiN019PkySvjV", // Erkek · Gizemli
-  "TxGEqnHWrfWFTfGW9XjX", // Erkek · Net
-  "EXAVITQu4vr4xnSDxMaL", // Kadın · Belgesel
-  "21m00Tcm4TlvDq8ikWAM", // Kadın · Olgun
-  "bFrjFL4nlpeYNwNRhXxq", // Sinematik · Premium (PAHALI — 3× kredi)
+  "j82ax9yhzfYwq9lDvRWL", // Kadir Kayışçı · İmza
+  "mF7tIc9VLrznhGooGjaT", // Seyfullah Kartal · Derin
+  "gyxPK6bLXQAkBSCeAKvk", // Sultan · Tiyatral Anlatıcı
+  "DsbR47WNEv8o9x37ib9X", // Emin · Derin & Yumuşak
+  "IuRRIAcbQK5AQk1XevPj", // Doğa · Canlı & Zengin
+  "J17lijyP1BHYcM7ld0Rg", // Adam · Koyu & Sert
+  "8LQS4H6IYf1unP46qbKD", // Şevval Kılınç · Genç Kadın
+  "KbaseEXyT9EE0CQLEfbB", // Belma · Kadın Anlatıcı
+  "yp3v9dmYlNwJf3mXPBLV", // Mahidevran · Sıcak Fısıltı
+  "ktrGUw7rURIQyMrQZqCu", // Cassius · Kadifemsi (TR: dinle-onayla)
   "DUnzBkwtjRWXPr6wRbmL", // Animasyon · Anlatıcı
+  "bFrjFL4nlpeYNwNRhXxq", // Mossbeard · Vahşi (PREMIUM — 4× kredi)
 ]);
 // Premium (pahalı) sesler → TTS ücreti PREMIUM_MULT katına çıkar (sadece gerekliyse).
 const ELEVEN_PREMIUM = new Set(["bFrjFL4nlpeYNwNRhXxq"]);
-const PREMIUM_MULT = 3;
+const PREMIUM_MULT = 4;
 async function generateSpeechEleven(text: string, voiceId: string, opts?: { stability?: number; style?: number }): Promise<Uint8Array | null> {
   const key = Deno.env.get("ELEVENLABS_API_KEY");
   // TEŞHİS: Kadir/ElevenLabs "gelmiyor" şikâyeti → neden başarısız olduğu Supabase
