@@ -16,6 +16,8 @@
   --paper-3:      #EFE8DA;   /* deeper wash */
   --surface:      #FFFFFF;   /* cards / panels */
   --surface-warm: #FCFAF5;
+  --glass:        rgba(251,248,242,.78);  /* sticky/glass bars */
+  --glass-strong: rgba(251,248,242,.88);
 
   /* — Ink (warm near-black) — */
   --ink:          #1B1712;   /* headings */
@@ -316,3 +318,53 @@ textarea.field { resize: vertical; line-height: 1.55; }
   }
   .nav-cta .btn-ghost { display: none; }
 }
+
+/* ---- Dark focus mode (Obsidian & Champagne) ------------------------------
+   Token-level override; components inherit through var(). Applied via
+   data-theme="dark" on <html>. Deliberate single accent (champagne) on a
+   warm near-black ground.                                                   */
+:root[data-theme="dark"] {
+  --paper:        #14110C;
+  --paper-2:      #1B1710;
+  --paper-3:      #241E15;
+  --surface:      #1E1A13;
+  --surface-warm: #221D15;
+  --glass:        rgba(18,15,10,.72);
+  --glass-strong: rgba(18,15,10,.86);
+
+  --ink:          #F3ECDC;
+  --ink-2:        #CFC4AE;
+  --muted:        #9A8F79;
+  --faint:        #6E6551;
+
+  --champ:        #CBA968;
+  --champ-2:      #E4CB93;
+  --champ-deep:   #E0C588;   /* accent text must read light on dark */
+  --champ-wash:   #2A2214;
+  --champ-line:   #3C311C;
+  --gold-grad:    linear-gradient(122deg, #E4CB93 0%, #C2A160 45%, #9C7B3B 100%);
+  --gold-sheen:   linear-gradient(122deg, #F1E2B8 0%, #D9BC80 48%, #B4914D 100%);
+
+  --line:         #2C261B;
+  --line-2:       #38311F;
+  --line-strong:  #4A3F29;
+
+  --ink-panel:    #0C0906;
+  --ink-panel-2:  #171009;
+  --on-ink:       #F3ECDC;
+  --on-ink-muted: #A99C82;
+
+  --sh-1: 0 1px 2px rgba(0,0,0,.3), 0 2px 8px rgba(0,0,0,.28);
+  --sh-2: 0 4px 14px rgba(0,0,0,.36), 0 18px 46px rgba(0,0,0,.44);
+  --sh-3: 0 12px 30px rgba(0,0,0,.5), 0 40px 90px rgba(0,0,0,.6);
+  --sh-gold: 0 10px 30px rgba(160,124,54,.34);
+}
+:root[data-theme="dark"] .grain::before { mix-blend-mode: screen; opacity: .05; }
+:root[data-theme="dark"] .btn-gold { color: #211803; }
+:root[data-theme="dark"] .btn-ink { background: var(--champ-wash); color: var(--on-ink); border-color: var(--line-strong); }
+:root[data-theme="dark"] .btn-ink:hover { background: #33290f; }
+/* "ink chip" pattern (dark bg + light text) inverts wrong in dark → use champagne */
+:root[data-theme="dark"] .seg button.on { background: var(--gold-sheen); color: #211803; border-color: transparent; box-shadow: var(--sh-gold); }
+:root[data-theme="dark"] .mini-steps .ms.on .n { background: var(--gold-sheen); color: #211803; border-color: transparent; }
+:root[data-theme="dark"] .tabs button.on { color: var(--champ-2); }
+:root[data-theme="dark"] .toast { background: #2A2317; color: var(--on-ink); border: 1px solid var(--line-strong); }

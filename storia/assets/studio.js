@@ -539,6 +539,14 @@
   function openAuth() { if (!REAL) { toast('Demo modu — kurulum sonrası giriş aktifleşir'); return; } document.getElementById('authModal').classList.add('show'); }
   function closeAuth() { document.getElementById('authModal').classList.remove('show'); }
   function setupChrome() {
+    // theme toggle (dark focus mode)
+    var themeBtn = document.getElementById('themeBtn');
+    if (themeBtn) themeBtn.addEventListener('click', function () {
+      var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', cur);
+      try { localStorage.setItem('storia_theme', cur); } catch (e) {}
+      toast(cur === 'dark' ? 'Karanlık mod' : 'Aydınlık mod');
+    });
     // rail nav
     document.getElementById('railNav').addEventListener('click', function (e) {
       var it = e.target.closest('.rail-item'); if (!it) return;

@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Hanken+Grotesk:wght@300..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/storia/assets/storia.css">
+<script>(function(){try{var t=localStorage.getItem('storia_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <style>
 html, body { height: 100%; }
 body { background: var(--paper); overflow: hidden; }
@@ -22,7 +23,7 @@ body { background: var(--paper); overflow: hidden; }
 /* ── Rail (sidebar) ─────────────────────────────────────────────────── */
 .rail {
   width: 258px; flex: none; height: 100%;
-  background: linear-gradient(180deg, #FFFFFF 0%, var(--paper) 60%);
+  background: linear-gradient(180deg, var(--surface-warm) 0%, var(--paper) 70%);
   border-right: 1px solid var(--line);
   display: flex; flex-direction: column;
   padding: 22px 16px 18px;
@@ -69,11 +70,17 @@ body { background: var(--paper); overflow: hidden; }
 
 .topbar { position: relative; z-index: 5; flex: none; height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 0 clamp(20px, 3vw, 40px); border-bottom: 1px solid var(--line);
-  background: rgba(251,248,242,.78); backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); }
+  background: var(--glass); backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); }
 .tb-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .tb-title { font-family: var(--serif); font-size: 20px; color: var(--ink); white-space: nowrap; }
 .tb-right { display: flex; align-items: center; gap: 12px; }
 .mode-pill { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 5px 11px; border-radius: 999px; border: 1px dashed var(--line-strong); }
+.icon-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); transition: all .2s var(--ease); cursor: pointer; }
+.icon-btn:hover { border-color: var(--champ); color: var(--champ-deep); transform: translateY(-1px); }
+.icon-btn svg { width: 18px; height: 18px; }
+.icon-btn .moon { display: none; }
+:root[data-theme="dark"] .icon-btn .moon { display: block; }
+:root[data-theme="dark"] .icon-btn .sun { display: none; }
 .cr-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--champ-line); font-size: 13.5px; font-weight: 600; color: var(--champ-deep); box-shadow: var(--sh-1); }
 .cr-pill svg { width: 15px; height: 15px; }
 
@@ -376,6 +383,10 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
         <div id="tbContext"></div>
       </div>
       <div class="tb-right">
+        <button class="icon-btn" id="themeBtn" aria-label="Karanlık / aydınlık mod" title="Karanlık / aydınlık mod">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 14.5A7.5 7.5 0 019.5 4 7.5 7.5 0 1020 14.5z"/></svg>
+        </button>
         <span class="mode-pill" id="modePill" hidden>Demo</span>
         <span class="cr-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h4a2 2 0 010 4H9"/></svg><b id="crNum">—</b></span>
       </div>
