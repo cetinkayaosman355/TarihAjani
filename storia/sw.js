@@ -1,7 +1,7 @@
 /* STORIA — service worker (scope: /storia/)
    App-shell cache for offline + fast loads. Only handles same-origin /storia/
    GET requests; leaves fonts, Supabase and other cross-origin calls untouched. */
-const CACHE = 'storia-v2';
+const CACHE = 'storia-v3';
 const ASSETS = [
   '/storia/',
   '/storia/index.html',
@@ -31,9 +31,10 @@ self.addEventListener('fetch', function (e) {
   var url;
   try { url = new URL(e.request.url); } catch (_) { return; }
   if (e.request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.indexOf('/storia/') !== 0) return;
-  // network-first for HTML (fresh app), cache-first for static assets
-  var isHTML = e.request.mode === 'navigate' || /\.html$/.test(url.pathname) || url.pathname === '/storia/';
-  if (isHTML) {
+  // network-first for code (HTML/JS/CSS/JSON — always fresh online), cache-first
+  // for static media (images/fonts) which rarely change.
+  var isCode = e.request.mode === 'navigate' || /\.(html|js|css|json|webmanifest)$/.test(url.pathname) || url.pathname === '/storia/';
+  if (isCode) {
     e.respondWith(
       fetch(e.request).then(function (resp) { var copy = resp.clone(); caches.open(CACHE).then(function (c) { c.put(e.request, copy); }); return resp; })
         .catch(function () { return caches.match(e.request).then(function (r) { return r || caches.match('/storia/studio.html'); }); })
