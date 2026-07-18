@@ -415,11 +415,11 @@
   // Görsel kalite seçici (müşteri seçer — Grok/Kling mantığı). Standart = ucuz
   // (medium), Yüksek = premium (gpt-image üst / 4K). Kredi farkı sunucuda uygulanır.
   // AI video klip maliyeti (backend videoCost ile birebir) — sağlayıcıya göre:
-  // Grok 30 kr/sn (taban 150), Kling 40 kr/sn (taban 200, sinematik/premium).
+  // Grok 30 kr/sn (taban 150), Kling v2.6/v3 50 kr/sn (taban 250, sinematik/premium).
   function vcost(sec, provider) {
     var kling = (provider || S.vengine) === 'kling';
     var s = Math.round(Math.min(15, Math.max(3, sec)));
-    return Math.max(kling ? 200 : 150, s * (kling ? 40 : 30));
+    return Math.max(kling ? 250 : 150, s * (kling ? 50 : 30));
   }
   function imgCr() { return S.imgQuality === 'yuksek' ? 45 : 12; }
   function imgQualHtml() {
