@@ -1526,6 +1526,18 @@ class Component extends DCLogic {
     if (window.TAFiyat) window.TAFiyat.refresh(m => this.setState({ prices: m }));
     this.loadSavedImgs();   // kalıcı "Önceki Üretimler" galerisini yükle
     this._resumeVideos();   // yarım kalan video işlerini kaldığı yerden sürdür
+    // YARIM KALAN ÜRETİM: başka sayfaya geçilmiş / sayfa yenilenmiş ve üretim
+    // bitmemişse (pendingJob duruyor, henüz sonuç yok) → arka planda KALDIĞI YERDEN
+    // kendiliğinden sürdür; kullanıcı elle uğraşmasın, kredi zaten korunur.
+    try {
+      const pj = this.state.pendingJob;
+      if (pj && pj.job && pj.idea && !this.state.result && this.state.screen === 'studio') {
+        setTimeout(() => {
+          if (this.state.generating || this.state.result) return;
+          this.setState(Object.assign({ idea: pj.idea }, pj.picks || {}), () => this.startGenerate());
+        }, 800);
+      }
+    } catch (e) {}
     // Lightbox klavye gezinme: ← önceki, → sonraki, Esc kapat
     this._zoomKey = (e) => {
       if (!this.state.imgZoom) return;
@@ -3262,7 +3274,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       return;
     }
     const cost = this.costOf();
-    if (s.credits < cost) { this.setState({ creditModal: true }); return; }
+    // Yarım kalan işi (aynı konu + iş kimliği) sürdürüyorsak kredi zaten düşmüştü →
+    // ön kredi kontrolüyle engelleme; sunucu tekrarda kredisiz teslim eder.
+    const resuming = !!(s.pendingJob && s.pendingJob.job && s.pendingJob.idea === s.idea);
+    if (!resuming && s.credits < cost) { this.setState({ creditModal: true }); return; }
     this.setState({ step: 3, generating: true, genError: '', genPct: 4 });
     const msgs = ['ARŞİV BAĞLANTISI KURULUYOR…', 'KAYNAKLAR ÇAPRAZ SORGULANIYOR…', 'KANIT ZİNCİRİ KURULUYOR…', 'SENARYO KALEME ALINIYOR…', 'YAYIN PAKETİ MÜHÜRLENİYOR…'];
     let mi = 0;
@@ -3294,15 +3309,16 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       const job = (s.pendingJob && s.pendingJob.idea === s.idea && s.pendingJob.job)
         ? s.pendingJob.job
         : ('j' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
-      this.setState({ pendingJob: { job, idea: s.idea } }, () => this.persist());
+      this.setState({ pendingJob: { job, idea: s.idea, picks: { tone: s.tone, voice: s.voice, style: s.style, duration: s.duration, model: s.model, aspect: s.aspect } } }, () => this.persist());
       this._genJob = job;
       let text;
       try {
         text = await this.askAI(this.buildPrompt(twoStage), maxTok, 'generate');
       } catch (err) {
-        // Ağ kopması mı? Üretim sunucuda sürüyor olabilir — sonucu beklerken sor.
-        const isNet = /load failed|failed to fetch|network|internet|abort/i.test(err.message || '');
-        if (!(isNet && this.hasSession())) throw err;
+        // Ağ kopması VEYA zaman aşımı → üretim sunucuda sürüyor olabilir; sonucu
+        // arka planda ~4 dk sorarak KURTAR (elle TEKRAR DENE gerekmeden kendi tamamlar).
+        const recoverable = /load failed|failed to fetch|network|internet|abort|zaman aşımı|timeout|504|546|502|503/i.test(err.message || '');
+        if (!(recoverable && this.hasSession())) throw err;
         clearInterval(this._mt);
         const rec = await this.recoverJob(job);
         if (!rec) throw err;
@@ -4293,17 +4309,38 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const prov = this.state.model === 'openai' || this.state.model === 'gpt' ? 'openai' : 'claude';
     // Ücretli aksiyonlarda kullanıcı JWT'si gönderilir ki sunucu doğru hesaptan düşsün
     const token = this._token() || SB_KEY;
-    const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000, action: action || '', duration: this.state.duration, topic: this.state.idea, job: this._genJob || undefined })
-    });
-    const data = await r.json().catch(() => ({ ok: false, error: 'Sunucu yanıtı okunamadı' }));
-    if (r.status === 402) { this._lastGen = { charged: false, insufficient: true, credits: data.credits }; throw new Error('YETERSIZ_KREDI'); }
-    if (r.status === 504 || r.status === 546) throw new Error('Sunucu zaman aşımı — uzun dosyalarda olabiliyor; kredi düşülmedi, TEKRAR DENE ile yeniden başlat.');
-    if (!r.ok || !data.ok) throw new Error(data.error || ('studio-generate hatası (' + r.status + ')'));
-    this._lastGen = { charged: !!data.charged, credits: data.credits };
-    return norm(data.text || data.result || '');
+    // OTOMATİK YENİDEN DENEME: geçici hatalarda (504/546 zaman aşımı, 5xx, ağ kopması)
+    // kullanıcı elle uğraşmasın diye 3 deneme + artan bekleme yapılır. 'generate' işi
+    // sabit 'job' kimliğiyle gider → sunucu tamamlanmış üretimi TEKRARDA kredisiz döner
+    // (çift ödeme yok). 402 (kredi) ve 4xx (kalıcı) hatalarda hemen durulur.
+    let lastErr = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) await new Promise(res => setTimeout(res, attempt * 3500));
+      try {
+        const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ prompt, provider: prov, max_tokens: maxTokens || 4000, action: action || '', duration: this.state.duration, topic: this.state.idea, job: this._genJob || undefined })
+        });
+        if (r.status === 402) { const d = await r.json().catch(() => ({})); this._lastGen = { charged: false, insufficient: true, credits: d.credits }; throw new Error('YETERSIZ_KREDI'); }
+        if (r.status === 504 || r.status === 546 || r.status === 502 || r.status === 503) { lastErr = new Error('Sunucu zaman aşımı — uzun dosyalarda olabiliyor; kredi düşülmedi.'); continue; }
+        const data = await r.json().catch(() => ({ ok: false, error: 'Sunucu yanıtı okunamadı' }));
+        if (!r.ok || !data.ok) {
+          lastErr = new Error(data.error || ('studio-generate hatası (' + r.status + ')'));
+          if (r.status >= 500) continue;   // geçici sunucu hatası → yeniden dene
+          throw lastErr;                    // 4xx kalıcı → durdur
+        }
+        this._lastGen = { charged: !!data.charged, credits: data.credits };
+        return norm(data.text || data.result || '');
+      } catch (e) {
+        if (e.message === 'YETERSIZ_KREDI') throw e;
+        const isNet = /load failed|failed to fetch|network|internet|abort/i.test(e.message || '');
+        lastErr = e;
+        if (isNet && attempt < 2) continue;   // ağ kopması → bir kez daha dene
+        if (!isNet) throw e;                    // ağ dışı (parse vb.) → durdur
+      }
+    }
+    throw lastErr || new Error('Üretim başarısız — tekrar deneyin.');
   }
 
   // Fikir bulamayan/takılan kullanıcı için: çıkmaz yerine SORU-CEVAP. Sohbeti
