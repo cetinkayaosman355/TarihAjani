@@ -388,7 +388,7 @@ async function generateSpeechEleven(text: string, voiceId: string, opts?: { stab
           next_text: nextTxt,
           voice_settings: { stability: stab, similarity_boost: 0.85, style: sty, use_speaker_boost: true },
         }),
-      });
+      }, 60_000);   // ← timeout ZORUNLU; verilmezse fetchT anında abort ediyordu
       if (!r.ok) {
         const body = await r.text().catch(() => "");
         _ttsElevenErr = "ElevenLabs " + r.status + ": " + body.slice(0, 180);
