@@ -175,8 +175,13 @@ body { background: var(--paper); overflow: hidden; }
 .compose-box textarea { width: 100%; border: 0; background: transparent; resize: none; outline: none;
   font-family: var(--serif); font-weight: 400; font-size: 23px; line-height: 1.4; color: var(--ink); padding: 26px 26px 8px; min-height: 92px; }
 .compose-box textarea::placeholder { color: var(--faint); }
-.compose-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px 14px; }
-.compose-tools .left { display: flex; align-items: center; gap: 10px; }
+.compose-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px 14px; flex-wrap: wrap; }
+.compose-tools .left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 620px) {
+  .compose-tools { flex-direction: column; align-items: stretch; }
+  .compose-tools .left { justify-content: center; }
+  .compose-tools > .btn-gold { width: 100%; justify-content: center; }
+}
 .compose-tools .cnt { font-size: 13px; color: var(--muted); }
 .suggest-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; justify-content: center; }
 .suggest-row .chip { cursor: pointer; }
@@ -329,15 +334,24 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 
 /* ═══ RESULT DOCUMENT (step 4) ════════════════════════════════════════ */
 .doc { max-width: 940px; margin: 0 auto; }
-.doc-hero { position: relative; border-radius: var(--r-xl); overflow: hidden; background: var(--ink-panel); color: var(--on-ink); padding: clamp(28px, 4vw, 48px); margin-bottom: 26px; }
-.doc-hero::before { content:""; position:absolute; right:-40px; top:-60px; width: 340px; height: 340px; background: radial-gradient(circle, rgba(217,188,128,.4), transparent 68%); filter: blur(30px); }
+/* Açık, editoryal hero — Fildişi & Şampanya (tema değişkenleriyle otomatik uyumlu) */
+.doc-hero { position: relative; border-radius: var(--r-xl); overflow: hidden; background: linear-gradient(152deg, var(--champ-wash) 0%, var(--surface) 58%); border: 1px solid var(--line-2); color: var(--ink); padding: clamp(28px, 4vw, 48px); margin-bottom: 26px; box-shadow: var(--sh-1); }
+.doc-hero::before { content:""; position:absolute; right:-70px; top:-90px; width: 380px; height: 380px; background: radial-gradient(circle, rgba(180,145,77,.20), transparent 70%); filter: blur(34px); }
 .doc-hero > * { position: relative; z-index: 1; }
-.doc-eyebrow { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--champ-2); font-weight: 600; }
-.doc-title { font-family: var(--serif); font-size: clamp(28px, 4vw, 46px); line-height: 1.06; color: var(--on-ink); margin: 14px 0 0; max-width: 22ch; }
-.doc-logline { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--on-ink-muted); margin-top: 14px; max-width: 58ch; }
+.doc-eyebrow { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--champ-deep); font-weight: 700; }
+.doc-title { font-family: var(--serif); font-size: clamp(28px, 4vw, 46px); line-height: 1.06; color: var(--ink); margin: 14px 0 0; max-width: 22ch; }
+.doc-logline { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--ink-2); margin-top: 14px; max-width: 58ch; }
 .doc-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
-.doc-meta .m { font-size: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.08); color: var(--on-ink); font-weight: 500; }
-.doc-acts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+.doc-meta .m { font-size: 12px; padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line-2); color: var(--ink-2); font-weight: 500; }
+.doc-acts { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 26px; align-items: center; }
+.da-group { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+.da-sep { width: 1px; height: 24px; background: var(--line-2); flex: none; }
+.da-lbl { font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-right: 1px; }
+/* Hero üzerindeki ikincil butonlar — açık, yumuşak yüzey */
+.btn-soft { background: var(--surface); color: var(--ink); border-color: var(--line-2); box-shadow: var(--sh-1); }
+.btn-soft:hover { background: var(--surface); border-color: var(--champ); color: var(--champ-deep); transform: translateY(-1px); box-shadow: var(--sh-2); }
+.da-mini { --pad-y: 8px; --pad-x: 13px; font-size: 12.5px; }
+@media (max-width: 640px) { .da-sep { display: none; } .doc-acts { gap: 9px; } }
 
 .tabs { display: flex; gap: 4px; margin-bottom: 26px; overflow-x: auto; padding-bottom: 2px; border-bottom: 1px solid var(--line); }
 .tabs::-webkit-scrollbar { height: 0; }

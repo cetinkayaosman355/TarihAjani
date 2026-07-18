@@ -525,12 +525,22 @@
       '<h1 class="doc-title">' + esc(r.baslik || S.idea) + '</h1>' +
       (r.logline ? '<p class="doc-logline">' + esc(r.logline) + '</p>' : '') +
       '<div class="doc-meta">' + meta + '</div>' +
-      '<div class="doc-acts"><button class="btn btn-gold btn-sm" data-act="reviseChat">✎ Konuşarak düzenle</button>' +
-        '<button class="btn btn-ghost btn-sm" data-act="dubOpen" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">🌍 Dublaj</button>' +
-        '<button class="btn btn-ghost btn-sm" data-act="restart" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">＋ Yeni dosya</button>' +
-        '<button class="btn btn-ghost btn-sm" data-act="regen" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↻ Yeniden üret</button>' +
-        '<button class="btn btn-ghost btn-sm" data-act="exportPdf" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↓ PDF</button>' +
-        '<button class="btn btn-ghost btn-sm" data-act="download" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↓ Metin</button></div>' +
+      '<div class="doc-acts">' +
+        '<div class="da-group">' +
+          '<button class="btn btn-gold btn-sm" data-act="reviseChat">✎ Konuşarak düzenle</button>' +
+          '<button class="btn btn-sm btn-soft" data-act="dubOpen">🌍 Dublaj</button>' +
+        '</div>' +
+        '<span class="da-sep"></span>' +
+        '<div class="da-group">' +
+          '<button class="btn btn-sm btn-soft da-mini" data-act="regen">↻ Yeniden üret</button>' +
+          '<button class="btn btn-sm btn-soft da-mini" data-act="restart">＋ Yeni dosya</button>' +
+        '</div>' +
+        '<span class="da-sep"></span>' +
+        '<div class="da-group"><span class="da-lbl">İndir</span>' +
+          '<button class="btn btn-sm btn-soft da-mini" data-act="exportPdf">PDF</button>' +
+          '<button class="btn btn-sm btn-soft da-mini" data-act="download">Metin</button>' +
+        '</div>' +
+      '</div>' +
       (S.dub.open ? renderDub() : '') + '</div>';
     return '<div class="doc">' + hero + '<div class="tabs">' + tabBtns + '</div><div class="tab-body" id="tabBody">' + renderTab() + '</div></div>';
   }
