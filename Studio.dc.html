@@ -845,6 +845,9 @@
                         <button onClick="{{ gp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ gp.copyLabel }}</button>
                       </div>
                     </div>
+                    <sc-if value="{{ gp.anlatim }}" hint-placeholder-val="{{ false }}">
+                      <div style="color: #e8dcc0; font-size: 12.5px; line-height: 1.6; font-style: italic; border-left: 2px solid rgba(193,154,82,.55); padding: 2px 0 2px 11px;">🎙 “{{ gp.anlatim }}”</div>
+                    </sc-if>
                     <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px; padding: 12px 14px;">{{ gp.prompt }}</code>
                     <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
                       <img loading="lazy" data-zoomable="1" src="{{ gp.img.url }}" alt="Sahne görseli" onClick="{{ gp.img.zoom }}" title="Büyütmek için tıkla" style="{{ gp.img.thumbStyle }}">
@@ -2570,11 +2573,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const bibleLine = (cfg.bible)
       ? 'TEKRAR EDEN KARAKTERLER (bir sahnede bu kişilerden biri geçiyorsa, görsel tarifini AŞAĞIDAKİYLE BİREBİR AYNI ver — kelimesi kelimesine, promptun başında; tüm sahnelerde aynı yüz/kıyafet için ŞART): ' + cfg.bible + '\n'
       : '';
-    const prompt = 'Bir Türkçe tarih belgeselinin "' + bolum + '" (bölüm ' + idx + '/' + totalSecs + ') kısmı için TAM ' + k + ' sahnelik GÖRSEL ve VİDEO promptu üret. Sahneler bu bölümün anlatısını SIRAYLA, sinematik biçimde görselleştirmeli; metindeki somut kişi/mekân/nesne/aksiyonu birebir yansıt (hikâyeyi tanı, jenerik sahne yazma).\n' +
+    const prompt = 'Bir Türkçe tarih belgeselinin "' + bolum + '" (bölüm ' + idx + '/' + totalSecs + ') kısmı için TAM ' + k + ' sahnelik GÖRSEL ve VİDEO promptu üret. Bu bölümün seslendirme metnini (aşağıdaki BÖLÜM METNİ) TAM ' + k + ' ardışık parçaya SIRAYLA böl; sahne j, j. parçayı görselleştirir — görseller seslendirmeyle birebir aynı sırada akar. Her sahnede "anlatim" = o parçanın Türkçe seslendirme cümlesi (metinden birebir/kısaltılmış, ≤160 karakter). GÖRSEL PROMPT tam olarak o "anlatim"daki somut kişi + mekân + aksiyonu gösterir; jenerik/dekoratif sahne YASAK — metinde o an ne oluyorsa onu göster.\n' +
       bibleLine +
       'GÖRSEL PROMPT: İngilizce, "' + cfg.stilStr + '" ile BAŞLAR, "' + cfg.oran + '" içerir; ana özne+aksiyon, dönem-doğru mekân/kıyafet/nesne (anakronizm YOK), ışık/atmosfer, kompozisyon/kamera, renk/duygu, doku katmanları (~50-80 kelime), şu satırla BİTER: "' + cfg.anti + '". Tanınmış tarihî kişi geçiyorsa jenerik yazma: belgelenmiş görünümünü (yüz şekli, burun, sakal/bıyık, yaş, başlık/kıyafet) portre kaynaklarına göre tarif et.\n' +
       'VİDEO PROMPT: tek kamera hareketi/aksiyon 5-8 sn (~30-50 kelime), şu satırla biter: "' + cfg.vidTail + '". Bir karakter sahnede geçiyorsa yukarıdaki SABİT kimlik tarifini promptun başında birebir tekrarla (tutarlı yüz için).\n' +
-      'ÇIKTI: SADECE geçerli tek JSON, ilk karakter { son karakter }. Şema: {"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","prompt":"İngilizce görsel"}],"video_promptlar":[{"sahne":"aynı sahne adı","prompt":"İngilizce video"}]}. Her dizi TAM ' + k + ' öğe.\n\nBÖLÜM METNİ:\n' + (metin || bolum);
+      'ÇIKTI: SADECE geçerli tek JSON, ilk karakter { son karakter }. Şema: {"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","anlatim":"bu görselin anlattığı Türkçe seslendirme cümlesi","prompt":"İngilizce görsel"}],"video_promptlar":[{"sahne":"aynı sahne adı","prompt":"İngilizce video"}]}. Her dizi TAM ' + k + ' öğe.\n\nBÖLÜM METNİ:\n' + (metin || bolum);
     const maxTok = Math.min(4000, 800 + k * 260);
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -2595,12 +2598,19 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const bolum = (section && section.bolum) || (idx + '. bölüm');
     const topic = this.state.idea || 'tarihî olay';
     const base = labelBase || 0;
+    // Bölüm metnini cümlelere böl → her sahneye ardışık anlatım parçası bağla
+    // (LLM başarısız olsa bile görsel-seslendirme sırası korunur, boş 'anlatim' kalmaz).
+    const metin = ((section && section.metin) || '').trim();
+    const cumleler = metin ? metin.split(/(?<=[.!?…])\s+/).map(s => s.trim()).filter(Boolean) : [];
+    const per = cumleler.length ? Math.ceil(cumleler.length / k) : 0;
     const gorsel = [], video = [];
     for (let j = 0; j < k; j++) {
       const label = bolum + ' — sahne ' + (base + j + 1);
+      const anlatim = per ? cumleler.slice(j * per, (j + 1) * per).join(' ').slice(0, 160) : '';
       gorsel.push({
         sahne: label,
-        prompt: cfg.stilStr + ', ' + cfg.oran + ', cinematic historical scene from "' + topic + '" (' + bolum + '), period-accurate setting with authentic costumes, architecture and objects, dramatic directional lighting, atmospheric depth, rich color palette, detailed textures, film grain, rule of thirds, shallow depth of field. ' + cfg.anti
+        anlatim: anlatim,
+        prompt: cfg.stilStr + ', ' + cfg.oran + ', cinematic historical scene from "' + topic + '" (' + bolum + ')' + (anlatim ? ', depicting: ' + anlatim : '') + ', period-accurate setting with authentic costumes, architecture and objects, dramatic directional lighting, atmospheric depth, rich color palette, detailed textures, film grain, rule of thirds, shallow depth of field. ' + cfg.anti
       });
       video.push({
         sahne: label,
