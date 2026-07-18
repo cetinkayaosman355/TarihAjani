@@ -146,7 +146,7 @@ body.sheet-acik #sheet-veil{opacity:1;pointer-events:auto}
 .ara input{flex:1;background:none;border:0;outline:0;color:#e9e2d0;font-size:15px;min-width:0}
 .drow{display:flex;gap:13px;align-items:center;padding:11px 18px;border-top:1px solid rgba(230,220,196,.06);cursor:pointer}
 .drow:active{background:rgba(193,154,82,.06)}
-.drow .no{flex:none;width:46px;height:46px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--gold)}
+.drow .no{flex:none;width:56px;height:56px;border-radius:12px;background:radial-gradient(120% 120% at 30% 20%,rgba(193,154,82,.18),rgba(13,15,23,.9));border:1px solid rgba(193,154,82,.3);display:grid;place-items:center;font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gold);box-shadow:inset 0 1px 0 rgba(240,205,130,.14)}
 .drow .m{flex:1;min-width:0}
 .drow b{display:block;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#f0e8d4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .drow span{display:block;margin-top:3px;font-size:11px;letter-spacing:.06em;color:#8b91a0}
@@ -288,6 +288,13 @@ audio{width:100%;margin-top:10px}
 .vsegbar{display:flex;gap:8px;padding:20px 16px 2px}
 .vseg{flex:1;border:1px solid rgba(193,154,82,.32);background:rgba(255,255,255,.015);color:#c9c2ae;font-size:12.5px;font-family:inherit;letter-spacing:.02em;padding:12px 8px;border-radius:12px;cursor:pointer;transition:all .15s}
 .vseg.on{background:linear-gradient(110deg,#a87f37,#e9c87e 60%,#c19a52);border-color:transparent;color:#171207;font-weight:800}
+/* Vitrin RENK — tam genişlik sinematik stil galerisi */
+.renk-kart{position:relative;border-radius:15px;overflow:hidden;border:1px solid var(--line);box-shadow:0 16px 44px rgba(0,0,0,.55);transition:transform .18s}
+.renk-kart:active{transform:scale(.99)}
+.renk-kart img{width:100%;height:240px;object-fit:cover;display:block}
+.renk-kart .ov{position:absolute;left:0;right:0;bottom:0;padding:16px;background:linear-gradient(transparent,rgba(6,7,13,.9))}
+.renk-kart .ov b{font-family:'Special Elite',monospace;font-size:12px;letter-spacing:.22em;color:#f0d9a3;display:block}
+.renk-kart .ov span{display:block;margin-top:3px;font-size:11px;color:#c9cfda}
 /* GÖRSEL BÜYÜTME (lightbox) — sağa/sola ok ile galeri */
 #imglb{position:fixed;inset:0;z-index:1200;display:none;place-items:center;align-content:center;gap:12px;background:rgba(2,3,8,.95);padding:18px;cursor:zoom-out}
 #imglb.on{display:grid}
@@ -681,8 +688,11 @@ function drawArsiv() {
       var bas = im
         ? '<img class="kap" src="' + im + '" alt="" loading="lazy">'
         : '<span class="no">' + String(i + 1).padStart(2, '0') + '</span>';
+      // Altyazı: gerçek dönem varsa onu, yoksa jenerik yerine dosyanın kanca cümlesi
+      var alt = (d.era && d.era !== 'TARİH DOSYASI') ? d.era : String(d.teaser || d.ozet || d.fileNo || '').trim();
+      if (alt.length > 46) alt = alt.slice(0, 44).replace(/\s+\S*$/, '') + '…';
       html += '<div class="drow" data-dosya="' + i + '">' + bas +
-        '<span class="m"><b>' + esc(d.baslik) + '</b><span>' + esc(d.era || d.fileNo || 'VAKA DOSYASI') + '</span></span>' +
+        '<span class="m"><b>' + esc(d.baslik) + '</b><span>' + esc(alt) + '</span></span>' +
         '<span class="git" style="color:var(--brass)">›</span></div>';
     });
     $('#ar-liste').innerHTML = n ? html : '<div class="bos">Dosya bulunamadı — başka bir iz sür.</div>';
@@ -1478,12 +1488,13 @@ function drawOrnek() {
       '<p style="margin:0;font-size:12px;line-height:1.7;color:#a8b2c2;font-family:ui-monospace,monospace">' + esc(ORNEK_YAZI.prompt) + '</p>' +
       '</div></div>';
   } else if (ornekMod === 'renk') {
+    var RENK_ALT = { 'HOLLYWOOD': 'Gerçekçi, sinema kalitesi', 'SİNEMATİK': 'Alev-gölge, noir atmosfer', 'BELGESEL': 'Doğal ışık, editoryal', 'GRAVÜR': 'Antika oyma, çizgisel', 'MİNYATÜR': 'Osmanlı-Fars, altın yaldız' };
     panel =
-      '<p style="margin:16px 20px 2px;font-size:12.5px;line-height:1.6;color:var(--mut)">Tek cümle — “bin dört yüz elli üç gecesi, kızaklar üstünde Haliç’e çekilen kadırgalar” — beş farklı görsel dünyada. Sağa kaydır.</p>' +
-      '<div style="display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:14px 16px 4px">' +
+      '<p style="margin:16px 20px 2px;font-size:12.5px;line-height:1.6;color:var(--mut)">Tek cümle — “bin dört yüz elli üç gecesi, kızaklar üstünde Haliç’e çekilen kadırgalar” — aynı sahne, beş farklı görsel dünyada.</p>' +
+      '<div style="display:grid;gap:14px;padding:14px 16px 2px">' +
       NEDEN_IMGS.map(function (n) {
-        return '<div style="flex:none;width:200px"><img src="' + n[1] + '" alt="' + n[0] + '" loading="lazy" style="width:200px;height:270px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block">' +
-          '<div style="margin-top:8px;font-size:10px;letter-spacing:.16em;color:var(--brass);text-align:center">' + n[0] + '</div></div>';
+        return '<div class="renk-kart"><img src="' + n[1] + '" alt="' + n[0] + '" loading="lazy">' +
+          '<div class="ov"><b>' + n[0] + '</b><span>' + (RENK_ALT[n[0]] || 'Görsel stil') + '</span></div></div>';
       }).join('') + '</div>';
   } else {
     panel =
