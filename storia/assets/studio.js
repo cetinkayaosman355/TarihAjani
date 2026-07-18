@@ -788,10 +788,10 @@
       var v = b.getAttribute('data-view');
       if (v === 'new' && S.step === 4) startNew(); else { S.view = v; render(); }
     });
-    document.getElementById('acctRow').addEventListener('click', function () {
-      if (S.user) { if (sb) sb.auth.signOut(); S.user = null; S.credits = REAL ? null : 500; chrome(); toast('Çıkış yapıldı'); }
-      else openAuth();
-    });
+    document.getElementById('acctRow').addEventListener('click', openAcct);
+    var acctModal = document.getElementById('acctModal');
+    document.getElementById('acctClose').addEventListener('click', closeAcct);
+    acctModal.addEventListener('click', function (e) { if (e.target === acctModal) closeAcct(); var r = e.target.closest('[data-am]'); if (r) acctAction(r.getAttribute('data-am')); });
     // mobile rail
     var rail = document.getElementById('rail'), scrim = document.getElementById('railScrim');
     document.getElementById('burger').addEventListener('click', function () { rail.classList.add('open'); scrim.classList.add('show'); });
@@ -823,7 +823,7 @@
     // global keyboard
     document.addEventListener('keydown', function (e) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmd(); return; }
-      if (e.key === 'Escape') { closeCmd(); closeAuth(); closeEdit(); closeTour(); closePlan(); return; }
+      if (e.key === 'Escape') { closeCmd(); closeAuth(); closeEdit(); closeTour(); closePlan(); closeAcct(); return; }
       var typing = /input|textarea/i.test((e.target.tagName || ''));
       var anyModal = document.querySelector('.modal-back.show');
       if (!typing && !anyModal && e.key.toLowerCase() === 'n') { startNew(); }
@@ -838,7 +838,8 @@
       { ic: '▤', label: 'Kütüphane', run: function () { S.view = 'library'; render(); } },
       { ic: '◷', label: 'Geçmiş', run: function () { S.view = 'history'; render(); } },
       { ic: '◐', label: (document.documentElement.getAttribute('data-theme') === 'dark' ? 'Aydınlık mod' : 'Karanlık mod'), run: toggleTheme },
-      { ic: '✦', label: 'Planı yükselt', run: openPlanModal }
+      { ic: '✦', label: 'Planı yükselt', run: openPlanModal },
+      { ic: '◈', label: 'Hesap', run: openAcct }
     ];
     if (S.result) {
       c.push({ ic: '↓', label: 'PDF olarak indir', run: exportPDF });
@@ -908,6 +909,28 @@
     var url = (CFG.checkout || {})[id] || '';
     if (url) { window.open(url, '_blank', 'noopener'); closePlan(); }
     else toast('Ödeme bağlantısı henüz ayarlı değil — kurulum sonrası aktifleşir');
+  }
+
+  // ── Account panel ─────────────────────────────────────────────────────
+  function openAcct() {
+    var av = document.getElementById('amAv'), nm = document.getElementById('amName'), sub = document.getElementById('amSub');
+    if (S.user) { av.textContent = (S.user.email || 'S').charAt(0).toUpperCase(); nm.textContent = S.user.email || 'Hesap'; sub.textContent = REAL ? 'Giriş yapıldı' : 'Demo'; }
+    else { av.textContent = 'S'; nm.textContent = 'Misafir'; sub.textContent = REAL ? 'Giriş yapılmadı' : 'Demo modu'; }
+    document.getElementById('amCr').textContent = (S.credits == null ? '—' : S.credits);
+    document.getElementById('amBar').style.width = Math.max(6, Math.min(100, (S.credits || 0) / (S.creditMax || 500) * 100)) + '%';
+    document.getElementById('amPlan').textContent = 'Keşif planı';
+    var authRow = document.getElementById('amAuth');
+    authRow.querySelector('span').innerHTML = S.user ? '⎋&nbsp;&nbsp;Çıkış yap' : (REAL ? '→&nbsp;&nbsp;Giriş yap' : '→&nbsp;&nbsp;Giriş (kurulum sonrası)');
+    document.getElementById('acctModal').classList.add('show');
+  }
+  function closeAcct() { document.getElementById('acctModal').classList.remove('show'); }
+  function acctAction(a) {
+    if (a === 'upgrade') { closeAcct(); openPlanModal(); }
+    else if (a === 'theme') { toggleTheme(); }
+    else if (a === 'auth') {
+      if (S.user) { if (sb) sb.auth.signOut(); S.user = null; S.credits = REAL ? null : 500; chrome(); closeAcct(); toast('Çıkış yapıldı'); }
+      else { closeAcct(); openAuth(); }
+    }
   }
   function closeRail() { if (window._closeRail) window._closeRail(); }
   function switchAuth() {
