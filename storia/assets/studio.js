@@ -317,7 +317,8 @@
       '<h1 class="doc-title">' + esc(r.baslik || S.idea) + '</h1>' +
       (r.logline ? '<p class="doc-logline">' + esc(r.logline) + '</p>' : '') +
       '<div class="doc-meta">' + meta + '</div>' +
-      '<div class="doc-acts"><button class="btn btn-gold btn-sm" data-act="restart">＋ Yeni dosya</button>' +
+      '<div class="doc-acts"><button class="btn btn-gold btn-sm" data-act="reviseChat">✎ Konuşarak düzenle</button>' +
+        '<button class="btn btn-ghost btn-sm" data-act="restart" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">＋ Yeni dosya</button>' +
         '<button class="btn btn-ghost btn-sm" data-act="regen" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↻ Yeniden üret</button>' +
         '<button class="btn btn-ghost btn-sm" data-act="exportPdf" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↓ PDF</button>' +
         '<button class="btn btn-ghost btn-sm" data-act="download" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↓ Metin</button></div></div>';
@@ -611,6 +612,7 @@
       case 'lang': S.lang = v; render(); break;
       case 'generate': startGenerate(false); break;
       case 'regen': startGenerate(true); break;
+      case 'reviseChat': openChat(); break;
       case 'restart': case 'goNew': startNew(); break;
       case 'tab': S.tab = v; document.querySelectorAll('.tabs button').forEach(function (b) { b.classList.remove('on'); }); el.classList.add('on'); document.getElementById('tabBody').innerHTML = renderTab(); break;
       case 'copyScript': copy((S.result.senaryo || []).map(function (s, i) { return (i + 1) + '. ' + (s.baslik || '') + '\n' + (s.anlatim || ''); }).join('\n\n')); break;
@@ -690,6 +692,7 @@
     else if (!REAL && charged) S.credits = Math.max(0, (S.credits || 0) - costGen(S.durationSec));
     var ent = { result: result, idea: S.idea, meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect, ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec, images: {}, covers: {}, videos: {}, audio: null };
     S.history.unshift(ent); S._cur = ent;
+    S.chat._revised = false;  // yeni dosya için düzenleme karşılaması yeniden gösterilsin
     saveHist();
     S.step = 4; render();
   }
@@ -1101,10 +1104,34 @@
   function genChars() { ((S.result || {}).karakterler || []).forEach(function (_, i) { if (!S.chars[i]) doCharImage(i); }); }
   // ── Ajanla konuş (sohbet + proaktif öneri) ───────────────────────────
   function chatSystem() {
+    // Üretilmiş bir dosya varsa ajan DÜZENLEME modundadır; yoksa FİKİR modu.
+    if (S.result && !S.result.gecersiz && S.step === 4) return chatReviseSystem();
     var ctx = '';
     if (S.idea) ctx += 'Kullanıcının şu anki fikri: "' + S.idea + '". ';
     if (S.result && S.result.baslik) ctx += 'Son ürettiği dosya: "' + S.result.baslik + '". ';
     return 'Sen STORIA\'nın içerik ajanısın — YouTube Shorts, TikTok, Reels, faceless kanallar ve UGC reklamlar için VİRAL kısa video içerikleri üreten uzman, samimi bir yardımcı. Türkçe, net ve enerjik konuş. Kısa yaz (2-4 cümle). Her cevapta SOMUT bir sonraki adım ya da fikir ver; asla "yapamam" deyip bırakma. Bir video KONUSU önerdiğinde mesajının EN SON satırına ayrı olarak şu formatta yaz: KONU: <tek cümle konu>. ' + (ctx ? 'Bağlam: ' + ctx : '') + ' Not: kullanıcı bir fikir seçip Studio\'da senaryo+seslendirme+görsel+altyazı üretebiliyor.';
+  }
+  // Ajanın düzenleyeceği güncel dosyanın kompakt ama tam JSON özeti.
+  function resultDigest() {
+    var r = S.result || {};
+    return JSON.stringify({
+      baslik: r.baslik, logline: r.logline, karakterler: r.karakterler,
+      senaryo: r.senaryo, seslendirme_notu: r.seslendirme_notu,
+      youtube: r.youtube, instagram: r.instagram, kapak: r.kapak,
+      gorsel_promptlar: r.gorsel_promptlar, video_promptlar: r.video_promptlar
+    });
+  }
+  function chatReviseSystem() {
+    return 'Sen STORIA\'nın içerik ajanısın. Kullanıcı ZATEN ÜRETİLMİŞ bir video dosyasını konuşarak düzenlemek istiyor. Samimi, net ve Türkçe konuş.\n\n' +
+      'MEVCUT DOSYA (JSON):\n' + resultDigest() + '\n\n' +
+      'Kullanıcının isteğine göre bu dosyayı düzenle. KURALLAR:\n' +
+      '1) Önce TEK cümlelik, samimi bir Türkçe özet yaz (ne değiştirdiğini söyle).\n' +
+      '2) Sonra AYRI bir satırda TAM güncellenmiş dosyayı şu blokta ver:\n```json\n{ ...aynı şema, aynı anahtarlar... }\n```\n' +
+      '3) YALNIZCA istenen değişikliği yap; dokunulmayan alanları AYNEN koru (metni yeniden yazma).\n' +
+      '4) senaryo, gorsel_promptlar ve video_promptlar HER ZAMAN aynı sayıda ve indeks-hizalı kalsın. Sahne ekl/çıkarırsan üçünü de birlikte güncelle.\n' +
+      '5) Bir sahnenin metnini değiştirirsen o sahnenin gorsel_promptlar ve video_promptlar öğesini de uyumlu güncelle.\n' +
+      '6) Kullanıcı yalnızca soru soruyorsa ya da değişiklik istemiyorsa JSON bloğu EKLEME; sadece kısa cevap ver.\n' +
+      '7) JSON geçerli olsun (tek blok, başka JSON yok).';
   }
   function renderChat() {
     var log = document.getElementById('chatLog'); if (!log) return;
@@ -1119,7 +1146,13 @@
   }
   function openChat() {
     S.chat.open = true;
-    if (!S.chat.msgs.length) S.chat.msgs.push({ r: 'a', t: 'Merhaba! Ben STORIA ajanın. 🎬 Ne üretmek istersin? Bir konu söyle, ya da "sürpriz yap" yaz — senin için viral bir fikir bulup senaryoya götüreyim. İstersen nişini söyle (kahve dükkânı, fitness, teknoloji, oyun…), sana özel fikirler çıkarayım.' });
+    var reviseMode = !!(S.result && !S.result.gecersiz && S.step === 4);
+    if (reviseMode && !S.chat._revised) {
+      S.chat._revised = true;
+      S.chat.msgs.push({ r: 'a', t: 'Bu dosyayı birlikte düzenleyelim ✎ Ne değiştireyim? Örn: "hook\'u güçlendir", "2. sahneyi kısalt", "daha esprili yap", "bir sahne ekle", "başlığı daha merak uyandır". Yaz, ben yeniden yazıp uygulayayım.' });
+    } else if (!S.chat.msgs.length) {
+      S.chat.msgs.push({ r: 'a', t: 'Merhaba! Ben STORIA ajanın. 🎬 Ne üretmek istersin? Bir konu söyle, ya da "sürpriz yap" yaz — senin için viral bir fikir bulup senaryoya götüreyim. İstersen nişini söyle (kahve dükkânı, fitness, teknoloji, oyun…), sana özel fikirler çıkarayım.' });
+    }
     var p = document.getElementById('chatPanel'), s = document.getElementById('chatScrim');
     if (p) p.classList.add('open'); if (s) s.classList.add('show');
     renderChat();
@@ -1131,11 +1164,70 @@
     S.chat.msgs.push({ r: 'u', t: text }); S.chat.busy = true; renderChat();
     var convo = S.chat.msgs.map(function (m) { return (m.r === 'u' ? 'Kullanıcı' : 'Ajan') + ': ' + m.t; }).join('\n');
     var prompt = chatSystem() + '\n\nKonuşma:\n' + convo + '\n\nAjan:';
-    if (!REAL) { setTimeout(function () { S.chat.msgs.push({ r: 'a', t: '(Demo) Harika! Örneğin şu çok tutar: sıradan bir günü sinematik bir hikâyeye çeviren bir video.\nKONU: Sıradan bir sabahı sinematik bir hikâyeye dönüştür' }); S.chat.busy = false; renderChat(); }, 700); return; }
-    callFn({ action: '', prompt: prompt }).then(function (d) {
+    var reviseMode = !!(S.result && !S.result.gecersiz && S.step === 4);
+    if (!REAL) {
+      setTimeout(function () {
+        if (reviseMode) { demoRevise(text); S.chat.busy = false; renderChat(); }
+        else { S.chat.msgs.push({ r: 'a', t: '(Demo) Harika! Örneğin şu çok tutar: sıradan bir günü sinematik bir hikâyeye çeviren bir video.\nKONU: Sıradan bir sabahı sinematik bir hikâyeye dönüştür' }); S.chat.busy = false; renderChat(); }
+      }, 700);
+      return;
+    }
+    callFn({ action: '', prompt: prompt, max_tokens: reviseMode ? 12000 : 1200 }).then(function (d) {
       var t = (d && (d.text || d.result)) ? String(d.text || d.result).trim() : 'Bir sorun oldu, tekrar dener misin?';
-      S.chat.msgs.push({ r: 'a', t: t }); S.chat.busy = false; renderChat();
+      var applied = reviseMode ? tryApplyRevision(t) : { ok: false, body: t };
+      S.chat.msgs.push({ r: 'a', t: applied.body }); S.chat.busy = false; renderChat();
+      if (applied.ok) { toast('Değişiklik uygulandı ✦'); if (S.view === 'new' && S.step === 4) render(); if (S.chat.open) { setTimeout(function () { var p = document.getElementById('chatPanel'), s = document.getElementById('chatScrim'); if (p) p.classList.add('open'); if (s) s.classList.add('show'); renderChat(); }, 0); } }
     }).catch(function () { S.chat.msgs.push({ r: 'a', t: 'Bağlantı hatası — tekrar dene.' }); S.chat.busy = false; renderChat(); });
+  }
+  // Ajanın cevabındaki ```json bloğunu bul, dosyaya uygula. Değişiklik yoksa metni aynen döndür.
+  function tryApplyRevision(text) {
+    if (!S.result) return { ok: false, body: text };
+    var m = /```(?:json)?\s*([\s\S]*?)```/i.exec(text);
+    var jsonStr = m ? m[1] : null;
+    if (!jsonStr) { var b = text.indexOf('{'), e = text.lastIndexOf('}'); if (b >= 0 && e > b) jsonStr = text.slice(b, e + 1); }
+    if (!jsonStr) return { ok: false, body: text };
+    var obj; try { obj = JSON.parse(jsonStr); } catch (_e) { return { ok: false, body: text }; }
+    if (!obj || typeof obj !== 'object' || (!obj.senaryo && !obj.baslik && !obj.youtube && !obj.instagram)) return { ok: false, body: text };
+    applyRevision(obj);
+    var body = m ? text.replace(m[0], '').trim() : (text.indexOf('{') > 0 ? text.slice(0, text.indexOf('{')).trim() : '');
+    if (!body) body = 'Güncelledim ✦';
+    return { ok: true, body: body };
+  }
+  // Yeni JSON'u mevcut sonuca birleştir; değişen sahnelerin görsel/videosunu düşür (yeniden üretilsin), metin değiştiyse seslendirmeyi temizle.
+  function applyRevision(obj) {
+    var old = S.result || {};
+    var oldG = old.gorsel_promptlar || [], oldS = old.senaryo || [];
+    var merged = {}; var k;
+    for (k in old) merged[k] = old[k];
+    for (k in obj) merged[k] = obj[k];
+    var newG = merged.gorsel_promptlar || [], newS = merged.senaryo || [];
+    var n = Math.max(newS.length, newG.length);
+    var keepImgs = {}, keepVids = {}, narrChanged = false;
+    for (var i = 0; i < n; i++) {
+      var sameVisual = oldG[i] != null && newG[i] != null && oldG[i] === newG[i];
+      if (S.images[i] && sameVisual) keepImgs[i] = S.images[i];
+      if (S.videos[i] && sameVisual) keepVids[i] = S.videos[i];
+      var oa = oldS[i] && oldS[i].anlatim, na = newS[i] && newS[i].anlatim;
+      if (oa !== na) narrChanged = true;
+    }
+    S.result = merged; S.images = keepImgs; S.videos = keepVids;
+    if (narrChanged) S.audio = null;
+    if (S._cur) { S._cur.result = merged; }
+    S.tab = S.tab || 'senaryo';
+    persistMedia();
+  }
+  // Demo modda basit yerel düzenlemeler (backend yokken sohbet düzenlemeyi göstermek için).
+  function demoRevise(instr) {
+    var r = S.result || {}; var low = instr.toLowerCase(); var did = '';
+    if (/başl(ık|ığ)|title/.test(low)) { r.baslik = (r.baslik || 'Başlık') + ' — yeni sürüm'; did = 'Başlığı güncelledim.'; }
+    else if (/hook|kanca|giriş/.test(low) && r.senaryo && r.senaryo[0]) { r.senaryo[0].anlatim = '(Güçlendirilmiş kanca) ' + (r.senaryo[0].anlatim || ''); did = 'Girişi daha çarpıcı yaptım.'; }
+    else if (/kısalt|kısa/.test(low) && r.senaryo) { r.senaryo.forEach(function (s) { if (s.anlatim) s.anlatim = s.anlatim.split(' ').slice(0, 12).join(' '); }); did = 'Sahneleri kısalttım.'; }
+    else { did = '(Demo) Gerçek modda bu düzenlemeyi tam yaparım — şimdilik örnek bir değişiklik uyguladım.'; if (r.baslik) r.baslik = r.baslik + ' ✎'; }
+    S.result = r; if (S._cur) S._cur.result = r; persistMedia();
+    S.chat.msgs.push({ r: 'a', t: did });
+    if (S.view === 'new' && S.step === 4) render();
+    if (S.chat.open) { setTimeout(function () { var p = document.getElementById('chatPanel'), s = document.getElementById('chatScrim'); if (p) p.classList.add('open'); if (s) s.classList.add('show'); renderChat(); }, 0); }
+    toast('Değişiklik uygulandı ✦');
   }
   function applyChatIdea(topic) { if (!topic) return; S.idea = topic; S.view = 'new'; S.step = 2; closeChat(); render(); toast('Fikir yüklendi — tarzını seç ve üret'); }
   // ── Ek sahne ─────────────────────────────────────────────────────────
