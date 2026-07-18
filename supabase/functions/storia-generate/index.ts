@@ -211,9 +211,11 @@ function ttsCostOf(chars: number): number {
 }
 
 // Real image generation — OpenAI gpt-image (base64 → data URI). Falls back to dall-e-3.
-async function generateImage(prompt: string, size: string): Promise<string> {
+const NO_TEXT = " — CRITICAL: the image must contain NO text, no letters, no words, no numbers, no captions, no logos, no watermark, no signature. Photographic clarity, sharp focus, high detail.";
+async function generateImage(promptRaw: string, size: string): Promise<string> {
   const key = Deno.env.get("OPENAI_API_KEY");
-  if (!key || !prompt.trim()) return "";
+  if (!key || !promptRaw.trim()) return "";
+  const prompt = promptRaw + NO_TEXT;
   const gSize = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
 
   async function tryGptImage(model: string): Promise<string> {

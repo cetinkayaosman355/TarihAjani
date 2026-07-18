@@ -117,12 +117,14 @@
   ];
   var RATES = [{ v: 0.9, l: 'Yavaş' }, { v: 1, l: 'Normal' }, { v: 1.12, l: 'Hızlı' }];
   var STYLES = [
-    { id: 'sinematik', name: 'Sinematik', desc: 'Film karesi, dramatik ışık', en: 'cinematic film still, dramatic lighting, shallow depth of field, 35mm' },
-    { id: 'fotogercek', name: 'Foto-gerçekçi', desc: 'Gerçek fotoğraf dokusu', en: 'photorealistic, natural light, high detail, DSLR photograph' },
-    { id: 'render3d', name: '3D Render', desc: 'Hacimli, sinematik render', en: 'high-end 3D render, volumetric light, octane render, subsurface detail' },
-    { id: 'illus', name: 'İllüstrasyon', desc: 'Modern dijital çizim', en: 'modern digital illustration, clean shapes, editorial style' },
-    { id: 'anime', name: 'Anime', desc: 'Japon animasyon estetiği', en: 'anime style, cel shading, vivid, studio-quality key visual' },
-    { id: 'minimal', name: 'Minimal', desc: 'Sade, zarif, geometrik', en: 'minimalist, elegant, geometric, refined negative space' }
+    { id: 'ultra', name: 'Ultra Gerçekçi', desc: 'Hiper detay, kusursuz netlik', en: 'ultra realistic, hyper-detailed, 8k, tack-sharp focus, professional photography, lifelike skin and material texture, true-to-life color, crisp' },
+    { id: 'sinematik', name: 'Sinematik', desc: 'Film karesi, dramatik ışık', en: 'cinematic film still, dramatic volumetric lighting, shallow depth of field, anamorphic 35mm, color-graded, sharp focus, high detail' },
+    { id: 'fotogercek', name: 'Foto-gerçekçi', desc: 'Gerçek fotoğraf dokusu', en: 'photorealistic, natural light, ultra high detail, DSLR photograph, sharp focus, realistic textures' },
+    { id: 'belgesel', name: 'Belgesel', desc: 'Doğal, gözlemsel foto', en: 'documentary photography, candid observational moment, natural available light, photojournalistic, authentic, sharp and clear' },
+    { id: 'render3d', name: '3D Render', desc: 'Hacimli, sinematik render', en: 'high-end 3D render, volumetric light, octane render, subsurface scattering, crisp, ultra detailed' },
+    { id: 'illus', name: 'İllüstrasyon', desc: 'Modern dijital çizim', en: 'modern digital illustration, clean bold shapes, editorial style, polished, high detail' },
+    { id: 'anime', name: 'Animasyon', desc: 'Anime / çizgi film estetiği', en: 'high-quality animation still, anime / cartoon aesthetic, clean cel shading, vivid colors, studio-quality key visual, crisp lines' },
+    { id: 'minimal', name: 'Minimal', desc: 'Sade, zarif, geometrik', en: 'minimalist, elegant, geometric, refined negative space, clean, crisp' }
   ];
   var MODES = [
     { name: 'Shorts / TikTok', desc: '15 sn · Dikey', sec: 15, aspect: '9:16', tone: 'enerjik' },
@@ -303,16 +305,17 @@
     return '<div class="doc">' + hero + '<div class="tabs">' + tabBtns + '</div><div class="tab-body" id="tabBody">' + renderTab() + '</div></div>';
   }
 
+  function aspRatio() { return S.aspect === '9:16' ? '9/16' : S.aspect === '1:1' ? '1/1' : '16/9'; }
   function renderTab() {
     var r = S.result || {};
     if (S.tab === 'senaryo') {
       var scenes = (r.senaryo || []).map(function (sc, i) {
         var img = S.images[i], thumb, acts;
         if (img) {
-          thumb = '<div class="th"><img class="zoomable" src="' + esc(img) + '" data-act="zoom" data-v="' + esc(img) + '" alt=""></div>';
+          thumb = '<div class="th" style="aspect-ratio:' + aspRatio() + '"><img class="zoomable" src="' + esc(img) + '" data-act="zoom" data-v="' + esc(img) + '" alt=""></div>';
           acts = '<div class="th-acts"><button class="btn btn-quiet btn-sm" data-act="image" data-v="' + i + '">↻ Yeniden</button><button class="btn btn-quiet btn-sm" data-act="editImg" data-v="' + i + '">✏ Düzenle</button><button class="btn btn-quiet btn-sm" data-act="dl" data-v="' + esc(img) + '">↓ İndir</button></div>';
         } else {
-          thumb = '<div class="th"><div class="ph" style="background:' + GRADS[i % GRADS.length] + '">Sahne ' + (i + 1) + '</div></div>';
+          thumb = '<div class="th" style="aspect-ratio:' + aspRatio() + '"><div class="ph" style="background:' + GRADS[i % GRADS.length] + '">Sahne ' + (i + 1) + '</div></div>';
           acts = '<div class="th-acts"><button class="btn btn-gold btn-sm" data-act="image" data-v="' + i + '">✦ Görsel üret</button></div>';
         }
         return '<div class="scene"><div class="th-col">' + thumb + acts + '</div><div><div class="s-no">Sahne ' + (i + 1) + '</div>' +
@@ -344,7 +347,7 @@
         var acts = img
           ? '<button class="btn btn-quiet btn-sm" data-act="image" data-v="' + i + '">↻ Yeniden</button><button class="btn btn-quiet btn-sm" data-act="editImg" data-v="' + i + '">✏ Düzenle</button><button class="btn btn-quiet btn-sm" data-act="dl" data-v="' + esc(img) + '">↓ İndir</button>'
           : '<button class="btn btn-gold btn-sm" data-act="image" data-v="' + i + '">✦ Üret · 12</button><button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(p) + '">Kopyala</button>';
-        return '<div class="gcard"><div class="gimg">' + box + '</div><div class="gbody"><div class="gno">Görsel ' + (i + 1) + '</div>' +
+        return '<div class="gcard"><div class="gimg" style="aspect-ratio:' + aspRatio() + '">' + box + '</div><div class="gbody"><div class="gno">Görsel ' + (i + 1) + '</div>' +
           '<div class="gtxt">' + esc(p) + '</div><div class="gacts">' + acts + '</div></div></div>';
       }).join('');
       var doneCount = prompts.filter(function (_, i) { return S.images[i]; }).length;
@@ -600,12 +603,13 @@
         'LENGTH BUDGET (CRITICAL): the video is ' + fmtDur(S.durationSec) + ' long and the narration will be read ALOUD. The TOTAL of all scenes\' "anlatim" text must be AT MOST ~' + words + ' words — do NOT exceed it. Keep each scene short (one sentence for short videos). Even with ' + scenes + ' scenes, keep it tight so the voiceover fits ' + fmtDur(S.durationSec) + '.\n' +
         (S.custom ? 'SPECIAL REQUEST (highest priority): ' + S.custom + '\n' : '') +
         '\nReturn ONLY valid JSON in this schema, in ENGLISH (keys stay exactly as below, no other text):\n' +
-        '{ "baslik":"catchy title", "logline":"one-sentence summary", "karakterler":[], ' +
-        '"senaryo":[{"baslik":"scene title","anlatim":"short narration that fits the duration (1 sentence for short videos)","gorsel":"short visual description"}], ' +
+        '{ "baslik":"catchy title", "logline":"one-sentence summary", ' +
+        '"karakterler":[{"isim":"character name","gorunum":"DETAILED physical description for consistent images (age, gender, hair, eyes, clothing, distinctive traits)"}], ' +
+        '"senaryo":[{"baslik":"scene title","anlatim":"short narration that fits the duration (1 sentence for short videos)","gorsel":"RICH visual description: subject, action, composition, lighting, atmosphere, mood"}], ' +
         '"seslendirme_notu":"note to the narrator", "youtube":{"baslik":"SEO title","aciklama":"description","etiketler":["tag1"]}, ' +
-        '"instagram":{"aciklama":"Reels caption","hashtagler":["hashtag1"]}, "kapak":["thumbnail idea"], ' +
-        '"gorsel_promptlar":["English ' + st.en + ' image-generation prompt for each scene"], "video_promptlar":[], "uretim_notu":"short production tip" }\n' +
-        'senaryo and gorsel_promptlar must contain at least ' + min + ' items. If the topic is nonsense return {"gecersiz":true,"mesaj":"..."}.';
+        '"instagram":{"aciklama":"FULL Reels caption: hook + value + clear CTA (2-4 sentences, fitting emoji)","hashtagler":["hashtag1","hashtag2","hashtag3"]}, "kapak":["striking thumbnail idea"], ' +
+        '"gorsel_promptlar":["DETAILED English image prompt for each scene: subject + action + composition + lighting + atmosphere + ' + st.en + '. The image must contain NO text, letters, words, logos or watermark."], "video_promptlar":[], "uretim_notu":"short production tip" }\n' +
+        'RULES: senaryo and gorsel_promptlar must contain at least ' + min + ' items. If the story has clear character(s), fill "karakterler" and describe that character with the SAME physical traits in EVERY scene prompt (character consistency); if none, leave "karakterler" empty. Keep visual descriptions concrete and clear. If the topic is nonsense return {"gecersiz":true,"mesaj":"..."}.';
     }
     return 'Sen içerik üreticileri için çalışan uzman bir senarist ve yapım yönetmenisin. İzleyiciyi ilk saniyeden yakalayan, akıcı ve DOĞRU içerik üret.\n\n' +
       'KONU: ' + S.idea + '\nANLATIM TONU: ' + toneName() + '\nGÖRSEL STİL: ' + st.name + ' (' + st.en + ')\n' +
@@ -613,12 +617,13 @@
       'SÜRE-METİN DENGESİ (ÇOK ÖNEMLİ): Video ' + fmtDur(S.durationSec) + ' uzunluğunda ve seslendirme metni SESLİ okunacak. Tüm sahnelerin "anlatim" metinlerinin TOPLAMI EN FAZLA ~' + words + ' kelime olmalı — bu sınırı KESİNLİKLE AŞMA. Her sahnenin anlatımı kısa ve öz olsun (kısa videoda tek cümle). Sahne sayısı ' + scenes + ' olsa bile metni uzatma; seslendirme ' + fmtDur(S.durationSec) + ' süresine sığmalı.\n' +
       (S.custom ? 'ÖZEL İSTEK (en yüksek öncelik): ' + S.custom + '\n' : '') +
       '\nYalnızca aşağıdaki şemada, Türkçe ve GEÇERLİ JSON döndür (başka metin yok):\n' +
-      '{ "baslik":"çarpıcı başlık", "logline":"tek cümle özet", "karakterler":[], ' +
-      '"senaryo":[{"baslik":"sahne başlığı","anlatim":"süreye uygun KISA anlatım (kısa videoda tek cümle)","gorsel":"kısa görsel tarifi"}], ' +
+      '{ "baslik":"çarpıcı başlık", "logline":"tek cümle özet", ' +
+      '"karakterler":[{"isim":"karakter adı","gorunum":"tutarlı görsel için DETAYLI fiziksel tanım (yaş, cinsiyet, saç, göz, kıyafet, ayırt edici özellik)"}], ' +
+      '"senaryo":[{"baslik":"sahne başlığı","anlatim":"süreye uygun KISA anlatım (kısa videoda tek cümle)","gorsel":"sahnenin ZENGİN görsel tarifi: özne, aksiyon, kompozisyon, ışık, atmosfer, duygu"}], ' +
       '"seslendirme_notu":"anlatıcı yönergesi", "youtube":{"baslik":"SEO başlığı","aciklama":"açıklama","etiketler":["e1"]}, ' +
-      '"instagram":{"aciklama":"Reels metni","hashtagler":["h1"]}, "kapak":["fikir1"], ' +
-      '"gorsel_promptlar":["her sahne için İngilizce ' + st.en + ' tarzında görsel üretim promptu"], "video_promptlar":[], "uretim_notu":"kısa tavsiye" }\n' +
-      'senaryo ve gorsel_promptlar en az ' + min + ' öğe içersin. Konu anlamsızsa {"gecersiz":true,"mesaj":"..."} döndür.';
+      '"instagram":{"aciklama":"kancayla başlayıp değer veren ve CTA ile biten TAM Reels metni (2-4 cümle, uygun emoji)","hashtagler":["h1","h2","h3"]}, "kapak":["çarpıcı thumbnail fikri"], ' +
+      '"gorsel_promptlar":["her sahne için DETAYLI İngilizce görsel üretim promptu: özne + aksiyon + kompozisyon + ışık + atmosfer + ' + st.en + '. Görselin İÇİNDE kesinlikle yazı/harf/kelime/logo/watermark OLMASIN."], "video_promptlar":[], "uretim_notu":"kısa tavsiye" }\n' +
+      'KURALLAR: senaryo ve gorsel_promptlar en az ' + min + ' öğe içersin. Hikayede belirgin karakter(ler) varsa "karakterler" dizisini doldur ve gorsel_promptlar içinde o karakteri HER SAHNEDE aynı fiziksel özelliklerle betimle (karakter tutarlılığı); karakter yoksa "karakterler" boş kalsın. Görsel tarifleri somut ve net olsun. Konu anlamsızsa {"gecersiz":true,"mesaj":"..."} döndür.';
   }
   function realGenerate(isRegen) {
     var job = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
