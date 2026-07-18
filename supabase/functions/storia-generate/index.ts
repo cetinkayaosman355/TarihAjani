@@ -2,10 +2,7 @@
 // Flow: 1) RESEARCH the topic on the web (Claude web_search) → 2) use the research as the backbone and GENERATE →
 //       3) validate the JSON, retry if thin → 4) on success, debit credits.
 // Deploy: Edge Functions > storia-generate > paste this code > Deploy
-// Secrets (esnek adlandırma — herhangi biri çalışır):
-//   OpenAI:   OPENAI_API_KEY | OPENAI | OPENAI_KEY
-//   Claude:   ANTHROPIC_API_KEY | CLAUDE | CLAUDE_API_KEY | ANTHROPIC
-//   Eleven:   ELEVENLABS_API_KEY | ELEVENLABS | ELEVEN_API_KEY (opsiyonel, ses)
+// Secrets: OPENAI_API_KEY and/or ANTHROPIC_API_KEY (ANTHROPIC recommended for research), ELEVENLABS_API_KEY (optional)
 //   SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected automatically (needed for credit debiting)
 //
 // Credit logic: the price comes NOT from the client but from the server-side formula (anti-cheat).
@@ -16,16 +13,6 @@
 // Response: { ok:true, result, text, charged:boolean, credits:number }
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-
-// Esnek secret çözümü: kullanıcı anahtarları farklı adlandırmış olabilir
-// (ör. CLAUDE, OPENAI, ELEVENLABS). İlk dolu olanı kullanırız.
-function envAny(...names: string[]): string {
-  for (const n of names) { const v = Deno.env.get(n); if (v && v.trim()) return v.trim(); }
-  return "";
-}
-const OPENAI_KEY = () => envAny("OPENAI_API_KEY", "OPENAI", "OPENAI_KEY", "OPENAI_SECRET_KEY");
-const ANTHROPIC_KEY = () => envAny("ANTHROPIC_API_KEY", "CLAUDE", "CLAUDE_API_KEY", "ANTHROPIC", "CLAUDE_KEY");
-const ELEVEN_KEY = () => envAny("ELEVENLABS_API_KEY", "ELEVENLABS", "ELEVEN_API_KEY", "ELEVEN", "ELEVENLABS_KEY", "ELEVEN_LABS_API_KEY");
 
 // Storage bucket for generated media + job recovery.
 // Default reuses the existing "studio-ses" bucket so STORIA can run on the same
@@ -104,7 +91,7 @@ ${sections}`;
 // Current models. gpt-5 first (falls back to gpt-4o). gpt-5 needs different params.
 const OPENAI_MODELS = ["gpt-5", "gpt-4o"];
 async function callOpenAI(prompt: string, maxTokens?: number, jsonMode?: boolean): Promise<string> {
-  const key = OPENAI_KEY();
+  const key = Deno.env.get("OPENAI_API_KEY");
   if (!key) throw new Error("OPENAI_API_KEY secret missing.");
   let lastErr = "";
   for (const model of OPENAI_MODELS) {
@@ -172,7 +159,7 @@ const CLAUDE_MODELS = [
 ];
 
 async function callClaude(prompt: string, maxTokens?: number, jsonMode?: boolean): Promise<string> {
-  const key = ANTHROPIC_KEY();
+  const key = Deno.env.get("ANTHROPIC_API_KEY");
   if (!key) throw new Error("ANTHROPIC_API_KEY secret missing.");
   let lastErr = "";
   for (const model of CLAUDE_MODELS) {
@@ -226,7 +213,7 @@ function ttsCostOf(chars: number): number {
 // Real image generation — OpenAI gpt-image (base64 → data URI). Falls back to dall-e-3.
 const NO_TEXT = " — CRITICAL: the image must contain NO text, no letters, no words, no numbers, no captions, no logos, no watermark, no signature. Photographic clarity, sharp focus, high detail.";
 async function generateImage(promptRaw: string, size: string): Promise<string> {
-  const key = OPENAI_KEY();
+  const key = Deno.env.get("OPENAI_API_KEY");
   if (!key || !promptRaw.trim()) return "";
   const prompt = promptRaw + NO_TEXT;
   const gSize = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
@@ -304,7 +291,7 @@ async function generateImage(promptRaw: string, size: string): Promise<string> {
 // Real TTS — OpenAI gpt-4o-mini-tts (mp3). Long text is split into ≤3800-char chunks.
 const TTS_VOICES = new Set(["onyx", "ash", "nova", "sage", "alloy", "echo", "shimmer"]);
 async function generateSpeech(text: string, voice: string): Promise<Uint8Array | null> {
-  const key = OPENAI_KEY();
+  const key = Deno.env.get("OPENAI_API_KEY");
   if (!key || !text.trim()) return null;
   const v = TTS_VOICES.has(voice) ? voice : "onyx";
   const chunks: string[] = [];
@@ -367,7 +354,7 @@ function elevenAllowed(): Set<string> {
   return new Set(ids.length ? ids : DEFAULT_VOICE_IDS);
 }
 async function generateSpeechEleven(text: string, voiceId: string, opts?: { stability?: number; style?: number }): Promise<Uint8Array | null> {
-  const key = ELEVEN_KEY();
+  const key = Deno.env.get("ELEVENLABS_API_KEY");
   if (!key || !text.trim() || !elevenAllowed().has(voiceId)) return null;
   const chunks: string[] = [];
   let rest = text.trim();
@@ -463,7 +450,7 @@ Güvenilir kaynaklara dayanarak KISA ama YOĞUN bir araştırma dosyası çıkar
 - Yaygın yanlış inanış ↔ gerçek ayrımı
 - Anlatıyı zenginleştirecek 4-6 somut sahne/görsel fikri
 Türkçe, madde madde yaz. UYDURMA yok; emin olmadığını "iddiaya göre" diye işaretle.`;
-  const aKey = ANTHROPIC_KEY();
+  const aKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (aKey) {
     const attempts = [
       { model: "claude-sonnet-5", tool: "web_search_20260209" },
@@ -496,7 +483,7 @@ Türkçe, madde madde yaz. UYDURMA yok; emin olmadığını "iddiaya göre" diye
   try {
     const r = await fetchT("https://api.openai.com/v1/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${OPENAI_KEY()}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`, "Content-Type": "application/json" },
       body: JSON.stringify({ model: "gpt-4o", messages: [{ role: "user", content: q }], temperature: 0.5, max_tokens: 1200 }),
     }, 20_000);
     if (r.ok) { const d = await r.json(); return (d.choices?.[0]?.message?.content ?? "").trim(); }
@@ -543,7 +530,7 @@ async function cropToAspect(dataUri: string, size: string): Promise<string> {
 // Real image EDITING — OpenAI /images/edits (gpt-image-1). Keeps the image, applies the change.
 const EDIT_COST = 8;
 async function editImage(imageUri: string, prompt: string, size: string): Promise<string> {
-  const key = OPENAI_KEY();
+  const key = Deno.env.get("OPENAI_API_KEY");
   if (!key || !prompt.trim()) return "";
   const parsed = dataUriToBytes(imageUri);
   if (!parsed) return "";
