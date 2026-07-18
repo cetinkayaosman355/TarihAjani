@@ -347,8 +347,12 @@ const DEFAULT_VOICE_IDS = [
   "ktrGUw7rURIQyMrQZqCu", "bFrjFL4nlpeYNwNRhXxq",
 ];
 // Premium sesler kredi çarpanı (pahalı sesler daha çok kredi düşürür).
-const VOICE_COST_X: Record<string, number> = { "bFrjFL4nlpeYNwNRhXxq": 4 }; // Mossbeard
-function voiceMult(b: Record<string, unknown>): number { return VOICE_COST_X[String(b.voiceId || "")] || 1; }
+const VOICE_COST_X: Record<string, number> = { "bFrjFL4nlpeYNwNRhXxq": 4 }; // Mossbeard (ekstra premium)
+// ElevenLabs premium (gerçek maliyet ~4-5₺/dk) → ×2; OpenAI yedeği/standart → ×1.
+function voiceMult(b: Record<string, unknown>): number {
+  const v = String(b.voiceId || "");
+  return VOICE_COST_X[v] || (elevenAllowed().has(v) ? 2 : 1);
+}
 function elevenAllowed(): Set<string> {
   const ids = (Deno.env.get("STORIA_VOICE_IDS") || "").split(",").map((s) => s.trim()).filter(Boolean);
   return new Set(ids.length ? ids : DEFAULT_VOICE_IDS);
@@ -629,7 +633,9 @@ const cleanJob = (v: unknown) => String(v || "").replace(/[^a-zA-Z0-9_-]/g, "").
 // Sağlayıcı VIDEO_PROVIDER env'i ile seçilir ("grok" | "kling"; varsayılan grok).
 // İş kimliğine sağlayıcı ön eki eklenir ("grok:<id>" / "kling:<id>") ki poll
 // doğru API'ye gitsin. Kredi maliyeti her ikisinde aynı (marj sağlayıcıda değişir).
-function videoCost(sec: number): number { return Math.max(60, Math.round(Math.min(15, Math.max(3, sec))) * 12); }
+// AI video marj koruması: gerçek maliyet ~20₺/5sn (Grok). 30 kr/sn (5sn=150)
+// ile en ucuz pakette bile (Stüdyo 0,133₺/kr) başabaş; alt paketlerde sağlıklı kâr.
+function videoCost(sec: number): number { return Math.max(150, Math.round(Math.min(15, Math.max(3, sec))) * 30); }
 function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "grok").toLowerCase(); }
 
 // Sağlayıcı-bağımsız giriş noktaları — handler bunları çağırır. İstek başına

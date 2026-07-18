@@ -700,7 +700,7 @@
           actions = '<span class="tt-note">Bu ~1-2 dk sürebilir</span>';
         } else if (vimg) {
           media = '<img class="vid zoomable" src="' + esc(vimg) + '" data-act="zoom" data-v="' + esc(vimg) + '" style="aspect-ratio:' + vratio + '">';
-          actions = '<button class="btn btn-gold btn-sm" data-act="video" data-v="' + vi + '">🎬 Videoya çevir · 60kr</button>';
+          actions = '<button class="btn btn-gold btn-sm" data-act="video" data-v="' + vi + '">🎬 Videoya çevir · 150kr</button>';
         } else {
           media = '<div class="vid vph" style="aspect-ratio:' + vratio + ';background:' + GRADS[vi % GRADS.length] + ';color:#fff">Önce görsel üret</div>';
           actions = '<button class="btn btn-gold btn-sm" data-act="image" data-v="' + vi + '">✦ Görsel üret</button>';
@@ -786,7 +786,7 @@
         '<button class="v-prev" data-act="voicePrev" data-v="' + i + '" aria-label="Önizle" title="Önizle"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
         '<div class="t-name">' + esc(v.name) + prem + '</div><div class="t-desc">' + esc(v.desc) + '</div></div>';
     }).join('');
-    var chars = (S.ssText || '').length, cost = Math.max(10, Math.ceil(chars / 1000) * 5) * (VOICES[S.ssVoice].x || 1);
+    var chars = (S.ssText || '').length, cost = Math.max(10, Math.ceil(chars / 1000) * 5) * (VOICES[S.ssVoice].x || 2);
     var out = S.ssOut
       ? '<audio controls src="' + esc(S.ssOut) + '" style="width:100%"></audio><div class="is-acts" style="margin-top:12px"><button class="btn btn-quiet btn-sm" data-act="dlAudioSs">↓ Sesi indir</button><button class="btn btn-quiet btn-sm" data-act="ssTts">↻ Yeniden</button></div>'
       : '<div class="ph" style="min-height:90px;display:grid;place-items:center;border-radius:var(--r-md);border:1px solid var(--line);background:linear-gradient(135deg,var(--paper-2),var(--paper-3));color:var(--muted);font-size:14px">Sesin burada belirir</div>';
@@ -850,7 +850,7 @@
     var ssT = document.getElementById('ssTextInput');
     if (ssT) ssT.addEventListener('input', function () {
       S.ssText = ssT.value;
-      var m = document.getElementById('ssMeta'); if (m) { var n = ssT.value.length, c = Math.max(10, Math.ceil(n / 1000) * 5) * (VOICES[S.ssVoice].x || 1); m.textContent = n + ' karakter · ~' + c + ' kredi'; }
+      var m = document.getElementById('ssMeta'); if (m) { var n = ssT.value.length, c = Math.max(10, Math.ceil(n / 1000) * 5) * (VOICES[S.ssVoice].x || 2); m.textContent = n + ' karakter · ~' + c + ' kredi'; }
     });
     var range = document.getElementById('durRange');
     if (range) range.addEventListener('input', function () {
