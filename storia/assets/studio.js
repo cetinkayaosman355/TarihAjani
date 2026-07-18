@@ -15,7 +15,7 @@
   var S = {
     view: 'new', step: 1,
     idea: '', tone: 'merak', voiceIdx: 0, style: 'sinematik', aspect: '16:9',
-    durationSec: 270, provider: 'claude', custom: '',
+    durationSec: 270, provider: 'claude', custom: '', template: null,
     result: null, tab: 'senaryo', genJob: null,
     user: null, credits: REAL ? null : 500, creditMax: 500,
     images: {}, audio: null, history: [], ttsRate: 1,
@@ -60,6 +60,15 @@
     { name: 'Kısa Video', desc: '60 sn · Dikey', sec: 60, aspect: '9:16', tone: 'enerjik' },
     { name: 'Uzun Video', desc: '8 dk · Yatay', sec: 480, aspect: '16:9', tone: 'merak' },
     { name: 'Belgesel', desc: '10 dk · Yatay', sec: 600, aspect: '16:9', tone: 'belgesel' }
+  ];
+  var TEMPLATES = [
+    { name: 'Belgesel', tone: 'belgesel', style: 'sinematik', sec: 600, aspect: '16:9' },
+    { name: 'Kısa / Shorts', tone: 'enerjik', style: 'fotogercek', sec: 60, aspect: '9:16' },
+    { name: 'Motivasyon', tone: 'destansi', style: 'sinematik', sec: 90, aspect: '9:16' },
+    { name: 'Nasıl yapılır', tone: 'samimi', style: 'illus', sec: 180, aspect: '16:9' },
+    { name: 'Ürün tanıtımı', tone: 'enerjik', style: 'render3d', sec: 60, aspect: '1:1' },
+    { name: 'Liste (5 şey)', tone: 'merak', style: 'fotogercek', sec: 240, aspect: '16:9' },
+    { name: 'Haber özeti', tone: 'belgesel', style: 'fotogercek', sec: 120, aspect: '16:9' }
   ];
   var GRADS = [
     'linear-gradient(135deg,#efe6d2,#c2a160)', 'linear-gradient(135deg,#e0c588,#9c7b3b)',
@@ -137,6 +146,9 @@
         '</div>' +
       '</div>' +
       '<div class="suggest-row">' + chips + '</div>' +
+      '<div class="tmpl-row"><span class="tmpl-lbl">Şablon</span>' +
+        TEMPLATES.map(function (t, i) { return '<button class="tmpl' + (S.template === i ? ' on' : '') + '" data-act="template" data-v="' + i + '">' + esc(t.name) + '</button>'; }).join('') +
+      '</div>' +
       '<div class="composer-hint"><kbd>Enter</kbd> ile devam et · <kbd>⇧ Enter</kbd> yeni satır</div>' +
     '</div>';
   }
@@ -205,7 +217,7 @@
   // ── Result document (step 4) ─────────────────────────────────────────
   function renderDoc() {
     var r = S.result || {};
-    var tabs = [['senaryo', 'Senaryo'], ['seslendirme', 'Seslendirme'], ['gorsel', 'Görseller'], ['storyboard', 'Storyboard'], ['youtube', 'YouTube'], ['instagram', 'Instagram'], ['kapak', 'Kapak & yayın']];
+    var tabs = [['senaryo', 'Senaryo'], ['seslendirme', 'Seslendirme'], ['gorsel', 'Görseller'], ['storyboard', 'Storyboard'], ['video', 'Video'], ['youtube', 'YouTube'], ['instagram', 'Instagram'], ['kapak', 'Kapak & yayın']];
     var tabBtns = tabs.map(function (t) { return '<button class="' + (S.tab === t[0] ? 'on' : '') + '" data-act="tab" data-v="' + t[0] + '">' + t[1] + '</button>'; }).join('');
     var meta = [fmtDur(S.durationSec), styleObj().name, S.aspect, VOICES[S.voiceIdx].name].map(function (m) { return '<span class="m">' + esc(m) + '</span>'; }).join('');
     var hero = '<div class="doc-hero"><div class="doc-eyebrow">✦ Dosyan hazır</div>' +
@@ -271,6 +283,17 @@
       }).join('');
       var doneSb = sc.filter(function (_, i) { return S.images[i]; }).length;
       return '<div class="tab-tools"><span class="tt-note">Film şeridi · ' + sc.length + ' sahne · ' + doneSb + ' görsel hazır</span><button class="btn btn-gold btn-sm" data-act="genAll">✦ Tümünü üret</button></div><div class="storyboard">' + sbCards + '</div>';
+    }
+    if (S.tab === 'video') {
+      var vids = (r.video_promptlar && r.video_promptlar.length) ? r.video_promptlar
+        : (r.gorsel_promptlar || []).map(function (p) { return p + ', slow cinematic camera move'; });
+      if (!vids.length) return emptyInline();
+      var vcards = vids.map(function (p, i) {
+        return '<div class="prompt-card"><div class="pc-body"><div class="pc-no">Hareket ' + (i + 1) + '</div>' +
+          '<div class="pc-txt">' + esc(p) + '</div><div class="pc-actions">' +
+          '<button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(p) + '">Kopyala</button></div></div></div>';
+      }).join('');
+      return '<div class="tab-tools"><span class="tt-note">Runway, Kling, Sora gibi video araçları için ' + vids.length + ' hareket/kamera promptu (İngilizce)</span><button class="btn btn-quiet btn-sm" data-act="copyVids">Tümünü kopyala</button></div>' + vcards;
     }
     if (S.tab === 'youtube') {
       var yt = r.youtube || {};
@@ -369,6 +392,7 @@
       case 'style': S.style = v; render(); break;
       case 'aspect': S.aspect = v; render(); break;
       case 'mode': applyMode(parseInt(v, 10)); break;
+      case 'template': applyTemplate(parseInt(v, 10)); break;
       case 'generate': startGenerate(false); break;
       case 'regen': startGenerate(true); break;
       case 'restart': case 'goNew': startNew(); break;
@@ -376,6 +400,7 @@
       case 'copyScript': copy((S.result.senaryo || []).map(function (s, i) { return (i + 1) + '. ' + (s.baslik || '') + '\n' + (s.anlatim || ''); }).join('\n\n')); break;
       case 'copyVo': copy(narrationText()); break;
       case 'copyOne': copy(v); break;
+      case 'copyVids': var vp = (S.result.video_promptlar && S.result.video_promptlar.length) ? S.result.video_promptlar : (S.result.gorsel_promptlar || []).map(function (x) { return x + ', slow cinematic camera move'; }); copy(vp.map(function (x, i) { return (i + 1) + '. ' + x; }).join('\n')); break;
       case 'copyYt': var yt = S.result.youtube || {}; copy((yt.baslik || '') + '\n\n' + (yt.aciklama || '') + '\n\n' + (yt.etiketler || []).join(', ')); break;
       case 'copyIg': var ig = S.result.instagram || {}; copy((ig.aciklama || '') + '\n\n' + (ig.hashtagler || []).map(function (t) { return t[0] === '#' ? t : '#' + t; }).join(' ')); break;
       case 'download': downloadFile(); break;
@@ -394,6 +419,7 @@
   });
 
   function applyMode(i) { var m = MODES[i]; if (!m) return; S.durationSec = m.sec; S.aspect = m.aspect; S.tone = m.tone; render(); toast(m.name + ' seçildi'); }
+  function applyTemplate(i) { var t = TEMPLATES[i]; if (!t) return; S.template = i; S.tone = t.tone; S.style = t.style; S.durationSec = t.sec; S.aspect = t.aspect; render(); toast(t.name + ' şablonu · tarz ayarlandı'); }
   function startNew() { S.result = null; S.images = {}; S.audio = null; S.idea = ''; S.custom = ''; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
 
   // ── Generation ───────────────────────────────────────────────────────

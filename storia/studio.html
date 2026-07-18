@@ -116,6 +116,11 @@ body { background: var(--paper); overflow: hidden; }
 .compose-tools .cnt { font-size: 13px; color: var(--muted); }
 .suggest-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; justify-content: center; }
 .suggest-row .chip { cursor: pointer; }
+.tmpl-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; justify-content: center; align-items: center; }
+.tmpl-lbl { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); font-weight: 600; margin-right: 4px; }
+.tmpl { padding: 7px 14px; border-radius: 999px; border: 1px dashed var(--line-strong); background: transparent; color: var(--ink-2); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s var(--ease); }
+.tmpl:hover { border-style: solid; border-color: var(--champ); color: var(--champ-deep); }
+.tmpl.on { border-style: solid; border-color: var(--champ); background: var(--champ-wash); color: var(--champ-deep); }
 .composer-hint { margin-top: 30px; font-size: 13.5px; color: var(--muted); }
 .composer-hint kbd { font-family: var(--sans); font-size: 12px; background: var(--surface); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 6px; padding: 2px 7px; color: var(--ink-2); }
 
@@ -287,6 +292,10 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .panel h3 { font-size: 20px; margin-bottom: 8px; }
 .panel .p-note { font-size: 13.5px; color: var(--muted); margin-bottom: 16px; }
 .panel-txt { white-space: pre-wrap; font-size: 15.5px; line-height: 1.72; color: var(--ink-2); }
+.prompt-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px 18px; margin-bottom: 12px; box-shadow: var(--sh-1); }
+.prompt-card .pc-no { font-size: 11px; color: var(--champ-deep); font-weight: 600; letter-spacing: .08em; }
+.prompt-card .pc-txt { font-size: 14px; color: var(--ink-2); margin: 6px 0 12px; line-height: 1.55; }
+.prompt-card .pc-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .copybtn { position: absolute; top: 22px; right: 24px; }
 .taglist { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .taglist span { font-size: 13px; padding: 6px 12px; border-radius: 999px; background: var(--champ-wash); color: var(--champ-deep); font-weight: 500; }
