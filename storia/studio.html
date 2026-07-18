@@ -470,6 +470,28 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .music-src li b { color: var(--ink); }
 .music-src span { display: block; margin-top: 10px; font-size: 12px; color: var(--muted); }
 
+/* marka kiti */
+.brand-modal { max-width: 520px; text-align: left; }
+.brand-modal h3, .brand-modal > p { text-align: center; }
+.br-grid { display: flex; gap: 16px; margin: 16px 0 6px; }
+.br-logo { flex: none; width: 120px; display: flex; flex-direction: column; gap: 8px; }
+.br-prev { width: 120px; height: 120px; border-radius: var(--r-md); border: 1px dashed var(--line-strong); background: var(--paper-2); display: grid; place-items: center; overflow: hidden; }
+.br-prev img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.br-prev span { font-size: 12px; color: var(--muted); }
+.br-logo-acts { display: flex; gap: 6px; }
+.br-logo-acts .btn { flex: 1; padding: 6px 4px; }
+.br-fields { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.br-f { display: flex; flex-direction: column; gap: 5px; }
+.br-f > span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.br-f input[type=text] { padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; }
+.br-f input[type=text]:focus { outline: none; border-color: var(--champ); }
+.br-color { flex-direction: row; align-items: center; justify-content: space-between; }
+.br-color input[type=color] { width: 44px; height: 30px; border: 1px solid var(--line-2); border-radius: 8px; background: none; cursor: pointer; }
+.br-check { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--ink-2); margin: 12px 0 0; cursor: pointer; }
+.br-check input { width: 17px; height: 17px; accent-color: var(--champ); }
+.brand-modal .br-f { margin-top: 12px; }
+.brand-modal > .btn-gold { margin-top: 18px; }
+
 /* Ajanla konuş — sohbet */
 .chat-fab { position: fixed; right: 22px; bottom: 22px; z-index: 350; display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px 12px 15px; border: 0; border-radius: 999px; background: var(--gold-sheen); color: #241a08; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 10px 30px rgba(120,90,30,.35); transition: transform .2s var(--ease), box-shadow .2s; }
 .chat-fab:hover { transform: translateY(-2px); box-shadow: 0 14px 38px rgba(120,90,30,.45); }
@@ -711,6 +733,34 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
     <button class="cp-send" data-cact="send" aria-label="Gönder">➤</button>
   </div>
 </aside>
+
+<div class="modal-back" id="brandModal">
+  <div class="modal brand-modal">
+    <img class="m-mark" src="/storia/assets/mark.svg" alt="">
+    <h3>Marka kiti</h3>
+    <p>Logonu, rengini ve kapanışını kaydet — video dışa aktarımlarına otomatik uygulanır.</p>
+    <div class="br-grid">
+      <div class="br-logo">
+        <div class="br-prev" id="brLogoPrev"><span>Logo yok</span></div>
+        <div class="br-logo-acts">
+          <button class="btn btn-quiet btn-sm" id="brLogoBtn">Logo yükle</button>
+          <button class="btn btn-quiet btn-sm" id="brLogoClear">Kaldır</button>
+        </div>
+        <input type="file" id="brLogoFile" accept="image/*" hidden>
+      </div>
+      <div class="br-fields">
+        <label class="br-f"><span>Marka adı</span><input type="text" id="brName" placeholder="STORIA" maxlength="40"></label>
+        <label class="br-f"><span>Kullanıcı adı / handle</span><input type="text" id="brHandle" placeholder="@kanalim" maxlength="40"></label>
+        <label class="br-f br-color"><span>Vurgu rengi</span><input type="color" id="brColor" value="#d9bc80"></label>
+      </div>
+    </div>
+    <label class="br-check"><input type="checkbox" id="brWm"> Videolara logo filigranı ekle (köşe)</label>
+    <label class="br-check"><input type="checkbox" id="brOutro"> Sonda kapanış kartı (CTA) göster</label>
+    <label class="br-f"><span>Kapanış metni</span><input type="text" id="brOutroText" placeholder="Abone ol · yeni içerik her gün" maxlength="60"></label>
+    <button class="btn btn-gold" id="brSave">Marka kitini kaydet</button>
+    <div class="alt"><a id="brCancel">Vazgeç</a></div>
+  </div>
+</div>
 
 <div class="modal-back" id="sceneModal">
   <div class="modal">

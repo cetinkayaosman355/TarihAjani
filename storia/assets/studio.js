@@ -20,6 +20,7 @@
     user: null, credits: REAL ? null : 500, creditMax: 500,
     images: {}, covers: {}, videos: {}, videoJobs: {}, chars: {}, audio: null, history: [], ttsRate: 1,
     bgMusic: null, bgMusicName: '', musicVol: 0.5, capStyle: 'klasik',
+    brand: { logo: '', color: '#d9bc80', name: '', handle: '', wm: true, outro: false, outroText: 'Abone ol · yeni içerik her gün' },
     chat: { open: false, msgs: [], busy: false },
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null, imgMode: 'gorsel',
@@ -437,7 +438,8 @@
         : '<button class="btn btn-quiet btn-sm" data-act="musicPick">🎵 Arka plan müziği ekle</button>';
       var capSeg = Object.keys(CAP_STYLES).map(function (k) { return '<button class="' + (S.capStyle === k ? 'on' : '') + '" data-act="capStyle" data-v="' + k + '">' + esc(CAP_STYLES[k].name) + '</button>'; }).join('');
       var exportBar = '<div class="export-strip"><div class="es-txt"><b>Tek dosyada birleştir</b><span>Sahne görselleri + seslendirme + altyazı → Ken Burns efektli video (WebM/MP4). Ücretsiz, tarayıcıda oluşur.</span>' +
-        '<div class="cap-pick"><span class="cp-lbl">Altyazı stili</span><div class="cap-seg">' + capSeg + '</div></div>' + musicChip + '</div>' +
+        '<div class="cap-pick"><span class="cp-lbl">Altyazı stili</span><div class="cap-seg">' + capSeg + '</div></div>' + musicChip +
+        '<button class="btn btn-quiet btn-sm" data-act="brandKit" style="margin-top:12px">🎨 Marka kiti' + (S.brand.logo || S.brand.name ? ' ✓' : '') + '</button></div>' +
         '<button class="btn btn-gold" data-act="exportVid"' + (doneImgs ? '' : ' disabled') + '>🎬 Video oluştur &amp; indir</button></div>';
       return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>yapay zeka</b> ile ~5 sn videoya çevir · ' + vn + ' sahne</span></div>' + exportBar + '<div class="vgrid">' + vcards + '</div>';
     }
@@ -628,6 +630,7 @@
       case 'video': doVideo(parseInt(v, 10)); break;
       case 'exportVid': exportVideo(); break;
       case 'capStyle': S.capStyle = v; refreshTab(); break;
+      case 'brandKit': openBrandModal(); break;
       case 'musicPick': openMusicModal(); break;
       case 'musicClear': if (S.bgMusic && S.bgMusic.indexOf('blob:') === 0) { try { URL.revokeObjectURL(S.bgMusic); } catch (e) {} } S.bgMusic = null; S.bgMusicName = ''; refreshTab(); break;
       case 'musicVol': break;
@@ -741,6 +744,37 @@
   function histKey() { return 'storia_hist_' + ((S.user && S.user.id) ? S.user.id.slice(0, 12) : 'guest'); }
   function saveHist() { try { localStorage.setItem(histKey(), JSON.stringify(S.history.slice(0, 50))); } catch (e) {} }
   function loadHist() { try { var h = JSON.parse(localStorage.getItem(histKey()) || '[]'); S.history = Array.isArray(h) ? h : []; } catch (e) { S.history = []; } }
+  // Marka kiti (logo/renk/isim/handle/outro) — cihazda, kullanıcıya göre saklanır
+  function brandKey() { return 'storia_brand_' + ((S.user && S.user.id) ? S.user.id.slice(0, 12) : 'guest'); }
+  function saveBrand() { try { localStorage.setItem(brandKey(), JSON.stringify(S.brand)); } catch (e) {} }
+  function loadBrand() { try { var b = JSON.parse(localStorage.getItem(brandKey()) || 'null'); if (b && typeof b === 'object') { for (var k in b) if (k in S.brand) S.brand[k] = b[k]; } } catch (e) {} }
+  function openBrandModal() { var m = document.getElementById('brandModal'); if (m) { fillBrandForm(); m.classList.add('show'); } }
+  function closeBrandModal() { var m = document.getElementById('brandModal'); if (m) m.classList.remove('show'); }
+  function fillBrandForm() {
+    var g = function (id) { return document.getElementById(id); };
+    if (g('brName')) g('brName').value = S.brand.name || '';
+    if (g('brHandle')) g('brHandle').value = S.brand.handle || '';
+    if (g('brColor')) g('brColor').value = S.brand.color || '#d9bc80';
+    if (g('brWm')) g('brWm').checked = !!S.brand.wm;
+    if (g('brOutro')) g('brOutro').checked = !!S.brand.outro;
+    if (g('brOutroText')) g('brOutroText').value = S.brand.outroText || '';
+    var lp = g('brLogoPrev'); if (lp) lp.innerHTML = S.brand.logo ? '<img src="' + esc(S.brand.logo) + '" alt="">' : '<span>Logo yok</span>';
+  }
+  function handleBrandLogo(file) {
+    if (!file) return;
+    if (!/^image\//.test(file.type)) { toast('Lütfen bir görsel seç (PNG şeffaf önerilir)'); return; }
+    if (file.size > 3 * 1024 * 1024) { toast('Logo çok büyük (en fazla 3 MB)'); return; }
+    var fr = new FileReader(); fr.onload = function () { S.brand.logo = String(fr.result); var lp = document.getElementById('brLogoPrev'); if (lp) lp.innerHTML = '<img src="' + esc(S.brand.logo) + '" alt="">'; }; fr.readAsDataURL(file);
+  }
+  function saveBrandForm() {
+    var g = function (id) { var e = document.getElementById(id); return e ? e.value : ''; };
+    S.brand.name = g('brName').trim(); S.brand.handle = g('brHandle').trim();
+    S.brand.color = g('brColor') || '#d9bc80'; S.brand.outroText = g('brOutroText');
+    var wm = document.getElementById('brWm'), ou = document.getElementById('brOutro');
+    S.brand.wm = wm ? wm.checked : true; S.brand.outro = ou ? ou.checked : false;
+    saveBrand(); closeBrandModal(); refreshTab(); toast('Marka kiti kaydedildi');
+  }
+  function clearBrandLogo() { S.brand.logo = ''; var lp = document.getElementById('brLogoPrev'); if (lp) lp.innerHTML = '<span>Logo yok</span>'; }
 
   function downloadFile() {
     var r = S.result || {}; var lines = [];
@@ -905,11 +939,28 @@
     canvas.style.cssText = 'position:fixed;left:-99999px;top:0;width:2px;height:2px;opacity:.01;pointer-events:none';
     document.body.appendChild(canvas);
     var ctx = canvas.getContext('2d');
+    var brand = S.brand, logoEl = null;
+    if (brand.logo) { var _li = new Image(); _li.onload = function () { logoEl = _li; }; _li.src = brand.logo; }
+    function drawWatermark() {
+      if (!(brand.wm && logoEl)) return;
+      var lw = W * 0.14, lh2 = lw * (logoEl.naturalHeight || 1) / (logoEl.naturalWidth || 1), pad = W * 0.035;
+      ctx.globalAlpha = 0.9; ctx.drawImage(logoEl, W - lw - pad, pad, lw, lh2); ctx.globalAlpha = 1;
+    }
+    function drawOutro(prog) {
+      var g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1a140b'); g.addColorStop(1, '#0d0a06'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      var cy = H * 0.5, ease = Math.min(1, prog * 2.2); ctx.globalAlpha = ease; ctx.textAlign = 'center';
+      if (logoEl) { var lw = W * 0.24, lh2 = lw * (logoEl.naturalHeight || 1) / (logoEl.naturalWidth || 1); ctx.drawImage(logoEl, (W - lw) / 2, cy - lh2 - H * 0.07, lw, lh2); }
+      if (brand.name) { var nf = Math.round(W * 0.075); ctx.font = '700 ' + nf + 'px "Hanken Grotesk", Arial, sans-serif'; ctx.fillStyle = brand.color || '#d9bc80'; ctx.fillText(brand.name, W / 2, cy + H * 0.02); }
+      if (brand.outroText) { var tf = Math.round(W * 0.04); ctx.font = '600 ' + tf + 'px "Hanken Grotesk", Arial, sans-serif'; ctx.fillStyle = '#fff'; ctx.fillText(brand.outroText, W / 2, cy + H * 0.09); }
+      if (brand.handle) { var hf = Math.round(W * 0.036); ctx.font = '500 ' + hf + 'px "Hanken Grotesk", Arial, sans-serif'; ctx.fillStyle = brand.color || '#d9bc80'; ctx.fillText(brand.handle, W / 2, cy + H * 0.155); }
+      ctx.globalAlpha = 1;
+    }
     function drawFrame(k, lt) {
       ctx.fillStyle = '#14110c'; ctx.fillRect(0, 0, W, H);
       if (imgsRef[k]) drawCover(ctx, imgsRef[k], W, H, 1.03 + 0.09 * lt, (k % 2 ? -1 : 1) * 0.02 * lt);
       else { var g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#efe6d2'); g.addColorStop(1, '#b4914d'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
       drawCaption(ctx, scenes[k].anlatim || scenes[k].metin || '', W, H);
+      drawWatermark();
     }
     var imgsRef = [];
     Promise.all(scenes.map(function (s, i) { return loadImgEl(S.images[i]).catch(function () { return null; }); })).then(function (imgs) {
@@ -918,7 +969,9 @@
       function decodeUrl(url) { if (!actx) { actx = new AC(); try { actx.resume(); } catch (e) {} } return fetch(url).then(function (rr) { return rr.arrayBuffer(); }).then(function (ab) { return actx.decodeAudioData(ab); }).catch(function () { return null; }); }
       Promise.all([S.audio ? decodeUrl(S.audio) : Promise.resolve(null), S.bgMusic ? decodeUrl(S.bgMusic) : Promise.resolve(null)]).then(function (bufs) {
         var voBuf = bufs[0], muBuf = bufs[1];
-        var total = voBuf ? voBuf.duration : n * 3.2, per = total / n;
+        var sceneTotal = voBuf ? voBuf.duration : n * 3.2;
+        var OUTRO = (brand.outro && (brand.name || brand.handle || brand.outroText)) ? 1.8 : 0;
+        var total = sceneTotal + OUTRO, per = sceneTotal / n;
         drawFrame(0, 0); // captureStream'den önce ilk kareyi çiz
         var vstream = canvas.captureStream(30), vtrack = vstream.getVideoTracks()[0], srcs = [];
         // Ses ancak gerçekten varsa parçaya eklenir — boş/sessiz ses izi kaydı bloke edebilir.
@@ -955,8 +1008,8 @@
         (function frame() {
           var el = (performance.now() - start) / 1000;
           if (el >= total) { try { if (rec.state !== 'inactive') rec.stop(); } catch (e) {} return; }
-          var k = Math.min(n - 1, Math.floor(el / per)), lt = (el - k * per) / per;
-          drawFrame(k, lt);
+          if (OUTRO && el >= sceneTotal) { drawOutro((el - sceneTotal) / OUTRO); }
+          else { var k = Math.min(n - 1, Math.floor(el / per)), lt = (el - k * per) / per; drawFrame(k, lt); }
           if (vtrack && vtrack.requestFrame) { try { vtrack.requestFrame(); } catch (e) {} }
           showExport(el / total, 'Video oluşturuluyor · %' + Math.round(el / total * 100));
           requestAnimationFrame(frame);
@@ -1359,6 +1412,17 @@
       document.getElementById('sceneAdd').addEventListener('click', addScene);
       document.getElementById('sceneCancel').addEventListener('click', closeSceneModal);
     }
+    // marka kiti modal
+    var brandModal = document.getElementById('brandModal');
+    if (brandModal) {
+      brandModal.addEventListener('click', function (e) { if (e.target === brandModal) closeBrandModal(); });
+      document.getElementById('brSave').addEventListener('click', saveBrandForm);
+      document.getElementById('brCancel').addEventListener('click', closeBrandModal);
+      document.getElementById('brLogoClear').addEventListener('click', clearBrandLogo);
+      var brFile = document.getElementById('brLogoFile');
+      document.getElementById('brLogoBtn').addEventListener('click', function () { brFile.click(); });
+      brFile.addEventListener('change', function () { handleBrandLogo(brFile.files && brFile.files[0]); brFile.value = ''; });
+    }
     // chat (Ajanla konuş)
     var chatFab = document.getElementById('chatFab');
     if (chatFab) {
@@ -1553,11 +1617,11 @@
 
   // ── Boot ─────────────────────────────────────────────────────────────
   function boot() {
-    loadHist(); setupChrome(); render();
+    loadHist(); loadBrand(); setupChrome(); render();
     try { if (!localStorage.getItem('storia_tour')) setTimeout(openTour, 600); } catch (e) {}
     if (REAL) {
       loadSupabase().then(function () { sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey); return sb.auth.getSession(); })
-        .then(function (res) { var s = res && res.data && res.data.session; if (s && s.user) { S.user = s.user; loadHist(); loadCredits(); if (S.view === 'history' || S.view === 'library') render(); } chrome(); })
+        .then(function (res) { var s = res && res.data && res.data.session; if (s && s.user) { S.user = s.user; loadHist(); loadBrand(); loadCredits(); if (S.view === 'history' || S.view === 'library') render(); } chrome(); })
         .catch(function () { toast('Sunucuya bağlanılamadı'); });
     }
   }
