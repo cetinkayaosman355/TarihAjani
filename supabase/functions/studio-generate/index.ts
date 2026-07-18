@@ -170,13 +170,18 @@ async function callClaude(prompt: string, maxTokens?: number, jsonMode?: boolean
   const key = Deno.env.get("ANTHROPIC_API_KEY");
   if (!key) throw new Error("ANTHROPIC_API_KEY secret eksik.");
   let lastErr = "";
+  // Bazı modeller (ör. claude-sonnet-5) assistant "{" ÖN-DOLDURMA kabul etmez →
+  // "does not support assistant message prefill" hatası verir. O durumda aynı
+  // modeli prefill'siz TEKRAR deneriz (kaliteyi koru, OpenAI'ya boşuna düşme).
+  let noPrefill = false;
   for (const model of CLAUDE_MODELS) {
     let tokens = Math.min(maxTokens || 4000, 16000);
-    for (let attempt = 0; attempt < 2; attempt++) {
-      // JSON GÜVENİLİRLİĞİ: asistan cevabını "{" ile ÖN-DOLDUR → Claude önsöz/
-      // markdown/```json ekleyemez, doğrudan JSON gövdesini yazmak zorunda kalır.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      // JSON GÜVENİLİRLİĞİ: destekleyen modellerde cevabı "{" ile ön-doldur →
+      // önsöz/markdown ekleyemez. Desteklemeyende prompt + parser JSON'u çıkarır.
+      const usePrefill = !!jsonMode && !noPrefill;
       const messages: any[] = [{ role: "user", content: prompt }];
-      if (jsonMode) messages.push({ role: "assistant", content: "{" });
+      if (usePrefill) messages.push({ role: "assistant", content: "{" });
       const r = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
@@ -185,10 +190,12 @@ async function callClaude(prompt: string, maxTokens?: number, jsonMode?: boolean
       if (r.ok) {
         const d = await r.json();
         const body = (d.content || []).map((c: any) => c.text || "").join("\n");
-        return jsonMode ? "{" + body : body;   // ön-doldurulan "{" cevaba dahil değildir → geri ekle
+        return usePrefill ? "{" + body : body;   // ön-doldurulan "{" cevaba dahil değildir → geri ekle
       }
       const txt = await r.text();
       lastErr = txt;
+      // Prefill reddi → aynı modeli prefill'siz tekrar dene (model listede kalsın)
+      if (txt.includes("assistant message prefill")) { noPrefill = true; continue; }
       if (txt.includes("not_found_error")) break;
       if (txt.includes("max_tokens") && tokens > 8000) { tokens = 8000; continue; }
       throw new Error("Claude: " + txt);
