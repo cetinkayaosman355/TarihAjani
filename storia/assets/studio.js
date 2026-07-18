@@ -24,6 +24,7 @@
     chat: { open: false, msgs: [], busy: false },
     trend: { open: false, niche: '', busy: false, items: [] },
     series: { open: false, mode: 'topic', topic: '', source: '', count: 5, busy: false, running: false, eps: [], done: 0 },
+    dub: { open: false, busy: false },
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null, imgMode: 'gorsel',
     // ses stüdyo
@@ -266,6 +267,52 @@
       }).catch(function () { s.done = i; render(); next(); });
     })();
   }
+  // ── Dublaj / çok dilli (üretilmiş dosyayı başka dile çevir) ──────────
+  var DUB_LANGS = [
+    { code: 'en', name: 'English', flag: '🇬🇧' }, { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' }, { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'it', name: 'Italiano', flag: '🇮🇹' }, { code: 'pt', name: 'Português', flag: '🇵🇹' },
+    { code: 'ar', name: 'العربية', flag: '🇸🇦' }, { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+    { code: 'ja', name: '日本語', flag: '🇯🇵' }, { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' }
+  ];
+  function renderDub() {
+    if (!S.dub.open) return '';
+    var chips = DUB_LANGS.map(function (l) { return '<button class="chip" data-act="dubGo" data-v="' + l.code + '"' + (S.dub.busy ? ' disabled' : '') + '>' + l.flag + ' ' + esc(l.name) + '</button>'; }).join('');
+    var body = S.dub.busy ? '<div class="trend-loading"><span class="mini-orb"></span> Dosya çevriliyor… Görseller korunur, yeni dil Kütüphane\'ye ayrı dosya olarak eklenir.</div>' : '<div class="trend-niches">' + chips + '</div>';
+    return '<div class="trend-panel dub-panel"><div class="trend-head"><b>🌍 Dublaj — başka dile çevir</b><span>Aynı videoyu başka bir dile çevir: senaryo, altyazı ve yayın metinleri çevrilir, görseller aynı kalır. Yeni dil ayrı dosya olur.</span></div>' + body +
+      '<div style="margin-top:12px"><button class="btn btn-quiet btn-sm" data-act="dubClose">Kapat</button></div></div>';
+  }
+  function doDub(code) {
+    var lang = DUB_LANGS.filter(function (l) { return l.code === code; })[0]; if (!lang) return;
+    var r = S.result; if (!r) return;
+    if (REAL && !S.user) { openAuth(); return; }
+    S.dub.busy = true; render();
+    var finish = function (obj) {
+      // görseller dile bağlı değil — kopyalayarak taşı; seslendirme yeni dilde üretilecek
+      var ent = { result: obj, idea: (obj.baslik || r.baslik || S.idea) + ' [' + lang.name + ']', meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect + ' · ' + lang.name, ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec, images: {}, covers: {}, videos: {}, audio: null };
+      var k; for (k in S.images) ent.images[k] = S.images[k];
+      for (k in S.covers) ent.covers[k] = S.covers[k];
+      for (k in S.videos) ent.videos[k] = S.videos[k];
+      S.history.unshift(ent); saveHist();
+      S.dub.busy = false; S.dub.open = false; S.view = 'history'; render();
+      toast(lang.name + ' dublajı hazır ✦ Kütüphane\'de');
+    };
+    if (!REAL) {
+      setTimeout(function () { var copy = JSON.parse(JSON.stringify(r)); copy.baslik = (r.baslik || '') + ' (' + lang.name + ')'; finish(copy); }, 900);
+      return;
+    }
+    var payload = JSON.stringify({ baslik: r.baslik, logline: r.logline, senaryo: r.senaryo, seslendirme_notu: r.seslendirme_notu, youtube: r.youtube, instagram: r.instagram, kapak: r.kapak });
+    var p = 'Aşağıdaki kısa video dosyasını ' + lang.name + ' diline ÇEVİR. Kurallar: metin alanlarını (baslik, logline, senaryo[].baslik, senaryo[].anlatim, seslendirme_notu, youtube, instagram, kapak) doğal ve akıcı ' + lang.name + ' diline çevir; anlamı ve tonu koru, birebir kelime çevirisi yapma. gorsel_promptlar ve video_promptlar VARSA İngilizce KALSIN (çevirme). senaryo öğe sayısını AYNEN koru. SADECE geçerli JSON döndür (aynı şema), başka metin yok.\n\nDOSYA:\n' + payload;
+    callFn({ action: '', prompt: p, max_tokens: 8000 }).then(function (d) {
+      var txt = d && (d.text || d.result) ? String(d.text || d.result) : '';
+      var obj = null; try { var m = /\{[\s\S]*\}/.exec(txt); if (m) obj = JSON.parse(m[0]); } catch (_e) {}
+      if (!obj || !obj.senaryo) { S.dub.busy = false; render(); toast('Çeviri başarısız — tekrar dene'); return; }
+      // görsel/video prompt'ları orijinalden koru (çevrilmiş olabilir ya da eksik gelebilir)
+      obj.gorsel_promptlar = r.gorsel_promptlar; obj.video_promptlar = r.video_promptlar; obj.karakterler = r.karakterler;
+      if (typeof d.credits === 'number') S.credits = d.credits; chrome();
+      finish(obj);
+    }).catch(function () { S.dub.busy = false; render(); toast('Bağlantı hatası'); });
+  }
   var TONES = [
     { id: 'merak', name: 'Merak uyandıran' }, { id: 'dramatik', name: 'Dramatik' },
     { id: 'belgesel', name: 'Belgesel' }, { id: 'destansi', name: 'Destansı' },
@@ -479,10 +526,12 @@
       (r.logline ? '<p class="doc-logline">' + esc(r.logline) + '</p>' : '') +
       '<div class="doc-meta">' + meta + '</div>' +
       '<div class="doc-acts"><button class="btn btn-gold btn-sm" data-act="reviseChat">✎ Konuşarak düzenle</button>' +
+        '<button class="btn btn-ghost btn-sm" data-act="dubOpen" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">🌍 Dublaj</button>' +
         '<button class="btn btn-ghost btn-sm" data-act="restart" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">＋ Yeni dosya</button>' +
         '<button class="btn btn-ghost btn-sm" data-act="regen" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↻ Yeniden üret</button>' +
         '<button class="btn btn-ghost btn-sm" data-act="exportPdf" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↓ PDF</button>' +
-        '<button class="btn btn-ghost btn-sm" data-act="download" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↓ Metin</button></div></div>';
+        '<button class="btn btn-ghost btn-sm" data-act="download" style="color:var(--on-ink);border-color:rgba(255,255,255,.25)">↓ Metin</button></div>' +
+      (S.dub.open ? renderDub() : '') + '</div>';
     return '<div class="doc">' + hero + '<div class="tabs">' + tabBtns + '</div><div class="tab-body" id="tabBody">' + renderTab() + '</div></div>';
   }
 
@@ -786,6 +835,9 @@
       case 'generate': startGenerate(false); break;
       case 'regen': startGenerate(true); break;
       case 'reviseChat': openChat(); break;
+      case 'dubOpen': S.dub.open = !S.dub.open; render(); break;
+      case 'dubClose': S.dub.open = false; render(); break;
+      case 'dubGo': doDub(v); break;
       case 'restart': case 'goNew': startNew(); break;
       case 'tab': S.tab = v; document.querySelectorAll('.tabs button').forEach(function (b) { b.classList.remove('on'); }); el.classList.add('on'); document.getElementById('tabBody').innerHTML = renderTab(); break;
       case 'copyScript': copy((S.result.senaryo || []).map(function (s, i) { return (i + 1) + '. ' + (s.baslik || '') + '\n' + (s.anlatim || ''); }).join('\n\n')); break;
