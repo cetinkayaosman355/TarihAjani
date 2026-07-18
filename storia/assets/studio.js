@@ -15,7 +15,7 @@
   var S = {
     view: 'new', step: 1,
     idea: '', tone: 'merak', voiceIdx: 0, style: 'sinematik', aspect: '16:9',
-    durationSec: 270, provider: 'claude', custom: '', template: null,
+    durationSec: 270, provider: 'claude', custom: '', template: null, lang: 'tr',
     result: null, tab: 'senaryo', genJob: null,
     user: null, credits: REAL ? null : 500, creditMax: 500,
     images: {}, audio: null, history: [], ttsRate: 1,
@@ -170,7 +170,9 @@
     var modes = MODES.map(function (m, i) { return '<button class="mode" data-act="mode" data-v="' + i + '"><div class="mn">' + esc(m.name) + '</div><div class="md">' + esc(m.desc) + '</div></button>'; }).join('');
     var fill = Math.round((sec - 30) / 570 * 100);
 
+    var langSeg = [['tr', 'Türkçe'], ['en', 'English']].map(function (l) { return '<button class="' + (S.lang === l[0] ? 'on' : '') + '" data-act="lang" data-v="' + l[0] + '">' + l[1] + '</button>'; }).join('');
     var left = '<div class="room-head"><h1>Tarzını seç</h1><p>Her ayarı önizleme kartında anında gör.</p></div>' +
+      '<div class="opt-group"><div class="opt-title">İçerik dili</div><div class="seg">' + langSeg + '</div></div>' +
       '<div class="opt-group"><div class="opt-title">Hazır modlar</div><div class="modes">' + modes + '</div></div>' +
       '<div class="opt-group"><div class="opt-title">Anlatım tonu</div><div class="seg">' + toneSeg + '</div></div>' +
       '<div class="opt-group"><div class="opt-title">Anlatıcı sesi</div><div class="tiles">' + voiceTiles + '</div></div>' +
@@ -193,7 +195,7 @@
       '<div class="pv-body">' +
         '<div class="pv-eyebrow">Önizleme · ' + S.aspect + '</div>' +
         '<div class="pv-title">' + title + '</div>' +
-        '<div class="pv-chips"><span>' + esc(toneName()) + '</span><span>' + esc(VOICES[S.voiceIdx].name) + '</span><span>' + esc(styleObj().name) + '</span></div>' +
+        '<div class="pv-chips"><span>' + (S.lang === 'en' ? 'English' : 'Türkçe') + '</span><span>' + esc(toneName()) + '</span><span>' + esc(VOICES[S.voiceIdx].name) + '</span><span>' + esc(styleObj().name) + '</span></div>' +
         '<div class="pv-stats">' +
           '<div class="pv-stat"><div class="k">' + fmtDur(sec) + '</div><div class="l">Süre</div></div>' +
           '<div class="pv-stat"><div class="k">~' + scenes + '</div><div class="l">Sahne</div></div>' +
@@ -394,6 +396,7 @@
       case 'aspect': S.aspect = v; render(); break;
       case 'mode': applyMode(parseInt(v, 10)); break;
       case 'template': applyTemplate(parseInt(v, 10)); break;
+      case 'lang': S.lang = v; render(); break;
       case 'generate': startGenerate(false); break;
       case 'regen': startGenerate(true); break;
       case 'restart': case 'goNew': startNew(); break;
@@ -454,7 +457,20 @@
   function demoGenerate() { setTimeout(function () { finishGen(synthDemo(), true); }, 5200); }
 
   function buildPrompt() {
-    var scenes = sceneFor(S.durationSec), st = styleObj();
+    var scenes = sceneFor(S.durationSec), st = styleObj(), min = Math.min(scenes, 8);
+    if (S.lang === 'en') {
+      return 'You are an expert scriptwriter and production director for content creators. Write fluent, ACCURATE content that hooks the viewer from the first second.\n\n' +
+        'TOPIC: ' + S.idea + '\nTONE: ' + toneName() + '\nVISUAL STYLE: ' + st.name + ' (' + st.en + ')\n' +
+        'FORMAT: ' + S.aspect + ' · DURATION: ' + fmtDur(S.durationSec) + ' · ~' + scenes + ' scenes\n' +
+        (S.custom ? 'SPECIAL REQUEST (highest priority): ' + S.custom + '\n' : '') +
+        '\nReturn ONLY valid JSON in this schema, in ENGLISH (keys stay exactly as below, no other text):\n' +
+        '{ "baslik":"catchy title", "logline":"one-sentence summary", "karakterler":[], ' +
+        '"senaryo":[{"baslik":"scene title","anlatim":"narration to be voiced (2-4 sentences)","gorsel":"short visual description"}], ' +
+        '"seslendirme_notu":"note to the narrator", "youtube":{"baslik":"SEO title","aciklama":"description","etiketler":["tag1"]}, ' +
+        '"instagram":{"aciklama":"Reels caption","hashtagler":["hashtag1"]}, "kapak":["thumbnail idea"], ' +
+        '"gorsel_promptlar":["English ' + st.en + ' image-generation prompt for each scene"], "video_promptlar":[], "uretim_notu":"short production tip" }\n' +
+        'senaryo and gorsel_promptlar must contain at least ' + min + ' items. If the topic is nonsense return {"gecersiz":true,"mesaj":"..."}.';
+    }
     return 'Sen içerik üreticileri için çalışan uzman bir senarist ve yapım yönetmenisin. İzleyiciyi ilk saniyeden yakalayan, akıcı ve DOĞRU içerik üret.\n\n' +
       'KONU: ' + S.idea + '\nANLATIM TONU: ' + toneName() + '\nGÖRSEL STİL: ' + st.name + ' (' + st.en + ')\n' +
       'FORMAT: ' + S.aspect + ' · SÜRE: ' + fmtDur(S.durationSec) + ' · SAHNE SAYISI: yaklaşık ' + scenes + '\n' +
@@ -465,7 +481,7 @@
       '"seslendirme_notu":"anlatıcı yönergesi", "youtube":{"baslik":"SEO başlığı","aciklama":"açıklama","etiketler":["e1"]}, ' +
       '"instagram":{"aciklama":"Reels metni","hashtagler":["h1"]}, "kapak":["fikir1"], ' +
       '"gorsel_promptlar":["her sahne için İngilizce ' + st.en + ' tarzında görsel üretim promptu"], "video_promptlar":[], "uretim_notu":"kısa tavsiye" }\n' +
-      'senaryo ve gorsel_promptlar en az ' + Math.min(scenes, 8) + ' öğe içersin. Konu anlamsızsa {"gecersiz":true,"mesaj":"..."} döndür.';
+      'senaryo ve gorsel_promptlar en az ' + min + ' öğe içersin. Konu anlamsızsa {"gecersiz":true,"mesaj":"..."} döndür.';
   }
   function realGenerate(isRegen) {
     var job = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -627,13 +643,14 @@
   function speak(text, rate) {
     if (!('speechSynthesis' in window)) return false;
     window.speechSynthesis.cancel();
-    var u = new SpeechSynthesisUtterance(text); u.lang = 'tr-TR'; u.rate = rate || 1;
+    var lc = S.lang === 'en' ? 'en' : 'tr';
+    var u = new SpeechSynthesisUtterance(text); u.lang = lc === 'en' ? 'en-US' : 'tr-TR'; u.rate = rate || 1;
     var vs = window.speechSynthesis.getVoices() || [];
-    for (var i = 0; i < vs.length; i++) { if (/tr(-|_)/i.test(vs[i].lang)) { u.voice = vs[i]; break; } }
+    for (var i = 0; i < vs.length; i++) { if (new RegExp('^' + lc, 'i').test(vs[i].lang)) { u.voice = vs[i]; break; } }
     window.speechSynthesis.speak(u); return true;
   }
   function previewVoice(i) {
-    var v = VOICES[i]; var sample = 'Storia ile hikâyen hayat buluyor. Bu ses senin anlatıcın olabilir.';
+    var v = VOICES[i]; var sample = S.lang === 'en' ? 'Storia brings your story to life. This voice could be your narrator.' : 'Storia ile hikâyen hayat buluyor. Bu ses senin anlatıcın olabilir.';
     if (!REAL) { if (!speak(sample, S.ttsRate)) toast('Tarayıcı seslendirmeyi desteklemiyor'); else toast('Önizleme · ' + v.name); return; }
     toast('Önizleme hazırlanıyor…');
     callFn({ action: 'tts', preview: true, engine: 'openai', voice: v.ov }).then(function (d) {
@@ -656,9 +673,11 @@
 
   // ── Demo synth ───────────────────────────────────────────────────────
   function synthDemo() {
-    var topic = S.idea.trim() || 'Merak edilen bir konu';
+    var en = S.lang === 'en';
+    var topic = S.idea.trim() || (en ? 'An intriguing topic' : 'Merak edilen bir konu');
     var n = Math.min(sceneFor(S.durationSec), 8);
-    var beats = [
+    var st = styleObj();
+    var beatsTr = [
       ['Açılış kancası', 'Ekranda tek bir soru beliriyor: ' + topic + ' İzleyiciyi ilk saniyeden içine çeken çarpıcı bir girişle başlıyoruz.'],
       ['İlk ipucu', 'Konunun yüzeyini kazıyoruz. Görünenin ardındaki ilk şaşırtıcı detay ortaya çıkıyor ve merak katlanıyor.'],
       ['Derinleşme', 'Şimdi işin özüne iniyoruz. Somut örnekler ve sayılarla anlatı sağlam bir zemine oturuyor.'],
@@ -667,10 +686,29 @@
       ['Doruk noktası', 'Anlatının en güçlü anı. Tüm parçalar yerine oturuyor, izleyici gözünü ekrandan alamıyor.'],
       ['Sonuç', 'Öğrendiklerimizi tek bir çarpıcı fikirde topluyoruz.'],
       ['Kapanış', 'İzleyiciye düşündürecek bir soruyla ve güçlü bir çağrıyla bitiriyoruz.']
-    ].slice(0, n);
-    var st = styleObj();
-    var senaryo = beats.map(function (b, i) { return { baslik: b[0], anlatim: b[1], gorsel: 'Sahne ' + (i + 1) + ' için ' + st.name.toLowerCase() + ' bir kare' }; });
+    ];
+    var beatsEn = [
+      ['The hook', 'A single question appears on screen: ' + topic + ' We open with a striking moment that grabs the viewer in the first second.'],
+      ['First clue', 'We scratch the surface. The first surprising detail behind the obvious emerges and curiosity builds.'],
+      ['Going deeper', 'Now we get to the core. Concrete examples and numbers give the story a solid foundation.'],
+      ['The twist', 'Just as everything seems clear, an unexpected truth enters the scene. The pace rises.'],
+      ['The evidence', 'Expert views and sources come together; the picture starts to complete.'],
+      ['The climax', 'The most powerful moment. Every piece falls into place and the viewer cannot look away.'],
+      ['The takeaway', 'We distill everything into one striking idea.'],
+      ['Closing', 'We end with a thought-provoking question and a strong call to action.']
+    ];
+    var beats = (en ? beatsEn : beatsTr).slice(0, n);
+    var senaryo = beats.map(function (b, i) { return { baslik: b[0], anlatim: b[1], gorsel: (en ? 'A ' + st.name.toLowerCase() + ' frame for scene ' : 'Sahne ' + (i + 1) + ' için ' + st.name.toLowerCase() + ' bir kare') + (en ? (i + 1) : '') }; });
     var prompts = beats.map(function (b, i) { return 'Scene ' + (i + 1) + ': ' + b[0].toLowerCase() + ' depicting "' + topic + '", ' + st.en + ', aspect ' + S.aspect + ', highly detailed, atmospheric'; });
+    if (en) return {
+      baslik: topic.replace(/\?$/, '') + ' — The Truth You Didn’t Know', logline: topic + ' In this video we answer it step by step.', karakterler: [], senaryo: senaryo,
+      seslendirme_notu: 'Read in a ' + toneName().toLowerCase() + ' tone at a natural pace.',
+      youtube: { baslik: topic.replace(/\?$/, '') + ' | Storia', aciklama: 'In this video we answer "' + topic.toLowerCase() + '" step by step. Like and subscribe!\n\n00:00 Intro\n00:30 First clue\n02:00 Going deeper', etiketler: ['storia', 'documentary', 'curiosity', topic.split(' ')[0].toLowerCase(), 'facts'] },
+      instagram: { aciklama: topic + ' 👀 Answer in the video. Save it for later!', hashtagler: ['storia', 'explore', 'facts', 'curiosity', 'reels'] },
+      kapak: ['Big question mark + striking visual, warm light', 'Close-up detail + bold title text'],
+      gorsel_promptlar: prompts, video_promptlar: prompts.map(function (p) { return p + ', slow cinematic camera move'; }),
+      uretim_notu: 'Put the strongest visual in the first 5 seconds; sync transitions to the music. (This is a DEMO output.)'
+    };
     return {
       baslik: topic.replace(/\?$/, '') + ' — Bilmediğin Gerçek',
       logline: topic + ' Bu videoda merakını gidereceğiz.', karakterler: [], senaryo: senaryo,
