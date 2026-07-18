@@ -18,7 +18,7 @@
     durationSec: 270, provider: 'claude', custom: '', template: null, lang: 'tr',
     result: null, tab: 'senaryo', genJob: null,
     user: null, credits: REAL ? null : 500, creditMax: 500,
-    images: {}, audio: null, history: [], ttsRate: 1,
+    images: {}, covers: {}, audio: null, history: [], ttsRate: 1,
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null
   };
@@ -89,6 +89,7 @@
   // ── Chrome (rail + topbar) ───────────────────────────────────────────
   function chrome() {
     document.querySelectorAll('.rail-item').forEach(function (it) { it.classList.toggle('on', it.getAttribute('data-view') === S.view); });
+    document.querySelectorAll('.btm-nav button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-view') === S.view); });
     var mp = document.getElementById('modePill'); if (mp) mp.hidden = REAL;
     document.getElementById('crNum').textContent = (S.credits == null ? '—' : S.credits);
     // plan card
@@ -310,9 +311,16 @@
       return '<div class="panel"><button class="btn btn-quiet btn-sm copybtn" data-act="copyIg">Kopyala</button><h3>Reels / Instagram metni</h3><div class="panel-txt">' + esc(ig.aciklama || '') + '</div>' + (htags ? '<div class="taglist">' + htags + '</div>' : '') + '</div>';
     }
     if (S.tab === 'kapak') {
-      var kapak = (r.kapak || []).map(function (k, i) { return '<div class="scene" style="grid-template-columns:1fr;padding:14px 0"><div><div class="s-no">Kapak fikri ' + (i + 1) + '</div><p style="margin-top:6px">' + esc(k) + '</p></div></div>'; }).join('');
-      return '<div class="panel"><h3>Kapak fikirleri</h3><p class="p-note">Tıklanmayı artıracak thumbnail önerileri.</p>' + (kapak || '<p class="panel-txt">—</p>') + '</div>' +
-        (r.uretim_notu ? '<div class="panel"><h3>Yapım notu</h3><div class="panel-txt">' + esc(r.uretim_notu) + '</div></div>' : '');
+      var kp = r.kapak || [];
+      var kapak = kp.map(function (k, i) {
+        var img = S.covers[i];
+        var box = img ? '<img src="' + esc(img) + '" alt="">' : '<div class="ph" style="aspect-ratio:16/9;background:' + GRADS[i % GRADS.length] + '">' + (REAL ? '✦ Thumbnail üret' : 'Örnek kapak') + '</div>';
+        var over = '<div class="sb-gen" data-act="cover" data-v="' + i + '"><span>' + (img ? 'Yeniden üret' : '✦ Thumbnail üret') + '</span></div>';
+        return '<div class="sb-card"><div class="sb-img" style="aspect-ratio:16/9">' + box + over + '</div><div class="sb-body"><div class="sb-no">Kapak ' + (i + 1) + '</div><p style="max-height:none">' + esc(k) + '</p></div></div>';
+      }).join('');
+      return '<div class="tab-tools"><span class="tt-note">Tıklanmayı artıracak thumbnail fikirleri — üstüne gelip görselini üret (16:9)</span></div>' +
+        (kapak ? '<div class="storyboard">' + kapak + '</div>' : emptyInline()) +
+        (r.uretim_notu ? '<div class="panel" style="margin-top:18px"><h3>Yapım notu</h3><div class="panel-txt">' + esc(r.uretim_notu) + '</div></div>' : '');
     }
     return '';
   }
@@ -325,9 +333,13 @@
     var styleTiles = STYLES.map(function (st) { return '<div class="tile ' + (S.imgStyle === st.id ? 'on' : '') + '" data-act="istyle" data-v="' + st.id + '"><div class="t-name">' + esc(st.name) + '</div></div>'; }).join('');
     var aspects = [{ id: '1:1', w: 28, h: 28, l: 'Kare' }, { id: '16:9', w: 36, h: 21, l: 'Yatay' }, { id: '9:16', w: 21, h: 36, l: 'Dikey' }]
       .map(function (a) { return '<div class="asp ' + (S.imgAspect === a.id ? 'on' : '') + '" data-act="iaspect" data-v="' + a.id + '"><span class="fr" style="width:' + a.w + 'px;height:' + a.h + 'px"></span><span class="l">' + a.l + '</span></div>'; }).join('');
-    var out = S.imgOut ? '<img src="' + esc(S.imgOut) + '" alt="" style="width:100%;border-radius:var(--r-md);border:1px solid var(--line)">' :
-      '<div class="ph" style="aspect-ratio:1;display:grid;place-items:center;border-radius:var(--r-md);border:1px solid var(--line);background:linear-gradient(135deg,var(--paper-2),var(--paper-3));color:var(--muted);font-size:14px">Görselin burada belirir</div>';
-    return '<div class="imgstudio"><div class="room-head"><h1>Görsel stüdyo</h1><p>Tek bir prompt ile bağımsız görsel üret.</p></div>' +
+    var out = S.imgOut
+      ? '<img src="' + esc(S.imgOut) + '" alt="" style="width:100%;border-radius:var(--r-md);border:1px solid var(--line)">' +
+        '<div class="is-acts"><button class="btn btn-gold btn-sm" data-act="editStudio">✏ Düzenle</button>' +
+        '<button class="btn btn-quiet btn-sm" data-act="genImage">↻ Yeniden</button>' +
+        '<a class="btn btn-quiet btn-sm" href="' + esc(S.imgOut) + '" download="storia-gorsel.jpg" target="_blank" rel="noopener">↓ İndir</a></div>'
+      : '<div class="ph" style="aspect-ratio:1;display:grid;place-items:center;border-radius:var(--r-md);border:1px solid var(--line);background:linear-gradient(135deg,var(--paper-2),var(--paper-3));color:var(--muted);font-size:14px">Görselin burada belirir</div>';
+    return '<div class="imgstudio"><div class="room-head"><h1>Görsel stüdyo</h1><p>Tek bir prompt ile bağımsız görsel üret, düzenle ve indir.</p></div>' +
       '<div class="is-grid"><div>' +
         '<div class="opt-group"><div class="opt-title">Ne görmek istiyorsun?</div>' +
           '<textarea class="field" id="imgPromptInput" placeholder="Örn: gün batımında sisli bir dağ manzarası, kartal süzülüyor" style="min-height:110px">' + esc(S.imgPrompt) + '</textarea></div>' +
@@ -414,18 +426,20 @@
       case 'ttsRate': S.ttsRate = parseFloat(v); document.querySelectorAll('.rate-seg button').forEach(function (x) { x.classList.remove('on'); }); el.classList.add('on'); break;
       case 'image': doImage(parseInt(v, 10)); break;
       case 'genAll': genAll(); break;
+      case 'cover': doCover(parseInt(v, 10)); break;
       case 'editImg': openEdit(parseInt(v, 10)); break;
       case 'openHist': openHist(parseInt(v, 10)); break;
       case 'istyle': S.imgStyle = v; render(); break;
       case 'iaspect': S.imgAspect = v; render(); break;
       case 'genImage': genStandaloneImage(); break;
+      case 'editStudio': openEditStudio(); break;
       case 'upgrade': window.location.href = '/storia/#fiyat'; break;
     }
   });
 
   function applyMode(i) { var m = MODES[i]; if (!m) return; S.durationSec = m.sec; S.aspect = m.aspect; S.tone = m.tone; render(); toast(m.name + ' seçildi'); }
   function applyTemplate(i) { var t = TEMPLATES[i]; if (!t) return; S.template = i; S.tone = t.tone; S.style = t.style; S.durationSec = t.sec; S.aspect = t.aspect; render(); toast(t.name + ' şablonu · tarz ayarlandı'); }
-  function startNew() { S.result = null; S.images = {}; S.audio = null; S.idea = ''; S.custom = ''; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
+  function startNew() { S.result = null; S.images = {}; S.covers = {}; S.audio = null; S.idea = ''; S.custom = ''; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
 
   // ── Generation ───────────────────────────────────────────────────────
   function startGenerate(isRegen) {
@@ -448,7 +462,7 @@
   }
   function finishGen(result, charged, credits) {
     _timers.forEach(clearTimeout);
-    S.result = result; S.images = {}; S.audio = null; S.tab = 'senaryo';
+    S.result = result; S.images = {}; S.covers = {}; S.audio = null; S.tab = 'senaryo';
     if (typeof credits === 'number') S.credits = credits;
     else if (!REAL && charged) S.credits = Math.max(0, (S.credits || 0) - costGen(S.durationSec));
     S.history.unshift({ result: result, idea: S.idea, meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect, ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec });
@@ -498,7 +512,7 @@
   function genError(msg) { _timers.forEach(clearTimeout); S.step = 2; render(); toast(msg || 'Üretim başarısız — tekrar dene'); }
   function safeParse(t) { try { return JSON.parse(t); } catch (e) { return null; } }
 
-  function openHist(i) { var h = S.history[i]; if (!h) return; S.result = h.result; S.images = {}; S.audio = null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S.tab = 'senaryo'; S.view = 'new'; S.step = 4; render(); }
+  function openHist(i) { var h = S.history[i]; if (!h) return; S.result = h.result; S.images = {}; S.covers = {}; S.audio = null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S.tab = 'senaryo'; S.view = 'new'; S.step = 4; render(); }
 
   function downloadFile() {
     var r = S.result || {}; var lines = [];
@@ -574,26 +588,42 @@
     }).catch(function () { toast('Bağlantı hatası'); });
   }
   function refreshTab() { var tb = document.getElementById('tabBody'); if (tb) tb.innerHTML = renderTab(); }
+  function doCover(idx) {
+    var r = S.result || {}; var k = (r.kapak || [])[idx]; if (!k) return;
+    var full = k + ' — YouTube thumbnail, bold composition, high contrast, dramatic lighting, eye-catching, ' + styleObj().en;
+    if (!REAL) { S.covers[idx] = demoImage(idx, '16:9'); refreshTab(); toast('Demo kapak eklendi'); return; }
+    if (!S.user) { openAuth(); return; }
+    toast('Thumbnail üretiliyor…');
+    callFn({ action: 'image', prompt: full, size: '16:9', imgIndex: idx }).then(function (d) {
+      if (d && d.ok && d.url) { S.covers[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; refreshTab(); chrome(); toast('Thumbnail üretildi'); }
+      else toast((d && d.error) || 'Üretilemedi');
+    }).catch(function () { toast('Bağlantı hatası'); });
+  }
   // ── Image editing ─────────────────────────────────────────────────────
-  var _editIdx = null;
-  function openEdit(idx) { if (S.images[idx] == null) return; _editIdx = idx; var t = document.getElementById('editText'); t.value = ''; document.getElementById('editModal').classList.add('show'); setTimeout(function () { t.focus(); }, 50); }
+  var _editIdx = null, _editStudio = false;
+  function openEdit(idx) { if (S.images[idx] == null) return; _editStudio = false; _editIdx = idx; showEdit(); }
+  function openEditStudio() { if (!S.imgOut) return; _editStudio = true; _editIdx = null; showEdit(); }
+  function showEdit() { var t = document.getElementById('editText'); t.value = ''; document.getElementById('editModal').classList.add('show'); setTimeout(function () { t.focus(); }, 50); }
   function closeEdit() { document.getElementById('editModal').classList.remove('show'); }
   function toDataUri(url) {
     if (url.indexOf('data:') === 0) return Promise.resolve(url);
     return fetch(url).then(function (r) { return r.blob(); }).then(function (bl) { return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(bl); }); });
   }
   function applyEdit() {
-    var idx = _editIdx; var instr = document.getElementById('editText').value.trim();
-    if (idx == null || !S.images[idx]) return;
+    var instr = document.getElementById('editText').value.trim();
+    var studio = _editStudio;
+    var src = studio ? S.imgOut : S.images[_editIdx];
+    if (src == null) return;
     if (!instr) { toast('Ne değiştireyim yaz'); return; }
     closeEdit();
-    if (!REAL) { S.images[idx] = demoImage(idx, S.aspect); refreshTab(); toast('Düzenlendi (demo): ' + instr.slice(0, 36)); return; }
+    var size = studio ? S.imgAspect : S.aspect;
+    if (!REAL) { if (studio) S.imgOut = demoImage(0, size); else S.images[_editIdx] = demoImage(_editIdx, size); if (studio) render(); else refreshTab(); toast('Düzenlendi (demo): ' + instr.slice(0, 36)); return; }
     if (!S.user) { openAuth(); return; }
     toast('Görsel düzenleniyor…');
-    toDataUri(S.images[idx]).then(function (du) {
-      return callFn({ action: 'edit', image: du, prompt: instr, size: S.aspect });
+    toDataUri(src).then(function (du) {
+      return callFn({ action: 'edit', image: du, prompt: instr, size: size });
     }).then(function (d) {
-      if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; refreshTab(); chrome(); toast('Görsel düzenlendi'); }
+      if (d && d.ok && d.url) { if (studio) S.imgOut = d.url; else S.images[_editIdx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; if (studio) render(); else refreshTab(); chrome(); toast('Görsel düzenlendi'); }
       else toast((d && d.error) || 'Görsel düzenlenemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
@@ -750,6 +780,11 @@
       var v = it.getAttribute('data-view');
       if (v === 'new' && S.step === 4) startNew(); else { S.view = v; render(); }
       closeRail();
+    });
+    document.getElementById('btmNav').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-view]'); if (!b) return;
+      var v = b.getAttribute('data-view');
+      if (v === 'new' && S.step === 4) startNew(); else { S.view = v; render(); }
     });
     document.getElementById('acctRow').addEventListener('click', function () {
       if (S.user) { if (sb) sb.auth.signOut(); S.user = null; S.credits = REAL ? null : 500; chrome(); toast('Çıkış yapıldı'); }
