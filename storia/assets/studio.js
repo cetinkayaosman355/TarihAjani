@@ -105,7 +105,7 @@
     var niche = NICHES[Math.floor(Math.random() * NICHES.length)];
     var seen = _shownIdeas.slice(-8).join(' | ');
     var p = 'Sen viral kısa video fikirleri üreten bir içerik editörüsün. "' + niche + '" nişinde, YouTube Shorts / TikTok / Reels için çok tıklanabilecek, merak uyandıran, ÖZGÜN ve TAZE tek bir video konusu öner. Şu konuları KESİNLİKLE TEKRARLAMA: ' + seen + '. Klişe olmasın, spesifik ve çarpıcı olsun. Sadece konu başlığını tek satırda yaz; tırnak, numara, açıklama yok.';
-    callFn({ action: '', prompt: p }).then(function (d) {
+    callFn({ action: 'assist', prompt: p }).then(function (d) {
       var t = d && (d.text || d.result);
       if (t) {
         var fresh = String(t).split('\n')[0].trim().replace(/^["'•\-\d.\s]+/, '').replace(/["']+$/, '').slice(0, 120);
@@ -173,7 +173,7 @@
       return;
     }
     var p = 'Sen viral kısa video stratejistisin. "' + t.niche + '" nişi için, YouTube Shorts/TikTok/Reels\'te ŞU AN tıklanma potansiyeli yüksek 6 ÖZGÜN video fikri üret. Her fikir için: 1) konu (tek cümle, spesifik ve çarpıcı), 2) hook = ilk 3 saniyede söylenecek/gösterilecek kanca cümlesi (merak boşluğu ya da cesur iddia), 3) neden = neden tutar (kısa). Klişe olmasın. SADECE geçerli JSON dizi döndür: [{"konu":"...","hook":"...","neden":"..."}]. Başka metin yok.';
-    callFn({ action: '', prompt: p, max_tokens: 2000 }).then(function (d) {
+    callFn({ action: 'assist', prompt: p, max_tokens: 2000 }).then(function (d) {
       var txt = d && (d.text || d.result) ? String(d.text || d.result) : '';
       var arr = null;
       try { var m = /\[[\s\S]*\]/.exec(txt); if (m) arr = JSON.parse(m[0]); } catch (_e) {}
@@ -246,7 +246,7 @@
       }, 700);
       return;
     }
-    callFn({ action: '', prompt: p, max_tokens: 2500 }).then(function (d) {
+    callFn({ action: 'assist', prompt: p, max_tokens: 2500 }).then(function (d) {
       var txt = d && (d.text || d.result) ? String(d.text || d.result) : ''; var arr = null;
       try { var m = /\[[\s\S]*\]/.exec(txt); if (m) arr = JSON.parse(m[0]); } catch (_e) {}
       if (Array.isArray(arr) && arr.length) s.eps = arr.slice(0, s.count).map(function (e) { e.on = true; return e; });
@@ -316,7 +316,7 @@
     }
     var payload = JSON.stringify({ baslik: r.baslik, logline: r.logline, senaryo: r.senaryo, seslendirme_notu: r.seslendirme_notu, youtube: r.youtube, instagram: r.instagram, kapak: r.kapak });
     var p = 'Aşağıdaki kısa video dosyasını ' + lang.name + ' diline ÇEVİR. Kurallar: metin alanlarını (baslik, logline, senaryo[].baslik, senaryo[].anlatim, seslendirme_notu, youtube, instagram, kapak) doğal ve akıcı ' + lang.name + ' diline çevir; anlamı ve tonu koru, birebir kelime çevirisi yapma. gorsel_promptlar ve video_promptlar VARSA İngilizce KALSIN (çevirme). senaryo öğe sayısını AYNEN koru. SADECE geçerli JSON döndür (aynı şema), başka metin yok.\n\nDOSYA:\n' + payload;
-    callFn({ action: '', prompt: p, max_tokens: 8000 }).then(function (d) {
+    callFn({ action: 'assist', prompt: p, max_tokens: 8000 }).then(function (d) {
       var txt = d && (d.text || d.result) ? String(d.text || d.result) : '';
       var obj = null; try { var m = /\{[\s\S]*\}/.exec(txt); if (m) obj = JSON.parse(m[0]); } catch (_e) {}
       if (!obj || !obj.senaryo) { S.dub.busy = false; render(); toast('Çeviri başarısız — tekrar dene'); return; }
@@ -1441,7 +1441,7 @@
       }, 700);
       return;
     }
-    callFn({ action: '', prompt: prompt, max_tokens: reviseMode ? 12000 : 1200 }).then(function (d) {
+    callFn({ action: 'assist', prompt: prompt, max_tokens: reviseMode ? 12000 : 1200 }).then(function (d) {
       var t = (d && (d.text || d.result)) ? String(d.text || d.result).trim() : 'Bir sorun oldu, tekrar dener misin?';
       var applied = reviseMode ? tryApplyRevision(t) : { ok: false, body: t };
       S.chat.msgs.push({ r: 'a', t: applied.body }); S.chat.busy = false; renderChat();
@@ -1518,7 +1518,7 @@
     if (!REAL) { setTimeout(function () { append('Sahne ' + no, brief, brief); }, 500); return; }
     var lang = S.lang === 'en' ? 'English' : 'Türkçe';
     var p = 'A video scene brief: "' + brief + '". Return ONLY valid JSON (in ' + lang + '): {"baslik":"short scene title","anlatim":"one short narration sentence","gorsel":"rich English image prompt: subject, composition, lighting, atmosphere"}. No text/watermark in the image.';
-    callFn({ action: '', prompt: p }).then(function (d) {
+    callFn({ action: 'assist', prompt: p }).then(function (d) {
       var o = null; try { o = JSON.parse((d && (d.text || d.result) || '').replace(/^[^{]*/, '').replace(/[^}]*$/, '')); } catch (e) {}
       if (o && o.gorsel) append(o.baslik || ('Sahne ' + no), o.anlatim || brief, o.gorsel);
       else append('Sahne ' + no, brief, brief);

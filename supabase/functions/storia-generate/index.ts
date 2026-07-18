@@ -766,8 +766,16 @@ Deno.serve(async (req) => {
   try {
     const b = await req.json();
     const act = String(b.action || "");
+    // Action allowlist — bilinmeyen işlemleri reddet. Boş action geriye dönük
+    // uyumluluk için "assist" (yardımcı LLM: sohbet/trend/seri/dublaj) sayılır.
+    const ALLOWED = new Set(["generate", "image", "edit", "video", "video_status", "tts", "fetch_result", "regen", "assist", ""]);
+    if (!ALLOWED.has(act)) return json({ ok: false, error: "Geçersiz işlem." }, 400);
+    const isAssist = act === "assist" || act === "";
     const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
     if (rateLimited("all:" + ip, 90)) return json({ ok: false, error: "Çok fazla istek — bir dakika sonra tekrar dene." }, 429);
+    // Yardımcı LLM (assist) için ek hacim sınırı — bedava LLM suistimalini
+    // frenler; gerçek kullanıcı dakikada birkaç istek yapar, bu sınıra takılmaz.
+    if (isAssist && rateLimited("assist:" + ip, 40)) return json({ ok: false, error: "Çok fazla istek — bir dakika sonra tekrar dene." }, 429);
     const isEdit = act === "edit";
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
     if (!prompt && act !== "tts" && act !== "fetch_result" && act !== "video" && act !== "video_status") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
