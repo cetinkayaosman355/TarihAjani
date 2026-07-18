@@ -2005,6 +2005,30 @@ class Component extends DCLogic {
   // Seçili sürenin kredi maliyeti (sunucu aynı formülü kullanır)
   costOf() { return this.fmtFor(this.durationSec()).kredi; }
 
+  // Süre kilidi güvenlik ağı — LLM üst kelime sınırını aşarsa (30 sn seçip 100 sn'lik
+  // senaryo yazması gibi) seslendirmeyi bütçeye CÜMLE sınırında kırp → hem süre tutar
+  // hem ElevenLabs kredisi boşa yanmaz. Bütçedeyse dokunmaz.
+  clampSenaryo(secs, wmax) {
+    if (!Array.isArray(secs) || !secs.length) return secs;
+    const say = (t) => String(t || '').trim().split(/\s+/).filter(Boolean).length;
+    const toplam = secs.reduce((a, s) => a + say(s.metin), 0);
+    const limit = Math.round(wmax * 1.15);
+    if (toplam <= limit) return secs;
+    const out = []; let kalan = limit;
+    for (let i = 0; i < secs.length && kalan > 0; i++) {
+      const cumleler = String(secs[i].metin || '').split(/(?<=[.!?…])\s+/);
+      const tut = []; let kul = 0;
+      for (const c of cumleler) {
+        const w = say(c);
+        if (kul + w > kalan && tut.length) break;
+        tut.push(c); kul += w; kalan -= w;
+        if (kalan <= 0) break;
+      }
+      if (tut.length) out.push({ ...secs[i], metin: tut.join(' ').trim() });
+    }
+    return out.length ? out : secs;
+  }
+
   // Paralı seviye mi? (Hazır arşiv yalnız paralıya açık; ücretsiz 'uye' değil)
   isPaidUser() {
     return ['gozlemci', 'ajan', 'basmufettis'].indexOf(this.state.tier) >= 0;
@@ -2336,10 +2360,11 @@ class Component extends DCLogic {
     };
   }
 
-  // Gerçek seslendirme — sunucuda gpt-4o-mini-tts, kredi düşer (sunucuyla aynı formül)
+  // Gerçek seslendirme — ElevenLabs (karakter başı ücretli). 1000 karakter = 15 KR
+  // (taban 15) — sunucudaki ttsCostOf ile AYNI formül olmalı.
   ttsCost() {
     const t = this.voiceText() || '';
-    return Math.max(10, Math.ceil(t.length / 1000) * 5);
+    return Math.max(15, Math.ceil(t.length / 1000) * 15);
   }
   sysVoiceId() { const o = this.find('voice', this.state.voice); return (o && o.oa) || 'onyx'; }
   // Seçili ses ElevenLabs motoruysa sunucuya engine+voiceId geçir (yoksa boş → OpenAI)
@@ -2873,6 +2898,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       } catch (stageErr) {
         partial = true;   // taslak var; ek aşama tamamlanamadı — dosya yine de teslim edilir
       }
+      // Süre kilidi: seslendirme metnini seçilen sürenin kelime bütçesine kırp
+      // (LLM üst sınırı aşmışsa) → 30 sn gerçekten ~30 sn olur, ElevenLabs yanmaz.
+      result.senaryo = this.clampSenaryo(result.senaryo, Math.round(this.durationSec() * 2.6));
       clearInterval(this._mt);
       const no = 'TA-' + new Date().getFullYear() + '-' + String(Math.floor(100 + Math.random() * 900));
       const entry = {
