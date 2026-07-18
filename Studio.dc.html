@@ -2394,20 +2394,47 @@ class Component extends DCLogic {
   }
   // Görseli GERÇEKTEN indir (yeni sekmede açmaz): data URI doğrudan, Storage/uzak
   // URL blob olarak indirilir. Hem mobil hem web'de tek tıkla dosya iner.
+  // Görseli GERÇEK 9:16 / 16:9 / 1:1'e kırp (rapor 4.1): model 2:3 / 3:2 üretiyor;
+  // indirmede dosyayı seçilen orana merkezden kes → Shorts/Reels'e tam otursun.
+  // Blob'tan yüklendiği için canvas taint olmaz (aynı köken).
+  _cropAspectBlob(srcUrl, arKey) {
+    return new Promise((resolve, reject) => {
+      const target = { yatay: 16 / 9, dikey: 9 / 16, kare: 1 }[arKey];
+      if (!target) return reject(new Error('no-aspect'));
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const sw = img.naturalWidth, sh = img.naturalHeight;
+          if (!sw || !sh) return reject(new Error('empty'));
+          const srcAr = sw / sh;
+          let cw = sw, ch = sh;
+          if (srcAr > target) cw = Math.round(sh * target); else ch = Math.round(sw / target);
+          const sx = Math.round((sw - cw) / 2), sy = Math.round((sh - ch) / 2);
+          const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+          cv.getContext('2d').drawImage(img, sx, sy, cw, ch, 0, 0, cw, ch);
+          cv.toBlob(b => b ? resolve(b) : reject(new Error('blob')), 'image/jpeg', 0.96);
+        } catch (e) { reject(e); }
+      };
+      img.onerror = () => reject(new Error('img-load'));
+      img.src = srcUrl;
+    });
+  }
   async dlImage(url) {
     if (!url) return;
-    const tara = (b) => {
-      const a = document.createElement('a');
-      a.href = b; a.download = 'tarih-ajani-gorsel-' + Date.now() + (String(url).indexOf('png') >= 0 ? '.png' : '.jpg');
-      document.body.appendChild(a); a.click(); a.remove();
-    };
-    if (url.indexOf('data:') === 0) { tara(url); return; }
+    const ar = this.state.aspect || 'yatay';
+    const name = 'tarih-ajani-gorsel-' + Date.now() + '.jpg';
+    const save = (href) => { const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
     try {
-      const r = await fetch(url);
-      const blob = await r.blob();
-      const bu = URL.createObjectURL(blob);
-      tara(bu);
-      setTimeout(() => { try { URL.revokeObjectURL(bu); } catch (e) {} }, 6000);
+      let srcUrl = url;
+      if (url.indexOf('data:') !== 0) {
+        const r = await fetch(url); const blob = await r.blob(); srcUrl = URL.createObjectURL(blob);
+      }
+      const cropped = await this._cropAspectBlob(srcUrl, ar).catch(() => null);
+      if (srcUrl.indexOf('blob:') === 0) setTimeout(() => { try { URL.revokeObjectURL(srcUrl); } catch (e) {} }, 6000);
+      if (cropped) {
+        const bu = URL.createObjectURL(cropped); save(bu); setTimeout(() => { try { URL.revokeObjectURL(bu); } catch (e) {} }, 6000); return;
+      }
+      save(srcUrl);   // kırpma olmadıysa orijinali indir
     } catch (e) {
       window.open(url, '_blank');   // CORS/ağ hatası → son çare yeni sekme
     }
