@@ -189,10 +189,40 @@ async function callClaude(prompt: string, maxTokens?: number, jsonMode?: boolean
   throw new Error("Claude: no usable model — " + lastErr);
 }
 
+// ── Google Gemini (metin) — GEMINI_API_KEY / GOOGLE_API_KEY ──────────────
+function geminiKey(): string { return Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY") || ""; }
+const GEMINI_TEXT_MODELS = (Deno.env.get("GEMINI_TEXT_MODELS") || "gemini-3-pro,gemini-3-flash,gemini-2.5-pro").split(",").map((s) => s.trim()).filter(Boolean);
+async function callGemini(prompt: string, maxTokens?: number, jsonMode?: boolean): Promise<string> {
+  const key = geminiKey();
+  if (!key) throw new Error("GEMINI_API_KEY secret missing.");
+  let lastErr = "";
+  for (const model of GEMINI_TEXT_MODELS) {
+    const gen: Record<string, unknown> = { maxOutputTokens: Math.min(maxTokens || 4000, 32000), temperature: 0.8 };
+    if (jsonMode) gen.responseMimeType = "application/json";
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: gen }),
+      });
+      if (r.ok) {
+        const d = await r.json();
+        const parts = d.candidates?.[0]?.content?.parts || [];
+        const txt = parts.map((p: any) => p.text || "").join("");
+        if (txt) return txt;
+        lastErr = "empty (" + model + ")"; continue;
+      }
+      lastErr = await r.text();
+      if (!/not.?found|model|unsupported|INVALID_ARGUMENT/i.test(lastErr)) throw new Error("Gemini: " + lastErr);
+    } catch (e) { lastErr = String(e); }
+  }
+  throw new Error("Gemini: " + lastErr);
+}
+
 // Server-fixed credit prices; the client cannot change them.
-const IMAGE_COST = 12;        // standart (medium) — gerçek ~2,5₺
+const IMAGE_COST = 12;        // standart (gpt-image medium) — gerçek ~2,5₺
 const IMAGE_COST_BULK = 8;
 const IMAGE_COST_HIGH = 45;   // yüksek (gpt-image high) — gerçek ~9-10₺
+const IMAGE_COST_NANO = 10;   // Nano Banana (Gemini) — gerçek ~1,5₺, kalite yüksek
 function secsOf(duration: string): number {
   const m = /^s(\d+)$/.exec(duration || "");
   if (m) return Math.min(600, Math.max(30, parseInt(m[1], 10)));
@@ -295,6 +325,30 @@ async function generateImage(promptRaw: string, size: string, quality?: string):
     }
   } catch (e) { console.error(`generateImage dall-e-3 exception: ${String(e).slice(0, 200)}`); }
   return "";
+}
+
+// Görsel — Google "Nano Banana" (Gemini image). Ucuz + yüksek kalite + iyi yazı.
+// Model GEMINI_IMAGE_MODEL ile değişir (varsayılan gemini-3.1-flash-image).
+async function generateImageGemini(promptRaw: string, size: string): Promise<string> {
+  const key = geminiKey();
+  if (!key) return "";
+  const model = Deno.env.get("GEMINI_IMAGE_MODEL") || "gemini-3.1-flash-image";
+  const ar = size === "9:16" ? "9:16 vertical portrait" : size === "16:9" ? "16:9 horizontal" : "1:1 square";
+  const prompt = promptRaw + NO_TEXT + " Aspect ratio: " + ar + ".";
+  try {
+    const r = await fetchT(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseModalities: ["IMAGE"] } }),
+    }, 120_000);
+    if (!r.ok) { console.error("gemini image " + r.status + ": " + (await r.text().catch(() => "")).slice(0, 240)); return ""; }
+    const d = await r.json();
+    const parts = d.candidates?.[0]?.content?.parts || [];
+    for (const p of parts) {
+      const inl = p.inlineData || p.inline_data;
+      if (inl?.data) return "data:" + (inl.mimeType || inl.mime_type || "image/png") + ";base64," + inl.data;
+    }
+    return "";
+  } catch (e) { console.error("gemini image exc: " + String(e).slice(0, 160)); return ""; }
 }
 
 // Real TTS — OpenAI gpt-4o-mini-tts (mp3). Long text is split into ≤3800-char chunks.
@@ -896,8 +950,11 @@ Deno.serve(async (req) => {
         : act === "video"
           ? videoCost(Number(b.vsec) || 5, String(b.vprovider || ""))
           : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
-    // Görsel kalitesi müşteri seçimi: 'yüksek' premium fiyat.
-    if (act === "image" && (b.quality === "yuksek" || b.quality === "high")) cost = IMAGE_COST_HIGH;
+    // Görsel kalitesi müşteri seçimi: nano (Gemini, ucuz) / standart / yüksek.
+    if (act === "image") {
+      if (b.quality === "yuksek" || b.quality === "high") cost = IMAGE_COST_HIGH;
+      else if (b.quality === "nano") cost = IMAGE_COST_NANO;
+    }
 
     let authedUser = false;
     try {
@@ -944,7 +1001,12 @@ Deno.serve(async (req) => {
     }
 
     if (String(b.action || "") === "image") {
-      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), String(b.quality || ""));
+      const q = String(b.quality || "");
+      let url = (q === "nano")
+        ? await generateImageGemini(String(b.prompt || ""), String(b.size || ""))
+        : await generateImage(String(b.prompt || ""), String(b.size || ""), q);
+      // Nano Banana başarısızsa gpt-image'e düş (kullanıcı takılmaz).
+      if (q === "nano" && !url) url = await generateImage(String(b.prompt || ""), String(b.size || ""), "");
       if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
       if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
       logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "uretilemedi" });
@@ -1020,8 +1082,12 @@ Deno.serve(async (req) => {
       return json({ ok: true, url, charged: false, cost, truncated: ttsTruncated, engine: _ttsEngine, elevenErr: _ttsElevenErr });
     }
 
-    const provider = (b.provider || b.model || "openai").toLowerCase();
-    const useClaude = provider === "claude" || provider === "anthropic";
+    // İstemci 'claude' gönderse de env ile birincil sağlayıcı değiştirilebilir
+    // (ör. STORIA_TEXT_PROVIDER=gemini → senaryo Gemini ile, daha ucuz).
+    const reqProvider = (b.provider || b.model || "openai").toLowerCase();
+    const provider = (Deno.env.get("STORIA_TEXT_PROVIDER") || reqProvider).toLowerCase();
+    const primaryText = (provider === "gemini" || provider === "google") ? "gemini"
+      : (provider === "claude" || provider === "anthropic") ? "claude" : "openai";
     const isGen = String(b.action || "") === "generate";
     const topic = String(b.topic || "").trim();
     const job = cleanJob(b.job);
@@ -1051,17 +1117,18 @@ ${prompt}`;
     const capTok = isGen
       ? Math.min(Math.max(Number(b.max_tokens) || 8000, 8000), 16000)
       : Math.min(Number(b.max_tokens) || 4000, 4000);
+    const callText = (which: string): Promise<string> =>
+      which === "claude" ? callClaude(genPrompt, capTok, isGen)
+        : which === "gemini" ? callGemini(genPrompt, capTok, isGen)
+          : callOpenAI(genPrompt, capTok, isGen);
+    // Birincil sağlayıcı önce; başarısız olursa diğerlerine sırayla düşer.
+    const order = [primaryText, ...["claude", "gemini", "openai"].filter((p) => p !== primaryText)];
     const gen = async (): Promise<string> => {
-      try {
-        return useClaude ? await callClaude(genPrompt, capTok, isGen) : await callOpenAI(genPrompt, capTok, isGen);
-      } catch (e) {
-        console.error("primary provider failed, falling back: " + String(e).slice(0, 160));
-        try {
-          return useClaude ? await callOpenAI(genPrompt, capTok, isGen) : await callClaude(genPrompt, capTok, isGen);
-        } catch (e2) {
-          throw new Error(String((e2 as any)?.message || e2));
-        }
+      let lastErr: any = null;
+      for (const p of order) {
+        try { const t = await callText(p); if (t) return t; } catch (e) { lastErr = e; console.error(p + " text failed: " + String(e).slice(0, 140)); }
       }
+      throw new Error(String((lastErr as any)?.message || lastErr || "no text provider"));
     };
 
     let result = await gen();

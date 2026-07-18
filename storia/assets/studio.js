@@ -423,11 +423,12 @@
     if (p === 'kling') return Math.max(250, s * 50);
     return Math.max(150, s * 30);
   }
-  function imgCr() { return S.imgQuality === 'yuksek' ? 45 : 12; }
+  function imgCr() { return S.imgQuality === 'yuksek' ? 45 : S.imgQuality === 'nano' ? 10 : 12; }
   function imgQualHtml() {
-    return '<div class="veng-pick"><span class="cp-lbl">Görsel kalitesi</span><div class="cap-seg">' +
-      '<button class="' + (S.imgQuality === 'standart' ? 'on' : '') + '" data-act="imgQual" data-v="standart">Standart · 12kr</button>' +
-      '<button class="' + (S.imgQuality === 'yuksek' ? 'on' : '') + '" data-act="imgQual" data-v="yuksek">Yüksek · 45kr</button>' +
+    return '<div class="veng-pick"><span class="cp-lbl">Görsel motoru</span><div class="cap-seg">' +
+      '<button class="' + (S.imgQuality === 'nano' ? 'on' : '') + '" data-act="imgQual" data-v="nano" title="Google Nano Banana — hızlı, yüksek kalite, iyi yazı">Nano Banana · 10kr</button>' +
+      '<button class="' + (S.imgQuality === 'standart' ? 'on' : '') + '" data-act="imgQual" data-v="standart" title="OpenAI gpt-image — dengeli">Standart · 12kr</button>' +
+      '<button class="' + (S.imgQuality === 'yuksek' ? 'on' : '') + '" data-act="imgQual" data-v="yuksek" title="OpenAI gpt-image high / 4K — en detaylı">Yüksek · 45kr</button>' +
       '</div></div>';
   }
   var GRADS = [
@@ -953,7 +954,7 @@
       case 'exportVid': exportVideo(); break;
       case 'capStyle': S.capStyle = v; refreshTab(); break;
       case 'vengine': S.vengine = v; refreshTab(); toast(v === 'kling3' ? 'Kling 3.0 · en sinematik · ' + vcost(S.vsec, 'kling3') + 'kr' : v === 'kling' ? 'Kling 2.6 · sinematik · ' + vcost(S.vsec, 'kling') + 'kr' : 'Grok · hızlı · ' + vcost(S.vsec, 'grok') + 'kr'); break;
-      case 'imgQual': S.imgQuality = v; refreshTab(); toast(v === 'yuksek' ? 'Yüksek kalite · 45kr/görsel' : 'Standart kalite · 12kr/görsel'); break;
+      case 'imgQual': S.imgQuality = v; refreshTab(); toast(v === 'nano' ? 'Nano Banana · 10kr/görsel' : v === 'yuksek' ? 'Yüksek · 45kr/görsel' : 'Standart · 12kr/görsel'); break;
       case 'vsec': S.vsec = parseInt(v, 10) || 5; refreshTab(); toast(S.vsec + ' sn klip · ' + vcost(S.vsec) + 'kr'); break;
       case 'brandKit': openBrandModal(); break;
       case 'musicPick': openMusicModal(); break;
