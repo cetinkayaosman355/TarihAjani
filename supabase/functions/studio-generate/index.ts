@@ -871,6 +871,15 @@ Deno.serve(async (req) => {
   const json = jsonWith(origin);
   if (req.method === "OPTIONS") return new Response("ok", { headers: { ...CORS, "Access-Control-Allow-Origin": origin } });
   const t0 = Date.now();
+  // Rapor 3.3: rezerve edilen ama HENÜZ kesinleşmemiş kredi — hata/iptal olursa
+  // (catch dâhil) İADE edilir. try-dışı tutulur ki catch bloğundan erişilebilsin.
+  let pendingRefund: { admin: any; user: string; job: string } | null = null;
+  const doRefund = async () => {
+    if (!pendingRefund) return;
+    const p = pendingRefund; pendingRefund = null;
+    try { await p.admin.rpc("refund_reservation", { p_user: p.user, p_job: p.job }); }
+    catch (e) { console.error("refund_reservation: " + String((e as any)?.message || e).slice(0, 120)); }
+  };
   try {
     const b = await req.json();
     const act = String(b.action || "");
@@ -1096,6 +1105,27 @@ Deno.serve(async (req) => {
         return json({ ok: true, result: prev.result, text: prev.result, charged: false, recovered: true, credits: prev.credits, grounded: !!prev.grounded });
       }
     }
+    // Rapor 3.3: ATOMİK REZERVASYON — üretimden ÖNCE krediyi ayır → eşzamanlı
+    // üretimlerin bakiyeyi aşması (yarış) biter. Başarısızlıkta iade edilir.
+    // reserve_credits (migration) YOKSA sessizce eski akışa (sonradan spendSafe) düşülür.
+    let reserved = false;
+    let reservedCredits: number | undefined;
+    if (isGen && cost > 0 && admin && userId && job && !freeRegen) {
+      try {
+        const { data, error } = await admin.rpc("reserve_credits", { p_user: userId, p_amount: cost, p_reason: "uretim", p_job: job });
+        if (error) throw error;
+        const row = Array.isArray(data) ? data[0] : data;
+        if (row && row.ok === false) {
+          return json({ ok: false, error: "Yetersiz kredi", credits: (typeof row.new_credits === "number" ? row.new_credits : undefined) }, 402);
+        }
+        reserved = true;
+        pendingRefund = { admin, user: userId, job };
+        if (row && typeof row.new_credits === "number") reservedCredits = row.new_credits;
+      } catch (e) {
+        console.error("reserve_credits yok/başarısız → eski akış (sonradan düş): " + String((e as any)?.message || e).slice(0, 120));
+        reserved = false;
+      }
+    }
     // Üretimden önce ARAŞTIR (grounding) → sonra üret. Tek kredi, çok daha derin/doğru çıktı.
     let genPrompt = prompt;
     let grounded = false;   // #3: araştırma başarısı artık yanıtla birlikte döner
@@ -1151,6 +1181,7 @@ ${prompt}`;
       // DÜŞMEDEN dostça uyar. İstemci de ön-eleme yapar; bu sunucu yedeğidir.
       const invalid = tryParseJson(result);
       if (invalid && invalid.gecersiz === true) {
+        await doRefund();   // rezerve edilen krediyi geri ver (geçersiz konu → üretim yok)
         logRun({ action: "generate", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "gecersiz_konu" });
         return json({ ok: false, error: String(invalid.mesaj || "Bunu bir tarih konusuna bağlayamadım — lütfen bir olay, kişi ya da dönem yaz.") }, 400);
       }
@@ -1164,6 +1195,7 @@ ${prompt}`;
         if (validGen(retry)) result = retry;
       }
       if (!validGen(result)) {
+        await doRefund();   // rezerve edilen krediyi geri ver (geçerli dosya çıkmadı)
         logRun({ action: "generate", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "gecersiz_json" });
         return json({ ok: false, error: "Yapay zekâ geçerli bir dosya döndürmedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       }
@@ -1175,9 +1207,18 @@ ${prompt}`;
       logRun({ action: "generate", ok: true, ms: Date.now() - t0, user_id: userId || null, err: grounded ? null : "arastirmasiz" });
     }
 
-    // Üretim başarılı → krediyi ATOMİK düş (başarısız üretim kredi yakmaz)
+    // Üretim başarılı → krediyi kesinleştir (başarısız üretim kredi yakmaz).
     if (cost > 0 && admin && userId) {
-      const credits = await spendSafe(admin, userId, cost, String(b.action || "uretim"));
+      let credits: number | undefined;
+      if (reserved) {
+        // Rezerve edilmişti → yalnız KESİNLEŞTİR (kredi zaten düşük). İade iptal.
+        pendingRefund = null;
+        try { await admin.rpc("finalize_reservation", { p_job: job }); } catch (e) { console.error("finalize_reservation: " + String((e as any)?.message || e).slice(0, 120)); }
+        credits = reservedCredits;
+      } else {
+        // Eski akış (migration yok) → şimdi düş
+        credits = await spendSafe(admin, userId, cost, String(b.action || "uretim"));
+      }
       // Sonucu KAYDET: bağlantı kopmuş olsa bile istemci fetch_result / aynı
       // job ile üretimi kredisiz geri alabilir (mobil "Load failed" telafisi).
       if (isGen && job) await saveJobResult(admin, userId, job, { result, credits, charged: true, grounded, ts: Date.now() });
@@ -1204,6 +1245,8 @@ ${prompt}`;
 
     return json({ ok: true, result, text: result, charged: false, grounded });
   } catch (e) {
+    // Üretim patladıysa rezerve edilen krediyi İADE et (kullanıcı boşa ödemesin).
+    await doRefund();
     // #18: iç ayrıntı istemciye sızmaz — ama YÖNETİCİ tanılayabilsin diye
     // yaygın nedenler kısa bir İPUCUNA çevrilir (anahtar/bakiye/model/yapılandırma).
     const detail = String((e as any)?.message || e).slice(0, 400);
