@@ -1162,6 +1162,9 @@ function videoPoll(kind, i, job, tries, box, etiket) {
         toast('Video hazır 🎬'); return;
       }
       if (d && d.ok && !d.done) { if (box && box.parentNode) box.innerHTML = '<div style="font-size:12px;color:#c4a7ff">🎬 ' + etiket + ' hazırlanıyor… (' + (tries + 1) + ')</div>'; videoPoll(kind, i, job, tries + 1, box, etiket); return; }
+      // Başarısız: sunucu krediyi iade ettiyse bakiyeyi güncelle
+      if (d && d.refunded && typeof d.credits === 'number') { kredi = d.credits; krediYaz(); }
+      if (uret.videoJobs) { delete uret.videoJobs[kind + ':' + i]; uretKaydet(); }
       toast((d && d.error) || 'Video üretilemedi'); videoFallbackBtn(box, kind, i);
     }).catch(function () { videoPoll(kind, i, job, tries + 1, box, etiket); });
   }, 8000);
