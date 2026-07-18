@@ -437,6 +437,8 @@
           </div>
         </div>
         <nav style="display: flex; align-items: center; gap: 10px;">
+          <button onClick="{{ scrollTop }}" title="Başa dön" aria-label="Başa dön" style="width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid rgba(129,135,151,.25); background: transparent; color: #a4a9b5; font-size: 16px; line-height: 1; cursor: pointer; font-family: inherit;" style-hover="border-color: rgba(193,154,82,.4); color: #e6c478;">↑</button>
+          <button onClick="{{ toggleTheme }}" title="{{ themeTitle }}" aria-label="Tema değiştir" style="width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid rgba(129,135,151,.25); background: transparent; color: #e6c478; font-size: 16px; line-height: 1; cursor: pointer; font-family: inherit;" style-hover="border-color: rgba(193,154,82,.4);">{{ themeIcon }}</button>
           <a href="/" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ANA SAYFA</a>
           <a href="/egitim" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">EĞİTİM</a>
           <a href="/uyelik" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ÜYELİK</a>
@@ -1510,7 +1512,8 @@ class Component extends DCLogic {
       prices: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {},   // fiyat önbelleği (flicker/eskime yok)
       elKey: saved.elKey || '', ttsBusy: false, ttsError: '', audioUrl: '',
       sysTtsBusy: false, sysTtsError: '', sysAudioUrl: (w && w.sysAudioUrl) || '', audioDl: false,
-      copied: {}
+      copied: {},
+      lightTheme: (function () { try { return localStorage.getItem('ta_tema') === 'light'; } catch (e) { return false; } })()
     };
   }
 
@@ -3733,6 +3736,16 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       userMenuOpen: s.userMenuOpen,
       userCaretStyle: { fontSize: '10px', color: '#676d7c', transition: 'transform .2s', transform: s.userMenuOpen ? 'rotate(180deg)' : 'none' },
       toggleUserMenu: () => this.setState(st => ({ userMenuOpen: !st.userMenuOpen })),
+      // Tema düğmesi header'da — tek kaynak tema.js'in global toggle'ı (localStorage + data-theme)
+      themeIcon: s.lightTheme ? '🌙' : '☀',
+      themeTitle: s.lightTheme ? 'Karanlık moda geç' : 'Aydınlık moda geç',
+      toggleTheme: () => {
+        let next = null;
+        try { if (window.__taThemeToggle) next = window.__taThemeToggle(); } catch (e) {}
+        if (next === null) { try { const cur = localStorage.getItem('ta_tema') === 'light' ? 'light' : 'dark'; next = cur === 'light' ? 'dark' : 'light'; localStorage.setItem('ta_tema', next); document.documentElement.setAttribute('data-theme', next); } catch (e) {} }
+        this.setState({ lightTheme: next === 'light' });
+      },
+      scrollTop: () => { try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); } },
       logout: async () => {
         // GERÇEK çıkış: Supabase oturumunu kapat ki tüm sayfalar (Üyelik dahil) çıkışı görsün
         try { if (this.sb) await this.sb.auth.signOut(); } catch (e) {}
