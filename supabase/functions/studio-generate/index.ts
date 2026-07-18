@@ -624,12 +624,23 @@ async function editImage(imageUri: string, prompt: string, size: string): Promis
   // düzeltmede görseller Storage'da https URL olarak durur → indirip byte'a çevir.
   let parsed = dataUriToBytes(imageUri);
   if (!parsed && /^https?:\/\//i.test(imageUri)) {
+    // SSRF KORUMASI (rapor 3.11): dış URL'yi sunucuda körlemesine indirme.
+    // YALNIZ kendi Supabase Storage'ımızdan (aynı host + /storage/v1/object/) HTTPS
+    // ile indir → localhost, 169.254.169.254 (metadata), özel ağ hedefleri reddedilir.
+    let allowedUrl = false;
+    try {
+      const u = new URL(imageUri);
+      const sb = new URL(Deno.env.get("SUPABASE_URL") || "https://ddyuopqcvpzaysnfavqc.supabase.co");
+      allowedUrl = u.protocol === "https:" && u.hostname === sb.hostname && u.pathname.startsWith("/storage/v1/object/");
+    } catch (_e) { allowedUrl = false; }
+    if (!allowedUrl) { console.error("editImage: izinsiz/harici URL reddedildi (SSRF koruması)"); return ""; }
     try {
       const img = await fetchT(imageUri, {}, 60_000);
       if (img.ok) {
         const bytes = new Uint8Array(await img.arrayBuffer());
         const ct = img.headers.get("content-type") || "image/png";
-        parsed = { bytes, type: ct };
+        // Yalnız görsel içerik + makul boyut (≤15MB) kabul et
+        if (/^image\//i.test(ct) && bytes.length <= 15_000_000) parsed = { bytes, type: ct };
       }
     } catch (_e) { /* indirilemezse aşağıda boş döner */ }
   }
@@ -687,13 +698,23 @@ function logRun(row: Record<string, unknown>) {
 // #2: kredi düşme RPC'sinin hatası artık YUTULMAZ — loglanır ve izlenir
 // (içerik teslim edilirken kredi düşmemişse görünmez kalmasın).
 async function spendSafe(admin: any, userId: string, amount: number, reason: string): Promise<number | undefined> {
-  const { data, error } = await admin.rpc("spend_credits", { p_user: userId, p_amount: amount, p_reason: reason });
-  if (error) {
-    console.error("spend_credits(" + reason + "): " + error.message);
-    logRun({ action: "spend_fail", ok: false, err: reason, user_id: userId });
+  // Rapor 3.2: kredi düşümü geçici RPC hatasında sessizce başarısız olup içerik yine
+  // teslim ediliyordu (kredi kaçağı). Yalnız RPC HATASINDA (geçici) 3 kez dene —
+  // "hatasız ama boş yanıt" durumunda TEKRAR DENEME (çift düşüm riski). Kalıcı
+  // başarısızlıkta spend_fail log'u mutabakat için kalır.
+  let lastErr = "";
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { data, error } = await admin.rpc("spend_credits", { p_user: userId, p_amount: amount, p_reason: reason });
+    if (!error) {
+      const row = Array.isArray(data) ? data[0] : data;
+      return row && typeof row.new_credits === "number" ? row.new_credits : undefined;
+    }
+    lastErr = error.message || String(error);
+    console.error("spend_credits(" + reason + ") deneme " + (attempt + 1) + ": " + lastErr);
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
   }
-  const row = Array.isArray(data) ? data[0] : data;
-  return row && typeof row.new_credits === "number" ? row.new_credits : undefined;
+  logRun({ action: "spend_fail", ok: false, err: (reason + ": " + lastErr).slice(0, 90), user_id: userId });
+  return undefined;
 }
 
 // ── ÜRETİM KURTARMA ──────────────────────────────────────────────
@@ -853,6 +874,12 @@ Deno.serve(async (req) => {
   try {
     const b = await req.json();
     const act = String(b.action || "");
+    // GÜVENLİK (rapor 3.1): yalnız TANIMLI işlemler kabul edilir. Bilinmeyen bir
+    // action + prompt eskiden ücretsiz metin üretimine (gen) düşüp endpoint'i genel
+    // amaçlı AI servisi gibi kullandırabiliyordu. "" = uygulama içi ücretsiz metin
+    // yardımcıları (sohbet, konu önerisi, Shorts, bölüm metni) — izinli kalır.
+    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "fetch_result"]);
+    if (!ALLOWED_ACTIONS.has(act)) return json({ ok: false, error: "Geçersiz işlem." }, 400);
     // Hız limiti: kimliksiz/ücretsiz istekler dakikada 30, tümü 90 (IP başına)
     const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
     if (rateLimited("all:" + ip, 90)) return json({ ok: false, error: "Çok fazla istek — bir dakika sonra tekrar dene." }, 429);
