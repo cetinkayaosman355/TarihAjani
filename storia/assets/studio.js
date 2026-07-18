@@ -18,7 +18,7 @@
     durationSec: 270, provider: 'claude', custom: '', template: null, lang: 'tr',
     result: null, tab: 'senaryo', genJob: null,
     user: null, credits: REAL ? null : 500, creditMax: 500,
-    images: {}, covers: {}, videos: {}, videoJobs: {}, audio: null, history: [], ttsRate: 1,
+    images: {}, covers: {}, videos: {}, videoJobs: {}, chars: {}, audio: null, history: [], ttsRate: 1,
     bgMusic: null, bgMusicName: '', musicVol: 0.5,
     chat: { open: false, msgs: [], busy: false },
     // image studio
@@ -292,6 +292,7 @@
   function renderDoc() {
     var r = S.result || {};
     var tabs = [['senaryo', 'Senaryo'], ['seslendirme', 'Seslendirme'], ['gorsel', 'Görseller'], ['storyboard', 'Storyboard'], ['video', 'Video'], ['youtube', 'YouTube'], ['instagram', 'Instagram'], ['kapak', 'Kapak & yayın']];
+    if (((S.result || {}).karakterler || []).length) tabs.splice(3, 0, ['karakterler', 'Karakterler']);
     var tabBtns = tabs.map(function (t) { return '<button class="' + (S.tab === t[0] ? 'on' : '') + '" data-act="tab" data-v="' + t[0] + '">' + t[1] + '</button>'; }).join('');
     var meta = [fmtDur(S.durationSec), styleObj().name, S.aspect, VOICES[S.voiceIdx].name].map(function (m) { return '<span class="m">' + esc(m) + '</span>'; }).join('');
     var hero = '<div class="doc-hero"><div class="doc-eyebrow">✦ Dosyan hazır</div>' +
@@ -337,6 +338,23 @@
           '<button class="btn btn-quiet btn-sm" data-act="copyVo">Metni kopyala</button></div>' +
         '</div>' +
         '<div class="panel"><h3>Seslendirme metni</h3><p class="p-note">' + esc(r.seslendirme_notu || 'Doğal, akıcı bir anlatıma göre hazırlandı.') + '</p><div class="panel-txt">' + esc(vo) + '</div></div>';
+    }
+    if (S.tab === 'karakterler') {
+      var chars = r.karakterler || [];
+      if (!chars.length) return emptyInline();
+      var ccards = chars.map(function (c, i) {
+        var name = (typeof c === 'string') ? c : (c.isim || ('Karakter ' + (i + 1)));
+        var look = (typeof c === 'string') ? '' : (c.gorunum || c.tanim || '');
+        var img = S.chars[i];
+        var box = img ? '<img class="zoomable" src="' + esc(img) + '" data-act="zoom" data-v="' + esc(img) + '" alt="">' : '<div class="ph" style="background:' + GRADS[i % GRADS.length] + '">' + (REAL ? '✦ Portre üret' : 'Örnek portre') + '</div>';
+        var acts = img
+          ? '<button class="btn btn-quiet btn-sm" data-act="charImg" data-v="' + i + '">↻ Yeniden</button><button class="btn btn-quiet btn-sm" data-act="dl" data-v="' + esc(img) + '">↓ İndir</button>'
+          : '<button class="btn btn-gold btn-sm" data-act="charImg" data-v="' + i + '">✦ Portre üret · 12</button>';
+        return '<div class="gcard"><div class="gimg" style="aspect-ratio:1">' + box + '</div><div class="gbody"><div class="gno">' + esc(name) + '</div>' +
+          '<div class="gtxt">' + esc(look) + '</div><div class="gacts">' + acts + '</div></div></div>';
+      }).join('');
+      var doneC = chars.filter(function (_, i) { return S.chars[i]; }).length;
+      return '<div class="tab-tools"><span class="tt-note">Hikâyenin karakterleri · ' + chars.length + ' karakter · ' + doneC + ' portre · sahnelerde tutarlı görünür</span><button class="btn btn-gold btn-sm" data-act="genChars">✦ Tümünü üret</button></div><div class="gallery">' + ccards + '</div>';
     }
     if (S.tab === 'gorsel') {
       var prompts = (r.gorsel_promptlar || []);
@@ -537,6 +555,8 @@
       case 'dl': downloadFileUrl(v, 'storia-gorsel-' + Date.now() + '.jpg'); break;
       case 'dlAudio': downloadFileUrl(S.audio, 'storia-seslendirme.mp3'); break;
       case 'genAll': genAll(); break;
+      case 'charImg': doCharImage(parseInt(v, 10)); break;
+      case 'genChars': genChars(); break;
       case 'cover': doCover(parseInt(v, 10)); break;
       case 'video': doVideo(parseInt(v, 10)); break;
       case 'exportVid': exportVideo(); break;
@@ -560,7 +580,7 @@
 
   function applyMode(i) { var m = MODES[i]; if (!m) return; S.durationSec = m.sec; S.aspect = m.aspect; S.tone = m.tone; render(); toast(m.name + ' seçildi'); }
   function applyTemplate(i) { var t = TEMPLATES[i]; if (!t) return; S.template = i; S.tone = t.tone; S.style = t.style; S.durationSec = t.sec; S.aspect = t.aspect; render(); toast(t.name + ' şablonu · tarz ayarlandı'); }
-  function startNew() { S.result = null; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.audio = null; S.idea = ''; S.custom = ''; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
+  function startNew() { S.result = null; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.idea = ''; S.custom = ''; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
 
   // ── Generation ───────────────────────────────────────────────────────
   function startGenerate(isRegen) {
@@ -583,7 +603,7 @@
   }
   function finishGen(result, charged, credits) {
     _timers.forEach(clearTimeout);
-    S.result = result; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.audio = null; S.tab = 'senaryo';
+    S.result = result; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.tab = 'senaryo';
     if (typeof credits === 'number') S.credits = credits;
     else if (!REAL && charged) S.credits = Math.max(0, (S.credits || 0) - costGen(S.durationSec));
     S.history.unshift({ result: result, idea: S.idea, meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect, ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec });
@@ -640,7 +660,7 @@
   function genError(msg) { _timers.forEach(clearTimeout); S.step = 2; render(); toast(msg || 'Üretim başarısız — tekrar dene'); }
   function safeParse(t) { try { return JSON.parse(t); } catch (e) { return null; } }
 
-  function openHist(i) { var h = S.history[i]; if (!h) return; S.result = h.result; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.audio = null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S.tab = 'senaryo'; S.view = 'new'; S.step = 4; render(); }
+  function openHist(i) { var h = S.history[i]; if (!h) return; S.result = h.result; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S.tab = 'senaryo'; S.view = 'new'; S.step = 4; render(); }
   function delHist(i) { S.history.splice(i, 1); saveHist(); render(); toast('Dosya geçmişten silindi'); }
   // Geçmiş kalıcılığı: tarayıcıda saklanır (yenilemede kaybolmaz). Kullanıcıya
   // göre anahtarlanır ki farklı hesaplar birbirinin geçmişini görmesin.
@@ -878,6 +898,20 @@
       else toast((d && d.error) || 'Üretilemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
+  // ── Karakter portreleri (tutarlılık referansı) ───────────────────────
+  function doCharImage(idx) {
+    var r = S.result || {}; var c = (r.karakterler || [])[idx]; if (!c) return;
+    var look = (typeof c === 'string') ? c : (c.gorunum || c.tanim || c.isim || '');
+    var full = look + ' — character portrait, upper body, natural pose, soft studio background, ' + styleObj().en;
+    if (!REAL) { S.chars[idx] = demoImage(idx, '1:1'); refreshTab(); toast('Demo portre eklendi'); return; }
+    if (!S.user) { openAuth(); return; }
+    toast('Portre üretiliyor…');
+    callFn({ action: 'image', prompt: full, size: '1:1', imgIndex: idx }).then(function (d) {
+      if (d && d.ok && d.url) { S.chars[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; refreshTab(); chrome(); toast('Portre üretildi'); }
+      else toast((d && d.error) || 'Üretilemedi');
+    }).catch(function () { toast('Bağlantı hatası'); });
+  }
+  function genChars() { ((S.result || {}).karakterler || []).forEach(function (_, i) { if (!S.chars[i]) doCharImage(i); }); }
   // ── Video (Grok image→video) ──────────────────────────────────────────
   function doVideo(idx) {
     var img = S.images[idx];
@@ -1042,7 +1076,7 @@
     var senaryo = beats.map(function (b, i) { return { baslik: b[0], anlatim: b[1], gorsel: (en ? 'A ' + st.name.toLowerCase() + ' frame for scene ' : 'Sahne ' + (i + 1) + ' için ' + st.name.toLowerCase() + ' bir kare') + (en ? (i + 1) : '') }; });
     var prompts = beats.map(function (b, i) { return 'Scene ' + (i + 1) + ': ' + b[0].toLowerCase() + ' depicting "' + topic + '", ' + st.en + ', aspect ' + S.aspect + ', highly detailed, atmospheric'; });
     if (en) return {
-      baslik: topic.replace(/\?$/, '') + ' — The Truth You Didn’t Know', logline: topic + ' In this video we answer it step by step.', karakterler: [], senaryo: senaryo,
+      baslik: topic.replace(/\?$/, '') + ' — The Truth You Didn’t Know', logline: topic + ' In this video we answer it step by step.', karakterler: [{ isim: 'The Narrator', gorunum: 'a calm storyteller in their 30s, warm eyes, simple dark outfit, soft rim light' }, { isim: 'The Explorer', gorunum: 'a curious young adventurer, weathered jacket, backpack, determined expression' }], senaryo: senaryo,
       seslendirme_notu: 'Read in a ' + toneName().toLowerCase() + ' tone at a natural pace.',
       youtube: { baslik: topic.replace(/\?$/, '') + ' | Storia', aciklama: 'In this video we answer "' + topic.toLowerCase() + '" step by step. Like and subscribe!\n\n00:00 Intro\n00:30 First clue\n02:00 Going deeper', etiketler: ['storia', 'documentary', 'curiosity', topic.split(' ')[0].toLowerCase(), 'facts'] },
       instagram: { aciklama: topic + ' 👀 Answer in the video. Save it for later!', hashtagler: ['storia', 'explore', 'facts', 'curiosity', 'reels'] },
@@ -1052,7 +1086,7 @@
     };
     return {
       baslik: topic.replace(/\?$/, '') + ' — Bilmediğin Gerçek',
-      logline: topic + ' Bu videoda merakını gidereceğiz.', karakterler: [], senaryo: senaryo,
+      logline: topic + ' Bu videoda merakını gidereceğiz.', karakterler: [{ isim: 'Anlatıcı', gorunum: '30’lu yaşlarda sakin bir hikâye anlatıcısı, sıcak bakışlar, sade koyu kıyafet, yumuşak kenar ışığı' }, { isim: 'Kâşif', gorunum: 'meraklı genç bir maceracı, yıpranmış ceket, sırt çantası, kararlı ifade' }], senaryo: senaryo,
       seslendirme_notu: toneName() + ' bir tonda, doğal tempoda oku.',
       youtube: { baslik: topic.replace(/\?$/, '') + ' | Storia', aciklama: 'Bu videoda ' + topic.toLowerCase() + ' sorusunu adım adım cevaplıyoruz. Beğenmeyi ve abone olmayı unutma!\n\n00:00 Giriş\n00:30 İlk ipucu\n02:00 Derinleşme', etiketler: ['storia', 'belgesel', 'merak', topic.split(' ')[0].toLowerCase(), 'bilgi'] },
       instagram: { aciklama: topic + ' 👀 Cevabı videoda. Kaydet, sonra izle!', hashtagler: ['storia', 'kesfet', 'bilgi', 'merak', 'reels'] },
