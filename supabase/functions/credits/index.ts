@@ -105,7 +105,13 @@ Deno.serve(async (req) => {
     if (error) return json({ ok: false, error: error.message }, 500);
     const row = Array.isArray(data) ? data[0] : data;
     if (!row) return json({ ok: false, error: "Profil bulunamadı" }, 404);
-    return json({ ok: true, ...row });
+    // İki kova ayrı: üyelik (credits kolonu, ay dönünce yenilenir) + kalıcı (topup, asla yanmaz)
+    let subscription = row.credits, topup = 0;
+    try {
+      const { data: p } = await admin.from("profiles").select("credits, topup_credits").eq("id", user.id).maybeSingle();
+      if (p) { subscription = p.credits ?? 0; topup = p.topup_credits ?? 0; }
+    } catch (_e) { /* topup kolonu yoksa (Aşama 1 çalışmadıysa) toplam gösterilir */ }
+    return json({ ok: true, ...row, subscription, topup });
   }
 
   if (action === "spend") {
