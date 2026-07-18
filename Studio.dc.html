@@ -117,6 +117,26 @@
       #ta-stepm .sm-fill { height: 100%; background: linear-gradient(90deg, #a77d35, #e6c478); transition: width .3s; }
     }
 
+    /* ── PLATFORM KABUĞU: sol sabit yan menü + geniş içerik ── */
+    .ta-body { display: flex; align-items: flex-start; flex: 1; width: 100%; }
+    .ta-side { width: 238px; flex-shrink: 0; position: sticky; top: 72px; align-self: stretch;
+      height: calc(100vh - 72px); overflow-y: auto; border-right: 1px solid rgba(193,154,82,.16);
+      background: linear-gradient(180deg, rgba(6,9,17,.6), rgba(4,6,12,.35));
+      display: flex; flex-direction: column; gap: 3px; padding: 22px 14px 18px; }
+    .ta-maincol { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .ta-side .ta-navbtn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+      padding: 11px 13px; border: 1px solid transparent; background: transparent; color: #b4b9c4;
+      font-family: inherit; font-size: 13.5px; cursor: pointer; border-radius: 9px;
+      transition: background .15s, color .15s, border-color .15s; }
+    .ta-side .ta-navbtn:hover { color: #e6c478; background: rgba(193,154,82,.08); }
+    .ta-side .ta-navbtn .ic { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+    .ta-side .ta-sublink { display: block; padding: 9px 13px; color: #818797; font-size: 12.5px;
+      letter-spacing: .03em; text-decoration: none; border-radius: 9px; transition: background .15s, color .15s; }
+    .ta-side .ta-sublink:hover { color: #e6c478; background: rgba(193,154,82,.06); }
+    .ta-side-head { color: #676d7c; font-family: 'Special Elite', monospace; font-size: 9px;
+      letter-spacing: .2em; padding: 10px 13px 5px; }
+    @media (max-width: 840px) { .ta-side { display: none; } .ta-body { display: block; } }
+
     /* ── U-02: dosya sekmeleri — mobilde tek satır kaydırmalı ── */
     @media (max-width: 600px) {
       .ta-tabs { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch;
@@ -226,13 +246,6 @@
           <a href="/" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ANA SAYFA</a>
           <a href="/egitim" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">EĞİTİM</a>
           <a href="/uyelik" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ÜYELİK</a>
-
-          <div style="display: flex; border: 1px solid rgba(129,135,151,.3);">
-            <button onClick="{{ modeWizard }}" style="{{ wizardTabStyle }}">SİHİRBAZ</button>
-            <button onClick="{{ modeGorsel }}" style="{{ gorselTabStyle }}">GÖRSEL</button>
-            <button onClick="{{ modeArsiv }}" style="{{ arsivTabStyle }}">HAZIR ARŞİV</button>
-            <button onClick="{{ modeHistory }}" style="{{ chatTabStyle }}">GEÇMİŞ</button>
-          </div>
           <button onClick="{{ openCredits }}" title="Kredi paketleri" style="display: flex; align-items: center; gap: 8px; border: 1px solid rgba(193,154,82,.4); background: rgba(193,154,82,.08); color: #e6c478; padding: 9px 14px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="background: rgba(193,154,82,.18);">
             <span style="width: 7px; height: 7px; border-radius: 50%; background: #c19a52; animation: ta-pulse 2s infinite;"></span>
             <span>KREDİ {{ credits }}</span><span style="opacity:.6;">+</span>
@@ -278,18 +291,36 @@
         </div>
       </sc-if>
 
-      <!-- adım göstergesi -->
-      <div class="ta-steps" style="{{ stepRowStyle }}">
-        <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
-          <div onClick="{{ st.go }}" style="{{ st.wrapStyle }}">
-            <div style="{{ st.dotStyle }}">{{ st.n }}</div>
-            <div style="{{ st.labelStyle }}">{{ st.label }}</div>
-            <sc-if value="{{ st.hasLine }}" hint-placeholder-val="{{ false }}"><div style="{{ st.lineStyle }}"></div></sc-if>
-          </div>
-        </sc-for>
-      </div>
+      <div class="ta-body">
+        <aside class="ta-side">
+          <div class="ta-side-head">ÜRETİM</div>
+          <button class="ta-navbtn" onClick="{{ modeWizard }}" style="{{ sideWizActive }}"><span class="ic">◈</span> Üret · Sihirbaz</button>
+          <button class="ta-navbtn" onClick="{{ modeGorsel }}" style="{{ sideGorActive }}"><span class="ic">✦</span> Görsel Stüdyo</button>
+          <button class="ta-navbtn" onClick="{{ modeArsiv }}" style="{{ sideArsActive }}"><span class="ic">🗂</span> Hazır Arşiv</button>
+          <button class="ta-navbtn" onClick="{{ modeHistory }}" style="{{ sideGecActive }}"><span class="ic">↺</span> Geçmiş Üretimler</button>
+          <div style="height: 1px; background: rgba(129,135,151,.14); margin: 12px 6px;"></div>
+          <div class="ta-side-head">KEŞFET</div>
+          <a class="ta-sublink" href="/">Ana Sayfa</a>
+          <a class="ta-sublink" href="/egitim">Eğitim Akademisi</a>
+          <a class="ta-sublink" href="/uyelik">Üyelik</a>
+          <a class="ta-sublink" href="/urunler">Mağaza</a>
+          <div style="flex: 1;"></div>
+          <button class="ta-navbtn" onClick="{{ openCredits }}" style="border-color: rgba(193,154,82,.3); background: rgba(193,154,82,.06); color: #e6c478;"><span class="ic">◉</span> {{ credits }} kredi · Yükle</button>
+        </aside>
+        <div class="ta-maincol">
 
-      <main style="flex: 1; width: min(1060px, 100%); margin: 0 auto; padding: 34px 24px 80px;">
+          <!-- adım göstergesi -->
+          <div class="ta-steps" style="{{ stepRowStyle }}">
+            <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+              <div onClick="{{ st.go }}" style="{{ st.wrapStyle }}">
+                <div style="{{ st.dotStyle }}">{{ st.n }}</div>
+                <div style="{{ st.labelStyle }}">{{ st.label }}</div>
+                <sc-if value="{{ st.hasLine }}" hint-placeholder-val="{{ false }}"><div style="{{ st.lineStyle }}"></div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+      <main style="flex: 1; width: 100%; max-width: 1240px; margin: 0 auto; padding: 34px 36px 90px;">
 
         <!-- GEÇMİŞ -->
         <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
@@ -1076,6 +1107,8 @@
           </div>
         </sc-if>
       </main>
+        </div>
+      </div>
     </div>
   </sc-if>
 
@@ -3228,6 +3261,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       modeHistory: () => this.setState({ mode: 'history' }),
       modeArsiv: () => this.setState({ mode: 'arsiv' }),
       modeGorsel: () => this.setState({ mode: 'gorsel' }),
+      // Sol yan menü aktif-durum vurgusu (temel görünüm CSS .ta-navbtn'den gelir)
+      sideWizActive: s.mode === 'wizard' ? { color: '#e6c478', background: 'rgba(193,154,82,.15)', borderColor: 'rgba(193,154,82,.42)' } : {},
+      sideGorActive: s.mode === 'gorsel' ? { color: '#e6c478', background: 'rgba(193,154,82,.15)', borderColor: 'rgba(193,154,82,.42)' } : {},
+      sideArsActive: s.mode === 'arsiv' ? { color: '#e6c478', background: 'rgba(193,154,82,.15)', borderColor: 'rgba(193,154,82,.42)' } : {},
+      sideGecActive: s.mode === 'history' ? { color: '#e6c478', background: 'rgba(193,154,82,.15)', borderColor: 'rgba(193,154,82,.42)' } : {},
       isGorsel: s.mode === 'gorsel',
       gorselTabStyle: {
         border: 0, cursor: 'pointer', padding: '10px 16px',
