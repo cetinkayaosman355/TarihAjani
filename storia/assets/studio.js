@@ -25,6 +25,7 @@
     trend: { open: false, niche: '', busy: false, items: [] },
     series: { open: false, mode: 'topic', topic: '', source: '', count: 5, busy: false, running: false, eps: [], done: 0 },
     dub: { open: false, busy: false },
+    tools: { open: false },
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null, imgMode: 'gorsel',
     // ses stüdyo
@@ -111,6 +112,18 @@
         if (fresh.length > 8) { pushIdea(fresh); _shownIdeas.push(fresh); if (S.step === 1 && S.idea === _lastSuggest) { S.idea = fresh; _lastSuggest = fresh; render(); } }
       }
     }).catch(function () {}).then(function () { _suggestBusy = false; });
+  }
+  // ── Üretim araçları menüsü (açılır — ana ekranı sade tutar) ──────────
+  function renderToolsMenu() {
+    var opt = function (act, ic, title, desc) {
+      return '<button class="tool-opt" data-act="' + act + '"><span class="to-ic">' + ic + '</span>' +
+        '<span class="to-body"><span class="to-t">' + title + '</span><span class="to-d">' + desc + '</span></span><span class="to-arrow">→</span></button>';
+    };
+    return '<div class="tools-menu">' +
+      opt('trendFind', '🔥', 'Trend & hook bulucu', 'Nişine göre viral konu + ilk-3-saniye kancası') +
+      opt('seriesFind', '📚', 'Seri üret', 'Tek konudan birbirini tamamlayan çok bölüm') +
+      opt('seriesRepurpose', '✂️', 'Uzun içeriği kısalara böl', 'Transkript / blog / uzun metni kısa videolara ayır') +
+      '</div>';
   }
   // ── Trend & hook bulucu ──────────────────────────────────────────────
   function renderTrend() {
@@ -434,12 +447,12 @@
         '<textarea id="ideaInput" placeholder="Örn: Okyanusun en derin noktasında ne var?" rows="2">' + esc(S.idea) + '</textarea>' +
         '<div class="compose-tools"><div class="left">' +
           '<button class="btn btn-quiet btn-sm" data-act="suggest">✦ Sen öner</button>' +
-          '<button class="btn btn-quiet btn-sm" data-act="trendFind">🔥 Trend & hook</button>' +
-          '<button class="btn btn-quiet btn-sm" data-act="seriesFind">📚 Seri üret</button>' +
+          '<button class="btn btn-quiet btn-sm tool-toggle' + (S.tools.open ? ' on' : '') + '" data-act="toolsToggle">Üretim araçları <span class="chev">' + (S.tools.open ? '▴' : '▾') + '</span></button>' +
           '<span class="cnt" id="ideaCount"></span></div>' +
           '<button class="btn btn-gold" data-act="toStep2">Tarzını seç →</button>' +
         '</div>' +
       '</div>' +
+      (S.tools.open ? renderToolsMenu() : '') +
       (S.trend.open ? renderTrend() : '') +
       (S.series.open ? renderSeries() : '') +
       '<div class="suggest-row">' + chips + '</div>' +
@@ -820,13 +833,15 @@
     switch (act) {
       case 'useIdea': S.idea = v; render(); break;
       case 'suggest': suggestIdea(); break;
-      case 'trendFind': S.trend.open = !S.trend.open; render(); break;
+      case 'toolsToggle': S.tools.open = !S.tools.open; if (S.tools.open) { S.trend.open = false; S.series.open = false; } render(); break;
+      case 'trendFind': S.trend.open = !S.trend.open; if (S.trend.open) { S.series.open = false; S.tools.open = false; } render(); break;
       case 'trendNiche': S.trend.niche = v; render(); setTimeout(findTrends, 0); break;
       case 'trendGo': findTrends(); break;
       case 'trendClose': S.trend.open = false; render(); break;
       case 'useTrend': useTrend(parseInt(v, 10)); break;
       case 'copyHook': copy(v); toast('Hook kopyalandı'); break;
-      case 'seriesFind': S.series.open = !S.series.open; render(); break;
+      case 'seriesFind': S.series.open = !S.series.open; if (S.series.open) { S.series.mode = 'topic'; S.trend.open = false; S.tools.open = false; } render(); break;
+      case 'seriesRepurpose': S.series.open = true; S.series.mode = 'repurpose'; S.trend.open = false; S.tools.open = false; render(); break;
       case 'seriesMode': var _sr = document.getElementById('seriesSource'); if (_sr) S.series.source = _sr.value; var _st = document.getElementById('seriesTopic'); if (_st) S.series.topic = _st.value; S.series.mode = v; S.series.eps = []; render(); break;
       case 'seriesPlan': planSeries(); break;
       case 'seriesToggle': var _ep = S.series.eps[parseInt(v, 10)]; if (_ep) _ep.on = !(_ep.on !== false); break;

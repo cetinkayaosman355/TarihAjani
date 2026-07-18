@@ -185,6 +185,18 @@ body { background: var(--paper); overflow: hidden; }
 .compose-tools .cnt { font-size: 13px; color: var(--muted); }
 .suggest-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; justify-content: center; }
 .suggest-row .chip { cursor: pointer; }
+/* Üretim araçları açılır menüsü */
+.tool-toggle .chev { font-size: 10px; opacity: .7; margin-left: 2px; }
+.tool-toggle.on { border-color: var(--champ); color: var(--champ-deep); }
+.tools-menu { margin-top: 16px; display: grid; gap: 10px; text-align: left; }
+.tool-opt { display: flex; align-items: center; gap: 14px; width: 100%; background: var(--surface); border: 1px solid var(--line-2); border-radius: 14px; padding: 14px 16px; cursor: pointer; text-align: left; transition: border-color .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease); box-shadow: var(--sh-1); }
+.tool-opt:hover { border-color: var(--champ); transform: translateY(-1px); box-shadow: var(--sh-2); }
+.tool-opt .to-ic { font-size: 22px; flex: none; }
+.tool-opt .to-body { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.tool-opt .to-t { font-size: 15px; font-weight: 600; color: var(--ink); }
+.tool-opt .to-d { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.tool-opt .to-arrow { color: var(--champ); font-size: 17px; flex: none; opacity: .55; transition: transform .2s var(--ease), opacity .2s var(--ease); }
+.tool-opt:hover .to-arrow { opacity: 1; transform: translateX(3px); }
 /* Trend & hook bulucu */
 .trend-panel { margin-top: 20px; text-align: left; background: var(--surface); border: 1px solid var(--line-2); border-radius: 18px; padding: 20px; }
 .trend-head { display: flex; flex-direction: column; gap: 3px; margin-bottom: 14px; }
