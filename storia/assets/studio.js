@@ -363,15 +363,44 @@
     { name: 'Kısa Video', desc: '60 sn · Dikey', sec: 60, aspect: '9:16', tone: 'enerjik' },
     { name: 'Belgesel', desc: '10 dk · Yatay', sec: 600, aspect: '16:9', tone: 'belgesel' }
   ];
+  // kind = içerik türü şablon motoru için (viral/story/education/product/genel).
+  // Her tür buildPrompt'ta AYRI bir anlatım çerçevesi/prompt zinciri kullanır;
+  // çıktı JSON şeması aynı kalır (uyumluluk korunur).
   var TEMPLATES = [
-    { name: 'Belgesel', tone: 'belgesel', style: 'sinematik', sec: 600, aspect: '16:9' },
-    { name: 'Kısa / Shorts', tone: 'enerjik', style: 'fotogercek', sec: 60, aspect: '9:16' },
-    { name: 'Motivasyon', tone: 'destansi', style: 'sinematik', sec: 90, aspect: '9:16' },
-    { name: 'Nasıl yapılır', tone: 'samimi', style: 'illus', sec: 180, aspect: '16:9' },
-    { name: 'Ürün tanıtımı', tone: 'enerjik', style: 'render3d', sec: 60, aspect: '1:1' },
-    { name: 'Liste (5 şey)', tone: 'merak', style: 'fotogercek', sec: 240, aspect: '16:9' },
-    { name: 'Haber özeti', tone: 'belgesel', style: 'fotogercek', sec: 120, aspect: '16:9' }
+    { name: 'Belgesel', tone: 'belgesel', style: 'sinematik', sec: 600, aspect: '16:9', kind: 'story' },
+    { name: 'Kısa / Shorts', tone: 'enerjik', style: 'fotogercek', sec: 60, aspect: '9:16', kind: 'viral' },
+    { name: 'Motivasyon', tone: 'destansi', style: 'sinematik', sec: 90, aspect: '9:16', kind: 'story' },
+    { name: 'Nasıl yapılır', tone: 'samimi', style: 'illus', sec: 180, aspect: '16:9', kind: 'education' },
+    { name: 'Ürün tanıtımı', tone: 'enerjik', style: 'render3d', sec: 60, aspect: '1:1', kind: 'product' },
+    { name: 'Liste (5 şey)', tone: 'merak', style: 'fotogercek', sec: 240, aspect: '16:9', kind: 'viral' },
+    { name: 'Haber özeti', tone: 'belgesel', style: 'fotogercek', sec: 120, aspect: '16:9', kind: 'viral' }
   ];
+  // İçerik türüne özel anlatım çerçeveleri (doküman: viral/hikâye/eğitim/emlak
+  // için ayrı prompt zinciri). Çıktı şeması aynı; yalnız akış/vurgu değişir.
+  var FRAMEWORKS = {
+    viral: {
+      tr: 'ANLATIM YAPISI — VİRAL BİLGİ (ZORUNLU akış):\n1. KANCA (1. sahne): ilk 3 saniye kaydırmayı durduran çarpıcı soru/iddia.\n2. ÇEKİRDEK BİLGİ: konunun özünü net, hızlı ve somut ver (sayı/örnek).\n3. SÜRPRİZ: beklenmedik bir gerçek ya da çarpıcı dönüş.\n4. PAYOFF: "demek ki" — izleyicinin aklında kalacak tek çıkarım.\n5. CTA: net kapanış + eylem çağrısı.\nHızlı tempolu, tek bir merak yayını; laf kalabalığı yok.',
+      en: 'NARRATIVE STRUCTURE — VIRAL FACT (MANDATORY flow):\n1. HOOK (scene 1): first 3s scroll-stopper.\n2. CORE FACT: deliver the essence fast and concrete (number/example).\n3. SURPRISE: an unexpected truth or twist.\n4. PAYOFF: the one takeaway that sticks.\n5. CTA: clear closing + call to action.\nFast paced, one curiosity arc, no filler.'
+    },
+    story: {
+      tr: 'ANLATIM YAPISI — GERÇEK OLAY / HİKÂYE (ZORUNLU akış):\n1. KANCA: olayın en gergin/çarpıcı anıyla aç.\n2. KURULUM: karakter(ler), yer ve zaman — izleyici bağlansın.\n3. ÇATIŞMA: gerilimi tırmandır, ne pahasına?\n4. DORUK: dönüm noktası / beklenmedik gerçek.\n5. ÇÖZÜM + DERS: kapanış ve akılda kalan bir çıkarım/CTA.\nDramatik, duygusal ve TEK bir hikâye yayı; karakter tutarlı kalsın.',
+      en: 'NARRATIVE STRUCTURE — REAL STORY (MANDATORY flow):\n1. HOOK: open on the most tense/striking moment.\n2. SETUP: character(s), place, time — make the viewer care.\n3. CONFLICT: escalate the tension and stakes.\n4. CLIMAX: the turning point / unexpected truth.\n5. RESOLUTION + LESSON: closing and one memorable takeaway/CTA.\nDramatic, emotional, ONE story arc; keep the character consistent.'
+    },
+    education: {
+      tr: 'ANLATIM YAPISI — EĞİTİM / AÇIKLAYICI (ZORUNLU akış):\n1. ÖĞRENME HEDEFİ (1. sahne): izleyici ne öğrenecek, neden önemli — merakla çerçevele.\n2. KAVRAMLAR: adım adım, sade ve doğru; her sahne bir önceki üstüne koysun.\n3. ÖRNEKLER: somut örnek/benzetmeyle pekiştir.\n4. ÖZET: ana noktaları kısa topla.\n5. CTA: uygula / kaydet / takip et.\nGüvenilir ve anlaşılır; karmaşayı sadeleştir, atlamadan ilerle.',
+      en: 'NARRATIVE STRUCTURE — EDUCATION / EXPLAINER (MANDATORY flow):\n1. LEARNING GOAL (scene 1): what they will learn and why it matters — frame with curiosity.\n2. CONCEPTS: step by step, simple and correct; each scene builds on the last.\n3. EXAMPLES: reinforce with concrete example/analogy.\n4. SUMMARY: recap the key points briefly.\n5. CTA: apply / save / follow.\nTrustworthy and clear; simplify complexity, no gaps.'
+    },
+    product: {
+      tr: 'ANLATIM YAPISI — ÜRÜN / EMLAK TANITIMI (ZORUNLU akış):\n1. KANCA: dikkat çeken bir vaat ya da soru.\n2. PROBLEM / İHTİYAÇ: izleyicinin derdini net koy.\n3. ÖZELLİKLER: ürünün/mülkün somut özellikleri.\n4. FAYDALAR: her özelliğin izleyiciye ne kazandırdığı.\n5. KANIT: güven veren bir kanıt (sayı, sonuç, referans).\n6. CTA: net satın alma / iletişim çağrısı.\nİkna edici ama abartısız; fayda odaklı, güven veren.',
+      en: 'NARRATIVE STRUCTURE — PRODUCT / REAL-ESTATE (MANDATORY flow):\n1. HOOK: an attention-grabbing promise or question.\n2. PROBLEM / NEED: state the viewer\'s pain clearly.\n3. FEATURES: concrete features of the product/property.\n4. BENEFITS: what each feature gives the viewer.\n5. PROOF: a trust-building proof (number, result, testimonial).\n6. CTA: clear purchase / contact call.\nPersuasive but not hyped; benefit-driven, trustworthy.'
+    },
+    genel: {
+      tr: 'ANLATIM YAPISI (ZORUNLU — izleyici baştan sona TEK bir hikâyeyi takip edebilmeli; kopuk bilgi yığını DEĞİL):\n1. KANCA (1. sahne): ilk 3 saniye — kaydırmayı durduran, merak uyandıran çarpıcı bir soru, iddia ya da görüntü.\n2. KURULUM: konuyu netçe çerçevele; izleyici ne öğreneceğini anlasın.\n3. GELİŞME: her sahne bir öncekinin ÜSTÜNE koysun ve bir sonrakine BAĞLANSIN; somut örnek, sayı ve ayrıntıyla ilerle.\n4. DORUK/DÖNÜŞ: en çarpıcı an ya da beklenmedik bir gerçek.\n5. SONUÇ + ÇAĞRI: tatmin edici bir kapanış ve net bir son cümle / eylem çağrısı.',
+      en: 'NARRATIVE STRUCTURE (MANDATORY — the viewer must follow ONE clear story from start to finish; NOT disconnected facts):\n1. HOOK (scene 1): first 3 seconds — a striking question, bold claim or vivid image that stops the scroll.\n2. SETUP: frame the topic clearly so the viewer knows what they will learn.\n3. BUILD: each scene ADDS to the previous one and CONNECTS to the next; advance with concrete examples, numbers.\n4. TURN / CLIMAX: the most compelling moment or an unexpected truth.\n5. PAYOFF + CTA: a satisfying conclusion and a clear closing line / call to action.'
+    }
+  };
+  function contentKind() { var t = (S.template != null) ? TEMPLATES[S.template] : null; return (t && t.kind) || 'genel'; }
+  function frameworkText() { var f = FRAMEWORKS[contentKind()] || FRAMEWORKS.genel; return S.lang === 'en' ? f.en : f.tr; }
   var GRADS = [
     'linear-gradient(135deg,#efe6d2,#c2a160)', 'linear-gradient(135deg,#e0c588,#9c7b3b)',
     'linear-gradient(135deg,#f3ecdc,#d9bc80)', 'linear-gradient(135deg,#d8b98a,#8b6c31)',
@@ -966,12 +995,7 @@
         'FORMAT: ' + S.aspect + ' · DURATION: ' + fmtDur(S.durationSec) + ' · ~' + scenes + ' scenes\n' +
         'LENGTH BUDGET (CRITICAL): the video is ' + fmtDur(S.durationSec) + ' long and the narration will be read ALOUD. The TOTAL of all scenes\' "anlatim" text must be AT MOST ~' + words + ' words — do NOT exceed it. Keep each scene short (one sentence for short videos). Even with ' + scenes + ' scenes, keep it tight so the voiceover fits ' + fmtDur(S.durationSec) + '.\n' +
         (S.custom ? 'SPECIAL REQUEST (highest priority): ' + S.custom + '\n' : '') +
-        '\nNARRATIVE STRUCTURE (MANDATORY — the viewer must follow ONE clear story from start to finish; NOT disconnected facts):\n' +
-        '1. HOOK (scene 1): first 3 seconds — a striking question, bold claim or vivid image that stops the scroll and creates curiosity.\n' +
-        '2. SETUP: frame the topic clearly so the viewer knows what they will learn.\n' +
-        '3. BUILD: each scene ADDS to the previous one and CONNECTS to the next; advance with concrete examples, numbers, specifics. No random info-dumping.\n' +
-        '4. TURN / CLIMAX: the most compelling moment or an unexpected truth.\n' +
-        '5. PAYOFF + CTA: a satisfying conclusion and a clear closing line / call to action.\n' +
+        '\n' + frameworkText() + '\n' +
         'The whole thing must read as ONE coherent, understandable narrative that flows in logical order — a viewer should easily follow it.\n' +
         'IMAGE <-> SCENE: gorsel_promptlar[i] must depict EXACTLY what happens in senaryo[i] (that scene\'s concrete subject and action) — never a generic or unrelated mood image.\n' +
         '\nReturn ONLY valid JSON in this schema, in ENGLISH (keys stay exactly as below, no other text):\n' +
@@ -990,12 +1014,7 @@
       'FORMAT: ' + S.aspect + ' · SÜRE: ' + fmtDur(S.durationSec) + ' · SAHNE SAYISI: yaklaşık ' + scenes + '\n' +
       'SÜRE-METİN DENGESİ (ÇOK ÖNEMLİ): Video ' + fmtDur(S.durationSec) + ' uzunluğunda ve seslendirme metni SESLİ okunacak. Tüm sahnelerin "anlatim" metinlerinin TOPLAMI EN FAZLA ~' + words + ' kelime olmalı — bu sınırı KESİNLİKLE AŞMA. Her sahnenin anlatımı kısa ve öz olsun (kısa videoda tek cümle). Sahne sayısı ' + scenes + ' olsa bile metni uzatma; seslendirme ' + fmtDur(S.durationSec) + ' süresine sığmalı.\n' +
       (S.custom ? 'ÖZEL İSTEK (en yüksek öncelik): ' + S.custom + '\n' : '') +
-      '\nANLATIM YAPISI (ZORUNLU — izleyici baştan sona TEK bir hikâyeyi takip edebilmeli; kopuk bilgi yığını DEĞİL):\n' +
-      '1. KANCA (1. sahne): ilk 3 saniye — kaydırmayı durduran, merak uyandıran çarpıcı bir soru, iddia ya da görüntü.\n' +
-      '2. KURULUM: konuyu netçe çerçevele; izleyici ne öğreneceğini anlasın.\n' +
-      '3. GELİŞME: her sahne bir öncekinin ÜSTÜNE koysun ve bir sonrakine BAĞLANSIN; somut örnek, sayı ve ayrıntıyla ilerle. Rastgele bilgi yığma yok.\n' +
-      '4. DORUK/DÖNÜŞ: en çarpıcı an ya da beklenmedik bir gerçek.\n' +
-      '5. SONUÇ + ÇAĞRI: tatmin edici bir kapanış ve net bir son cümle / eylem çağrısı.\n' +
+      '\n' + frameworkText() + '\n' +
       'Bütün metin, mantıklı sırayla akan TEK, tutarlı ve anlaşılır bir anlatı olsun — izleyici rahatça takip edebilsin.\n' +
       'GÖRSEL <-> SAHNE: gorsel_promptlar[i], senaryo[i]\'de TAM OLARAK ne oluyorsa onu göstersin (o sahnenin somut öznesi ve aksiyonu) — asla genel geçer ya da alakasız bir atmosfer görseli değil.\n' +
       '\nYalnızca aşağıdaki şemada, Türkçe ve GEÇERLİ JSON döndür (başka metin yok):\n' +
