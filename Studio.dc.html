@@ -327,6 +327,30 @@
     /* soluk altın → okunur koyu altın */
     html[data-theme="light"] [style*="color: #9a7d43"],
     html[data-theme="light"] [style*="color: #d9a441"] { color: #8a6417 !important; }
+    /* ── PREMIUM GÜNDÜZ ZEMİNİ: düz rengi katmanlı sıcak kağıda çevir ──
+       (:root[data-theme=light] body → tema.js'in düz #efe9db'sinden daha yüksek
+       özgüllük, böylece zengin degrade kazanır.) */
+    :root[data-theme="light"] body {
+      background:
+        radial-gradient(1100px 520px at 80% -10%, rgba(201,162,90,.13), transparent 62%),
+        radial-gradient(880px 480px at 0% 6%, rgba(150,120,60,.07), transparent 55%),
+        linear-gradient(180deg, #f4eede 0%, #eae0cd 100%) !important;
+      background-attachment: fixed !important; }
+    /* Seçenek kartları (model/ton/stil/oran) + ses paneli koyu camı → sıcak fildişi */
+    html[data-theme="light"] [style*="rgba(8, 11, 19"],
+    html[data-theme="light"] [style*="rgba(8,11,19"] {
+      background-color: #f9f3e8 !important;
+      box-shadow: 0 14px 32px -28px rgba(120,90,30,.45) !important; }
+    /* Seçili seçenek kartı → belirgin sıcak altın vurgu */
+    html[data-theme="light"] [style*="rgba(193, 154, 82, 0.1)"] { background-color: rgba(193,154,82,.22) !important; }
+    /* Altın kenarlı paneller (süre kutusu vb.) → premium ince kenar */
+    html[data-theme="light"] [style*="rgba(193,154,82,.3)"] { border-color: rgba(160,120,45,.4) !important; }
+    /* Aktif yan menü öğesi metni (inline #f5efdd) koyulaşsın */
+    html[data-theme="light"] [style*="color: #f5efdd"] { color: #2a2419 !important; }
+    /* Üst başlık — premium alt hairline + yumuşak gölge */
+    html[data-theme="light"] header { box-shadow: 0 1px 0 rgba(160,120,45,.14), 0 12px 34px -26px rgba(120,90,30,.32) !important; }
+    /* Birincil altın butonlar aydınlıkta biraz daha doygun + gölgeli (premium) */
+    html[data-theme="light"] [style*="linear-gradient(110deg, #a77d35"] { box-shadow: 0 10px 26px -12px rgba(160,120,45,.5) !important; }
     /* ── Alt sekme çubuğu (mobil) + Ajan sohbet FAB ── */
     html[data-theme="light"] #ta-tabbar { background: rgba(246,239,223,.97) !important; border-top-color: rgba(150,116,52,.3) !important; }
     html[data-theme="light"] #ta-tabbar button { color: #8a8168 !important; }
@@ -798,8 +822,10 @@
               <div style="display: grid; gap: 26px;">
               <sc-for list="{{ optionGroups }}" as="grp" hint-placeholder-count="4">
                 <div>
-                  <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;">
+                  <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 11px;">
+                    <span style="color: #c19a52; font-size: 8px; letter-spacing: .1em;">◆</span>
                     <span style="color: #e9dfc8; font-weight: 700; font-size: 15px; letter-spacing: .04em;">{{ grp.title }}</span>
+                    <span style="flex: 1; height: 1px; background: linear-gradient(90deg, rgba(193,154,82,.28), transparent); margin: 0 2px;"></span>
                     <span style="color: #676d7c; font-size: 12px;">{{ grp.hint }}</span>
                   </div>
                   <!-- Standart seçenekler (model / ton / stil / oran) -->
