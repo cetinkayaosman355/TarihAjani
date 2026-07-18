@@ -1421,14 +1421,41 @@ function acGaleri(kind, i) {
 }
 /* Görseli GERÇEKTEN indir — cross-origin Storage URL'inde <a download> yok sayıldığı
    için (yeni sekmede açıyordu), blob'a çevirip indiririz. data URI doğrudan iner. */
+// Görseli GERÇEK 9:16 / 16:9 / 1:1'e kırp (rapor 4.1) — model 2:3/3:2 üretir;
+// indirmede seçilen orana merkezden kes (blob'tan yüklenir → canvas taint olmaz).
+function _cropAspectBlob(srcUrl, arKey) {
+  return new Promise(function (resolve, reject) {
+    var target = { yatay: 16 / 9, dikey: 9 / 16, kare: 1 }[arKey];
+    if (!target) return reject(new Error('no-aspect'));
+    var img = new Image();
+    img.onload = function () {
+      try {
+        var sw = img.naturalWidth, sh = img.naturalHeight;
+        if (!sw || !sh) return reject(new Error('empty'));
+        var srcAr = sw / sh, cw = sw, ch = sh;
+        if (srcAr > target) cw = Math.round(sh * target); else ch = Math.round(sw / target);
+        var sx = Math.round((sw - cw) / 2), sy = Math.round((sh - ch) / 2);
+        var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+        cv.getContext('2d').drawImage(img, sx, sy, cw, ch, 0, 0, cw, ch);
+        cv.toBlob(function (b) { b ? resolve(b) : reject(new Error('blob')); }, 'image/jpeg', 0.96);
+      } catch (e) { reject(e); }
+    };
+    img.onerror = function () { reject(new Error('img-load')); };
+    img.src = srcUrl;
+  });
+}
 async function dlGorsel(url) {
   if (!url) return;
-  var ad = 'tarih-ajani-gorsel-' + Date.now() + (String(url).indexOf('png') >= 0 ? '.png' : '.jpg');
+  var ad = 'tarih-ajani-gorsel-' + Date.now() + '.jpg';
+  var ar = (typeof uret !== 'undefined' && uret.oran) ? uret.oran : 'dikey';
   var tikla = function (href) { var a = document.createElement('a'); a.href = href; a.download = ad; document.body.appendChild(a); a.click(); a.remove(); };
-  if (url.indexOf('data:') === 0) { tikla(url); return; }
   try {
-    var r = await fetch(url); var b = await r.blob(); var bu = URL.createObjectURL(b);
-    tikla(bu); setTimeout(function () { try { URL.revokeObjectURL(bu); } catch (e) {} }, 6000);
+    var srcUrl = url;
+    if (url.indexOf('data:') !== 0) { var r = await fetch(url); var b = await r.blob(); srcUrl = URL.createObjectURL(b); }
+    var cropped = await _cropAspectBlob(srcUrl, ar).catch(function () { return null; });
+    if (srcUrl.indexOf('blob:') === 0) setTimeout(function () { try { URL.revokeObjectURL(srcUrl); } catch (e) {} }, 6000);
+    if (cropped) { var bu = URL.createObjectURL(cropped); tikla(bu); setTimeout(function () { try { URL.revokeObjectURL(bu); } catch (e) {} }, 6000); return; }
+    tikla(srcUrl);
   } catch (e) { window.open(url, '_blank'); }
 }
 function imgLbYaz() {
