@@ -773,9 +773,25 @@
                   <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12; padding: 14px 18px; display: grid; gap: 8px;">
                     <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">KARAKTERLER · SABİT KİMLİK <span style="color:#676d7c;letter-spacing:0;">(her sahnede birebir aynı yüz/kıyafet için kullanılır)</span></p>
                     <sc-for list="{{ sceneChars }}" as="ch" hint-placeholder-count="2">
-                      <div style="border-top: 1px dashed rgba(129,135,151,.2); padding-top: 7px;">
-                        <span style="color: #e6c478; font-weight: 700; font-size: 13.5px;">{{ ch.ad }}</span>
-                        <span style="color: #a4a9b5; font-size: 12.5px; line-height: 1.55;"> — {{ ch.gorunum }}</span>
+                      <div style="border-top: 1px dashed rgba(129,135,151,.2); padding-top: 8px; display: grid; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; flex-wrap: wrap;">
+                          <div style="flex: 1; min-width: 180px;">
+                            <span style="color: #e6c478; font-weight: 700; font-size: 13.5px;">{{ ch.ad }}</span>
+                            <span style="color: #a4a9b5; font-size: 12.5px; line-height: 1.55;"> — {{ ch.gorunum }}</span>
+                          </div>
+                          <span style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                            <sc-if value="{{ ch.img.notDone }}" hint-placeholder-val="{{ true }}">
+                              <button onClick="{{ ch.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer; white-space: nowrap;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ ch.imgBtnLabel }}</button>
+                            </sc-if>
+                            <sc-if value="{{ ch.img.done }}" hint-placeholder-val="{{ false }}">
+                              <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ · {{ ch.img.count }}</span>
+                              <button onClick="{{ ch.makeImg }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer; white-space: nowrap;" style-hover="background: rgba(193,154,82,.2);">{{ ch.imgRedoLabel }}</button>
+                            </sc-if>
+                          </span>
+                        </div>
+                        <sc-if value="{{ ch.img.hasUrl }}" hint-placeholder-val="{{ false }}">
+                          <img loading="lazy" data-zoomable="1" src="{{ ch.img.url }}" alt="Karakter portresi" onClick="{{ ch.img.zoom }}" title="Büyütmek için tıkla" style="{{ ch.img.thumbStyle }}">
+                        </sc-if>
                       </div>
                     </sc-for>
                   </div>
@@ -2102,12 +2118,14 @@ class Component extends DCLogic {
   }
   // Promise döndürür (toplu üretim kuyruğu bunun üstüne kurulu); sceneKey verilirse
   // üretilen görsel sahne kartında satır içi gösterilir.
-  makeImage(promptRaw, idx, sceneKey) {
+  makeImage(promptRaw, idx, sceneKey, arOverride) {
     const prompt = (promptRaw || '').trim();
     if (!prompt) return Promise.resolve(false);
     const cost = this.IMG_COST(idx);
     if (this.state.credits < cost) { this.setState({ creditModal: true }); return Promise.resolve(false); }
-    const ar = this.state.imgAspect || this.state.aspect;   // panelde seçilen kadraj öncelikli
+    // Dosyaya ait üretim (sahne/kapak/karakter) DOSYA oranını kullanır (arOverride);
+    // yalnız serbest Görsel Stüdyo kuyruğu panel kadrajını (imgAspect) kullanır.
+    const ar = arOverride || this.state.imgAspect || this.state.aspect;
     const sty = this.state.imgStyle || this.state.style;    // stil seçilmediyse sihirbazda seçilen stil
     const sendPrompt = this.withAspect(prompt, ar, sty);    // kadraj + stil prompta yerleşir
     const id = 'img' + Date.now() + Math.floor(Math.random() * 1000);
@@ -2270,7 +2288,8 @@ class Component extends DCLogic {
     this.setState({ imgPrompt: prompt });               // Görsel Stüdyo bu sahnenin hikâyesini tutsun
     this.setSceneImg(key, { busy: true });              // buton anında ÜRETİLİYOR'a döner
     // "Üretildi" işareti yalnız GERÇEK başarıda konur (eskiden hata da ✓ görünüyordu)
-    this.makeImage(prompt, idx, key).then(ok => {
+    // Sahne/kapak/karakter = dosyaya ait → DOSYA oranını (s.aspect) zorla (panel yatay olsa bile dikey çıksın)
+    this.makeImage(prompt, idx, key, this.state.aspect).then(ok => {
       const si = (this.state.sceneImgs || {})[key] || {};
       this.setSceneImg(key, ok ? { busy: false, done: true, count: (si.count || 0) + 1 } : { busy: false });
     });
@@ -2302,7 +2321,7 @@ class Component extends DCLogic {
       count: (si && si.count) || 0,
       url, hasUrl: !!url,
       zoom: () => this.openZoom(url),
-      thumbStyle: { ...this.thumbBox(this.state.imgAspect || this.state.aspect), marginTop: '4px' },
+      thumbStyle: { ...this.thumbBox(this.state.aspect), marginTop: '4px' },
       goStudio: () => this.goImgStudio()
     };
   }
@@ -3473,7 +3492,17 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           img: this.sceneImgView('kp' + i)
         };
       }),
-      sceneChars: (r.karakterler || []).filter(k => k && k.ad).map(k => ({ ad: k.ad, gorunum: k.gorunum || '' })),
+      sceneChars: (r.karakterler || []).filter(k => k && k.ad).map((k, i) => {
+        const cbusy = !!((((s.sceneImgs || {})['ch' + i]) || {}).busy);
+        const cp = (k.gorunum || k.ad) + '. Character reference portrait of one single person, neutral background, front-facing, sharp facial detail, head and shoulders, consistent identity.';
+        return {
+          ad: k.ad, gorunum: k.gorunum || '',
+          makeImg: () => this.makeSceneImg('ch' + i, cp),
+          imgBtnLabel: cbusy ? '⟳ ÜRETİLİYOR…' : '◈ PORTRE ÜRET · 12 KR',
+          imgRedoLabel: cbusy ? '⟳ ÜRETİLİYOR…' : '↻ TEKRAR · 12 KR',
+          img: this.sceneImgView('ch' + i)
+        };
+      }),
       hasSceneChars: (r.karakterler || []).filter(k => k && k.ad && k.gorunum).length > 0,
       resGorsel: mkCopy(r.gorsel_promptlar, 'gp').map((x, i) => this.sceneExtras(x, i, 'gp')),
       resVideo: mkCopy(r.video_promptlar, 'vp').map((x, i) => this.sceneExtras(x, i, 'vp')),
