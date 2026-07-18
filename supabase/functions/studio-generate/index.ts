@@ -717,6 +717,16 @@ async function spendSafe(admin: any, userId: string, amount: number, reason: str
   return undefined;
 }
 
+// Rapor 3.2: kredi düşümü başarısızsa istemciye YANLIŞ (düşülmüş gibi) bakiye
+// gösterilmesin — gerçek bakiyeyi oku ki arayüz doğru kalsın.
+async function balanceOf(admin: any, userId: string): Promise<number | undefined> {
+  try {
+    const { data } = await admin.rpc("refresh_profile_credits", { p_user: userId });
+    const r = Array.isArray(data) ? data[0] : data;
+    return r && typeof r.credits === "number" ? r.credits : undefined;
+  } catch (_e) { return undefined; }
+}
+
 // ── ÜRETİM KURTARMA ──────────────────────────────────────────────
 // Mobilde uzun üretimde tarayıcı bağlantıyı koparabiliyor ("Load failed"):
 // sunucu üretimi bitirip krediyi düşüyor ama sonuç istemciye ulaşamıyordu.
@@ -1021,7 +1031,13 @@ Deno.serve(async (req) => {
       if (regenPrevJob) {
         try {
           const pj = await loadJobResult(admin, userId, regenPrevJob);
-          if (pj && pj.charged === true && pj.regenUsed !== true) { freeRegen = true; cost = 0; }
+          if (pj && pj.charged === true) {
+            // Rapor 3.9: ücretsiz regen hakkını ATOMİK ver — op_locks'a tek kayıt.
+            // Eşzamanlı iki istek yalnız BİR kez bedava alabilir (yarış kapanır).
+            const { error: lockErr } = await admin.from("op_locks")
+              .insert({ idempotency_key: "regen:" + userId + ":" + regenPrevJob, user_id: userId });
+            if (!lockErr) { freeRegen = true; cost = 0; }   // ilk kez → ücretsiz; unique_violation → ücretli kalır
+          }
         } catch (_e) { /* güvenli taraf: ücretli kalır */ }
       }
       // vade/aylık kota tazele + bakiye oku
@@ -1040,8 +1056,10 @@ Deno.serve(async (req) => {
       logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "uretilemedi" });
       if (!url) return json({ ok: false, error: "Görsel üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       if (cost > 0 && admin && userId) {
-        const credits = await spendSafe(admin, userId, cost, "gorsel");
-        return json({ ok: true, url, charged: true, credits });
+        let credits = await spendSafe(admin, userId, cost, "gorsel");
+        const charged = credits !== undefined;
+        if (!charged) credits = await balanceOf(admin, userId);   // düşüm başarısız → gerçek bakiyeyi göster (3.2)
+        return json({ ok: true, url, charged, credits });
       }
       return json({ ok: true, url, charged: false });
     }
@@ -1053,8 +1071,10 @@ Deno.serve(async (req) => {
       logRun({ action: "edit", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "duzenlenemedi" });
       if (!url) return json({ ok: false, error: "Görsel düzenlenemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       if (cost > 0 && admin && userId) {
-        const credits = await spendSafe(admin, userId, cost, "gorsel_duzenle");
-        return json({ ok: true, url, charged: true, credits, cost });
+        let credits = await spendSafe(admin, userId, cost, "gorsel_duzenle");
+        const charged = credits !== undefined;
+        if (!charged) credits = await balanceOf(admin, userId);
+        return json({ ok: true, url, charged, credits, cost });
       }
       return json({ ok: true, url, charged: false, cost: 0 });
     }
@@ -1097,8 +1117,10 @@ Deno.serve(async (req) => {
         url = "data:audio/mpeg;base64," + btoa(bin);
       }
       if (cost > 0 && admin && userId) {
-        const credits = await spendSafe(admin, userId, cost, "seslendirme");
-        return json({ ok: true, url, charged: true, credits, cost, truncated: ttsTruncated, engine: sp.engine, elevenErr: sp.elevenErr });
+        let credits = await spendSafe(admin, userId, cost, "seslendirme");
+        const charged = credits !== undefined;
+        if (!charged) credits = await balanceOf(admin, userId);
+        return json({ ok: true, url, charged, credits, cost, truncated: ttsTruncated, engine: sp.engine, elevenErr: sp.elevenErr });
       }
       return json({ ok: true, url, charged: false, cost, truncated: ttsTruncated, engine: sp.engine, elevenErr: sp.elevenErr });
     }
@@ -1252,10 +1274,16 @@ ${prompt}`;
         logRun({ action: "generate", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "gecersiz_konu" });
         return json({ ok: false, error: String(invalid.mesaj || "Bunu bir tarih konusuna bağlayamadım — lütfen bir olay, kişi ya da dönem yaz.") }, 400);
       }
-      // #5: yalnız "geçerli JSON" değil, ZORUNLU alanlar da doğrulanır
+      // Rapor 4.8/4.9: yüzeysel değil SIKI doğrulama — yalnız "JSON parse oldu"
+      // yeterli değil; başlık dolu + senaryo dizisi dolu + en az bir bölümde gerçek
+      // seslendirme metni olmalı. Yarım/boş/kesilmiş dosya "başarılı" sayılmaz →
+      // aşağıdaki retry devreye girer, kullanıcı boş dosyaya kredi ödemez.
       const validGen = (t: string) => {
         const o = tryParseJson(t);
-        return !!(o && typeof o === "object" && o.baslik && Array.isArray(o.senaryo));
+        if (!o || typeof o !== "object") return false;
+        if (typeof o.baslik !== "string" || !o.baslik.trim()) return false;
+        if (!Array.isArray(o.senaryo) || o.senaryo.length === 0) return false;
+        return o.senaryo.some((s: any) => s && typeof s.metin === "string" && s.metin.trim().length > 20);
       };
       if (!validGen(result)) {
         const retry = await gen();
