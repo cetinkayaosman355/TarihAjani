@@ -15,24 +15,12 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-// imagescript SADECE 9:16/16:9 kırpması için gerekir ve WASM kodeği yükler.
-// Modül seviyesinde import edilirse yüklenmesi başarısız olduğunda TÜM fonksiyon
-// boot'ta çöker (her aksiyon 500). Bu yüzden tembel yüklüyoruz: yalnız kırpma
-// anında, tek sefer, try/catch ile. Yüklenemezse görsel kırpılmadan döner.
-let _ImageMod: any = null;
-let _imageTried = false;
-async function loadImage(): Promise<any> {
-  if (_ImageMod || _imageTried) return _ImageMod;
-  _imageTried = true;
-  try {
-    const mod = await import("npm:imagescript@1.3.0");
-    _ImageMod = (mod as any).Image || (mod as any).default?.Image || null;
-  } catch (e) {
-    console.error("imagescript yuklenemedi (kirpma atlanacak): " + String(e).slice(0, 150));
-    _ImageMod = null;
-  }
-  return _ImageMod;
-}
+// NOT: imagescript'in WASM kodeği Supabase Deno edge arch'ında yüklenmiyor
+// (unsupported arch/platform) → kırpma zaten HİÇ çalışmıyor, sadece her üretimde
+// hata logu basıyordu. Görseller gpt-image native oranında geliyor (dikey 2:3,
+// yatay 3:2, kare 1:1 — editör-dostu standart oranlar). Import tamamen kaldırıldı;
+// loadImage null döner → cropToAspect kırpmadan orijinali verir, hata basmaz.
+function loadImage(): any { return null; }
 
 // CORS artık allowlist: yalnız kendi alan adlarımız + Netlify önizleme + yerel
 // geliştirme. Bilinmeyen origin'e ana alan döner (tarayıcı isteği reddeder).
