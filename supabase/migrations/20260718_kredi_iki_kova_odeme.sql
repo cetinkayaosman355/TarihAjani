@@ -96,7 +96,7 @@ end $$;
 create or replace function public.spend_credits(p_user uuid, p_amount int, p_reason text, p_idem text)
 returns table (ok boolean, new_credits int)
 language plpgsql security definer set search_path = public as $$
-declare v_total int;
+declare v_total int; r_ok boolean; r_new int;
 begin
   if p_idem is not null then
     begin
@@ -106,7 +106,12 @@ begin
       return query select true, coalesce(v_total,0); return;   -- zaten düşüldü
     end;
   end if;
-  return query select * from public.spend_credits(p_user, p_amount, p_reason);
+  select s.ok, s.new_credits into r_ok, r_new from public.spend_credits(p_user, p_amount, p_reason) s;
+  -- Harcama başarısızsa (yetersiz kredi) kilidi bırak → aynı anahtarla tekrar denenebilsin
+  if p_idem is not null and not r_ok then
+    delete from op_locks where idempotency_key = p_idem;
+  end if;
+  return query select r_ok, r_new;
 end $$;
 
 -- ============================================================
