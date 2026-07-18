@@ -23,7 +23,7 @@
     brand: { logo: '', color: '#d9bc80', name: '', handle: '', wm: true, outro: false, outroText: 'Abone ol · yeni içerik her gün' },
     chat: { open: false, msgs: [], busy: false },
     trend: { open: false, niche: '', busy: false, items: [] },
-    series: { open: false, topic: '', count: 5, busy: false, running: false, eps: [], done: 0 },
+    series: { open: false, mode: 'topic', topic: '', source: '', count: 5, busy: false, running: false, eps: [], done: 0 },
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null, imgMode: 'gorsel',
     // ses stüdyo
@@ -193,29 +193,46 @@
       '<div class="series-go"><button class="btn btn-gold btn-sm" data-act="seriesRun">✦ Seçili bölümleri üret</button>' +
       '<span class="se-note">Her bölüm ayrı bir dosya olarak Kütüphane\'ye eklenir. Kredi bölüm başına düşer.</span></div>';
     }
-    return '<div class="trend-panel">' +
-      '<div class="trend-head"><b>📚 Seri üret (çoklu bölüm)</b><span>Bir ana konu ver, sana birbirini tamamlayan bölümler planlayıp hepsini üreteyim.</span></div>' +
-      '<div class="trend-run"><input id="seriesTopic" placeholder="Ana konu (ör. antik Roma\'nın sırları)" value="' + esc(s.topic) + '">' +
+    var seg = '<div class="cap-seg series-seg">' +
+      '<button class="' + (s.mode === 'topic' ? 'on' : '') + '" data-act="seriesMode" data-v="topic">Konudan üret</button>' +
+      '<button class="' + (s.mode === 'repurpose' ? 'on' : '') + '" data-act="seriesMode" data-v="repurpose">Uzun metinden böl</button></div>';
+    var input = s.mode === 'repurpose'
+      ? '<textarea id="seriesSource" class="series-source" rows="5" placeholder="Uzun metni yapıştır: video transkripti, blog yazısı, podcast dökümü ya da uzun senaryo… En vurucu anları kısa videolara böleyim.">' + esc(s.source) + '</textarea>'
+      : '<input id="seriesTopic" placeholder="Ana konu (ör. antik Roma\'nın sırları)" value="' + esc(s.topic) + '">';
+    var head = s.mode === 'repurpose'
+      ? '<div class="trend-head"><b>✂️ Uzun içeriği kısalara böl</b><span>Uzun bir metni yapıştır; en çok tıklanacak anları ayrı kısa videolara bölüp hepsini üreteyim.</span></div>'
+      : '<div class="trend-head"><b>📚 Seri üret (çoklu bölüm)</b><span>Bir ana konu ver, sana birbirini tamamlayan bölümler planlayıp hepsini üreteyim.</span></div>';
+    return '<div class="trend-panel">' + head + seg +
+      '<div class="trend-run">' + input +
       '<input id="seriesCount" type="number" min="2" max="10" value="' + s.count + '" style="width:70px" title="Bölüm sayısı">' +
-      '<button class="btn btn-gold btn-sm" data-act="seriesPlan">Bölümleri planla</button>' +
+      '<button class="btn btn-gold btn-sm" data-act="seriesPlan">' + (s.mode === 'repurpose' ? 'Kısaları çıkar' : 'Bölümleri planla') + '</button>' +
       '<button class="btn btn-quiet btn-sm" data-act="seriesClose">Kapat</button></div>' + eps + '</div>';
   }
   function planSeries() {
     var s = S.series;
-    var ti = document.getElementById('seriesTopic'); if (ti && ti.value.trim()) s.topic = ti.value.trim();
     var ci = document.getElementById('seriesCount'); if (ci) s.count = Math.min(10, Math.max(2, parseInt(ci.value, 10) || 5));
-    if (!s.topic) { toast('Önce seri konusunu yaz'); return; }
+    var p;
+    if (s.mode === 'repurpose') {
+      var src = document.getElementById('seriesSource'); if (src) s.source = src.value;
+      if (!s.source.trim() || s.source.trim().length < 40) { toast('Önce bölünecek uzun metni yapıştır'); return; }
+      p = 'Sen viral kısa video editörüsün. Aşağıdaki UZUN METİNDEN, tek tek izlenebilen en vurucu ' + s.count + ' kısa video anı çıkar. Her biri metindeki gerçek bir fikre dayansın; en merak uyandıran/çarpıcı bölümleri seç. Her an için: baslik (kısa) ve konu (tek cümle, o kısa videonun ne anlatacağı). SADECE geçerli JSON dizi döndür: [{"baslik":"...","konu":"..."}]. Başka metin yok.\n\nUZUN METİN:\n"""\n' + s.source.slice(0, 9000) + '\n"""';
+    } else {
+      var ti = document.getElementById('seriesTopic'); if (ti && ti.value.trim()) s.topic = ti.value.trim();
+      if (!s.topic) { toast('Önce seri konusunu yaz'); return; }
+      p = 'Sen bir içerik serisi editörüsün. "' + s.topic + '" ana konusundan, birbirini tamamlayan ama her biri TEK BAŞINA izlenebilen ' + s.count + ' kısa video bölümü planla. Her bölüm farklı bir açı/alt-konu olsun; tekrar olmasın, sıralı bir mantığı olsun. SADECE geçerli JSON dizi döndür: [{"baslik":"bölüm başlığı","konu":"tek cümle spesifik konu"}]. Başka metin yok.';
+    }
     if (s.busy) return;
     s.busy = true; s.eps = []; render();
     if (!REAL) {
       setTimeout(function () {
-        s.eps = []; for (var i = 0; i < s.count; i++) s.eps.push({ baslik: s.topic + ' — Bölüm ' + (i + 1), konu: s.topic + ' hakkında ' + (i + 1) + '. çarpıcı gerçek', on: true });
+        s.eps = [];
+        var base = s.mode === 'repurpose' ? 'Metinden çıkan an' : s.topic;
+        for (var i = 0; i < s.count; i++) s.eps.push({ baslik: base + ' — ' + (i + 1), konu: (s.mode === 'repurpose' ? 'Yapıştırılan metindeki ' + (i + 1) + '. çarpıcı an' : s.topic + ' hakkında ' + (i + 1) + '. çarpıcı gerçek'), on: true });
         s.busy = false; render();
       }, 700);
       return;
     }
-    var p = 'Sen bir içerik serisi editörüsün. "' + s.topic + '" ana konusundan, birbirini tamamlayan ama her biri TEK BAŞINA izlenebilen ' + s.count + ' kısa video bölümü planla. Her bölüm farklı bir açı/alt-konu olsun; tekrar olmasın, sıralı bir mantığı olsun. SADECE geçerli JSON dizi döndür: [{"baslik":"bölüm başlığı","konu":"tek cümle spesifik konu"}]. Başka metin yok.';
-    callFn({ action: '', prompt: p, max_tokens: 2000 }).then(function (d) {
+    callFn({ action: '', prompt: p, max_tokens: 2500 }).then(function (d) {
       var txt = d && (d.text || d.result) ? String(d.text || d.result) : ''; var arr = null;
       try { var m = /\[[\s\S]*\]/.exec(txt); if (m) arr = JSON.parse(m[0]); } catch (_e) {}
       if (Array.isArray(arr) && arr.length) s.eps = arr.slice(0, s.count).map(function (e) { e.on = true; return e; });
@@ -751,6 +768,7 @@
       case 'useTrend': useTrend(parseInt(v, 10)); break;
       case 'copyHook': copy(v); toast('Hook kopyalandı'); break;
       case 'seriesFind': S.series.open = !S.series.open; render(); break;
+      case 'seriesMode': var _sr = document.getElementById('seriesSource'); if (_sr) S.series.source = _sr.value; var _st = document.getElementById('seriesTopic'); if (_st) S.series.topic = _st.value; S.series.mode = v; S.series.eps = []; render(); break;
       case 'seriesPlan': planSeries(); break;
       case 'seriesToggle': var _ep = S.series.eps[parseInt(v, 10)]; if (_ep) _ep.on = !(_ep.on !== false); break;
       case 'seriesRun': runSeries(); break;
