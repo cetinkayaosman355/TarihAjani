@@ -727,6 +727,27 @@ async function balanceOf(admin: any, userId: string): Promise<number | undefined
   } catch (_e) { return undefined; }
 }
 
+// ── ATOMİK REZERVASYON yardımcıları (image/tts/edit için ortak, generate/video
+//    ile aynı desen). RPC yoksa reserved=false döner → çağıran ESKİ spendSafe'e
+//    düşer (mevcut sistem KIRILMAZ). Rapor 3.3.
+async function reserveOp(admin: any, userId: string, cost: number, reason: string, opId: string): Promise<{ ok: boolean; reserved: boolean; credits?: number }> {
+  if (!(cost > 0 && admin && userId && opId)) return { ok: true, reserved: false };
+  try {
+    const { data, error } = await admin.rpc("reserve_credits", { p_user: userId, p_amount: cost, p_reason: reason, p_job: opId });
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row && row.ok === false) return { ok: false, reserved: false, credits: typeof row.new_credits === "number" ? row.new_credits : undefined };
+    return { ok: true, reserved: true, credits: row && typeof row.new_credits === "number" ? row.new_credits : undefined };
+  } catch (_e) { return { ok: true, reserved: false }; }   // RPC yok → legacy akış
+}
+async function finalizeOp(admin: any, opId: string): Promise<void> {
+  try { await admin.rpc("finalize_reservation", { p_job: opId }); } catch (_e) { /* yut */ }
+}
+async function refundOp(admin: any, userId: string, opId: string): Promise<number | undefined> {
+  try { const { data } = await admin.rpc("refund_reservation", { p_user: userId, p_job: opId }); return typeof data === "number" ? data : undefined; }
+  catch (_e) { return undefined; }
+}
+
 // ── ÜRETİM KURTARMA ──────────────────────────────────────────────
 // Mobilde uzun üretimde tarayıcı bağlantıyı koparabiliyor ("Load failed"):
 // sunucu üretimi bitirip krediyi düşüyor ama sonuç istemciye ulaşamıyordu.
@@ -1047,34 +1068,49 @@ Deno.serve(async (req) => {
       if (bal < cost) return json({ ok: false, error: "Yetersiz kredi", credits: bal }, 402);
     }
 
-    // GÖRSEL ÜRETİMİ — metin üretiminden ayrı akış (başarılıysa kredi düşer)
+    // GÖRSEL ÜRETİMİ — metin üretiminden ayrı akış. REZERVE-first: üretimden önce
+    // krediyi atomik ayır (3.3), başarısızsa iade. opId istemciden gelir (idempotency).
     if (String(b.action || "") === "image") {
+      const opId = cleanJob(b.opId) || crypto.randomUUID();
+      const res = await reserveOp(admin, userId, cost, "gorsel", opId);
+      if (!res.ok) return json({ ok: false, error: "Yetersiz kredi", credits: res.credits }, 402);
       let url = await generateImage(String(b.prompt || ""), String(b.size || ""));
       if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
       // CİHAZLAR ARASI: data: URI cihaza özeldir → Storage'a yükle, kalıcı URL ver
       if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
       logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "uretilemedi" });
-      if (!url) return json({ ok: false, error: "Görsel üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
+      if (!url) {
+        let credits: number | undefined;
+        if (res.reserved) credits = await refundOp(admin, userId, opId);
+        return json({ ok: false, error: "Görsel üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi).", credits }, 502);
+      }
       if (cost > 0 && admin && userId) {
-        let credits = await spendSafe(admin, userId, cost, "gorsel");
-        const charged = credits !== undefined;
-        if (!charged) credits = await balanceOf(admin, userId);   // düşüm başarısız → gerçek bakiyeyi göster (3.2)
-        return json({ ok: true, url, charged, credits });
+        let credits = res.credits;
+        if (res.reserved) { await finalizeOp(admin, opId); }
+        else { credits = await spendSafe(admin, userId, cost, "gorsel"); if (credits === undefined) credits = await balanceOf(admin, userId); }
+        return json({ ok: true, url, charged: true, credits });
       }
       return json({ ok: true, url, charged: false });
     }
 
-    // GÖRSEL DÜZENLEME — mevcut görseli korur, istenen değişikliği uygular
+    // GÖRSEL DÜZENLEME — mevcut görseli korur, istenen değişikliği uygular (rezerve-first)
     if (isEdit) {
+      const opId = cleanJob(b.opId) || crypto.randomUUID();
+      const res = await reserveOp(admin, userId, cost, "gorsel_duzenle", opId);
+      if (!res.ok) return json({ ok: false, error: "Yetersiz kredi", credits: res.credits }, 402);
       let url = await editImage(String(b.image || ""), String(b.prompt || ""), String(b.size || ""));
       if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
       logRun({ action: "edit", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "duzenlenemedi" });
-      if (!url) return json({ ok: false, error: "Görsel düzenlenemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
+      if (!url) {
+        let credits: number | undefined;
+        if (res.reserved) credits = await refundOp(admin, userId, opId);
+        return json({ ok: false, error: "Görsel düzenlenemedi. Lütfen tekrar deneyin (kredi düşülmedi).", credits }, 502);
+      }
       if (cost > 0 && admin && userId) {
-        let credits = await spendSafe(admin, userId, cost, "gorsel_duzenle");
-        const charged = credits !== undefined;
-        if (!charged) credits = await balanceOf(admin, userId);
-        return json({ ok: true, url, charged, credits, cost });
+        let credits = res.credits;
+        if (res.reserved) { await finalizeOp(admin, opId); }
+        else { credits = await spendSafe(admin, userId, cost, "gorsel_duzenle"); if (credits === undefined) credits = await balanceOf(admin, userId); }
+        return json({ ok: true, url, charged: true, credits, cost });
       }
       return json({ ok: true, url, charged: false, cost: 0 });
     }
@@ -1086,13 +1122,21 @@ Deno.serve(async (req) => {
       return json({ ok: true, url: "data:audio/mpeg;base64," + bytesToB64(sp.bytes), charged: false, engine: sp.engine, elevenErr: sp.elevenErr });
     }
 
-    // SESLENDİRME ÜRETİMİ — mp3 üret, Storage'a yükle, başarılıysa kredi düş
+    // SESLENDİRME ÜRETİMİ — REZERVE-first: üretimden önce krediyi ayır (3.3),
+    // ElevenLabs/OpenAI patlarsa ya da yükleme başarısızsa otomatik iade.
     if (String(b.action || "") === "tts") {
       if (!ttsText) return json({ ok: false, error: "Seslendirme metni boş." }, 400);
+      const opId = cleanJob(b.opId) || crypto.randomUUID();
+      const res = await reserveOp(admin, userId, cost, "seslendirme", opId);
+      if (!res.ok) return json({ ok: false, error: "Yetersiz kredi", credits: res.credits }, 402);
       const sp = await synthSpeech(ttsText, b);
       const bytes = sp.bytes;
       logRun({ action: "tts", ok: !!bytes, ms: Date.now() - t0, user_id: userId || null, err: bytes ? (sp.engine === "eleven" ? null : "fallback:" + (sp.elevenErr || sp.engine)) : "uretilemedi" });
-      if (!bytes) return json({ ok: false, error: "Ses üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." + (sp.elevenErr ? " [" + sp.elevenErr + "]" : "") }, 502);
+      if (!bytes) {
+        let credits: number | undefined;
+        if (res.reserved) credits = await refundOp(admin, userId, opId);
+        return json({ ok: false, error: "Ses üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." + (sp.elevenErr ? " [" + sp.elevenErr + "]" : ""), credits }, 502);
+      }
       let url = "";
       if (admin) {
         try {
@@ -1108,7 +1152,9 @@ Deno.serve(async (req) => {
       if (!url) {
         // bucket yoksa küçük dosyalar data URI olarak döner (≤2.5MB)
         if (bytes.length > 2_500_000) {
-          return json({ ok: false, error: "Ses dosyası büyük ve 'studio-ses' Storage bucket'ı yok — kurulum SQL'ini çalıştırın (kredi düşülmedi)." }, 500);
+          let credits: number | undefined;
+          if (res.reserved) credits = await refundOp(admin, userId, opId);
+          return json({ ok: false, error: "Ses dosyası büyük ve 'studio-ses' Storage bucket'ı yok — kurulum SQL'ini çalıştırın (kredi düşülmedi).", credits }, 500);
         }
         let bin = "";
         for (let i = 0; i < bytes.length; i += 32768) {
@@ -1117,10 +1163,10 @@ Deno.serve(async (req) => {
         url = "data:audio/mpeg;base64," + btoa(bin);
       }
       if (cost > 0 && admin && userId) {
-        let credits = await spendSafe(admin, userId, cost, "seslendirme");
-        const charged = credits !== undefined;
-        if (!charged) credits = await balanceOf(admin, userId);
-        return json({ ok: true, url, charged, credits, cost, truncated: ttsTruncated, engine: sp.engine, elevenErr: sp.elevenErr });
+        let credits = res.credits;
+        if (res.reserved) { await finalizeOp(admin, opId); }
+        else { credits = await spendSafe(admin, userId, cost, "seslendirme"); if (credits === undefined) credits = await balanceOf(admin, userId); }
+        return json({ ok: true, url, charged: true, credits, cost, truncated: ttsTruncated, engine: sp.engine, elevenErr: sp.elevenErr });
       }
       return json({ ok: true, url, charged: false, cost, truncated: ttsTruncated, engine: sp.engine, elevenErr: sp.elevenErr });
     }
