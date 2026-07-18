@@ -57,13 +57,43 @@
     return out.join(',');
   }
 
+  // ── HEADER: ışık modunda ÜST BAR KOYU kalır (SİTE GENELİ) ──
+  // Logo koyu zemin için tasarlandığından (dürbünlü figür BEYAZ negatif boşluk +
+  // koyu süsleme/harf detayları) açık zeminde bozuluyordu (figür kayboluyor,
+  // süslemeler siyah nokta gibi çıkıyor). Header'ı koyu bırakınca logo her sayfada
+  // tıpkı karanlık moddaki NORMAL haliyle görünür — kutu yok. Bar + açılır paneller
+  // koyu, metin açık, altın vurgular altın kalır.
+  function headerDark() {
+    var HDR_DARK = ['#040509', '#05070f', '#03050b', '#05070d', '#070a12', '#06070c', '#0a0c14', '#04060c', '#05060d', '#06070d', '#02040a', '#0a0d16'];
+    // bar KOYU + inherited-renkli metin (ör. "Ajan Studio") açık; altın kutu içi span'ler altın
+    var out =
+      L + 'header{background:#05070d !important;border-bottom-color:rgba(193,154,82,.2) !important;}' +
+      L + 'header a,' + L + 'header button,' + L + 'header p,' + L + 'header li,' + L + 'header span,' + L + 'header div{color:#cfc8b4 !important;}' +
+      L + 'header [style*="e6c478"] span,' + L + 'header [style*="c19a52"] span{color:#e6c478 !important;}';
+    // INLINE renkli metinleri ORİJİNAL (koyu-mod) değerinde TUT — tema.js'in header içindeki
+    // koyulaştırmasını attribute-özgüllüğüyle geri al (aksi halde tema'nın kuralı kazanıyordu).
+    TXT_LIGHT.concat(TXT_MUTE).concat(GOLD_TXT).forEach(function (c) {
+      var rgb = hexToRgb(c), rgb2 = rgb.replace(/, /g, ',');
+      out += L + 'header [style*="color: ' + c + '"]{color:' + c + ' !important;}' +
+             L + 'header [style*="color:' + c + '"]{color:' + c + ' !important;}' +
+             L + 'header [style*="color: ' + rgb + '"]{color:' + c + ' !important;}' +
+             L + 'header [style*="color:' + rgb2 + '"]{color:' + c + ' !important;}';
+    });
+    // açılır paneller / koyu zeminler header içinde KOYU kalsın
+    HDR_DARK.forEach(function (c) {
+      out += L + 'header [style*="background: ' + c + '"]{background:' + c + ' !important;}' +
+             L + 'header [style*="background:' + c + '"]{background:' + c + ' !important;}';
+    });
+    return out;
+  }
+
   var CSS =
     // genel zemin + metin
     'html[data-theme="light"],html[data-theme="light"] body{background:#efe9db !important;color:#211d15 !important;}' +
     // koyu gradient kartlar → açık kart
     gradSel() + '{background:#f6f1e6 !important;}' +
-    // sticky header açık zemin (rgba ile yazılı olduğundan doğrudan hedef)
-    L + 'header{background:#f3ece0 !important;border-bottom-color:rgba(90,74,40,.18) !important;}' +
+    // sticky header KOYU kalır (logo koyu zemin için tasarlı — bkz. headerDark)
+    headerDark() +
     // rgba koyu paneller/kartlar → açık kart
     rgbaBgSel() + '{background-color:#f6f1e6 !important;}' +
     // panel/kart zeminleri
