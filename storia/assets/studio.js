@@ -1946,10 +1946,13 @@
   function tourNext() { if (_tourI < TOUR.length - 1) tourGo(_tourI + 1); else closeTour(); }
 
   // ── Plan / upgrade ────────────────────────────────────────────────────
+  // Paketler sonuç odaklı anlatılır: 'videos' = ayda ~kaç TAM kısa video
+  // (senaryo + görseller + seslendirme ≈ 120 kredi). Kredi havuzu altta kalır;
+  // kullanıcı krediyi istediği işe (senaryo, görsel, ses, video) harcar.
   var PLANS = [
-    { id: 'yaratici', name: 'Yaratıcı', price: '599₺', cr: '1.000', feats: ['Sınırsız senaryo & yayın paketi', 'Seslendirme & görsel üretimi', 'Tüm formatlar (16:9 · 9:16 · 1:1)'] },
-    { id: 'profesyonel', name: 'Profesyonel', price: '1.299₺', cr: '5.000', feat: true, feats: ['Yaratıcı’daki her şey', 'Öncelikli üretim hızı', 'Premium anlatıcı sesleri', 'Cihazlar arası kütüphane'] },
-    { id: 'studio', name: 'Stüdyo', price: '1.999₺', cr: '15.000', feats: ['Profesyonel’deki her şey', 'En yüksek kredi havuzu', 'Ekip & öncelikli destek'] }
+    { id: 'yaratici', name: 'Yaratıcı', price: '599₺', cr: '1.000', videos: '≈ 8', feats: ['Ayda ≈ 8 tam kısa video (ya da 25+ senaryo paketi)', 'Senaryo + görsel + seslendirme + yayın metni', 'Standart anlatıcı sesleri', 'Tüm formatlar (16:9 · 9:16 · 1:1)'] },
+    { id: 'profesyonel', name: 'Profesyonel', price: '1.299₺', cr: '5.000', videos: '≈ 40', feat: true, feats: ['Ayda ≈ 40 tam kısa video', 'Yaratıcı’daki her şey', 'Premium anlatıcı sesleri', 'Karakter & görsel devamlılığı', 'Öncelikli üretim + cihazlar arası kütüphane'] },
+    { id: 'studio', name: 'Stüdyo', price: '1.999₺', cr: '15.000', videos: '≈ 125', feats: ['Ayda ≈ 125 tam kısa video', 'Profesyonel’deki her şey', 'Ekip kullanımı & marka profilleri', 'Öncelikli destek'] }
   ];
   function openPlanModal() { renderPlanCards(); document.getElementById('planModal').classList.add('show'); }
   function closePlan() { document.getElementById('planModal').classList.remove('show'); }
@@ -1957,9 +1960,12 @@
     document.getElementById('planCards').innerHTML = PLANS.map(function (pl) {
       return '<div class="plan-c' + (pl.feat ? ' feat' : '') + '">' + (pl.feat ? '<span class="pc-badge">En popüler</span>' : '') +
         '<div class="pn">' + pl.name + '</div><div class="pp"><b>' + pl.price + '</b><span>/ ay</span></div>' +
-        '<div class="pcr">' + pl.cr + ' kredi / ay</div><ul>' + pl.feats.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' +
+        '<div class="pvid"><b>' + pl.videos + '</b> tam video / ay</div>' +
+        '<div class="pcr-sub">' + pl.cr + ' kredi havuzu — dilediğin işe harca</div>' +
+        '<ul>' + pl.feats.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' +
         '<button class="btn ' + (pl.feat ? 'btn-gold' : 'btn-quiet') + ' btn-sm" data-act="checkout" data-v="' + pl.id + '">Seç</button></div>';
-    }).join('');
+    }).join('') +
+      '<p class="plan-foot">Ücretsiz başla: kayıt olunca <b>150 kredi hediye</b> — ilk senaryonu hemen üret. · Aboneliksiz tek seferlik paket ister misin? <b>İletişime geç.</b> · Kredi kullanımı işine göre değişir (tam video ≈ 120, sadece senaryo çok daha az).</p>';
   }
   function openCheckout(id) {
     var url = (CFG.checkout || {})[id] || '';
@@ -1974,7 +1980,7 @@
     var bodym = encodeURIComponent('Merhaba, ' + pl.name + ' planı (' + pl.price + '/ay) için ödemeyi yaptım. Hesap e-postam: ' + (uMail || '...') + '. Dekont ektedir.');
     document.getElementById('planCards').innerHTML =
       '<div class="iban-pay">' +
-        '<div class="ib-head"><b>' + esc(pl.name) + '</b> · ' + esc(pl.price) + '/ay · ' + esc(pl.cr) + ' kredi</div>' +
+        '<div class="ib-head"><b>' + esc(pl.name) + '</b> · ' + esc(pl.price) + '/ay · ' + esc(pl.videos) + ' tam video (' + esc(pl.cr) + ' kredi)</div>' +
         '<p class="ib-note">Havale/EFT ile öde — kredin elle yüklenir. (Kartla ödeme yakında.)</p>' +
         '<div class="ib-box">' +
           '<div class="ib-row"><span class="ib-lbl">IBAN</span><span class="ib-val mono">' + esc(iban) + '</span><button class="btn btn-quiet btn-sm" data-act="copyIban" data-v="' + esc(iban) + '">Kopyala</button></div>' +

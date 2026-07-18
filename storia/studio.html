@@ -124,6 +124,10 @@ body { background: var(--paper); overflow: hidden; }
 .plan-c .pp b { font-family: var(--serif); font-size: 28px; color: var(--ink); font-weight: 500; }
 .plan-c .pp span { font-size: 13px; color: var(--muted); }
 .plan-c .pcr { font-size: 12.5px; color: var(--champ-deep); font-weight: 600; margin-bottom: 12px; }
+.plan-c .pvid { font-size: 15px; color: var(--champ-deep); font-weight: 700; margin-top: 2px; }
+.plan-c .pvid b { font-size: 19px; }
+.plan-c .pcr-sub { font-size: 11.5px; color: var(--muted); margin: 2px 0 12px; }
+.plan-foot { grid-column: 1 / -1; font-size: 12px; color: var(--muted); line-height: 1.6; margin: 4px 2px 0; text-align: center; }
 .plan-c ul { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 8px; }
 .plan-c li { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; align-items: flex-start; }
 .plan-c li::before { content: "✓"; color: var(--champ-deep); font-weight: 700; }
@@ -736,8 +740,8 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 
 <div class="modal-back" id="planModal">
   <div class="modal plan-modal">
-    <h3>Planını yükselt</h3>
-    <p>Daha fazla kredi, öncelikli üretim ve premium anlatıcı sesleri.</p>
+    <h3>İçerik paketini seç</h3>
+    <p>Kredi değil, sonuç al: her paket ayda belli sayıda <b>yayına hazır video</b> demek — senaryo, görsel, seslendirme ve yayın metni dahil.</p>
     <div class="plan-cards" id="planCards"></div>
     <div class="alt"><a id="planClose">Şimdilik kapat</a></div>
   </div>
