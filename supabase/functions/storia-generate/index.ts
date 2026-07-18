@@ -642,9 +642,18 @@ const cleanJob = (v: unknown) => String(v || "").replace(/[^a-zA-Z0-9_-]/g, "").
 // Sağlayıcı VIDEO_PROVIDER env'i ile seçilir ("grok" | "kling"; varsayılan grok).
 // İş kimliğine sağlayıcı ön eki eklenir ("grok:<id>" / "kling:<id>") ki poll
 // doğru API'ye gitsin. Kredi maliyeti her ikisinde aynı (marj sağlayıcıda değişir).
-// AI video marj koruması: gerçek maliyet ~20₺/5sn (Grok). 30 kr/sn (5sn=150)
-// ile en ucuz pakette bile (Stüdyo 0,133₺/kr) başabaş; alt paketlerde sağlıklı kâr.
-function videoCost(sec: number): number { return Math.max(150, Math.round(Math.min(15, Math.max(3, sec))) * 30); }
+// AI video marj koruması — sağlayıcıya göre AYRI fiyat (gerçek maliyet farklı):
+//  • Grok  ≈ 20₺/5sn → 30 kr/sn, taban 150 (5sn=150, 10sn=300)
+//  • Kling (sinematik/premium; daha iyi modelde daha pahalı) → 40 kr/sn, taban 200 (5sn=200, 10sn=400)
+// Oranlar env ile ayarlanabilir: VIDEO_COST_GROK_SEC / VIDEO_COST_KLING_SEC.
+function videoCost(sec: number, provider?: string): number {
+  const s = Math.round(Math.min(15, Math.max(3, sec)));
+  const kling = String(provider || "").toLowerCase() === "kling";
+  const rate = kling
+    ? (Number(Deno.env.get("VIDEO_COST_KLING_SEC")) || 40)
+    : (Number(Deno.env.get("VIDEO_COST_GROK_SEC")) || 30);
+  return Math.max(kling ? 200 : 150, s * rate);
+}
 function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "grok").toLowerCase(); }
 
 // Sağlayıcı-bağımsız giriş noktaları — handler bunları çağırır. İstek başına
@@ -838,7 +847,7 @@ Deno.serve(async (req) => {
       : isEdit
         ? EDIT_COST
         : act === "video"
-          ? videoCost(Number(b.vsec) || 5)
+          ? videoCost(Number(b.vsec) || 5, String(b.vprovider || ""))
           : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
     // Görsel kalitesi müşteri seçimi: 'yüksek' premium fiyat.
     if (act === "image" && (b.quality === "yuksek" || b.quality === "high")) cost = IMAGE_COST_HIGH;

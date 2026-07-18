@@ -414,8 +414,14 @@
   }
   // Görsel kalite seçici (müşteri seçer — Grok/Kling mantığı). Standart = ucuz
   // (medium), Yüksek = premium (gpt-image üst / 4K). Kredi farkı sunucuda uygulanır.
-  // AI video klip maliyeti (backend videoCost ile birebir): 30 kr/sn, taban 150.
-  function vcost(sec) { return Math.max(150, Math.round(Math.min(15, Math.max(3, sec))) * 30); }
+  // AI video klip maliyeti (backend videoCost ile birebir) — sağlayıcıya göre:
+  // Grok 30 kr/sn (taban 150), Kling 40 kr/sn (taban 200, sinematik/premium).
+  function vcost(sec, provider) {
+    var kling = (provider || S.vengine) === 'kling';
+    var s = Math.round(Math.min(15, Math.max(3, sec)));
+    return Math.max(kling ? 200 : 150, s * (kling ? 40 : 30));
+  }
+  function imgCr() { return S.imgQuality === 'yuksek' ? 45 : 12; }
   function imgQualHtml() {
     return '<div class="veng-pick"><span class="cp-lbl">Görsel kalitesi</span><div class="cap-seg">' +
       '<button class="' + (S.imgQuality === 'standart' ? 'on' : '') + '" data-act="imgQual" data-v="standart">Standart · 12kr</button>' +
@@ -651,12 +657,12 @@
         var box = img ? '<img class="zoomable" src="' + esc(img) + '" data-act="zoom" data-v="' + esc(img) + '" alt="">' : '<div class="ph" style="background:' + GRADS[i % GRADS.length] + '">' + (REAL ? '✦ Portre üret' : 'Örnek portre') + '</div>';
         var acts = img
           ? '<button class="btn btn-quiet btn-sm" data-act="charImg" data-v="' + i + '">↻ Yeniden</button><button class="btn btn-quiet btn-sm" data-act="dl" data-v="' + esc(img) + '">↓ İndir</button>'
-          : '<button class="btn btn-gold btn-sm" data-act="charImg" data-v="' + i + '">✦ Portre üret · 12</button>';
+          : '<button class="btn btn-gold btn-sm" data-act="charImg" data-v="' + i + '">✦ Portre üret · ' + imgCr() + '</button>';
         return '<div class="gcard"><div class="gimg" style="aspect-ratio:1">' + box + '</div><div class="gbody"><div class="gno">' + esc(name) + '</div>' +
           '<div class="gtxt">' + esc(look) + '</div><div class="gacts">' + acts + '</div></div></div>';
       }).join('');
       var doneC = chars.filter(function (_, i) { return S.chars[i]; }).length;
-      return '<div class="tab-tools"><span class="tt-note">Hikâyenin karakterleri · ' + chars.length + ' karakter · ' + doneC + ' portre · sahnelerde tutarlı görünür</span><button class="btn btn-gold btn-sm" data-act="genChars">✦ Tümünü üret</button></div><div class="gallery">' + ccards + '</div>';
+      return '<div class="tab-tools"><span class="tt-note">Hikâyenin karakterleri · ' + chars.length + ' karakter · ' + doneC + ' portre · sahnelerde tutarlı görünür</span>' + imgQualHtml() + '<button class="btn btn-gold btn-sm" data-act="genChars">✦ Tümünü üret</button></div><div class="gallery">' + ccards + '</div>';
     }
     if (S.tab === 'gorsel') {
       var prompts = (r.gorsel_promptlar || []);
@@ -666,7 +672,7 @@
         var box = img ? '<img class="zoomable" src="' + esc(img) + '" data-act="zoom" data-v="' + esc(img) + '" alt="">' : '<div class="ph" style="background:' + GRADS[i % GRADS.length] + '">' + (REAL ? '✦ Üret' : 'Örnek görsel') + '</div>';
         var acts = img
           ? '<button class="btn btn-quiet btn-sm" data-act="image" data-v="' + i + '">↻ Yeniden</button><button class="btn btn-quiet btn-sm" data-act="editImg" data-v="' + i + '">✏ Düzenle</button><button class="btn btn-quiet btn-sm" data-act="dl" data-v="' + esc(img) + '">↓ İndir</button>'
-          : '<button class="btn btn-gold btn-sm" data-act="image" data-v="' + i + '">✦ Üret · 12</button><button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(p) + '">Kopyala</button>';
+          : '<button class="btn btn-gold btn-sm" data-act="image" data-v="' + i + '">✦ Üret · ' + imgCr() + '</button><button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(p) + '">Kopyala</button>';
         return '<div class="gcard"><div class="gimg" style="aspect-ratio:' + aspRatio() + '">' + box + '</div><div class="gbody"><div class="gno">Görsel ' + (i + 1) + '</div>' +
           '<div class="gtxt">' + esc(p) + '</div><div class="gacts">' + acts + '</div></div></div>';
       }).join('');
@@ -728,8 +734,8 @@
         '<button class="btn btn-quiet btn-sm" data-act="brandKit" style="margin-top:12px">🎨 Marka kiti' + (S.brand.logo || S.brand.name ? ' ✓' : '') + '</button></div>' +
         '<button class="btn btn-gold" data-act="exportVid"' + (doneImgs ? '' : ' disabled') + '>🎬 Video oluştur &amp; indir</button></div>';
       var engSeg = '<div class="veng-pick"><span class="cp-lbl">Video motoru</span><div class="cap-seg">' +
-        '<button class="' + (S.vengine === 'grok' ? 'on' : '') + '" data-act="vengine" data-v="grok">Grok · hızlı</button>' +
-        '<button class="' + (S.vengine === 'kling' ? 'on' : '') + '" data-act="vengine" data-v="kling">Kling · sinematik</button>' +
+        '<button class="' + (S.vengine === 'grok' ? 'on' : '') + '" data-act="vengine" data-v="grok">Grok · hızlı · ' + vcost(5, 'grok') + 'kr</button>' +
+        '<button class="' + (S.vengine === 'kling' ? 'on' : '') + '" data-act="vengine" data-v="kling">Kling · sinematik · ' + vcost(5, 'kling') + 'kr</button>' +
         '</div></div>';
       var durSeg = '<div class="veng-pick"><span class="cp-lbl">Klip süresi</span><div class="cap-seg">' +
         '<button class="' + (S.vsec === 5 ? 'on' : '') + '" data-act="vsec" data-v="5">5 sn · ' + vcost(5) + 'kr</button>' +
@@ -756,7 +762,7 @@
         var over = '<div class="sb-gen" data-act="cover" data-v="' + i + '"><span>' + (img ? 'Yeniden üret' : '✦ Thumbnail üret') + '</span></div>';
         return '<div class="sb-card"><div class="sb-img" style="aspect-ratio:16/9">' + box + over + '</div><div class="sb-body"><div class="sb-no">Kapak ' + (i + 1) + '</div><p style="max-height:none">' + esc(k) + '</p></div></div>';
       }).join('');
-      return '<div class="tab-tools"><span class="tt-note">Tıklanmayı artıracak thumbnail fikirleri — üstüne gelip görselini üret (16:9)</span></div>' +
+      return '<div class="tab-tools"><span class="tt-note">Tıklanmayı artıracak thumbnail fikirleri — üstüne gelip görselini üret (16:9)</span>' + imgQualHtml() + '</div>' +
         (kapak ? '<div class="storyboard">' + kapak + '</div>' : emptyInline()) +
         (r.uretim_notu ? '<div class="panel" style="margin-top:18px"><h3>Yapım notu</h3><div class="panel-txt">' + esc(r.uretim_notu) + '</div></div>' : '');
     }
