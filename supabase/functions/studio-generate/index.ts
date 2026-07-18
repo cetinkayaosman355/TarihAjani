@@ -259,7 +259,7 @@ async function generateImage(prompt: string, size: string): Promise<string> {
           quality: "high",              // kalite > maliyet (ChatGPT ile aynı kademe;
                                         // medium kalabalık sahnede saydam/hayalet insan üretiyordu)
           output_format: "jpeg",        // Storage'a yüklenir → boyut sorun değil, netlik önce
-          output_compression: 94,
+          output_compression: 100,      // near-lossless: JPEG yumuşamasını bitir (ChatGPT'deki netlik)
           moderation: "low",            // tarihî sahne (savaş/ölüm) yanlış engelini azalt
         }),
       }, 120_000);
