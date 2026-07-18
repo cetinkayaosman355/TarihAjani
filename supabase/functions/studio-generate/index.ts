@@ -241,12 +241,21 @@ async function generateImage(prompt: string, size: string): Promise<string> {
   const key = Deno.env.get("OPENAI_API_KEY");
   if (!key || !prompt.trim()) return "";
   // gpt-image oranları: kare / yatay (3:2) / dikey (2:3)
-  const gSize = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
+  // gpt-image oranları: kare / yatay (3:2) / dikey (2:3). STANDART çözünürlük.
+  const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
+  // YÜKSEK ÇÖZÜNÜRLÜK (opt-in): gpt-image-2 için ~4K kademesi. Secret TA_IMAGE_HD=1
+  // ile açılır. Boyutlar da secret'tan ayarlanabilir (API farklı string isterse
+  // deploy'suz düzeltilir). API boyutu KABUL ETMEZSE otomatik STANDART boyuta düşer
+  // (aşağıdaki zincir) → 4K denemesi asla üretimi bozmaz.
+  const hdOn = Deno.env.get("TA_IMAGE_HD") === "1";
+  const gHd = size === "9:16" ? (Deno.env.get("TA_IMAGE_HD_9x16") || "1536x2048")
+            : size === "16:9" ? (Deno.env.get("TA_IMAGE_HD_16x9") || "2048x1536")
+            : (Deno.env.get("TA_IMAGE_HD_1x1") || "2048x2048");
   const p = prompt.trim().slice(0, 29000) + NO_SPLIT;   // anti-split kural (kesilmeye karşı sonda, prompt kırpılmış)
 
   // gpt-image tek denemesi. Başarı → data URI; başarısızsa hatayı LOG'la (Supabase
   // function loglarında görünür, teşhis için) ve boş dön ki sıradaki yol denensin.
-  async function tryGptImage(model: string): Promise<string> {
+  async function tryGptImage(model: string, gSize: string): Promise<string> {
     try {
       const r = await fetchT("https://api.openai.com/v1/images/generations", {
         method: "POST",
@@ -271,24 +280,33 @@ async function generateImage(prompt: string, size: string): Promise<string> {
         if (u) return u;
         return "";
       }
-      // 429/5xx → geçici; çağıran taraf tekrar dener. 4xx (model yok/moderasyon) → kalıcı.
+      // 429/5xx → geçici; çağıran taraf tekrar dener. 4xx (model/boyut yok, moderasyon) → kalıcı.
       const body = await r.text().catch(() => "");
-      console.error(`generateImage ${model} HTTP ${r.status}: ${body.slice(0, 300)}`);
+      console.error(`generateImage ${model} @${gSize} HTTP ${r.status}: ${body.slice(0, 300)}`);
       return r.status === 429 || r.status >= 500 ? "RETRY" : "";
     } catch (e) {
-      console.error(`generateImage ${model} exception: ${String(e).slice(0, 200)}`);
+      console.error(`generateImage ${model} @${gSize} exception: ${String(e).slice(0, 200)}`);
       return "RETRY";   // ağ/zaman aşımı → tekrar denenebilir
     }
   }
 
-  // Model zinciri: önce en kaliteli gpt-image-1.5, hesapta yoksa gpt-image-1'e düş.
-  // Geçici hatada (RETRY) bir kez daha dene — anlık 429/500'ler kullanıcıya hata
-  // olarak yansımasın (kalite ve güvenilirlik önce).
-  for (const model of ["gpt-image-1.5", "gpt-image-1"]) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const out = await tryGptImage(model);
-      if (out && out !== "RETRY") return out;
-      if (out !== "RETRY") break;   // kalıcı hata (model yok/moderasyon) → sıradaki modele geç
+  // Model zinciri env'den ayarlanır (varsayılan: EN YENİ gpt-image-2 önce → 1.5 → 1).
+  // Secret TA_IMAGE_MODELS ile deploy'suz değiştirilebilir. gpt-image-2 hesapta yoksa
+  // 4xx döner → otomatik sıradaki modele geçilir (mevcut sistem KIRILMAZ).
+  const models = (Deno.env.get("TA_IMAGE_MODELS") || "gpt-image-2,gpt-image-1.5,gpt-image-1")
+    .split(",").map((s) => s.trim()).filter(Boolean);
+  for (const model of models) {
+    // HD açık + gpt-image-2 ise önce yüksek çözünürlük; reddedilirse aynı modelde standart.
+    const sizes = (hdOn && model.includes("gpt-image-2")) ? [gHd, gStd] : [gStd];
+    let dead = false;
+    for (let si = 0; si < sizes.length && !dead; si++) {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const out = await tryGptImage(model, sizes[si]);
+        if (out && out !== "RETRY") return out;          // başarı
+        if (out === "RETRY") continue;                   // geçici hata → tekrar dene
+        if (si < sizes.length - 1) break;                // kalıcı: daha küçük boyutu dene (HD→STD)
+        dead = true; break;                              // tüm boyutlar bitti → sıradaki model
+      }
     }
   }
 
