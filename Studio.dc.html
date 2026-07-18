@@ -2755,6 +2755,8 @@ class Component extends DCLogic {
       }).then(r => r.json()).then(d => {
         if (d && d.ok && d.done && d.url) { this.setSceneImg(key, { vidBusy: false, vidUrl: d.url, vidJob: '', vidStatus: '' }); return; }
         if (d && d.ok && !d.done) { this.setSceneImg(key, { vidStatus: '🎬 HAZIRLANIYOR… (' + (tries + 1) + ')' }); this.pollVideo(key, job, tries + 1); return; }
+        // Başarısız: sunucu krediyi İADE ettiyse bakiyeyi güncelle (rapor 4.4)
+        if (d && d.refunded && typeof d.credits === 'number') this.setState({ credits: d.credits }, () => this.persist());
         this.setSceneImg(key, { vidBusy: false, vidJob: '', vidStatus: (d && d.error) ? ('Hata: ' + d.error) : '' });
       }).catch(() => { this.pollVideo(key, job, tries + 1); });
     }, 8000);

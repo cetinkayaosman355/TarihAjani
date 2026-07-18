@@ -897,16 +897,44 @@ Deno.serve(async (req) => {
     // TTS/video'nun prompt/konusu yok — bu kontrolden muaf
     if (!prompt && act !== "tts" && act !== "fetch_result" && act !== "video" && act !== "video_status") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
 
-    // VIDEO DURUM SORGUSU (ücretsiz poll) — video zaten submit'te ücretlendi.
+    // VIDEO DURUM SORGUSU (poll) — video submit'te REZERVE edildi; burada sonuç
+    // belirlenir: tamamlandıysa finalize, başarısızsa kredi İADE (rapor 4.4/4.5).
     if (act === "video_status") {
       const id = String(b.videoJob || "");
       if (!id) return json({ ok: false, error: "videoJob eksik." }, 400);
+      const U = Deno.env.get("SUPABASE_URL"), K = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      // YENİ AKIŞ: uygulama UUID'si → SAHİPLİK doğrula + finalize/iade (rapor 3.4)
+      if (isUuid && U && K) {
+        const adm = createClient(U, K);
+        const vjwt = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+        const { data: vud } = await adm.auth.getUser(vjwt);
+        const uid = vud?.user?.id;
+        if (!uid) return json({ ok: false, error: "Giriş gerekli." }, 401);
+        const { data: vj } = await adm.from("video_jobs").select("*").eq("id", id).eq("user_id", uid).maybeSingle();
+        if (!vj) return json({ ok: false, error: "İş bulunamadı." }, 404);   // başka kullanıcının işi GÖRÜNMEZ
+        if (vj.status === "completed" && vj.result_path) return json({ ok: true, done: true, url: vj.result_path });
+        if (vj.status === "failed" || vj.status === "refunded") return json({ ok: false, error: "Video üretilemedi." }, 502);
+        const st = await pollVideo(vj.provider_job_id);
+        if (st.failed) {
+          let credits: number | undefined;
+          if (vj.reservation_job) { try { const { data } = await adm.rpc("refund_reservation", { p_user: uid, p_job: vj.reservation_job }); if (typeof data === "number") credits = data; } catch (_e) {} }
+          await adm.from("video_jobs").update({ status: "failed", updated_at: new Date().toISOString() }).eq("id", id);
+          return json({ ok: false, error: (st.err || "Video üretilemedi") + " — kredi iade edildi.", refunded: !!vj.reservation_job, credits }, 502);
+        }
+        if (!st.done) return json({ ok: true, done: false });
+        let vurl = st.url || "";
+        try { vurl = await uploadVideo(adm, uid, vurl); } catch (_e) { /* sağlayıcı URL'si kalır */ }
+        if (vj.reservation_job) { try { await adm.rpc("finalize_reservation", { p_job: vj.reservation_job }); } catch (_e) {} }
+        await adm.from("video_jobs").update({ status: "completed", result_path: vurl, updated_at: new Date().toISOString() }).eq("id", id);
+        return json({ ok: true, done: true, url: vurl });
+      }
+      // LEGACY: provider ön-ekli id (grok:/kling:) → eski davranış (sahiplik/iade yok)
       const st = await pollVideo(id);
       if (st.failed) return json({ ok: false, error: st.err || "Video üretilemedi." }, 502);
       if (!st.done) return json({ ok: true, done: false });
       let vurl = st.url || "";
       try {
-        const U = Deno.env.get("SUPABASE_URL"), K = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
         if (U && K && vurl) {
           const adm = createClient(U, K);
           const vjwt = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
@@ -1075,19 +1103,58 @@ Deno.serve(async (req) => {
       return json({ ok: true, url, charged: false, cost, truncated: ttsTruncated, engine: sp.engine, elevenErr: sp.elevenErr });
     }
 
-    // VIDEO ÜRETİMİ — sağlayıcıya (Grok/Kling) iş gönder; başarılıysa kredi düş.
-    // İş kimliği (videoJob) döner; istemci video_status ile poll eder. Async.
+    // VIDEO ÜRETİMİ — sağlayıcıya (Grok/Kling) iş gönder. Rapor 3.4/4.4/4.5:
+    // krediyi REZERVE et (başarısızlıkta video_status'ta iade edilir), işi video_jobs'a
+    // yaz (sahiplik), istemciye YALNIZ uygulama UUID'sini dön (provider id sızmaz).
+    // video_jobs tablosu YOKSA eski davranışa (submit'te spendSafe + provider id) düşülür.
     if (act === "video") {
       const sec = Math.min(15, Math.max(3, Number(b.vsec) || 5));
+      const vjId = crypto.randomUUID();
+      // 1) Krediyi rezerve et (reserve_credits varsa). Yoksa eski akış (sonra spendSafe).
+      let vReserved = false, vCredits: number | undefined;
+      if (cost > 0 && admin && userId) {
+        try {
+          const { data, error } = await admin.rpc("reserve_credits", { p_user: userId, p_amount: cost, p_reason: "video", p_job: vjId });
+          if (error) throw error;
+          const row = Array.isArray(data) ? data[0] : data;
+          if (row && row.ok === false) return json({ ok: false, error: "Yetersiz kredi", credits: (typeof row.new_credits === "number" ? row.new_credits : undefined) }, 402);
+          vReserved = true; if (row && typeof row.new_credits === "number") vCredits = row.new_credits;
+          pendingRefund = { admin, user: userId, job: vjId };   // beklenmeyen hatada iade
+        } catch (_e) { vReserved = false; }
+      }
+      // 2) Sağlayıcıya gönder
       const sub = await submitVideo(String(b.prompt || ""), String(b.image || ""), sec, String(b.size || ""), String(b.vprovider || ""));
       if (!sub.id) {
+        await doRefund();   // rezerve edildiyse geri ver
         logRun({ action: "video", ok: false, ms: Date.now() - t0, user_id: userId || null, err: (sub.err || "submit").slice(0, 60) });
         return json({ ok: false, error: "Video başlatılamadı — " + (sub.err || "bilinmeyen hata") + " (kredi düşülmedi)" }, 502);
       }
-      let credits: number | undefined;
-      if (cost > 0 && admin && userId) credits = await spendSafe(admin, userId, cost, "video");
+      // 3) İşi video_jobs'a yaz (sahiplik + iade takibi). Tablo yoksa legacy.
+      let tracked = false;
+      if (admin && userId) {
+        try {
+          const { error } = await admin.from("video_jobs").insert({
+            id: vjId, user_id: userId, provider: sub.id.split(":")[0] || "grok",
+            provider_job_id: sub.id, reservation_job: vReserved ? vjId : null,
+            status: "processing", charged: cost,
+          });
+          if (error) throw error;
+          tracked = true;
+          pendingRefund = null;   // artık DB'de takipli → beklenmeyen-hata iadesi gerekmez
+        } catch (_e) { tracked = false; }
+      }
+      if (tracked) {
+        // Rezerve edilemediyse (RPC yok ama tablo var) eski yöntemle düş
+        if (!vReserved && cost > 0 && admin && userId) vCredits = await spendSafe(admin, userId, cost, "video");
+        logRun({ action: "video", ok: true, ms: Date.now() - t0, user_id: userId || null });
+        return json({ ok: true, videoJob: vjId, charged: cost > 0, credits: vCredits, cost });
+      }
+      // LEGACY (video_jobs tablosu yok): rezerve edildiyse kesinleştir, yoksa şimdi düş; provider id dön
+      pendingRefund = null;
+      if (vReserved) { try { await admin.rpc("finalize_reservation", { p_job: vjId }); } catch (_e) {} }
+      else if (cost > 0 && admin && userId) vCredits = await spendSafe(admin, userId, cost, "video");
       logRun({ action: "video", ok: true, ms: Date.now() - t0, user_id: userId || null });
-      return json({ ok: true, videoJob: sub.id, charged: cost > 0, credits, cost });
+      return json({ ok: true, videoJob: sub.id, charged: cost > 0, credits: vCredits, cost });
     }
 
     // Üretim (metin)
