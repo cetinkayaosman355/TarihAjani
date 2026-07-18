@@ -326,7 +326,9 @@
         vcards += '<div class="vcard"><div class="vmedia">' + media + '</div><div class="vbody"><div class="sb-no">Sahne ' + (vi + 1) + '</div>' +
           '<div class="vprompt">' + esc(mprompt) + '</div><div class="th-acts">' + actions + '<button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(mprompt) + '">Prompt</button></div></div></div>';
       }
-      return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>Grok</b> ile ~5 sn videoya çevir · ' + vn + ' sahne</span></div><div class="vgrid">' + vcards + '</div>';
+      var doneImgs = (r.senaryo || []).filter(function (s, i) { return S.images[i]; }).length;
+      var exportBar = '<div class="export-strip"><div class="es-txt"><b>Tek dosyada birleştir</b><span>Sahne görselleri + seslendirme + altyazı → Ken Burns efektli video (WebM). Ücretsiz, tarayıcıda oluşur.</span></div><button class="btn btn-gold" data-act="exportVid"' + (doneImgs ? '' : ' disabled') + '>🎬 Video oluştur &amp; indir</button></div>';
+      return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>Grok</b> ile ~5 sn videoya çevir · ' + vn + ' sahne</span></div>' + exportBar + '<div class="vgrid">' + vcards + '</div>';
     }
     if (S.tab === 'youtube') {
       var yt = r.youtube || {};
@@ -460,6 +462,7 @@
       case 'genAll': genAll(); break;
       case 'cover': doCover(parseInt(v, 10)); break;
       case 'video': doVideo(parseInt(v, 10)); break;
+      case 'exportVid': exportVideo(); break;
       case 'editImg': openEdit(parseInt(v, 10)); break;
       case 'openHist': openHist(parseInt(v, 10)); break;
       case 'istyle': S.imgStyle = v; render(); break;
@@ -658,6 +661,94 @@
       var a = document.createElement('a'); a.href = url; a.download = name || ('storia-' + Date.now()); a.target = '_blank'; document.body.appendChild(a); a.click(); a.remove();
     });
   }
+  // ── Video export (Ken Burns + altyazı + seslendirme → WebM, tarayıcıda) ──
+  function loadImgEl(url) { return new Promise(function (res, rej) { if (!url) return rej(); var im = new Image(); im.crossOrigin = 'anonymous'; im.onload = function () { res(im); }; im.onerror = rej; im.src = url; }); }
+  function showExport(frac, msg) { var o = document.getElementById('exportOverlay'); if (!o) return; o.classList.add('show'); document.getElementById('exBar').style.width = Math.round(frac * 100) + '%'; document.getElementById('exMsg').textContent = msg; }
+  function hideExport() { var o = document.getElementById('exportOverlay'); if (o) o.classList.remove('show'); }
+  function drawCover(ctx, img, W, H, scale, panFrac) {
+    var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    var s = Math.max(W / iw, H / ih) * scale, dw = iw * s, dh = ih * s;
+    ctx.drawImage(img, (W - dw) / 2 + panFrac * W, (H - dh) / 2, dw, dh);
+  }
+  function drawCaption(ctx, text, W, H) {
+    if (!text) return;
+    var fs = Math.round(W * 0.052);
+    ctx.font = '700 ' + fs + 'px "Hanken Grotesk", Arial, "Helvetica Neue", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    var maxW = W * 0.86, words = text.split(' '), lines = [], line = '';
+    for (var i = 0; i < words.length; i++) { var t = line ? line + ' ' + words[i] : words[i]; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = words[i]; } else line = t; }
+    if (line) lines.push(line);
+    lines = lines.slice(0, 3);
+    var lh = fs * 1.25, y0 = H - H * 0.10 - lines.length * lh;
+    for (var j = 0; j < lines.length; j++) {
+      var y = y0 + j * lh + fs, x = W / 2;
+      ctx.lineWidth = fs * 0.16; ctx.strokeStyle = 'rgba(15,11,6,.85)'; ctx.lineJoin = 'round';
+      ctx.strokeText(lines[j], x, y);
+      ctx.fillStyle = '#fff'; ctx.fillText(lines[j], x, y);
+    }
+  }
+  var _exporting = false;
+  function exportVideo() {
+    if (_exporting) return;
+    var r = S.result || {}, scenes = r.senaryo || [];
+    if (!scenes.length) { toast('Önce bir dosya üret'); return; }
+    if (!window.MediaRecorder) { toast('Tarayıcı video dışa aktarmayı desteklemiyor'); return; }
+    _exporting = true; showExport(0, 'Hazırlanıyor…');
+    var dims = S.aspect === '9:16' ? [720, 1280] : S.aspect === '1:1' ? [1080, 1080] : [1280, 720];
+    var W = dims[0], H = dims[1], n = scenes.length;
+    // Canvas'ı DOM'a (gizli) ekle — bazı tarayıcılarda captureStream ancak
+    // canvas kompozisyona dahilse gerçek kare üretir.
+    var canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
+    canvas.style.cssText = 'position:fixed;left:-99999px;top:0;width:2px;height:2px;opacity:.01;pointer-events:none';
+    document.body.appendChild(canvas);
+    var ctx = canvas.getContext('2d');
+    function drawFrame(k, lt) {
+      ctx.fillStyle = '#14110c'; ctx.fillRect(0, 0, W, H);
+      if (imgsRef[k]) drawCover(ctx, imgsRef[k], W, H, 1.03 + 0.09 * lt, (k % 2 ? -1 : 1) * 0.02 * lt);
+      else { var g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#efe6d2'); g.addColorStop(1, '#b4914d'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+      drawCaption(ctx, scenes[k].anlatim || scenes[k].metin || '', W, H);
+    }
+    var imgsRef = [];
+    Promise.all(scenes.map(function (s, i) { return loadImgEl(S.images[i]).catch(function () { return null; }); })).then(function (imgs) {
+      imgsRef = imgs;
+      var AC = window.AudioContext || window.webkitAudioContext, actx = null;
+      var audioP = S.audio ? (function () { actx = new AC(); try { actx.resume(); } catch (e) {} return fetch(S.audio).then(function (rr) { return rr.arrayBuffer(); }).then(function (ab) { return actx.decodeAudioData(ab); }).catch(function () { return null; }); })() : Promise.resolve(null);
+      audioP.then(function (buf) {
+        var total = buf ? buf.duration : n * 3.2, per = total / n;
+        drawFrame(0, 0); // captureStream'den önce ilk kareyi çiz
+        var vstream = canvas.captureStream(30), vtrack = vstream.getVideoTracks()[0], src = null;
+        // Ses ancak gerçekten varsa parçaya eklenir — boş/sessiz ses izi kaydı bloke edebilir.
+        var tracks = vstream.getVideoTracks();
+        if (buf && actx) { var dest = actx.createMediaStreamDestination(); src = actx.createBufferSource(); src.buffer = buf; src.connect(dest); tracks = tracks.concat(dest.stream.getAudioTracks()); }
+        var mstream = new MediaStream(tracks);
+        var mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].filter(function (m) { return MediaRecorder.isTypeSupported(m); })[0] || 'video/webm';
+        var rec = new MediaRecorder(mstream, { mimeType: mime, videoBitsPerSecond: 6000000 }), chunks = [];
+        rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+        rec.onstop = function () {
+          try { if (actx) actx.close(); } catch (e) {}
+          if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+          if (!chunks.length) { hideExport(); _exporting = false; toast('Video oluşturulamadı — tekrar dene'); return; }
+          var blob = new Blob(chunks, { type: 'video/webm' }), u = URL.createObjectURL(blob), a = document.createElement('a');
+          a.href = u; a.download = (r.baslik || 'storia-video').replace(/[^\w\sğüşiöçİĞÜŞÖÇ-]/g, '').slice(0, 50).trim() + '.webm';
+          document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(u); a.remove(); }, 2000);
+          hideExport(); _exporting = false; toast('Video indirildi (WebM)');
+        };
+        var start = performance.now();
+        try { if (src) src.start(); } catch (e) {}
+        rec.start(1000); // saniyede bir parça yaz — daha güvenilir
+        (function frame() {
+          var el = (performance.now() - start) / 1000;
+          if (el >= total) { try { if (rec.state !== 'inactive') rec.stop(); } catch (e) {} return; }
+          var k = Math.min(n - 1, Math.floor(el / per)), lt = (el - k * per) / per;
+          drawFrame(k, lt);
+          if (vtrack && vtrack.requestFrame) { try { vtrack.requestFrame(); } catch (e) {} }
+          showExport(el / total, 'Video oluşturuluyor · %' + Math.round(el / total * 100));
+          requestAnimationFrame(frame);
+        })();
+      });
+    }).catch(function () { if (canvas.parentNode) canvas.parentNode.removeChild(canvas); hideExport(); _exporting = false; toast('Video oluşturulamadı — görsellere erişilemedi'); });
+  }
+
   function doCover(idx) {
     var r = S.result || {}; var k = (r.kapak || [])[idx]; if (!k) return;
     var full = k + ' — YouTube thumbnail, bold composition, high contrast, dramatic lighting, eye-catching, ' + styleObj().en;

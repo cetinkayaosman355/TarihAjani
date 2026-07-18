@@ -422,6 +422,22 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .lb-bar span { color: rgba(255,255,255,.85); font-size: 13px; font-variant-numeric: tabular-nums; }
 @media (max-width: 640px){ .lb-nav { width: 44px; height: 44px; font-size: 24px; } .lb-img { max-width: 94vw; max-height: 74vh; } }
 
+/* birleştirme şeridi + dışa aktarma katmanı */
+.export-strip { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; padding: 18px 20px; margin-bottom: 20px; border-radius: var(--r-lg); border: 1px solid var(--champ-line); background: linear-gradient(140deg, #fff, var(--champ-wash)); box-shadow: var(--sh-1); }
+.export-strip .es-txt { display: flex; flex-direction: column; gap: 3px; }
+.export-strip .es-txt b { font-family: var(--serif); font-size: 17px; }
+.export-strip .es-txt span { font-size: 13px; color: var(--muted); max-width: 46ch; }
+.export-strip .btn[disabled] { opacity: .45; cursor: not-allowed; }
+.export-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(20,15,9,.55); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; }
+.export-overlay.show { display: flex; animation: viewIn .25s var(--ease); }
+.eo-card { width: min(420px, 90vw); background: var(--surface); border: 1px solid var(--champ-line); border-radius: var(--r-xl); padding: 34px 30px; text-align: center; box-shadow: 0 30px 90px rgba(40,28,10,.28); }
+.eo-orb { width: 46px; height: 46px; margin: 0 auto 18px; border-radius: 50%; border: 3px solid var(--champ-line); border-top-color: var(--champ); animation: spin 1s linear infinite; }
+.eo-card h3 { font-family: var(--serif); font-size: 22px; margin: 0 0 6px; }
+.eo-card p { font-size: 14px; color: var(--muted); margin: 0 0 18px; font-variant-numeric: tabular-nums; }
+.eo-track { height: 8px; border-radius: 999px; background: var(--champ-wash); overflow: hidden; border: 1px solid var(--champ-line); }
+.eo-fill { height: 100%; width: 0%; border-radius: 999px; background: var(--gold-sheen); transition: width .2s ease; }
+.eo-hint { display: block; margin-top: 14px; font-size: 12px; color: var(--muted); }
+
 /* scene image column + actions */
 .th-col { display: flex; flex-direction: column; gap: 9px; }
 .th-acts { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -601,6 +617,16 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
   <img class="lb-img" id="lbImg" src="" alt="">
   <button class="lb-nav next" data-lb="next" aria-label="Sonraki">›</button>
   <div class="lb-bar"><span id="lbCap"></span><button class="btn btn-gold btn-sm" data-lb="download">↓ İndir</button></div>
+</div>
+
+<div class="export-overlay" id="exportOverlay">
+  <div class="eo-card">
+    <div class="eo-orb"></div>
+    <h3>Video hazırlanıyor</h3>
+    <p id="exMsg">Hazırlanıyor…</p>
+    <div class="eo-track"><div class="eo-fill" id="exBar"></div></div>
+    <span class="eo-hint">Sayfayı kapatma — dosya bittiğinde otomatik inecek.</span>
+  </div>
 </div>
 
 <script src="/storia/assets/config.js"></script>
