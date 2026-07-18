@@ -681,6 +681,29 @@ function rateLimited(key: string, limit: number): boolean {
   return e.n > limit;
 }
 
+// ── DAĞITIK hız limiti — DB tabanlı, TÜM edge örnekleri arasında ortak sayaç.
+//    Bellek-içi limiti TAMAMLAR: birden çok örnek/soğuk başlatmada limit katlanmaz.
+//    Yalnız PAHALI üretim uçlarında (generate/image/video/tts/edit) çağrılır —
+//    ücretsiz yardımcı akışlarına gecikme eklemez. rl_hit RPC yoksa/hata verirse
+//    false döner → yalnız bellek-içi limit geçerli kalır (mevcut sistem KIRILMAZ).
+let RLC: any = null;
+function rlClient(): any {
+  if (RLC) return RLC;
+  const u = Deno.env.get("SUPABASE_URL"), k = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!u || !k) return null;
+  RLC = createClient(u, k);
+  return RLC;
+}
+async function rlHitDistributed(key: string, limit: number, windowSec: number): Promise<boolean> {
+  try {
+    const c = rlClient();
+    if (!c) return false;
+    const { data, error } = await c.rpc("rl_hit", { p_key: key, p_limit: limit, p_window: windowSec });
+    if (error) return false;                 // RPC yok/hata → engelleme (bellek limiti devrede)
+    return data === true;
+  } catch (_e) { return false; }
+}
+
 // ── Ö-08: telemetri — her üretimin sonucu tabloya yazılır ("hata payı sıfır"
 // hedefinin ölçüm aracı). Tablo yoksa/başarısızsa sessizce geçer, üretimi etkilemez.
 let LOGC: any = null;
@@ -923,6 +946,17 @@ Deno.serve(async (req) => {
     // Hız limiti: kimliksiz/ücretsiz istekler dakikada 30, tümü 90 (IP başına)
     const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
     if (rateLimited("all:" + ip, 90)) return json({ ok: false, error: "Çok fazla istek — bir dakika sonra tekrar dene." }, 429);
+    // DAĞITIK limit — YALNIZ pahalı üretim uçlarında, IP başına, tüm örnekler ortak.
+    //   image/edit paralel toplu üretimde patlar (sahne başı) → daha yüksek tavan.
+    //   RPC yoksa false → yalnız yukarıdaki bellek-içi limit geçerli (kırılmaz).
+    if (act === "generate" || act === "image" || act === "edit" || act === "tts" || act === "video") {
+      const isImg = act === "image" || act === "edit";
+      const dkey = (isImg ? "img:" : "gen:") + ip;
+      const dlimit = isImg ? 60 : 30;            // dakikada: görsel 60, diğer pahalı 30
+      if (await rlHitDistributed(dkey, dlimit, 60)) {
+        return json({ ok: false, error: "Çok fazla istek — bir dakika sonra tekrar dene." }, 429);
+      }
+    }
     const isEdit = act === "edit";
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
     // TTS/video'nun prompt/konusu yok — bu kontrolden muaf
