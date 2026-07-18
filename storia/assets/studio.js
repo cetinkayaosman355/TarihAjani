@@ -19,13 +19,15 @@
     result: null, tab: 'senaryo', genJob: null,
     user: null, credits: REAL ? null : 500, creditMax: 500,
     images: {}, covers: {}, videos: {}, videoJobs: {}, chars: {}, audio: null, history: [], ttsRate: 1,
-    bgMusic: null, bgMusicName: '', musicVol: 0.5, capStyle: 'klasik',
+    bgMusic: null, bgMusicName: '', musicVol: 0.5, capStyle: 'klasik', vengine: 'grok',
     brand: { logo: '', color: '#d9bc80', name: '', handle: '', wm: true, outro: false, outroText: 'Abone ol · yeni içerik her gün' },
     chat: { open: false, msgs: [], busy: false },
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null, imgMode: 'gorsel',
     // ses stüdyo
-    ssText: '', ssVoice: 0, ssOut: null
+    ssText: '', ssVoice: 0, ssOut: null,
+    // açık olan geçmiş kaydı (üretilen medya buraya kalıcı yazılır)
+    _cur: null
   };
 
   // ── Data ─────────────────────────────────────────────────────────────
@@ -441,7 +443,11 @@
         '<div class="cap-pick"><span class="cp-lbl">Altyazı stili</span><div class="cap-seg">' + capSeg + '</div></div>' + musicChip +
         '<button class="btn btn-quiet btn-sm" data-act="brandKit" style="margin-top:12px">🎨 Marka kiti' + (S.brand.logo || S.brand.name ? ' ✓' : '') + '</button></div>' +
         '<button class="btn btn-gold" data-act="exportVid"' + (doneImgs ? '' : ' disabled') + '>🎬 Video oluştur &amp; indir</button></div>';
-      return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>yapay zeka</b> ile ~5 sn videoya çevir · ' + vn + ' sahne</span></div>' + exportBar + '<div class="vgrid">' + vcards + '</div>';
+      var engSeg = '<div class="veng-pick"><span class="cp-lbl">Video motoru</span><div class="cap-seg">' +
+        '<button class="' + (S.vengine === 'grok' ? 'on' : '') + '" data-act="vengine" data-v="grok">Grok · hızlı</button>' +
+        '<button class="' + (S.vengine === 'kling' ? 'on' : '') + '" data-act="vengine" data-v="kling">Kling · sinematik</button>' +
+        '</div></div>';
+      return '<div class="tab-tools"><span class="tt-note">Sahne görselini <b>yapay zeka</b> ile ~5 sn videoya çevir · ' + vn + ' sahne</span>' + engSeg + '</div>' + exportBar + '<div class="vgrid">' + vcards + '</div>';
     }
     if (S.tab === 'youtube') {
       var yt = r.youtube || {};
@@ -630,6 +636,7 @@
       case 'video': doVideo(parseInt(v, 10)); break;
       case 'exportVid': exportVideo(); break;
       case 'capStyle': S.capStyle = v; refreshTab(); break;
+      case 'vengine': S.vengine = v; refreshTab(); toast(v === 'kling' ? 'Kling · sinematik seçildi' : 'Grok · hızlı seçildi'); break;
       case 'brandKit': openBrandModal(); break;
       case 'musicPick': openMusicModal(); break;
       case 'musicClear': if (S.bgMusic && S.bgMusic.indexOf('blob:') === 0) { try { URL.revokeObjectURL(S.bgMusic); } catch (e) {} } S.bgMusic = null; S.bgMusicName = ''; refreshTab(); break;
@@ -681,9 +688,18 @@
     S.result = result; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.tab = 'senaryo';
     if (typeof credits === 'number') S.credits = credits;
     else if (!REAL && charged) S.credits = Math.max(0, (S.credits || 0) - costGen(S.durationSec));
-    S.history.unshift({ result: result, idea: S.idea, meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect, ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec });
+    var ent = { result: result, idea: S.idea, meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect, ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec, images: {}, covers: {}, videos: {}, audio: null };
+    S.history.unshift(ent); S._cur = ent;
     saveHist();
     S.step = 4; render();
+  }
+  // Üretilen medyayı (görsel/kapak/video/ses — hepsi kalıcı depo URL'leri) açık
+  // olan geçmiş kaydına yaz ki dosya yeniden açıldığında kaybolmasın (kredi boşa gitmesin).
+  function persistMedia() {
+    if (!S._cur) return;
+    S._cur.images = S.images; S._cur.covers = S.covers; S._cur.videos = S.videos;
+    S._cur.audio = (S.audio && String(S.audio).indexOf('http') === 0) ? S.audio : null;
+    saveHist();
   }
   function demoGenerate() { setTimeout(function () { finishGen(synthDemo(), true); }, 5200); }
 
@@ -697,12 +713,21 @@
         'FORMAT: ' + S.aspect + ' · DURATION: ' + fmtDur(S.durationSec) + ' · ~' + scenes + ' scenes\n' +
         'LENGTH BUDGET (CRITICAL): the video is ' + fmtDur(S.durationSec) + ' long and the narration will be read ALOUD. The TOTAL of all scenes\' "anlatim" text must be AT MOST ~' + words + ' words — do NOT exceed it. Keep each scene short (one sentence for short videos). Even with ' + scenes + ' scenes, keep it tight so the voiceover fits ' + fmtDur(S.durationSec) + '.\n' +
         (S.custom ? 'SPECIAL REQUEST (highest priority): ' + S.custom + '\n' : '') +
+        '\nNARRATIVE STRUCTURE (MANDATORY — the viewer must follow ONE clear story from start to finish; NOT disconnected facts):\n' +
+        '1. HOOK (scene 1): first 3 seconds — a striking question, bold claim or vivid image that stops the scroll and creates curiosity.\n' +
+        '2. SETUP: frame the topic clearly so the viewer knows what they will learn.\n' +
+        '3. BUILD: each scene ADDS to the previous one and CONNECTS to the next; advance with concrete examples, numbers, specifics. No random info-dumping.\n' +
+        '4. TURN / CLIMAX: the most compelling moment or an unexpected truth.\n' +
+        '5. PAYOFF + CTA: a satisfying conclusion and a clear closing line / call to action.\n' +
+        'The whole thing must read as ONE coherent, understandable narrative that flows in logical order — a viewer should easily follow it.\n' +
+        'IMAGE <-> SCENE: gorsel_promptlar[i] must depict EXACTLY what happens in senaryo[i] (that scene\'s concrete subject and action) — never a generic or unrelated mood image.\n' +
         '\nReturn ONLY valid JSON in this schema, in ENGLISH (keys stay exactly as below, no other text):\n' +
         '{ "baslik":"catchy title", "logline":"one-sentence summary", ' +
         '"karakterler":[{"isim":"character name","gorunum":"DETAILED physical description for consistent images (age, gender, hair, eyes, clothing, distinctive traits)"}], ' +
         '"senaryo":[{"baslik":"scene title","anlatim":"short narration that fits the duration (1 sentence for short videos)","gorsel":"RICH visual description: subject, action, composition, lighting, atmosphere, mood"}], ' +
-        '"seslendirme_notu":"note to the narrator", "youtube":{"baslik":"SEO title","aciklama":"description","etiketler":["tag1"]}, ' +
-        '"instagram":{"aciklama":"FULL Reels caption: hook + value + clear CTA (2-4 sentences, fitting emoji)","hashtagler":["hashtag1","hashtag2","hashtag3"]}, "kapak":["striking thumbnail idea"], ' +
+        '"seslendirme_notu":"note to the narrator", ' +
+        '"youtube":{"baslik":"a SCROLL-STOPPING, high-CTR title (max ~60 chars) built on a curiosity gap or bold promise — use a number, a power word, or an open loop (e.g. \\"The 3 seconds that changed everything\\"); NOT a flat descriptive/SEO phrase","aciklama":"2-3 line description: first line repeats the hook, then the value, then a CTA to subscribe","etiketler":["tag1","tag2","tag3"]}, ' +
+        '"instagram":{"aciklama":"FULL Reels caption where the FIRST LINE is a thumb-stopping hook (a question, bold claim or surprising stat that creates a curiosity gap) — then 1-2 lines of value, then a clear CTA (save/follow/comment). 3-4 short lines, line breaks, 2-4 fitting emoji. Punchy, human, NOT generic.","hashtagler":["hashtag1","hashtag2","hashtag3"]}, "kapak":["striking thumbnail idea with a bold 2-4 word text overlay concept"], ' +
         '"gorsel_promptlar":["DETAILED English image prompt for each scene: subject + action + composition (rule of thirds, foreground/background) + camera angle & lens (e.g. wide 24mm, close-up 85mm, low angle) + lighting + atmosphere + ' + st.en + '. The image must contain NO text, letters, words, logos or watermark."], ' +
         '"video_promptlar":["per-scene cinematic MOTION prompt for image-to-video (one per scene, same subject as the image): describe ONE clear camera movement (slow push-in, dolly, pan left/right, tilt up, orbit, tracking) + subtle subject/environment motion + mood; smooth, cinematic, natural physics, no text"], "uretim_notu":"short production tip" }\n' +
         'RULES: senaryo, gorsel_promptlar and video_promptlar must EACH contain the SAME number of items — one per scene, at least ' + min + '. They are INDEX-ALIGNED and INTEGRATED: gorsel_promptlar[i] is the detailed image prompt for senaryo[i].gorsel (exact same scene), and video_promptlar[i] animates THAT exact image (same subject, same framing). Scene text → image → motion must be ONE coherent moment per index. If the story has clear character(s), fill "karakterler" and describe that character with the SAME physical traits in EVERY gorsel/video prompt (character consistency); if none, leave "karakterler" empty. If the topic is nonsense return {"gecersiz":true,"mesaj":"..."}.';
@@ -712,12 +737,21 @@
       'FORMAT: ' + S.aspect + ' · SÜRE: ' + fmtDur(S.durationSec) + ' · SAHNE SAYISI: yaklaşık ' + scenes + '\n' +
       'SÜRE-METİN DENGESİ (ÇOK ÖNEMLİ): Video ' + fmtDur(S.durationSec) + ' uzunluğunda ve seslendirme metni SESLİ okunacak. Tüm sahnelerin "anlatim" metinlerinin TOPLAMI EN FAZLA ~' + words + ' kelime olmalı — bu sınırı KESİNLİKLE AŞMA. Her sahnenin anlatımı kısa ve öz olsun (kısa videoda tek cümle). Sahne sayısı ' + scenes + ' olsa bile metni uzatma; seslendirme ' + fmtDur(S.durationSec) + ' süresine sığmalı.\n' +
       (S.custom ? 'ÖZEL İSTEK (en yüksek öncelik): ' + S.custom + '\n' : '') +
+      '\nANLATIM YAPISI (ZORUNLU — izleyici baştan sona TEK bir hikâyeyi takip edebilmeli; kopuk bilgi yığını DEĞİL):\n' +
+      '1. KANCA (1. sahne): ilk 3 saniye — kaydırmayı durduran, merak uyandıran çarpıcı bir soru, iddia ya da görüntü.\n' +
+      '2. KURULUM: konuyu netçe çerçevele; izleyici ne öğreneceğini anlasın.\n' +
+      '3. GELİŞME: her sahne bir öncekinin ÜSTÜNE koysun ve bir sonrakine BAĞLANSIN; somut örnek, sayı ve ayrıntıyla ilerle. Rastgele bilgi yığma yok.\n' +
+      '4. DORUK/DÖNÜŞ: en çarpıcı an ya da beklenmedik bir gerçek.\n' +
+      '5. SONUÇ + ÇAĞRI: tatmin edici bir kapanış ve net bir son cümle / eylem çağrısı.\n' +
+      'Bütün metin, mantıklı sırayla akan TEK, tutarlı ve anlaşılır bir anlatı olsun — izleyici rahatça takip edebilsin.\n' +
+      'GÖRSEL <-> SAHNE: gorsel_promptlar[i], senaryo[i]\'de TAM OLARAK ne oluyorsa onu göstersin (o sahnenin somut öznesi ve aksiyonu) — asla genel geçer ya da alakasız bir atmosfer görseli değil.\n' +
       '\nYalnızca aşağıdaki şemada, Türkçe ve GEÇERLİ JSON döndür (başka metin yok):\n' +
       '{ "baslik":"çarpıcı başlık", "logline":"tek cümle özet", ' +
       '"karakterler":[{"isim":"karakter adı","gorunum":"tutarlı görsel için DETAYLI fiziksel tanım (yaş, cinsiyet, saç, göz, kıyafet, ayırt edici özellik)"}], ' +
       '"senaryo":[{"baslik":"sahne başlığı","anlatim":"süreye uygun KISA anlatım (kısa videoda tek cümle)","gorsel":"sahnenin ZENGİN görsel tarifi: özne, aksiyon, kompozisyon, ışık, atmosfer, duygu"}], ' +
-      '"seslendirme_notu":"anlatıcı yönergesi", "youtube":{"baslik":"SEO başlığı","aciklama":"açıklama","etiketler":["e1"]}, ' +
-      '"instagram":{"aciklama":"kancayla başlayıp değer veren ve CTA ile biten TAM Reels metni (2-4 cümle, uygun emoji)","hashtagler":["h1","h2","h3"]}, "kapak":["çarpıcı thumbnail fikri"], ' +
+      '"seslendirme_notu":"anlatıcı yönergesi", ' +
+      '"youtube":{"baslik":"KAYDIRMAYI DURDURAN, yüksek tıklanma alan bir başlık (en fazla ~60 karakter) — merak boşluğu ya da güçlü bir vaat üzerine kur: bir sayı, güçlü bir kelime ya da açık döngü kullan (ör. \\"Her şeyi değiştiren 3 saniye\\"); DÜZ betimleyici/SEO cümlesi OLMASIN","aciklama":"2-3 satır açıklama: ilk satır kancayı tekrarlasın, sonra değer, sonra abone olma çağrısı","etiketler":["e1","e2","e3"]}, ' +
+      '"instagram":{"aciklama":"İLK SATIRI baş döndüren bir KANCA olan TAM Reels metni (merak boşluğu yaratan bir soru, cesur iddia ya da şaşırtıcı istatistik) — ardından 1-2 satır değer, sonra net bir CTA (kaydet/takip et/yorum yap). 3-4 kısa satır, satır araları, 2-4 uygun emoji. Vurucu, insansı, GENEL GEÇER DEĞİL.","hashtagler":["h1","h2","h3"]}, "kapak":["çarpıcı thumbnail fikri + 2-4 kelimelik cesur yazı katmanı konsepti"], ' +
       '"gorsel_promptlar":["her sahne için DETAYLI İngilizce görsel üretim promptu: özne + aksiyon + kompozisyon (üçler kuralı, ön/arka plan) + kamera açısı & lens (ör. wide 24mm, close-up 85mm, low angle) + ışık + atmosfer + ' + st.en + '. Görselin İÇİNDE kesinlikle yazı/harf/kelime/logo/watermark OLMASIN."], ' +
       '"video_promptlar":["her sahne için sinematik HAREKET promptu — image-to-video (sahne başına bir tane, görselle aynı özne): TEK net kamera hareketi (yavaş push-in, dolly, sağa/sola kaydırma, tilt, yörünge, takip) + hafif özne/ortam hareketi + atmosfer; İngilizce yaz, akıcı ve sinematik, gerçekçi fizik, yazısız"], "uretim_notu":"kısa tavsiye" }\n' +
       'KURALLAR: senaryo, gorsel_promptlar ve video_promptlar AYNI sayıda öğe içersin — sahne başına bir tane, en az ' + min + '. Bunlar İNDEKS-HİZALI ve ENTEGRE: gorsel_promptlar[i], senaryo[i].gorsel için detaylı görsel prompttur (birebir aynı sahne); video_promptlar[i] ise O görseli canlandırır (aynı özne, aynı çerçeve). Yani sahne metni → görsel → hareket, her indekste TEK ve tutarlı bir an olsun. Hikayede belirgin karakter(ler) varsa "karakterler"i doldur ve o karakteri HER görsel/video promptunda aynı fiziksel özelliklerle betimle (tutarlılık); yoksa boş bırak. Konu anlamsızsa {"gecersiz":true,"mesaj":"..."} döndür.';
@@ -737,12 +771,23 @@
   function genError(msg) { _timers.forEach(clearTimeout); S.step = 2; render(); toast(msg || 'Üretim başarısız — tekrar dene'); }
   function safeParse(t) { try { return JSON.parse(t); } catch (e) { return null; } }
 
-  function openHist(i) { var h = S.history[i]; if (!h) return; S.result = h.result; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S.tab = 'senaryo'; S.view = 'new'; S.step = 4; render(); }
+  function openHist(i) { var h = S.history[i]; if (!h) return; S.result = h.result; S.images = h.images || {}; S.covers = h.covers || {}; S.videos = h.videos || {}; S.videoJobs = {}; S.chars = {}; S.audio = h.audio || null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S._cur = h; S.tab = 'senaryo'; S.view = 'new'; S.step = 4; render(); }
   function delHist(i) { S.history.splice(i, 1); saveHist(); render(); toast('Dosya geçmişten silindi'); }
   // Geçmiş kalıcılığı: tarayıcıda saklanır (yenilemede kaybolmaz). Kullanıcıya
   // göre anahtarlanır ki farklı hesaplar birbirinin geçmişini görmesin.
   function histKey() { return 'storia_hist_' + ((S.user && S.user.id) ? S.user.id.slice(0, 12) : 'guest'); }
-  function saveHist() { try { localStorage.setItem(histKey(), JSON.stringify(S.history.slice(0, 50))); } catch (e) {} }
+  function saveHist() {
+    try { localStorage.setItem(histKey(), JSON.stringify(S.history.slice(0, 50))); }
+    catch (e) {
+      // Kota dolduysa medyayı at, en azından metin/kayıtları koru (görsel URL'leri
+      // küçüktür; bu yol yalnız data-URI'li nadir durumlarda tetiklenir).
+      try {
+        localStorage.setItem(histKey(), JSON.stringify(S.history.slice(0, 30).map(function (h) {
+          return { result: h.result, idea: h.idea, meta: h.meta, ts: h.ts, aspect: h.aspect, style: h.style, voiceIdx: h.voiceIdx, durationSec: h.durationSec, images: h.images, covers: h.covers, videos: h.videos };
+        })));
+      } catch (_e) {}
+    }
+  }
   function loadHist() { try { var h = JSON.parse(localStorage.getItem(histKey()) || '[]'); S.history = Array.isArray(h) ? h : []; } catch (e) { S.history = []; } }
   // Marka kiti (logo/renk/isim/handle/outro) — cihazda, kullanıcıya göre saklanır
   function brandKey() { return 'storia_brand_' + ((S.user && S.user.id) ? S.user.id.slice(0, 12) : 'guest'); }
@@ -843,11 +888,11 @@
   function doImage(idx) {
     var r = S.result || {}; var prompt = (r.gorsel_promptlar || [])[idx]; if (!prompt) return;
     var full = prompt + ' — ' + styleObj().en;
-    if (!REAL) { S.images[idx] = demoImage(idx, S.aspect); refreshTab(); toast('Demo görsel eklendi'); return; }
+    if (!REAL) { S.images[idx] = demoImage(idx, S.aspect); persistMedia(); refreshTab(); toast('Demo görsel eklendi'); return; }
     if (!S.user) { openAuth(); return; }
     toast('Görsel üretiliyor…');
     callFn({ action: 'image', prompt: full, size: S.aspect, imgIndex: idx }).then(function (d) {
-      if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; refreshTab(); chrome(); toast('Görsel üretildi'); }
+      if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; persistMedia(); refreshTab(); chrome(); toast('Görsel üretildi'); }
       else toast((d && d.error) || 'Görsel üretilemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
@@ -1032,11 +1077,11 @@
   function doCover(idx) {
     var r = S.result || {}; var k = (r.kapak || [])[idx]; if (!k) return;
     var full = k + ' — YouTube thumbnail, bold composition, high contrast, dramatic lighting, eye-catching, ' + styleObj().en;
-    if (!REAL) { S.covers[idx] = demoImage(idx, '16:9'); refreshTab(); toast('Demo kapak eklendi'); return; }
+    if (!REAL) { S.covers[idx] = demoImage(idx, '16:9'); persistMedia(); refreshTab(); toast('Demo kapak eklendi'); return; }
     if (!S.user) { openAuth(); return; }
     toast('Thumbnail üretiliyor…');
     callFn({ action: 'image', prompt: full, size: '16:9', imgIndex: idx }).then(function (d) {
-      if (d && d.ok && d.url) { S.covers[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; refreshTab(); chrome(); toast('Thumbnail üretildi'); }
+      if (d && d.ok && d.url) { S.covers[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; persistMedia(); refreshTab(); chrome(); toast('Thumbnail üretildi'); }
       else toast((d && d.error) || 'Üretilemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
@@ -1127,7 +1172,7 @@
     if (!REAL) { toast('Video gerçek modda (Grok) üretilir'); return; }
     if (!S.user) { openAuth(); return; }
     S.videoJobs[idx] = { state: 'submit' }; refreshTab();
-    callFn({ action: 'video', image: img, prompt: motion, size: S.aspect, vsec: 5 }).then(function (d) {
+    callFn({ action: 'video', image: img, prompt: motion, size: S.aspect, vsec: 5, vprovider: S.vengine }).then(function (d) {
       if (!d || !d.ok || !d.videoJob) { delete S.videoJobs[idx]; refreshTab(); toast((d && d.error) || 'Video başlatılamadı'); return; }
       if (typeof d.credits === 'number') S.credits = d.credits; chrome();
       S.videoJobs[idx] = { state: 'render', job: d.videoJob }; refreshTab();
@@ -1138,7 +1183,7 @@
     if (tries > 60) { delete S.videoJobs[idx]; refreshTab(); toast('Video zaman aşımı — tekrar dene'); return; }
     setTimeout(function () {
       callFn({ action: 'video_status', videoJob: job }).then(function (d) {
-        if (d && d.ok && d.done && d.url) { S.videos[idx] = d.url; delete S.videoJobs[idx]; refreshTab(); toast('Video hazır ✦'); }
+        if (d && d.ok && d.done && d.url) { S.videos[idx] = d.url; delete S.videoJobs[idx]; persistMedia(); refreshTab(); toast('Video hazır ✦'); }
         else if (d && d.ok && !d.done) { pollVideoJob(idx, job, tries + 1); }
         else { delete S.videoJobs[idx]; refreshTab(); toast((d && d.error) || 'Video üretilemedi'); }
       }).catch(function () { pollVideoJob(idx, job, tries + 1); });
@@ -1163,13 +1208,13 @@
     if (!instr) { toast('Ne değiştireyim yaz'); return; }
     closeEdit();
     var size = studio ? S.imgAspect : S.aspect;
-    if (!REAL) { if (studio) S.imgOut = demoImage(0, size); else S.images[_editIdx] = demoImage(_editIdx, size); if (studio) render(); else refreshTab(); toast('Düzenlendi (demo): ' + instr.slice(0, 36)); return; }
+    if (!REAL) { if (studio) S.imgOut = demoImage(0, size); else { S.images[_editIdx] = demoImage(_editIdx, size); persistMedia(); } if (studio) render(); else refreshTab(); toast('Düzenlendi (demo): ' + instr.slice(0, 36)); return; }
     if (!S.user) { openAuth(); return; }
     toast('Görsel düzenleniyor…');
     toDataUri(src).then(function (du) {
       return callFn({ action: 'edit', image: du, prompt: instr, size: size });
     }).then(function (d) {
-      if (d && d.ok && d.url) { if (studio) S.imgOut = d.url; else S.images[_editIdx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; if (studio) render(); else refreshTab(); chrome(); toast('Görsel düzenlendi'); }
+      if (d && d.ok && d.url) { if (studio) S.imgOut = d.url; else { S.images[_editIdx] = d.url; persistMedia(); } if (typeof d.credits === 'number') S.credits = d.credits; if (studio) render(); else refreshTab(); chrome(); toast('Görsel düzenlendi'); }
       else toast((d && d.error) || 'Görsel düzenlenemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
@@ -1178,7 +1223,7 @@
     if (!prompts.length) return;
     var idxs = []; for (var k = 0; k < prompts.length; k++) if (!S.images[k]) idxs.push(k);
     if (!idxs.length) { toast('Zaten hepsi üretildi'); return; }
-    if (!REAL) { idxs.forEach(function (i) { S.images[i] = demoImage(i, S.aspect); }); refreshTab(); toast(idxs.length + ' görsel üretildi (demo)'); return; }
+    if (!REAL) { idxs.forEach(function (i) { S.images[i] = demoImage(i, S.aspect); }); persistMedia(); refreshTab(); toast(idxs.length + ' görsel üretildi (demo)'); return; }
     if (!S.user) { openAuth(); return; }
     toast(idxs.length + ' görsel sırayla üretiliyor…');
     var n = 0;
@@ -1186,7 +1231,7 @@
       if (n >= idxs.length) { toast('Tüm görseller hazır'); return; }
       var idx = idxs[n++]; var full = prompts[idx] + ' — ' + styleObj().en;
       callFn({ action: 'image', prompt: full, size: S.aspect, imgIndex: idx }).then(function (d) {
-        if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; refreshTab(); chrome(); }
+        if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; persistMedia(); refreshTab(); chrome(); }
         next();
       }).catch(function () { next(); });
     })();
@@ -1269,7 +1314,7 @@
     if (!S.user) { openAuth(); return; }
     var slot = document.getElementById('audioSlot'); if (slot) slot.innerHTML = '<p style="color:var(--on-ink-muted);font-size:13px;margin-top:12px">Ses üretiliyor…</p>';
     callFn({ action: 'tts', text: text, engine: 'eleven', voiceId: VOICES[S.voiceIdx].ev, voice: VOICES[S.voiceIdx].ov, speed: S.ttsRate }).then(function (d) {
-      if (d && d.ok && d.url) { S.audio = d.url; if (typeof d.credits === 'number') S.credits = d.credits; setEngineStatus(d); if (slot) slot.innerHTML = '<audio controls src="' + esc(d.url) + '"></audio>'; chrome(); ttsToast(d); }
+      if (d && d.ok && d.url) { S.audio = d.url; if (typeof d.credits === 'number') S.credits = d.credits; persistMedia(); setEngineStatus(d); if (slot) slot.innerHTML = '<audio controls src="' + esc(d.url) + '"></audio>'; chrome(); ttsToast(d); }
       else { if (slot) slot.innerHTML = ''; toast((d && d.error) || 'Ses üretilemedi'); }
     }).catch(function () { if (slot) slot.innerHTML = ''; toast('Bağlantı hatası'); });
   }

@@ -632,10 +632,18 @@ const cleanJob = (v: unknown) => String(v || "").replace(/[^a-zA-Z0-9_-]/g, "").
 function videoCost(sec: number): number { return Math.max(60, Math.round(Math.min(15, Math.max(3, sec))) * 12); }
 function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "grok").toLowerCase(); }
 
-// Sağlayıcı-bağımsız giriş noktaları — handler bunları çağırır.
-async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
-  if (videoProvider() === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
-  const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id } : r;
+// Sağlayıcı-bağımsız giriş noktaları — handler bunları çağırır. İstek başına
+// sağlayıcı seçimi (want="grok"|"kling") env varsayılanını geçersiz kılar;
+// istenen sağlayıcının secret'ı yoksa diğerine düşer (kullanıcı takılmasın).
+async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string, want?: string): Promise<{ id?: string; err?: string; used?: string }> {
+  const klingReady = !!(Deno.env.get("KLING_ACCESS_KEY") && Deno.env.get("KLING_SECRET_KEY"));
+  const grokReady = !!Deno.env.get("XAI_API_KEY");
+  let choice = (want && (want === "grok" || want === "kling")) ? want : videoProvider();
+  // İstenen sağlayıcı yapılandırılmamışsa, hazır olana düş.
+  if (choice === "kling" && !klingReady && grokReady) choice = "grok";
+  if (choice === "grok" && !grokReady && klingReady) choice = "kling";
+  if (choice === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id, used: "kling" } : r; }
+  const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id, used: "grok" } : r;
 }
 async function pollVideo(job: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
   if (job.indexOf("kling:") === 0) return pollKling(job.slice(6));
@@ -883,7 +891,7 @@ Deno.serve(async (req) => {
     // 'video_status' ile poll edilir. image→video için image.url gerekir.
     if (act === "video") {
       const sec = Math.min(15, Math.max(3, Number(b.vsec) || 5));
-      const sub = await submitVideo(String(b.prompt || ""), String(b.image || ""), sec, String(b.size || ""));
+      const sub = await submitVideo(String(b.prompt || ""), String(b.image || ""), sec, String(b.size || ""), String(b.vprovider || "").toLowerCase());
       if (!sub.id) {
         logRun({ action: "video", ok: false, ms: Date.now() - t0, user_id: userId || null, err: (sub.err || "submit").slice(0, 60) });
         return json({ ok: false, error: "Video başlatılamadı — " + (sub.err || "bilinmeyen hata") + " (kredi düşülmedi)" }, 502);
@@ -891,7 +899,7 @@ Deno.serve(async (req) => {
       let credits: number | undefined;
       if (cost > 0 && admin && userId) credits = await spendSafe(admin, userId, cost, "video");
       logRun({ action: "video", ok: true, ms: Date.now() - t0, user_id: userId || null });
-      return json({ ok: true, videoJob: sub.id, charged: cost > 0, credits, cost });
+      return json({ ok: true, videoJob: sub.id, used: sub.used, charged: cost > 0, credits, cost });
     }
 
     if (isPreview) {
