@@ -22,7 +22,9 @@
     bgMusic: null, bgMusicName: '', musicVol: 0.5,
     chat: { open: false, msgs: [], busy: false },
     // image studio
-    imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null
+    imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null, imgMode: 'gorsel',
+    // ses stüdyo
+    ssText: '', ssVoice: 0, ssOut: null
   };
 
   // ── Data ─────────────────────────────────────────────────────────────
@@ -176,7 +178,7 @@
     if (S.view === 'new') tb.innerHTML = miniSteps();
     else tb.innerHTML = '<span class="tb-title">' + esc(viewTitle()) + '</span>';
   }
-  function viewTitle() { return S.view === 'images' ? 'Görsel stüdyo' : S.view === 'library' ? 'Kütüphane' : S.view === 'history' ? 'Geçmiş' : 'Yeni dosya'; }
+  function viewTitle() { return S.view === 'images' ? 'Görsel stüdyo' : S.view === 'audio' ? 'Ses stüdyo' : S.view === 'library' ? 'Kütüphane' : S.view === 'history' ? 'Geçmiş' : 'Yeni dosya'; }
   function miniSteps() {
     var labels = ['Fikir', 'Tarz', 'Üretim', 'Dosya'];
     var h = '<div class="mini-steps">';
@@ -194,6 +196,7 @@
     if (S.view === 'new') {
       html = S.step === 1 ? renderComposer() : S.step === 2 ? renderRoom() : S.step === 3 ? renderGen() : renderDoc();
     } else if (S.view === 'images') html = renderImages();
+    else if (S.view === 'audio') html = renderAudio();
     else if (S.view === 'library') html = renderLibrary();
     else html = renderHistory();
     view.innerHTML = html;
@@ -463,10 +466,13 @@
         '<button class="btn btn-quiet btn-sm" data-act="genImage">↻ Yeniden</button>' +
         '<a class="btn btn-quiet btn-sm" href="' + esc(S.imgOut) + '" download="storia-gorsel.jpg" target="_blank" rel="noopener">↓ İndir</a></div>'
       : '<div class="ph" style="aspect-ratio:1;display:grid;place-items:center;border-radius:var(--r-md);border:1px solid var(--line);background:linear-gradient(135deg,var(--paper-2),var(--paper-3));color:var(--muted);font-size:14px">Görselin burada belirir</div>';
-    return '<div class="imgstudio"><div class="room-head"><h1>Görsel stüdyo</h1><p>Tek bir prompt ile bağımsız görsel üret, düzenle ve indir.</p></div>' +
+    var modeSeg = [['gorsel', 'Görsel'], ['avatar', 'Avatar / Karakter']].map(function (m) { return '<button class="' + (S.imgMode === m[0] ? 'on' : '') + '" data-act="imgMode" data-v="' + m[0] + '">' + m[1] + '</button>'; }).join('');
+    var isAvatar = S.imgMode === 'avatar';
+    return '<div class="imgstudio"><div class="room-head"><h1>Görsel stüdyo</h1><p>Tek bir prompt ile bağımsız görsel, avatar ya da karakter üret; düzenle ve indir.</p></div>' +
       '<div class="is-grid"><div>' +
-        '<div class="opt-group"><div class="opt-title">Ne görmek istiyorsun?</div>' +
-          '<textarea class="field" id="imgPromptInput" placeholder="Örn: gün batımında sisli bir dağ manzarası, kartal süzülüyor" style="min-height:110px">' + esc(S.imgPrompt) + '</textarea></div>' +
+        '<div class="opt-group"><div class="opt-title">Ne üretmek istiyorsun?</div><div class="seg">' + modeSeg + '</div></div>' +
+        '<div class="opt-group"><div class="opt-title">' + (isAvatar ? 'Karakteri / avatarı tarif et' : 'Ne görmek istiyorsun?') + '</div>' +
+          '<textarea class="field" id="imgPromptInput" placeholder="' + (isAvatar ? 'Örn: 30’lu yaşlarda gülümseyen bir barista, önlük, sıcak ışık' : 'Örn: gün batımında sisli bir dağ manzarası, kartal süzülüyor') + '" style="min-height:110px">' + esc(S.imgPrompt) + '</textarea></div>' +
         '<div class="opt-group"><div class="opt-title">Stil</div><div class="tiles">' + styleTiles + '</div></div>' +
         '<div class="opt-group"><div class="opt-title">Format</div><div class="aspects">' + aspects + '</div></div>' +
         '<button class="btn btn-gold btn-lg" data-act="genImage" style="width:100%">✦ Görseli üret · 12 kredi</button>' +
@@ -475,6 +481,40 @@
       '</div></div></div>';
   }
 
+  // ── Ses stüdyo (bağımsız TTS, ElevenLabs) ────────────────────────────
+  function renderAudio() {
+    var voiceTiles = VOICES.map(function (v, i) {
+      var prem = v.premium ? '<span class="prem">Premium' + (v.x > 1 ? ' ×' + v.x : '') + '</span>' : '';
+      return '<div class="tile voice-tile ' + (S.ssVoice === i ? 'on' : '') + '" data-act="ssVoice" data-v="' + i + '">' +
+        '<button class="v-prev" data-act="voicePrev" data-v="' + i + '" aria-label="Önizle" title="Önizle"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
+        '<div class="t-name">' + esc(v.name) + prem + '</div><div class="t-desc">' + esc(v.desc) + '</div></div>';
+    }).join('');
+    var chars = (S.ssText || '').length, cost = Math.max(10, Math.ceil(chars / 1000) * 5) * (VOICES[S.ssVoice].x || 1);
+    var out = S.ssOut
+      ? '<audio controls src="' + esc(S.ssOut) + '" style="width:100%"></audio><div class="is-acts" style="margin-top:12px"><button class="btn btn-quiet btn-sm" data-act="dlAudioSs">↓ Sesi indir</button><button class="btn btn-quiet btn-sm" data-act="ssTts">↻ Yeniden</button></div>'
+      : '<div class="ph" style="min-height:90px;display:grid;place-items:center;border-radius:var(--r-md);border:1px solid var(--line);background:linear-gradient(135deg,var(--paper-2),var(--paper-3));color:var(--muted);font-size:14px">Sesin burada belirir</div>';
+    return '<div class="imgstudio"><div class="room-head"><h1>Ses stüdyo</h1><p>Metnini yaz, sesini seç — profesyonel seslendirmeyi tek başına üret ve indir.</p></div>' +
+      '<div class="is-grid"><div>' +
+        '<div class="opt-group"><div class="opt-title">Metin</div>' +
+          '<textarea class="field" id="ssTextInput" placeholder="Seslendirmek istediğin metni buraya yaz…" style="min-height:150px">' + esc(S.ssText) + '</textarea>' +
+          '<div id="ssMeta" style="text-align:right;font-size:12px;color:var(--muted);margin-top:6px">' + chars + ' karakter · ~' + cost + ' kredi</div></div>' +
+        '<div class="opt-group"><div class="opt-title">Anlatıcı sesi</div><div class="tiles">' + voiceTiles + '</div></div>' +
+        '<button class="btn btn-gold btn-lg" data-act="ssTts" style="width:100%">✦ Seslendir</button>' +
+      '</div><div>' +
+        '<div class="pv-card" style="padding:18px"><div id="ssOut">' + out + '</div></div>' +
+      '</div></div></div>';
+  }
+  function doStudioTts() {
+    var text = (S.ssText || '').trim(); if (!text) { toast('Önce bir metin yaz'); return; }
+    if (!REAL) { if (!speak(text.slice(0, 600), 1)) { toast('Tarayıcı seslendirmeyi desteklemiyor'); return; } toast('Demo seslendirme (gerçek modda mp3)'); return; }
+    if (!S.user) { openAuth(); return; }
+    var v = VOICES[S.ssVoice], slot = document.getElementById('ssOut');
+    if (slot) slot.innerHTML = '<p style="color:var(--muted);font-size:13px">Ses üretiliyor…</p>';
+    callFn({ action: 'tts', text: text, engine: 'eleven', voiceId: v.ev, voice: v.ov, speed: 1 }).then(function (d) {
+      if (d && d.ok && d.url) { S.ssOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; render(); chrome(); toast('Seslendirme hazır'); }
+      else { if (slot) slot.innerHTML = ''; toast((d && d.error) || 'Ses üretilemedi'); }
+    }).catch(function () { toast('Bağlantı hatası'); });
+  }
   // ── Library / History ────────────────────────────────────────────────
   function renderLibrary() {
     if (!S.history.length) return '<div class="empty"><div class="e-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 5h10v14H4zM14 7h6v12h-6"/></svg></div><h3>Kütüphanen boş</h3><p>Ürettiğin dosyalar burada toplanır. İlk dosyanı oluşturmaya ne dersin?</p><button class="btn btn-gold" data-act="goNew">＋ Yeni dosya</button></div>';
@@ -505,6 +545,11 @@
     if (custom) custom.addEventListener('input', function () { S.custom = custom.value; });
     var imgP = document.getElementById('imgPromptInput');
     if (imgP) imgP.addEventListener('input', function () { S.imgPrompt = imgP.value; });
+    var ssT = document.getElementById('ssTextInput');
+    if (ssT) ssT.addEventListener('input', function () {
+      S.ssText = ssT.value;
+      var m = document.getElementById('ssMeta'); if (m) { var n = ssT.value.length, c = Math.max(10, Math.ceil(n / 1000) * 5) * (VOICES[S.ssVoice].x || 1); m.textContent = n + ' karakter · ~' + c + ' kredi'; }
+    });
     var range = document.getElementById('durRange');
     if (range) range.addEventListener('input', function () {
       S.durationSec = parseInt(range.value, 10);
@@ -571,6 +616,10 @@
       case 'iaspect': S.imgAspect = v; render(); break;
       case 'genImage': genStandaloneImage(); break;
       case 'editStudio': openEditStudio(); break;
+      case 'imgMode': S.imgMode = v; render(); break;
+      case 'ssVoice': S.ssVoice = parseInt(v, 10); render(); break;
+      case 'ssTts': doStudioTts(); break;
+      case 'dlAudioSs': downloadFileUrl(S.ssOut, 'storia-seslendirme.mp3'); break;
       case 'upgrade': openPlanModal(); break;
     }
   });
@@ -1062,8 +1111,8 @@
     return c.toDataURL('image/jpeg', 0.82);
   }
   function genStandaloneImage() {
-    if (!S.imgPrompt.trim()) { toast('Önce bir görsel tarifi yaz'); return; }
-    var full = S.imgPrompt + ' — ' + styleObj(S.imgStyle).en;
+    if (!S.imgPrompt.trim()) { toast(S.imgMode === 'avatar' ? 'Önce karakteri/avatarı tarif et' : 'Önce bir görsel tarifi yaz'); return; }
+    var full = (S.imgMode === 'avatar' ? S.imgPrompt + ' — character portrait, upper body, looking at camera, clean studio background, ' : S.imgPrompt + ' — ') + styleObj(S.imgStyle).en;
     if (!REAL) { S.imgOut = demoImage(0, S.imgAspect); render(); toast('Demo görsel üretildi'); return; }
     if (!S.user) { openAuth(); return; }
     toast('Görsel üretiliyor…');
