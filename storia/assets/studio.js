@@ -198,7 +198,7 @@
   // ── Result document (step 4) ─────────────────────────────────────────
   function renderDoc() {
     var r = S.result || {};
-    var tabs = [['senaryo', 'Senaryo'], ['seslendirme', 'Seslendirme'], ['gorsel', 'Görseller'], ['youtube', 'YouTube'], ['instagram', 'Instagram'], ['kapak', 'Kapak & yayın']];
+    var tabs = [['senaryo', 'Senaryo'], ['seslendirme', 'Seslendirme'], ['gorsel', 'Görseller'], ['storyboard', 'Storyboard'], ['youtube', 'YouTube'], ['instagram', 'Instagram'], ['kapak', 'Kapak & yayın']];
     var tabBtns = tabs.map(function (t) { return '<button class="' + (S.tab === t[0] ? 'on' : '') + '" data-act="tab" data-v="' + t[0] + '">' + t[1] + '</button>'; }).join('');
     var meta = [fmtDur(S.durationSec), styleObj().name, S.aspect, VOICES[S.voiceIdx].name].map(function (m) { return '<span class="m">' + esc(m) + '</span>'; }).join('');
     var hero = '<div class="doc-hero"><div class="doc-eyebrow">✦ Dosyan hazır</div>' +
@@ -246,7 +246,21 @@
           '<button class="btn btn-gold btn-sm" data-act="image" data-v="' + i + '">✦ Üret · 12</button>' +
           '<button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(p) + '">Kopyala</button></div></div></div>';
       }).join('');
-      return '<div class="tab-tools"><span class="tt-note"><b>' + esc(styleObj().name) + '</b> stilinde ' + prompts.length + ' görsel promptu</span></div><div class="gallery">' + cards + '</div>';
+      var doneCount = prompts.filter(function (_, i) { return S.images[i]; }).length;
+      return '<div class="tab-tools"><span class="tt-note"><b>' + esc(styleObj().name) + '</b> stilinde ' + prompts.length + ' görsel · ' + doneCount + ' üretildi</span><button class="btn btn-gold btn-sm" data-act="genAll">✦ Tümünü üret</button></div><div class="gallery">' + cards + '</div>';
+    }
+    if (S.tab === 'storyboard') {
+      var sc = r.senaryo || [];
+      if (!sc.length) return emptyInline();
+      var ratio = S.aspect === '9:16' ? '9/13' : S.aspect === '1:1' ? '1/1' : '16/9';
+      var sbCards = sc.map(function (s, i) {
+        var img = S.images[i];
+        var box = img ? '<img src="' + esc(img) + '" alt="">' : '<div class="ph" style="aspect-ratio:' + ratio + ';background:' + GRADS[i % GRADS.length] + '">Sahne ' + (i + 1) + '</div>';
+        var over = '<div class="sb-gen" data-act="image" data-v="' + i + '"><span>' + (img ? 'Yeniden üret' : '✦ Görsel üret') + '</span></div>';
+        return '<div class="sb-card"><div class="sb-img" style="aspect-ratio:' + ratio + '">' + box + over + '</div><div class="sb-body"><div class="sb-no">Sahne ' + (i + 1) + '</div><h5>' + esc(s.baslik || ('Sahne ' + (i + 1))) + '</h5><p>' + esc(s.anlatim || s.metin || '') + '</p></div></div>';
+      }).join('');
+      var doneSb = sc.filter(function (_, i) { return S.images[i]; }).length;
+      return '<div class="tab-tools"><span class="tt-note">Film şeridi · ' + sc.length + ' sahne · ' + doneSb + ' görsel hazır</span><button class="btn btn-gold btn-sm" data-act="genAll">✦ Tümünü üret</button></div><div class="storyboard">' + sbCards + '</div>';
     }
     if (S.tab === 'youtube') {
       var yt = r.youtube || {};
@@ -357,6 +371,7 @@
       case 'download': downloadFile(); break;
       case 'tts': doTts(); break;
       case 'image': doImage(parseInt(v, 10)); break;
+      case 'genAll': genAll(); break;
       case 'openHist': openHist(parseInt(v, 10)); break;
       case 'istyle': S.imgStyle = v; render(); break;
       case 'iaspect': S.imgAspect = v; render(); break;
@@ -455,6 +470,24 @@
     }).catch(function () { toast('Bağlantı hatası'); });
   }
   function refreshTab() { var tb = document.getElementById('tabBody'); if (tb) tb.innerHTML = renderTab(); }
+  function genAll() {
+    var r = S.result || {}; var prompts = r.gorsel_promptlar || [];
+    if (!prompts.length) return;
+    var idxs = []; for (var k = 0; k < prompts.length; k++) if (!S.images[k]) idxs.push(k);
+    if (!idxs.length) { toast('Zaten hepsi üretildi'); return; }
+    if (!REAL) { idxs.forEach(function (i) { S.images[i] = demoImage(i, S.aspect); }); refreshTab(); toast(idxs.length + ' görsel üretildi (demo)'); return; }
+    if (!S.user) { openAuth(); return; }
+    toast(idxs.length + ' görsel sırayla üretiliyor…');
+    var n = 0;
+    (function next() {
+      if (n >= idxs.length) { toast('Tüm görseller hazır'); return; }
+      var idx = idxs[n++]; var full = prompts[idx] + ' — ' + styleObj().en;
+      callFn({ action: 'image', prompt: full, size: S.aspect, imgIndex: idx }).then(function (d) {
+        if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; refreshTab(); chrome(); }
+        next();
+      }).catch(function () { next(); });
+    })();
+  }
   function demoImage(idx, aspect) {
     var c = document.createElement('canvas'); c.width = 500; c.height = aspect === '9:16' ? 780 : aspect === '16:9' ? 300 : 500;
     var x = c.getContext('2d');
