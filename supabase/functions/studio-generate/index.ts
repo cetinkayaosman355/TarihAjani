@@ -702,11 +702,21 @@ const cleanJob = (v: unknown) => String(v || "").replace(/[^a-zA-Z0-9_-]/g, "").
 // Sağlayıcı VIDEO_PROVIDER env'i ile seçilir ("grok" | "kling"; varsayılan grok).
 // İş kimliğine sağlayıcı ön eki eklenir ("grok:<id>" / "kling:<id>") ki poll doğru
 // API'ye gitsin. Async: submit (ücretlendirir) → video_status ile poll (ücretsiz).
-function videoCost(sec: number): number { return Math.max(120, Math.round(Math.min(15, Math.max(3, sec))) * 24); }
+// Sağlayıcıya göre kredi: Kling daha kaliteli → daha pahalı (5 sn: Grok 120 KR, Kling 300 KR).
+function videoCost(sec: number, provider?: string): number {
+  const s = Math.round(Math.min(15, Math.max(3, sec)));
+  const kling = pickProvider(provider) === "kling";
+  return Math.max(kling ? 300 : 120, s * (kling ? 60 : 24));
+}
 function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "grok").toLowerCase(); }
+// İstemci sağlayıcıyı seçebilir; geçersizse env varsayılanına düşer.
+function pickProvider(p?: string): string {
+  const v = String(p || "").toLowerCase();
+  return (v === "kling" || v === "grok") ? v : videoProvider();
+}
 
-async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
-  if (videoProvider() === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
+async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string, provider?: string): Promise<{ id?: string; err?: string }> {
+  if (pickProvider(provider) === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
   const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id } : r;
 }
 async function pollVideo(job: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
@@ -880,7 +890,7 @@ Deno.serve(async (req) => {
       : isEdit
         ? EDIT_COST
         : act === "video"
-          ? videoCost(Number(b.vsec) || 5)
+          ? videoCost(Number(b.vsec) || 5, String(b.vprovider || ""))
           : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
 
     // G-01: ücretsiz AI uçları sınırlı — bot/istismar faturamızı şişiremesin.
@@ -1013,7 +1023,7 @@ Deno.serve(async (req) => {
     // İş kimliği (videoJob) döner; istemci video_status ile poll eder. Async.
     if (act === "video") {
       const sec = Math.min(15, Math.max(3, Number(b.vsec) || 5));
-      const sub = await submitVideo(String(b.prompt || ""), String(b.image || ""), sec, String(b.size || ""));
+      const sub = await submitVideo(String(b.prompt || ""), String(b.image || ""), sec, String(b.size || ""), String(b.vprovider || ""));
       if (!sub.id) {
         logRun({ action: "video", ok: false, ms: Date.now() - t0, user_id: userId || null, err: (sub.err || "submit").slice(0, 60) });
         return json({ ok: false, error: "Video başlatılamadı — " + (sub.err || "bilinmeyen hata") + " (kredi düşülmedi)" }, 502);
