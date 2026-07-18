@@ -117,25 +117,57 @@
       #ta-stepm .sm-fill { height: 100%; background: linear-gradient(90deg, #a77d35, #e6c478); transition: width .3s; }
     }
 
-    /* ── PLATFORM KABUĞU: sol sabit yan menü + geniş içerik ── */
-    .ta-body { display: flex; align-items: flex-start; flex: 1; width: 100%; }
-    .ta-side { width: 238px; flex-shrink: 0; position: sticky; top: 72px; align-self: stretch;
-      height: calc(100vh - 72px); overflow-y: auto; border-right: 1px solid rgba(193,154,82,.16);
-      background: linear-gradient(180deg, rgba(6,9,17,.6), rgba(4,6,12,.35));
-      display: flex; flex-direction: column; gap: 3px; padding: 22px 14px 18px; }
+    /* ── PLATFORM KABUĞU: sol sabit yan menü + geniş içerik (premium) ── */
+    .ta-body { display: flex; align-items: flex-start; flex: 1; width: 100%; position: relative; z-index: 1; }
+    /* Sinematik atmosfer: üstten sıcak altın hâle + derin vinyet */
+    .ta-shellbg { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(120% 60% at 82% -8%, rgba(193,154,82,.10), transparent 60%),
+        radial-gradient(90% 50% at 10% 0%, rgba(120,90,30,.07), transparent 55%),
+        radial-gradient(140% 120% at 50% 120%, rgba(0,0,0,.55), transparent 60%); }
+    .ta-side { width: 250px; flex-shrink: 0; position: sticky; top: 72px; align-self: stretch;
+      height: calc(100vh - 72px); overflow-y: auto;
+      border-right: 1px solid rgba(193,154,82,.14);
+      background: linear-gradient(177deg, rgba(10,13,22,.72) 0%, rgba(5,7,13,.5) 100%);
+      box-shadow: inset -1px 0 0 rgba(230,196,120,.05), 34px 0 60px -40px rgba(0,0,0,.6);
+      display: flex; flex-direction: column; gap: 2px; padding: 20px 14px 16px; }
     .ta-maincol { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-    .ta-side .ta-navbtn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
-      padding: 11px 13px; border: 1px solid transparent; background: transparent; color: #b4b9c4;
-      font-family: inherit; font-size: 13.5px; cursor: pointer; border-radius: 9px;
-      transition: background .15s, color .15s, border-color .15s; }
-    .ta-side .ta-navbtn:hover { color: #e6c478; background: rgba(193,154,82,.08); }
-    .ta-side .ta-navbtn .ic { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
-    .ta-side .ta-sublink { display: block; padding: 9px 13px; color: #818797; font-size: 12.5px;
-      letter-spacing: .03em; text-decoration: none; border-radius: 9px; transition: background .15s, color .15s; }
+    /* Marka bloğu */
+    .ta-brand { display: flex; align-items: center; gap: 11px; padding: 4px 8px 16px; margin-bottom: 6px;
+      border-bottom: 1px solid rgba(193,154,82,.12); text-decoration: none; }
+    .ta-brand img { height: 38px; width: auto; filter: drop-shadow(0 2px 10px rgba(201,162,90,.25)); }
+    .ta-brand .bn { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 15.5px; color: #f2ecd9; line-height: 1; }
+    .ta-brand .bs { color: #9a7d43; font-family: 'Special Elite', monospace; font-size: 8px; letter-spacing: .22em; margin-top: 5px; }
+    .ta-side .ta-navbtn { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+      padding: 11px 12px; border: 1px solid transparent; background: transparent; color: #b8bdc8;
+      font-family: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer; border-radius: 10px;
+      transition: background .18s, color .18s, box-shadow .18s, border-color .18s; }
+    .ta-side .ta-navbtn:hover { color: #f2ecd9; background: rgba(193,154,82,.09); box-shadow: inset 2px 0 0 rgba(230,196,120,.5); }
+    .ta-side .ta-navbtn .ic { font-size: 14px; width: 30px; height: 30px; flex-shrink: 0;
+      display: grid; place-items: center; border-radius: 8px; color: #c19a52;
+      background: rgba(193,154,82,.08); border: 1px solid rgba(193,154,82,.16); transition: all .18s; }
+    .ta-side .ta-navbtn:hover .ic { background: rgba(193,154,82,.18); color: #e6c478; box-shadow: 0 0 16px rgba(201,162,90,.25); }
+    .ta-side .ta-sublink { display: flex; align-items: center; gap: 12px; padding: 9px 12px; color: #7c828f; font-size: 12.5px;
+      letter-spacing: .02em; text-decoration: none; border-radius: 10px; transition: background .18s, color .18s; }
+    .ta-side .ta-sublink::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: .5; margin-left: 13px; }
     .ta-side .ta-sublink:hover { color: #e6c478; background: rgba(193,154,82,.06); }
-    .ta-side-head { color: #676d7c; font-family: 'Special Elite', monospace; font-size: 9px;
-      letter-spacing: .2em; padding: 10px 13px 5px; }
-    @media (max-width: 840px) { .ta-side { display: none; } .ta-body { display: block; } }
+    .ta-side-head { color: #6a6f7c; font-family: 'Special Elite', monospace; font-size: 8.5px;
+      letter-spacing: .24em; padding: 14px 13px 6px; }
+    /* Kullanıcı / plan kartı */
+    .ta-plan { margin-top: 12px; border: 1px solid rgba(193,154,82,.22); border-radius: 12px; padding: 12px;
+      background: linear-gradient(160deg, rgba(193,154,82,.10), rgba(193,154,82,.02));
+      box-shadow: 0 10px 30px -18px rgba(201,162,90,.4); }
+    .ta-plan .row { display: flex; align-items: center; gap: 10px; }
+    .ta-plan .av { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center;
+      color: #c19a52; font-family: 'Special Elite', monospace; font-size: 13px; background: #0b0f18;
+      border: 1px solid rgba(193,154,82,.5); box-shadow: 0 0 0 3px rgba(193,154,82,.08); }
+    .ta-plan .nm { color: #f2ecd9; font-size: 13px; font-weight: 600; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ta-plan .tr { color: #9a7d43; font-family: 'Special Elite', monospace; font-size: 8.5px; letter-spacing: .16em; margin-top: 3px; }
+    .ta-plan .kr { margin-top: 11px; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      border: 0; cursor: pointer; border-radius: 8px; padding: 9px 11px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .06em;
+      color: #171207; background: linear-gradient(110deg, #a77d35, #e6c478 55%, #c19a52); }
+    .ta-plan .kr:hover { box-shadow: 0 6px 22px rgba(230,196,120,.3); }
+    @media (max-width: 840px) { .ta-side, .ta-shellbg { display: none; } .ta-body { display: block; } }
 
     /* ── U-02: dosya sekmeleri — mobilde tek satır kaydırmalı ── */
     @media (max-width: 600px) {
@@ -232,6 +264,7 @@
   <!-- ══════════ STUDIO ══════════ -->
   <sc-if value="{{ showStudio }}" hint-placeholder-val="{{ false }}">
     <div style="min-height: 100vh; display: flex; flex-direction: column;">
+      <div class="ta-shellbg"></div>
 
       <!-- header -->
       <header style="position: sticky; top: 0; z-index: 20; height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 28px; border-bottom: 1px solid rgba(193,154,82,.2); background: rgba(3,5,11,.94); backdrop-filter: blur(14px);">
@@ -293,19 +326,28 @@
 
       <div class="ta-body">
         <aside class="ta-side">
+          <a href="/" class="ta-brand">
+            <img src="assets/logo.webp" alt="Tarih Ajanı">
+            <div><div class="bn">Ajan Studio</div><div class="bs">ÜRETİM MERKEZİ</div></div>
+          </a>
           <div class="ta-side-head">ÜRETİM</div>
           <button class="ta-navbtn" onClick="{{ modeWizard }}" style="{{ sideWizActive }}"><span class="ic">◈</span> Üret · Sihirbaz</button>
           <button class="ta-navbtn" onClick="{{ modeGorsel }}" style="{{ sideGorActive }}"><span class="ic">✦</span> Görsel Stüdyo</button>
-          <button class="ta-navbtn" onClick="{{ modeArsiv }}" style="{{ sideArsActive }}"><span class="ic">🗂</span> Hazır Arşiv</button>
+          <button class="ta-navbtn" onClick="{{ modeArsiv }}" style="{{ sideArsActive }}"><span class="ic">❖</span> Hazır Arşiv</button>
           <button class="ta-navbtn" onClick="{{ modeHistory }}" style="{{ sideGecActive }}"><span class="ic">↺</span> Geçmiş Üretimler</button>
-          <div style="height: 1px; background: rgba(129,135,151,.14); margin: 12px 6px;"></div>
           <div class="ta-side-head">KEŞFET</div>
           <a class="ta-sublink" href="/">Ana Sayfa</a>
           <a class="ta-sublink" href="/egitim">Eğitim Akademisi</a>
           <a class="ta-sublink" href="/uyelik">Üyelik</a>
           <a class="ta-sublink" href="/urunler">Mağaza</a>
-          <div style="flex: 1;"></div>
-          <button class="ta-navbtn" onClick="{{ openCredits }}" style="border-color: rgba(193,154,82,.3); background: rgba(193,154,82,.06); color: #e6c478;"><span class="ic">◉</span> {{ credits }} kredi · Yükle</button>
+          <div style="flex: 1; min-height: 14px;"></div>
+          <div class="ta-plan">
+            <div class="row">
+              <span class="av">{{ agentInitial }}</span>
+              <div style="min-width: 0;"><div class="nm">{{ agentName }}</div><div class="tr">{{ tierLabel }}</div></div>
+            </div>
+            <button class="kr" onClick="{{ openCredits }}"><span>◉ {{ credits }} KREDİ</span><span>YÜKLE +</span></button>
+          </div>
         </aside>
         <div class="ta-maincol">
 
@@ -3098,6 +3140,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const beam = this.props.beamSize ?? 340;
     const r = s.result || {};
     const optionDefs = this.optionData();
+    // Sol yan menü aktif buton stili (premium: altın soldan ışık çubuğu + degrade)
+    const SIDE_ON = { color: '#f5efdd', background: 'linear-gradient(90deg, rgba(193,154,82,.20), rgba(193,154,82,.03))', borderColor: 'rgba(193,154,82,.30)', boxShadow: 'inset 2px 0 0 #e6c478' };
     const gold = '#c19a52';
 
     const groups = [
@@ -3233,6 +3277,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       regError: s.regError,
       agentName: s.agentName || 'Ajan',
       agentInitial: (s.agentName || 'A').trim().charAt(0).toUpperCase(),
+      tierLabel: ({ uye: 'ÜCRETSİZ ÜYE', gozlemci: 'GÖZLEMCİ', ajan: 'AJAN', basmufettis: 'BAŞMÜFETTİŞ' })[s.tier] || 'AJAN ADAYI',
       agentEmail: s.regEmail || 'ajan@tarihajani.com',
       userMenuOpen: s.userMenuOpen,
       userCaretStyle: { fontSize: '10px', color: '#676d7c', transition: 'transform .2s', transform: s.userMenuOpen ? 'rotate(180deg)' : 'none' },
@@ -3261,11 +3306,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       modeHistory: () => this.setState({ mode: 'history' }),
       modeArsiv: () => this.setState({ mode: 'arsiv' }),
       modeGorsel: () => this.setState({ mode: 'gorsel' }),
-      // Sol yan menü aktif-durum vurgusu (temel görünüm CSS .ta-navbtn'den gelir)
-      sideWizActive: s.mode === 'wizard' ? { color: '#e6c478', background: 'rgba(193,154,82,.15)', borderColor: 'rgba(193,154,82,.42)' } : {},
-      sideGorActive: s.mode === 'gorsel' ? { color: '#e6c478', background: 'rgba(193,154,82,.15)', borderColor: 'rgba(193,154,82,.42)' } : {},
-      sideArsActive: s.mode === 'arsiv' ? { color: '#e6c478', background: 'rgba(193,154,82,.15)', borderColor: 'rgba(193,154,82,.42)' } : {},
-      sideGecActive: s.mode === 'history' ? { color: '#e6c478', background: 'rgba(193,154,82,.15)', borderColor: 'rgba(193,154,82,.42)' } : {},
+      // Sol yan menü aktif-durum vurgusu — altın soldan ışık çubuğu + degrade (premium)
+      sideWizActive: s.mode === 'wizard' ? SIDE_ON : {},
+      sideGorActive: s.mode === 'gorsel' ? SIDE_ON : {},
+      sideArsActive: s.mode === 'arsiv' ? SIDE_ON : {},
+      sideGecActive: s.mode === 'history' ? SIDE_ON : {},
       isGorsel: s.mode === 'gorsel',
       gorselTabStyle: {
         border: 0, cursor: 'pointer', padding: '10px 16px',
