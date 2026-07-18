@@ -996,6 +996,17 @@
                     <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
                       <img loading="lazy" data-zoomable="1" src="{{ gp.img.url }}" alt="Sahne görseli" onClick="{{ gp.img.zoom }}" title="Büyütmek için tıkla" style="{{ gp.img.thumbStyle }}">
                     </sc-if>
+                    <sc-if value="{{ gp.img.hasVid }}" hint-placeholder-val="{{ false }}">
+                      <video src="{{ gp.img.vidUrl }}" controls playsinline loop style="width: 100%; max-width: 420px; border-radius: 7px; border: 1px solid rgba(193,154,82,.3); box-shadow: 0 10px 34px rgba(0,0,0,.5); margin-top: 2px;"></video>
+                    </sc-if>
+                    <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
+                      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <button onClick="{{ gp.img.makeVideo }}" style="border: 0; background: linear-gradient(115deg, #6d3bd4, #9257ee 52%, #b57bff); color: #fff; padding: 7px 13px; font-size: 10.5px; font-weight: 800; letter-spacing: .07em; cursor: pointer; border-radius: 5px; box-shadow: 0 6px 20px rgba(120,70,220,.32);" style-hover="box-shadow: 0 8px 26px rgba(150,90,240,.5);">{{ gp.img.vidLabel }}</button>
+                        <sc-if value="{{ gp.img.vidBusy }}" hint-placeholder-val="{{ false }}">
+                          <span style="color: #c4a7ff; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .08em;">{{ gp.img.vidStatus }}</span>
+                        </sc-if>
+                      </div>
+                    </sc-if>
                     <sc-if value="{{ gp.img.done }}" hint-placeholder-val="{{ false }}">
 
                       <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: #9ed3a8; font-size: 11.5px; margin-top: 2px;">
@@ -2470,14 +2481,77 @@ class Component extends DCLogic {
     const si = (this.state.sceneImgs || {})[key] || null;
     const done = !!(si && si.done);
     const url = (si && si.url) || '';
+    const vidUrl = (si && si.vidUrl) || '';
+    const vidBusy = !!(si && si.vidBusy);
     return {
       done, notDone: !done,
       count: (si && si.count) || 0,
       url, hasUrl: !!url,
+      vidUrl, hasVid: !!vidUrl, vidBusy,
+      canVideo: !!url && !vidBusy,
+      vidStatus: (si && si.vidStatus) || '',
+      vidLabel: vidBusy ? ((si && si.vidStatus) || '🎬 HAZIRLANIYOR…') : (vidUrl ? '🎬 TEKRAR ÜRET' : '🎬 VİDEO ÜRET · 120 KR'),
+      makeVideo: () => this.makeVideo(key, url),
       zoom: () => this.openZoom(url),
       thumbStyle: { ...this.thumbBox(this.state.aspect), marginTop: '4px' },
       goStudio: () => this.goImgStudio()
     };
+  }
+
+  // ── VİDEO ÜRETİMİ (Grok/Kling · async) — sahne görselinden video ──
+  _sbUrlKey() {
+    return { url: 'https://ddyuopqcvpzaysnfavqc.supabase.co',
+      key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc' };
+  }
+  makeVideo(key, imageUrl) {
+    const si = (this.state.sceneImgs || {})[key] || {};
+    if (si.vidBusy || !imageUrl) return;
+    if (this.state.credits < 120) { this.setState({ creditModal: true }); return; }
+    // Sahne video promptunu al (video_promptlar[i]), yoksa görsel promptu
+    let prompt = '';
+    const m = /^([a-z]+)(\d+)$/.exec(key);
+    if (m) {
+      const i = +m[2], r = this.state.result || {};
+      const vp = r.video_promptlar || [], gp = r.gorsel_promptlar || [];
+      prompt = (vp[i] && vp[i].prompt) || (gp[i] && gp[i].prompt) || '';
+    }
+    const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[this.state.aspect] || '9:16';
+    this.setSceneImg(key, { vidBusy: true, vidStatus: '🎬 GÖNDERİLİYOR…' });
+    this.videoServer(imageUrl, prompt, aspect).then(job => {
+      this.setSceneImg(key, { vidStatus: '🎬 HAZIRLANIYOR… (1-3 dk)' });
+      this.pollVideo(key, job, 0);
+    }).catch(e => {
+      this.setSceneImg(key, { vidBusy: false, vidStatus: '' });
+      if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
+    });
+  }
+  async videoServer(imageUrl, prompt, aspect) {
+    const s = this._sbUrlKey();
+    const token = this._token() || s.key;
+    const r = await fetch(s.url + '/functions/v1/studio-generate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ action: 'video', image: imageUrl, prompt: prompt, size: aspect, vsec: 5 })
+    });
+    const d = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
+    if (r.status === 402) { if (typeof d.credits === 'number') this.setState({ credits: d.credits }); throw new Error('YETERSIZ_KREDI'); }
+    if (!r.ok || !d.ok || !d.videoJob) throw new Error(d.error || 'başlatılamadı');
+    if (typeof d.credits === 'number') this.setState({ credits: d.credits }, () => this.persist());
+    return d.videoJob;
+  }
+  pollVideo(key, job, tries) {
+    if (tries > 48) { this.setSceneImg(key, { vidBusy: false, vidStatus: 'Video zaman aşımı — tekrar dene' }); return; }
+    const s = this._sbUrlKey();
+    const token = this._token() || s.key;
+    setTimeout(() => {
+      fetch(s.url + '/functions/v1/studio-generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ action: 'video_status', videoJob: job })
+      }).then(r => r.json()).then(d => {
+        if (d && d.ok && d.done && d.url) { this.setSceneImg(key, { vidBusy: false, vidUrl: d.url, vidStatus: '' }); return; }
+        if (d && d.ok && !d.done) { this.setSceneImg(key, { vidStatus: '🎬 HAZIRLANIYOR… (' + (tries + 1) + ')' }); this.pollVideo(key, job, tries + 1); return; }
+        this.setSceneImg(key, { vidBusy: false, vidStatus: (d && d.error) ? ('Hata: ' + d.error) : '' });
+      }).catch(() => { this.pollVideo(key, job, tries + 1); });
+    }, 8000);
   }
 
   // Gerçek seslendirme — ElevenLabs (karakter başı ücretli). 1000 karakter = 15 KR
