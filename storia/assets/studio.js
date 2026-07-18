@@ -514,6 +514,11 @@
         '<div class="pv-card" style="padding:18px"><div id="ssOut">' + out + '</div></div>' +
       '</div></div></div>';
   }
+  function ttsToast(d) {
+    if (d && d.engine === 'eleven') { toast('Seslendirme hazır · ElevenLabs 🎙️'); return; }
+    var why = (d && d.elevenErr) ? (' — ' + String(d.elevenErr).slice(0, 90)) : '';
+    toast('⚠ ElevenLabs kullanılamadı, OpenAI sesiyle üretildi' + why);
+  }
   function doStudioTts() {
     var text = (S.ssText || '').trim(); if (!text) { toast('Önce bir metin yaz'); return; }
     if (!REAL) { if (!speak(text.slice(0, 600), 1)) { toast('Tarayıcı seslendirmeyi desteklemiyor'); return; } toast('Demo seslendirme (gerçek modda mp3)'); return; }
@@ -521,7 +526,7 @@
     var v = VOICES[S.ssVoice], slot = document.getElementById('ssOut');
     if (slot) slot.innerHTML = '<p style="color:var(--muted);font-size:13px">Ses üretiliyor…</p>';
     callFn({ action: 'tts', text: text, engine: 'eleven', voiceId: v.ev, voice: v.ov, speed: 1 }).then(function (d) {
-      if (d && d.ok && d.url) { S.ssOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; render(); chrome(); toast('Seslendirme hazır'); }
+      if (d && d.ok && d.url) { S.ssOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; render(); chrome(); ttsToast(d); }
       else { if (slot) slot.innerHTML = ''; toast((d && d.error) || 'Ses üretilemedi'); }
     }).catch(function () { toast('Bağlantı hatası'); });
   }
@@ -1148,7 +1153,7 @@
     if (!REAL) { if (!speak(sample, S.ttsRate)) toast('Tarayıcı seslendirmeyi desteklemiyor'); else toast('Önizleme · ' + v.name); return; }
     toast('Önizleme hazırlanıyor…');
     callFn({ action: 'tts', preview: true, engine: 'eleven', voiceId: v.ev, voice: v.ov }).then(function (d) {
-      if (d && d.ok && d.url) { try { new Audio(d.url).play(); } catch (e) {} } else toast('Önizleme alınamadı');
+      if (d && d.ok && d.url) { try { new Audio(d.url).play(); } catch (e) {} if (d.engine && d.engine !== 'eleven') toast('⚠ OpenAI önizleme — ElevenLabs: ' + String(d.elevenErr || '?').slice(0, 80)); } else toast('Önizleme alınamadı');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
   function doTts() {
@@ -1165,7 +1170,7 @@
     if (!S.user) { openAuth(); return; }
     var slot = document.getElementById('audioSlot'); if (slot) slot.innerHTML = '<p style="color:var(--on-ink-muted);font-size:13px;margin-top:12px">Ses üretiliyor…</p>';
     callFn({ action: 'tts', text: text, engine: 'eleven', voiceId: VOICES[S.voiceIdx].ev, voice: VOICES[S.voiceIdx].ov, speed: S.ttsRate }).then(function (d) {
-      if (d && d.ok && d.url) { S.audio = d.url; if (typeof d.credits === 'number') S.credits = d.credits; if (slot) slot.innerHTML = '<audio controls src="' + esc(d.url) + '"></audio>'; chrome(); toast('Seslendirme hazır'); }
+      if (d && d.ok && d.url) { S.audio = d.url; if (typeof d.credits === 'number') S.credits = d.credits; if (slot) slot.innerHTML = '<audio controls src="' + esc(d.url) + '"></audio>'; chrome(); ttsToast(d); }
       else { if (slot) slot.innerHTML = ''; toast((d && d.error) || 'Ses üretilemedi'); }
     }).catch(function () { if (slot) slot.innerHTML = ''; toast('Bağlantı hatası'); });
   }

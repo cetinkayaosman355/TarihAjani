@@ -353,9 +353,14 @@ function elevenAllowed(): Set<string> {
   const ids = (Deno.env.get("STORIA_VOICE_IDS") || "").split(",").map((s) => s.trim()).filter(Boolean);
   return new Set(ids.length ? ids : DEFAULT_VOICE_IDS);
 }
+// TTS tanı: hangi motor kullanıldı + ElevenLabs neden başarısız oldu (handler yanıta ekler).
+let _ttsEngine = "";
+let _ttsElevenErr = "";
 async function generateSpeechEleven(text: string, voiceId: string, opts?: { stability?: number; style?: number }): Promise<Uint8Array | null> {
   const key = Deno.env.get("ELEVENLABS_API_KEY");
-  if (!key || !text.trim() || !elevenAllowed().has(voiceId)) return null;
+  if (!key) { _ttsElevenErr = "ELEVENLABS_API_KEY secret yok (isim birebir 'ELEVENLABS_API_KEY' olmalı)."; return null; }
+  if (!text.trim()) { _ttsElevenErr = "boş metin"; return null; }
+  if (!elevenAllowed().has(voiceId)) { _ttsElevenErr = "voiceId allowlist'te değil: " + voiceId; return null; }
   const chunks: string[] = [];
   let rest = text.trim();
   while (rest.length && chunks.length < 5) {
@@ -384,9 +389,14 @@ async function generateSpeechEleven(text: string, voiceId: string, opts?: { stab
           voice_settings: { stability: stab, similarity_boost: 0.85, style: sty, use_speaker_boost: true },
         }),
       });
-      if (!r.ok) return null;
+      if (!r.ok) {
+        const body = await r.text().catch(() => "");
+        _ttsElevenErr = "ElevenLabs " + r.status + ": " + body.slice(0, 180);
+        console.error("[eleven] " + _ttsElevenErr);
+        return null;
+      }
       parts.push(new Uint8Array(await r.arrayBuffer()));
-    } catch (_e) { return null; }
+    } catch (e) { _ttsElevenErr = "ElevenLabs bağlantı hatası: " + String(e).slice(0, 120); return null; }
   }
   if (!parts.length) return null;
   const total = parts.reduce((a, p) => a + p.length, 0);
@@ -396,11 +406,17 @@ async function generateSpeechEleven(text: string, voiceId: string, opts?: { stab
   return out;
 }
 async function synthSpeech(text: string, b: Record<string, unknown>): Promise<Uint8Array | null> {
-  if (String(b.engine || "") === "eleven" && elevenAllowed().has(String(b.voiceId || ""))) {
-    const out = await generateSpeechEleven(text, String(b.voiceId), { stability: Number(b.stability), style: Number(b.style) });
-    if (out) return out;
+  _ttsEngine = ""; _ttsElevenErr = "";
+  if (String(b.engine || "") === "eleven") {
+    if (!elevenAllowed().has(String(b.voiceId || ""))) { _ttsElevenErr = "voiceId allowlist'te değil: " + String(b.voiceId || ""); }
+    else {
+      const out = await generateSpeechEleven(text, String(b.voiceId), { stability: Number(b.stability), style: Number(b.style) });
+      if (out) { _ttsEngine = "eleven"; return out; }
+    }
   }
-  return generateSpeech(text, String(b.voice || ""));
+  const o = await generateSpeech(text, String(b.voice || ""));
+  _ttsEngine = o ? "openai" : "";
+  return o;
 }
 const PREVIEW_TEXT = "Storia hikâyeni anlatmaya hazır. Bu ses, senin anlatıcın olabilir.";
 function bytesToB64(bytes: Uint8Array): string {
@@ -881,7 +897,7 @@ Deno.serve(async (req) => {
     if (isPreview) {
       const bytes = await synthSpeech(PREVIEW_TEXT, b);
       if (!bytes) return json({ ok: false, error: "Önizleme üretilemedi." }, 502);
-      return json({ ok: true, url: "data:audio/mpeg;base64," + bytesToB64(bytes), charged: false });
+      return json({ ok: true, url: "data:audio/mpeg;base64," + bytesToB64(bytes), charged: false, engine: _ttsEngine, elevenErr: _ttsElevenErr });
     }
 
     if (String(b.action || "") === "tts") {
@@ -910,9 +926,9 @@ Deno.serve(async (req) => {
       }
       if (cost > 0 && admin && userId) {
         const credits = await spendSafe(admin, userId, cost, "seslendirme");
-        return json({ ok: true, url, charged: true, credits, cost, truncated: ttsTruncated });
+        return json({ ok: true, url, charged: true, credits, cost, truncated: ttsTruncated, engine: _ttsEngine, elevenErr: _ttsElevenErr });
       }
-      return json({ ok: true, url, charged: false, cost, truncated: ttsTruncated });
+      return json({ ok: true, url, charged: false, cost, truncated: ttsTruncated, engine: _ttsEngine, elevenErr: _ttsElevenErr });
     }
 
     const provider = (b.provider || b.model || "openai").toLowerCase();
