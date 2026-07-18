@@ -1294,19 +1294,46 @@ function drawOyun() {
 var urunler = null;
 function urunGetir(cb) {
   if (urunler) return cb(urunler);
-  fetch(SB_URL + '/rest/v1/products?select=slug,title,price,pay_url', {
+  fetch(SB_URL + '/rest/v1/products?select=slug,code,kind,title,price,credits,tier,period_months,pay_url&active=eq.true', {
     headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY }
   }).then(function (r) { return r.json(); }).then(function (d) {
     urunler = Array.isArray(d) ? d : []; cb(urunler);
   }).catch(function () { cb([]); });
 }
 function pkHtml(p, aciklama) {
-  var buy = p.pay_url
-    ? '<button class="al" data-ext="' + esc(p.pay_url) + '">AL →</button>'
-    : '<button class="al" data-ext="mailto:iletisim@tarihajani.com?subject=' + encodeURIComponent(p.title || '') + '">AL →</button>';
+  var kod = p.code || p.slug;
+  // Gerçek checkout (Shopier) — code varsa; yoksa eski pay_url'e düş
+  var buy = kod
+    ? '<button class="al" data-buy="' + esc(kod) + '">AL →</button>'
+    : (p.pay_url
+      ? '<button class="al" data-ext="' + esc(p.pay_url) + '">AL →</button>'
+      : '<button class="al" data-ext="mailto:iletisim@tarihajani.com?subject=' + encodeURIComponent(p.title || '') + '">AL →</button>');
   return '<div class="pk"><div class="m"><b>' + esc(p.title || p.slug) + '</b>' +
     (aciklama ? '<span>' + esc(aciklama) + '</span>' : '') + '</div>' +
     '<div class="fy"><b>' + (p.price != null ? esc(p.price) + '₺' : '—') + '</b></div>' + buy + '</div>';
+}
+/* ── CHECKOUT — sunucudan Shopier formu al, gizli form olarak POST et ── */
+function checkoutBasla(code) {
+  if (!user) { uyeGoster('uretim'); return; }
+  if (checkoutBasla._busy) return; checkoutBasla._busy = true;
+  toast('Ödeme hazırlanıyor…');
+  fetch(SB_URL + '/functions/v1/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token() || SB_KEY) },
+    body: JSON.stringify({ product_code: code })
+  }).then(function (r) { return r.json().then(function (d) { return { st: r.status, d: d }; }); }).then(function (r) {
+    checkoutBasla._busy = false;
+    if (!r.d || !r.d.action || !r.d.fields) {
+      toast((r.d && (r.d.error === 'unauthenticated' ? 'Önce giriş yap' : r.d.error)) || 'Ödeme başlatılamadı');
+      return;
+    }
+    var f = document.createElement('form');
+    f.method = 'POST'; f.action = r.d.action; f.style.display = 'none';
+    Object.keys(r.d.fields).forEach(function (k) {
+      var i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = r.d.fields[k]; f.appendChild(i);
+    });
+    document.body.appendChild(f); f.submit();
+  }).catch(function () { checkoutBasla._busy = false; toast('Bağlantı hatası — tekrar dene'); });
 }
 var PK_DESC = {
   gozlemci: 'Aylık üyelik · Studio kredisi + arşiv erişimi',
@@ -1374,10 +1401,11 @@ function drawPaket() {
     '<div id="pk-liste" class="bos">Yükleniyor…</div>';
   hesapBagla();
   urunGetir(function (list) {
-    var tiers = [], packs = [], other = [];
+    var aylik = [], yillik = [], packs = [], other = [];
     list.forEach(function (p) {
-      if (/^(gozlemci|ajan|basmufettis)$/.test(p.slug)) tiers.push(p);
-      else if (/^studio-/.test(p.slug)) packs.push(p);
+      var kind = p.kind || (/^(gozlemci|ajan|basmufettis)$/.test(p.slug) ? 'membership' : (/^studio-|^KP-/.test(p.slug || '') ? 'credit_pack' : ''));
+      if (kind === 'membership') { ((p.period_months || 1) >= 12 ? yillik : aylik).push(p); }
+      else if (kind === 'credit_pack') packs.push(p);
       else other.push(p);
     });
     var OZELLIK = {
@@ -1386,11 +1414,13 @@ function drawPaket() {
       basmufettis: ['En yüksek kredi kotası', 'Uzun format üretim', 'Tüm ayrıcalıklar']
     };
     var sira = { gozlemci: 0, ajan: 1, basmufettis: 2 };
-    tiers.sort(function (a, b) { return (sira[a.slug] || 0) - (sira[b.slug] || 0); });
+    var tKey = function (p) { return p.tier || p.slug; };
+    aylik.sort(function (a, b) { return (sira[tKey(a)] || 0) - (sira[tKey(b)] || 0); });
+    yillik.sort(function (a, b) { return (sira[tKey(a)] || 0) - (sira[tKey(b)] || 0); });
     var html = '';
-    if (tiers.length) html += '<div class="sh"><b>ÜYELİK SEVİYELERİ</b></div>' + tiers.map(function (p) {
-      var vurgu = p.slug === 'ajan';
-      var oz = (OZELLIK[p.slug] || []).map(function (o) { return '<span style="display:flex;gap:7px;align-items:center;font-size:12px;color:#c9c2ae"><span style="color:var(--gold)">✓</span>' + o + '</span>'; }).join('');
+    if (aylik.length) html += '<div class="sh"><b>ÜYELİK SEVİYELERİ</b></div>' + aylik.map(function (p) {
+      var vurgu = tKey(p) === 'ajan';
+      var oz = (OZELLIK[tKey(p)] || []).map(function (o) { return '<span style="display:flex;gap:7px;align-items:center;font-size:12px;color:#c9c2ae"><span style="color:var(--gold)">✓</span>' + o + '</span>'; }).join('');
       return '<div class="kart" style="' + (vurgu ? 'border-color:rgba(230,196,120,.7);box-shadow:0 0 26px rgba(201,162,90,.15)' : '') + '">' +
         '<div style="padding:15px 15px 13px">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">' +
@@ -1399,10 +1429,11 @@ function drawPaket() {
         '<div style="display:grid;gap:6px;margin:11px 0 13px">' + oz + '</div>' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">' +
         '<b class="serif" style="font-size:21px;color:var(--gold)">' + (p.price != null ? esc(p.price) + '₺<span style="font-size:11px;color:var(--mut);font-family:Hanken Grotesk"> /ay</span>' : '—') + '</b>' +
-        '<button class="al" style="border:0;background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:11.5px;letter-spacing:.06em;padding:12px 20px;border-radius:10px;cursor:pointer" data-ext="' + esc(p.pay_url || 'mailto:iletisim@tarihajani.com') + '">SEVİYEYİ AL →</button>' +
+        '<button class="al" style="border:0;background:linear-gradient(110deg,#a87f37,#e9c87e 55%,#c19a52);color:#171207;font-weight:800;font-size:11.5px;letter-spacing:.06em;padding:12px 20px;border-radius:10px;cursor:pointer" data-buy="' + esc(p.code || p.slug) + '">SEVİYEYİ AL →</button>' +
         '</div></div></div>';
     }).join('');
-    if (packs.length) html += '<div class="sh"><b>KREDİ PAKETLERİ · üstüne eklenir</b></div>' + packs.map(function (p) { return pkHtml(p, PK_DESC[p.slug]); }).join('');
+    if (yillik.length) html += '<div class="sh"><b>YILLIK ÖDE · %10 KAZAN</b></div>' + yillik.map(function (p) { return pkHtml(p, 'Yıl boyunca aylık kredin yenilenir · %10 indirimli'); }).join('');
+    if (packs.length) html += '<div class="sh"><b>KREDİ PAKETLERİ · üstüne eklenir, ASLA yanmaz</b></div>' + packs.map(function (p) { return pkHtml(p, (p.credits ? p.credits + ' kalıcı kredi' : PK_DESC[p.slug])); }).join('');
     if (other.length) html += '<div class="sh"><b>AJAN TEÇHİZATI</b></div>' + other.map(function (p) { return pkHtml(p, PK_DESC[p.slug]); }).join('');
     $('#pk-liste').className = ''; $('#pk-liste').innerHTML = html || '<div class="bos">Ürünler yüklenemedi — interneti kontrol et.</div>';
   });
@@ -1743,6 +1774,7 @@ document.addEventListener('click', function (e) {
   var d = e.target.closest('[data-dosya]'); if (d) { drawDosya(+d.getAttribute('data-dosya')); return; }
   var g = e.target.closest('[data-geri]'); if (g) { history.back(); return; }
   var oy = e.target.closest('[data-oynat]'); if (oy) { oynat(oy.getAttribute('data-oynat'), oy.getAttribute('data-ad') || ''); return; }
+  var by = e.target.closest('[data-buy]'); if (by) { checkoutBasla(by.getAttribute('data-buy')); return; }
   var ex = e.target.closest('[data-ext]'); if (ex) { window.open(ex.getAttribute('data-ext'), '_blank'); return; }
   var mk = e.target.closest('[data-makale]');
   if (mk) { drawMakale(+mk.getAttribute('data-makale')); return; }
