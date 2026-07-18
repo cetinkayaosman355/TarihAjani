@@ -172,6 +172,29 @@
     /* (Chat/Ajan Masası talep üzerine açılır — sağ alttaki buton/FAB ile.
        Zorla açık sağ ray kaldırıldı.) */
 
+    /* ── PREMIUM ÇALIŞMA MASASI: kart / dosya bandı / giriş / kalite kanıtı ── */
+    .ta-dossier { position: relative; overflow: hidden; border: 1px solid rgba(193,154,82,.28);
+      border-radius: 16px; padding: 26px 28px;
+      background: linear-gradient(118deg, rgba(193,154,82,.11), rgba(9,12,20,.55) 56%);
+      box-shadow: 0 28px 72px -48px rgba(0,0,0,.9), inset 0 1px 0 rgba(230,196,120,.06); }
+    .ta-dossier::after { content: ''; position: absolute; right: -50px; top: -50px; width: 240px; height: 240px;
+      background: radial-gradient(circle, rgba(201,162,90,.16), transparent 66%); pointer-events: none; }
+    .ta-stats { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 15px; position: relative; z-index: 1; }
+    .ta-stats .st { display: inline-flex; align-items: center; gap: 7px; color: #9aa0ac; font-size: 12px; }
+    .ta-stats .st b { color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .08em; }
+    .ta-stats .st .ic { color: #c19a52; font-size: 13px; }
+    .ta-entry { border: 1px solid rgba(193,154,82,.22); border-radius: 16px; padding: 24px;
+      background: linear-gradient(168deg, rgba(13,17,28,.7), rgba(6,9,16,.5));
+      box-shadow: 0 30px 84px -54px rgba(0,0,0,.9), inset 0 1px 0 rgba(230,196,120,.05); }
+    .ta-entry textarea { transition: border-color .2s, box-shadow .2s; }
+    .ta-entry textarea:focus { outline: none; border-color: rgba(230,196,120,.6) !important;
+      box-shadow: 0 0 0 3px rgba(193,154,82,.12), 0 0 44px -12px rgba(201,162,90,.35); }
+    .ta-proof { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .ta-proof > div { flex: 1; min-width: 158px; border: 1px solid rgba(193,154,82,.18); border-radius: 12px;
+      padding: 13px 15px; background: linear-gradient(160deg, rgba(193,154,82,.06), rgba(193,154,82,.01)); }
+    .ta-proof .pt { color: #e6c478; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+    .ta-proof .ps { color: #7f858f; font-size: 11.5px; margin-top: 4px; line-height: 1.5; }
+
     /* ── U-02: dosya sekmeleri — mobilde tek satır kaydırmalı ── */
     @media (max-width: 600px) {
       .ta-tabs { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch;
@@ -568,10 +591,10 @@
 
         <!-- ADIM 1 · FİKİR -->
         <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ false }}">
-          <div style="animation: ta-rise .5s ease both; max-width: 720px; margin: 0 auto;">
+          <div class="ta-entry" style="animation: ta-rise .5s ease both; max-width: 760px; margin: 0 auto;">
             <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ADIM 1 / 4 · VAKA TALEBİ</p>
-            <h2 style="margin: 10px 0 8px; font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 700; line-height: 1.1;">Hangi dosyayı açalım?</h2>
-            <p style="margin: 0 0 22px; color: #a4a9b5; line-height: 1.65;">Bir olay, kişi, dönem ya da soru yaz. Ajan arşivi tarar; senaryodan yayın paketine kadar her şeyi hazırlar.</p>
+            <h2 style="margin: 12px 0 8px; font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 700; line-height: 1.08;">Hangi tarih sırrını çözelim?</h2>
+            <p style="margin: 0 0 22px; color: #a4a9b5; line-height: 1.65; font-size: 15px;">Bir olay, kişi, dönem ya da soru yaz — gerisini Ajan devralsın. Araştırılmış senaryo, gerçek Türkçe seslendirme, sinematik sahneler ve yayına hazır paket dakikalar içinde elinde.</p>
             <textarea value="{{ idea }}" onChange="{{ onIdea }}" rows="4" placeholder="ör. Fatih'in ölümünün ardındaki zehir şüphesi… ya da Enigma'yı kıran görünmez kadınlar…" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 18px; font-size: 17px; line-height: 1.6; min-height: 130px;"></textarea>
             <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;">
               <button onClick="{{ suggestIdea }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 8px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">◈ {{ suggestLabel }}</button>
@@ -581,6 +604,12 @@
               </sc-for>
             </div>
             <button onClick="{{ findTopic }}" style="margin-top: 12px; border: 0; background: transparent; color: #818797; font-size: 12.5px; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px;" style-hover="color: #e6c478;">Ne yazacağını bilmiyor musun? Ajanla konuş, birlikte bulalım →</button>
+            <div class="ta-proof">
+              <div><div class="pt">📜 Belgesel senaryo</div><div class="ps">Araştırılmış, akıcı, duygu yüklü anlatım</div></div>
+              <div><div class="pt">🎙 Gerçek Türkçe ses</div><div class="ps">ElevenLabs · Kadir Kayışçı ve 11 ses</div></div>
+              <div><div class="pt">✦ Sinematik sahneler</div><div class="ps">Tutarlı karakter, yayına hazır kadraj</div></div>
+            </div>
+            <button onClick="{{ modeArsiv }}" style="margin-top: 12px; border: 0; background: transparent; color: #c19a52; font-size: 12.5px; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px;" style-hover="color: #e6c478;">Gerçek Ajan çıktılarını gör — Hazır Arşiv'deki dosyalara bak →</button>
             <div style="margin-top: 18px;">
               <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .16em;">ÖZEL İSTEK · OPSİYONEL</p>
               <textarea value="{{ custom }}" onChange="{{ onCustom }}" rows="2" placeholder="Kendi tarzını serbestçe yaz — ör. 'kare format, gençlere hitap eden esprili dil' ya da sadece '16:9 yatay' ya da sadece 'daha destansı'. Boş bırakırsan seçtiğin ayarlar geçerli." style="width: 100%; resize: vertical; border: 1px solid rgba(129,135,151,.3); background: #060910; color: #e6dfcb; padding: 12px 14px; font-size: 13.5px; line-height: 1.55;"></textarea>
@@ -707,11 +736,17 @@
         <!-- ADIM 4 · DOSYA -->
         <sc-if value="{{ isStep4 }}" hint-placeholder-val="{{ false }}">
           <div style="animation: ta-rise .5s ease both;">
-            <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; border-bottom: 1px solid rgba(193,154,82,.25); padding-bottom: 18px;">
-              <div>
+            <div class="ta-dossier" style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px;">
+              <div style="position: relative; z-index: 1;">
                 <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">DOSYA AÇILDI · {{ fileNo }}</p>
-                <h2 style="margin: 8px 0 6px; font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; line-height: 1.15;">{{ resTitle }}</h2>
-                <p style="margin: 0; color: #a4a9b5; max-width: 640px; line-height: 1.6;">{{ resLogline }}</p>
+                <h2 style="margin: 8px 0 6px; font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 700; line-height: 1.12;">{{ resTitle }}</h2>
+                <p style="margin: 0; color: #b4b9c4; max-width: 640px; line-height: 1.6;">{{ resLogline }}</p>
+                <div class="ta-stats">
+                  <span class="st"><span class="ic">⏱</span> <b>{{ resDurLabel }}</b></span>
+                  <span class="st"><span class="ic">✦</span> <b>{{ resSceneCount }}</b> sahne</span>
+                  <span class="st"><span class="ic">🎙</span> <b>{{ resVoiceShort }}</b></span>
+                  <span class="st"><span class="ic">◈</span> yayına hazır paket</span>
+                </div>
                 <sc-if value="{{ genWarn }}" hint-placeholder-val="{{ false }}">
                   <div style="margin-top: 14px; max-width: 660px; border: 1px solid rgba(230,196,120,.5); background: rgba(120,90,20,.14); color: #ecd9a6; padding: 12px 14px; font-size: 13px; line-height: 1.5; display: flex; gap: 10px; align-items: flex-start;">
                     <span style="flex: 1;">{{ genWarn }}</span>
@@ -3598,6 +3633,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
 
       fileNo: s.fileNo,
       resTitle: r.baslik || '', resLogline: r.logline || '',
+      resDurLabel: this.fmtFor(this.durationSec()).etiket,
+      resSceneCount: (r.gorsel_promptlar || []).length || this.fmtFor(this.durationSec()).sahne,
+      resVoiceShort: ((this.find('voice', s.voice) || {}).name || 'Kadir Kayışçı').split(' · ')[0],
       fromArsiv: !!s.fromArsiv,
       regenStory: () => this.regenStory(),
       tabs: tabDefs,
