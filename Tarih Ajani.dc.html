@@ -75,7 +75,7 @@
       <li><a href="/arsiv">Hikâye Arşivi — 42 hazır vaka dosyası</a></li>
       <li><a href="/ekitap">E-Kitaplar ve dijital ürünler</a></li>
       <li><a href="/egitim">Akademi — içerik üretim eğitimi</a></li>
-      <li><a href="/uyelik">Üyelik paketleri: Gözlemci 599₺, Ajan 1.299₺, Başmüfettiş 1.999₺ / ay</a></li>
+      <li><a href="/uyelik">Üyelik paketleri: Gözlemci 399₺, Ajan 899₺, Başmüfettiş 1.699₺ / ay</a></li>
       <li><a href="/urunler">Tüm ürünler</a></li>
       <li><a href="/ornek">Ücretsiz örnek vaka dosyası</a></li>
     </ul>
@@ -446,7 +446,7 @@
 
     <div style="display: inline-flex; gap: 4px; margin-bottom: 40px; border: 1px solid rgba(193,154,82,.35); padding: 4px; background: #070a12;">
       <button onClick="{{ setBillingAy }}" style="{{ billAyStyle }}">AYLIK</button>
-      <button onClick="{{ setBillingYil }}" style="{{ billYilStyle }}">YILLIK · 2 AY HEDİYE</button>
+      <button onClick="{{ setBillingYil }}" style="{{ billYilStyle }}">YILLIK · %10 İNDİRİM</button>
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: stretch;">
       <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="3">
@@ -1013,19 +1013,19 @@ class Component extends DCLogic {
 
     const tierDefs = [
       {
-        clearance: 'TEMEL ERİŞİM', name: 'Gözlemci', monthly: 599, popular: false,
-        features: ['Hazır hikâye arşivine erişim', 'Aylık 1.000 Studio kredisi', 'Aylık yeni vaka dosyası', 'Topluluk okuma listesi'],
-        detail: 'Arşive adım at: hazır hikâye dosyaları, aylık 1.000 Studio kredisiyle küçük ölçekli üretim ve aylık yeni vaka dosyası. Tek tıkla iptal.'
+        clearance: 'TEMEL ERİŞİM', name: 'Gözlemci', monthly: 399, popular: false,
+        features: ['Hazır hikâye arşivine erişim', 'Aylık 600 Studio kredisi', 'Aylık yeni vaka dosyası', 'Topluluk okuma listesi'],
+        detail: 'Arşive adım at: hazır hikâye dosyaları, aylık 600 Studio kredisiyle küçük ölçekli üretim ve aylık yeni vaka dosyası. Tek tıkla iptal.'
       },
       {
-        clearance: 'GELİŞMİŞ ERİŞİM', name: 'Ajan', monthly: 1299, popular: true,
-        features: ['Üyelere özel e-kitap hediyeleri', 'Hazır hikâye arşivinin tamamı', 'Aylık 5.000 Studio kredisi', 'Eğitim programı modülleri'],
-        detail: 'Üret ve yayınla: hazır arşivin tamamı, aylık 5.000 Studio kredisiyle orta ölçekli üretim ve eğitim modülleri. Tek tıkla iptal.'
+        clearance: 'GELİŞMİŞ ERİŞİM', name: 'Ajan', monthly: 899, popular: true,
+        features: ['Üyelere özel e-kitap hediyeleri', 'Hazır hikâye arşivinin tamamı', 'Aylık 1.500 Studio kredisi', 'Eğitim programı modülleri'],
+        detail: 'Üret ve yayınla: hazır arşivin tamamı, aylık 1.500 Studio kredisiyle orta ölçekli üretim ve eğitim modülleri. Tek tıkla iptal.'
       },
       {
-        clearance: 'ÜST DÜZEY ERİŞİM', name: 'Başmüfettiş', monthly: 1999, popular: false,
-        features: ['Ajan içeriğinin tamamı', 'Aylık 15.000 Studio kredisi', 'Üst düzey / öncelikli üretim', 'Birebir mentorluk görüşmesi'],
-        detail: 'Sınırsıza yakın üret: hazır arşiv, aylık 15.000 Studio kredisiyle üst düzey üretim ve birebir mentorluk. Tek tıkla iptal.'
+        clearance: 'ÜST DÜZEY ERİŞİM', name: 'Başmüfettiş', monthly: 1699, popular: false,
+        features: ['Ajan içeriğinin tamamı', 'Aylık 3.000 Studio kredisi', 'Üst düzey / öncelikli üretim', 'Birebir mentorluk görüşmesi'],
+        detail: 'Sınırsıza yakın üret: hazır arşiv, aylık 3.000 Studio kredisiyle üst düzey üretim ve birebir mentorluk. Tek tıkla iptal.'
       }
     ];
 
@@ -1036,7 +1036,7 @@ class Component extends DCLogic {
       const cream = t.popular;
       const tierSlug = 'uyelik-' + (t.name === 'Gözlemci' ? 'gozlemci' : t.name === 'Ajan' ? 'ajan' : 'basmufettis');
       const monthlyBase = parseFloat(ovPrice(tierSlug, t.monthly)) || t.monthly;
-      const yearly = monthlyBase * 10;
+      const yearly = Math.round(monthlyBase * 12 * 0.9);
       const priceNum = billing === 'yil' ? yearly : monthlyBase;
       return {
         ...t,

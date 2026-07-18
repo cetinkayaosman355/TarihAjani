@@ -466,9 +466,9 @@ class Component extends DCLogic {
 
   defaultTiers() {
     return {
-      gozlemci: { name: 'GÖZLEMCİ', fiyat: '599', kota: '1000', icerik: 'Hazır hikâye arşivine erişim\nAylık 1.000 Studio kredisi\nAylık yeni vaka dosyası' },
-      ajan: { name: 'AJAN', fiyat: '1299', kota: '5000', icerik: 'Hazır hikâye arşivinin tamamı\nAylık 5.000 Studio kredisi\nEğitim programı modülleri\nÜyelere özel e-kitap hediyeleri' },
-      basmufettis: { name: 'BAŞMÜFETTİŞ', fiyat: '1999', kota: '15000', icerik: 'Ajan içeriğinin tamamı\nAylık 15.000 Studio kredisi\nÖncelikli üretim\nBirebir mentorluk' }
+      gozlemci: { name: 'GÖZLEMCİ', fiyat: '399', kota: '600', icerik: 'Hazır hikâye arşivine erişim\nAylık 600 Studio kredisi\nAylık yeni vaka dosyası' },
+      ajan: { name: 'AJAN', fiyat: '899', kota: '1500', icerik: 'Hazır hikâye arşivinin tamamı\nAylık 1.500 Studio kredisi\nEğitim programı modülleri\nÜyelere özel e-kitap hediyeleri' },
+      basmufettis: { name: 'BAŞMÜFETTİŞ', fiyat: '1699', kota: '3000', icerik: 'Ajan içeriğinin tamamı\nAylık 3.000 Studio kredisi\nÖncelikli üretim\nBirebir mentorluk' }
     };
   }
 
@@ -485,7 +485,7 @@ class Component extends DCLogic {
     const meta = this.state.memberMeta[this.memberKey(p)] || {};
     if (meta.kota != null && meta.kota !== '') return String(meta.kota);
     const td = this.state.tierDefs || this.defaultTiers();
-    return String((td[this.tierOf(p)] || {}).kota || '1000');
+    return String((td[this.tierOf(p)] || {}).kota || '600');
   }
 
   setMemberMeta(p, patch) {
