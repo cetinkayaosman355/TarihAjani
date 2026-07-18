@@ -401,6 +401,17 @@
   };
   function contentKind() { var t = (S.template != null) ? TEMPLATES[S.template] : null; return (t && t.kind) || 'genel'; }
   function frameworkText() { var f = FRAMEWORKS[contentKind()] || FRAMEWORKS.genel; return S.lang === 'en' ? f.en : f.tr; }
+  // Kanal hafızası: yakın zamanda üretilen dosyaların konuları — prompt'a
+  // katılıp "tekrarlama, farklı açı bul" denerek çeşitlilik artırılır.
+  function recentTopics() {
+    if (!S.history || !S.history.length) return '';
+    var seen = [], cur = (S.idea || '').trim();
+    for (var i = 0; i < S.history.length && seen.length < 8; i++) {
+      var h = S.history[i], t = (h.result && h.result.baslik) || h.idea;
+      if (t && t !== cur && seen.indexOf(t) < 0) seen.push(String(t).slice(0, 80));
+    }
+    return seen.join(' | ');
+  }
   var GRADS = [
     'linear-gradient(135deg,#efe6d2,#c2a160)', 'linear-gradient(135deg,#e0c588,#9c7b3b)',
     'linear-gradient(135deg,#f3ecdc,#d9bc80)', 'linear-gradient(135deg,#d8b98a,#8b6c31)',
@@ -995,6 +1006,7 @@
         'FORMAT: ' + S.aspect + ' · DURATION: ' + fmtDur(S.durationSec) + ' · ~' + scenes + ' scenes\n' +
         'LENGTH BUDGET (CRITICAL): the video is ' + fmtDur(S.durationSec) + ' long and the narration will be read ALOUD. The TOTAL of all scenes\' "anlatim" text must be AT MOST ~' + words + ' words — do NOT exceed it. Keep each scene short (one sentence for short videos). Even with ' + scenes + ' scenes, keep it tight so the voiceover fits ' + fmtDur(S.durationSec) + '.\n' +
         (S.custom ? 'SPECIAL REQUEST (highest priority): ' + S.custom + '\n' : '') +
+        (recentTopics() ? 'CHANNEL MEMORY — topics recently made on this channel (do NOT repeat them; find a fresh angle or a different sub-topic): ' + recentTopics() + '\n' : '') +
         '\n' + frameworkText() + '\n' +
         'The whole thing must read as ONE coherent, understandable narrative that flows in logical order — a viewer should easily follow it.\n' +
         'IMAGE <-> SCENE: gorsel_promptlar[i] must depict EXACTLY what happens in senaryo[i] (that scene\'s concrete subject and action) — never a generic or unrelated mood image.\n' +
@@ -1014,6 +1026,7 @@
       'FORMAT: ' + S.aspect + ' · SÜRE: ' + fmtDur(S.durationSec) + ' · SAHNE SAYISI: yaklaşık ' + scenes + '\n' +
       'SÜRE-METİN DENGESİ (ÇOK ÖNEMLİ): Video ' + fmtDur(S.durationSec) + ' uzunluğunda ve seslendirme metni SESLİ okunacak. Tüm sahnelerin "anlatim" metinlerinin TOPLAMI EN FAZLA ~' + words + ' kelime olmalı — bu sınırı KESİNLİKLE AŞMA. Her sahnenin anlatımı kısa ve öz olsun (kısa videoda tek cümle). Sahne sayısı ' + scenes + ' olsa bile metni uzatma; seslendirme ' + fmtDur(S.durationSec) + ' süresine sığmalı.\n' +
       (S.custom ? 'ÖZEL İSTEK (en yüksek öncelik): ' + S.custom + '\n' : '') +
+      (recentTopics() ? 'KANAL HAFIZASI — bu kanalda yakın zamanda işlenen konular (TEKRARLAMA; farklı bir açı ya da alt-konu bul): ' + recentTopics() + '\n' : '') +
       '\n' + frameworkText() + '\n' +
       'Bütün metin, mantıklı sırayla akan TEK, tutarlı ve anlaşılır bir anlatı olsun — izleyici rahatça takip edebilsin.\n' +
       'GÖRSEL <-> SAHNE: gorsel_promptlar[i], senaryo[i]\'de TAM OLARAK ne oluyorsa onu göstersin (o sahnenin somut öznesi ve aksiyonu) — asla genel geçer ya da alakasız bir atmosfer görseli değil.\n' +
