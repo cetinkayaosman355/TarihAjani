@@ -1466,7 +1466,9 @@ class Component extends DCLogic {
         { id: 'erkek-gizemli', name: 'Erkek · Gizemli', desc: 'Alçak tonlu, sır verir gibi', engine: 'eleven', elId: 'ErXwobaYiN019PkySvjV', oa: 'echo', el: { name: 'Antoni', id: 'ErXwobaYiN019PkySvjV', stability: 0.42, style: 0.5 } },
         { id: 'erkek-net', name: 'Erkek · Net', desc: 'Berrak, güçlü, tempolu sunum', engine: 'eleven', elId: 'TxGEqnHWrfWFTfGW9XjX', oa: 'ash', el: { name: 'Josh', id: 'TxGEqnHWrfWFTfGW9XjX', stability: 0.5, style: 0.3 } },
         { id: 'kadin-belgesel', name: 'Kadın · Belgesel', desc: 'Sıcak, akıcı, profesyonel', engine: 'eleven', elId: 'EXAVITQu4vr4xnSDxMaL', oa: 'nova', el: { name: 'Bella', id: 'EXAVITQu4vr4xnSDxMaL', stability: 0.6, style: 0.2 } },
-        { id: 'kadin-olgun', name: 'Kadın · Olgun', desc: 'Sakin, ağırbaşlı, güven veren', engine: 'eleven', elId: '21m00Tcm4TlvDq8ikWAM', oa: 'sage', el: { name: 'Rachel', id: '21m00Tcm4TlvDq8ikWAM', stability: 0.62, style: 0.18 } }
+        { id: 'kadin-olgun', name: 'Kadın · Olgun', desc: 'Sakin, ağırbaşlı, güven veren', engine: 'eleven', elId: '21m00Tcm4TlvDq8ikWAM', oa: 'sage', el: { name: 'Rachel', id: '21m00Tcm4TlvDq8ikWAM', stability: 0.62, style: 0.18 } },
+        { id: 'animasyon-ses', name: 'Animasyon · Anlatıcı', desc: 'Canlı, karakterli — çizgi film / animasyon içeriğe uygun', engine: 'eleven', elId: 'DUnzBkwtjRWXPr6wRbmL', oa: 'nova', el: { name: 'Animasyon', id: 'DUnzBkwtjRWXPr6wRbmL', stability: 0.4, style: 0.5 } },
+        { id: 'premium', name: 'Sinematik · Premium ⚡', desc: 'En yüksek kalite — 3× kredi, PAHALI, yalnız gerekliyse kullan', engine: 'eleven', elId: 'bFrjFL4nlpeYNwNRhXxq', oa: 'onyx', premium: true, el: { name: 'Premium', id: 'bFrjFL4nlpeYNwNRhXxq', stability: 0.45, style: 0.3 } }
       ],
       style: [
         { id: 'hollywood', name: 'Hollywood Gerçekçi', desc: 'ARRI sinema kamerası, profesyonel ışık, fotogerçekçi' },
@@ -2364,7 +2366,9 @@ class Component extends DCLogic {
   // (taban 15) — sunucudaki ttsCostOf ile AYNI formül olmalı.
   ttsCost() {
     const t = this.voiceText() || '';
-    return Math.max(15, Math.ceil(t.length / 1000) * 15);
+    const v = this.find('voice', this.state.voice);
+    const mult = (v && v.premium) ? 3 : 1;   // Premium ses (pahalı) → 3× kredi (sunucu ile aynı)
+    return Math.max(15, Math.ceil(t.length / 1000) * 15) * mult;
   }
   sysVoiceId() { const o = this.find('voice', this.state.voice); return (o && o.oa) || 'onyx'; }
   // Seçili ses ElevenLabs motoruysa sunucuya engine+voiceId geçir (yoksa boş → OpenAI)
