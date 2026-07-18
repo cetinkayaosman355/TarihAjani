@@ -129,29 +129,52 @@
     if (b) { b.textContent = t === 'light' ? '🌙' : '☀'; b.title = t === 'light' ? 'Karanlık moda geç' : 'Aydınlık moda geç'; }
   }
 
+  // Tema düğmesi konumu — sabit köşeler çakışmasın:
+  //  • Studio (sol 250px sidebar + sağ-altta sohbet/AJANLA KONUŞ FAB) masaüstünde
+  //    düğme sidebar'ın SAĞINA, boş sol-alt köşeye alınır.
+  //  • Studio mobilde (≤840px) sidebar gizli, altta sekme çubuğu var → çubuğun ÜSTÜNE.
+  //  • Diğer sayfalarda varsayılan sol-alt köşe (sohbet butonu sağ-altta).
+  function placeBtn(b) {
+    var studio = !!document.querySelector('.ta-studio-wrap');
+    var narrow = window.matchMedia('(max-width: 840px)').matches;
+    var left = '16px', bottom = '16px';
+    if (studio && !narrow) { left = '266px'; bottom = '18px'; }   // 250px sidebar'ın sağı
+    else if (studio && narrow) { left = '16px'; bottom = '80px'; } // sekme çubuğunun üstü
+    b.style.left = left; b.style.right = 'auto'; b.style.bottom = bottom; b.style.top = 'auto';
+  }
+
   function ensureButton() {
     ensureCss();
-    if (document.getElementById('ta-tema-btn')) return;
-    var b = document.createElement('button');
-    b.id = 'ta-tema-btn';
-    b.setAttribute('aria-label', 'Tema değiştir');
-    b.style.cssText = 'position:fixed;left:16px;bottom:16px;z-index:998;width:44px;height:44px;border-radius:50%;' +
-      'border:1px solid rgba(193,154,82,.5);cursor:pointer;font-size:18px;line-height:1;' +
-      'background:rgba(5,7,13,.9);color:#e6c478;box-shadow:0 8px 24px rgba(0,0,0,.4);' +
-      'display:grid;place-items:center;';
-    b.onclick = function () {
-      var next = get() === 'light' ? 'dark' : 'light';
-      save(next); apply(next);
-    };
-    document.body.appendChild(b);
-    apply(get());
+    var b = document.getElementById('ta-tema-btn');
+    if (!b) {
+      b = document.createElement('button');
+      b.id = 'ta-tema-btn';
+      b.setAttribute('aria-label', 'Tema değiştir');
+      b.style.cssText = 'position:fixed;left:16px;bottom:16px;z-index:998;width:44px;height:44px;border-radius:50%;' +
+        'border:1px solid rgba(193,154,82,.5);cursor:pointer;font-size:18px;line-height:1;' +
+        'background:rgba(5,7,13,.9);color:#e6c478;box-shadow:0 8px 24px rgba(0,0,0,.4);' +
+        'display:grid;place-items:center;';
+      b.onclick = function () {
+        var next = get() === 'light' ? 'dark' : 'light';
+        save(next); apply(next);
+      };
+      document.body.appendChild(b);
+      apply(get());
+    }
+    placeBtn(b);   // her çağrıda yeniden konumla (Studio geç mount olabilir / ekran değişir)
   }
 
   // erken uygula (yanıp sönmeyi azalt) — buton sonra gelebilir
   ensureCss();
   document.documentElement.setAttribute('data-theme', get());
 
-  function init() { ensureButton(); setInterval(ensureButton, 4000); }
+  function init() {
+    ensureButton();
+    setInterval(ensureButton, 4000);
+    window.addEventListener('resize', function () {
+      var b = document.getElementById('ta-tema-btn'); if (b) placeBtn(b);
+    });
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();

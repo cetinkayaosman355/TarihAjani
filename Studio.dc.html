@@ -487,11 +487,9 @@
 
       <div class="ta-body">
         <aside class="ta-side">
-          <a href="/" class="ta-brand">
-            <img src="assets/logo.webp" alt="Tarih Ajanı">
-            <div><div class="bn">Ajan Studio</div><div class="bs">ÜRETİM MERKEZİ</div></div>
-          </a>
-          <div class="ta-side-head">ÜRETİM</div>
+          <!-- Logo YALNIZ üstteki header'da (satır ~433). Sidebar'da tekrarı
+               "iki logo alt alta" görünümüne yol açıyordu → kaldırıldı. -->
+          <div class="ta-side-head" style="margin-top: 4px;">ÜRETİM</div>
           <button class="ta-navbtn" onClick="{{ modeWizard }}" style="{{ sideWizActive }}"><span class="ic">◈</span> Üret · Sihirbaz</button>
           <button class="ta-navbtn" onClick="{{ modeGorsel }}" style="{{ sideGorActive }}"><span class="ic">✦</span> Görsel Stüdyo</button>
           <button class="ta-navbtn" onClick="{{ modeArsiv }}" style="{{ sideArsActive }}"><span class="ic">❖</span> Hazır Arşiv</button>
