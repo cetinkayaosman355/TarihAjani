@@ -194,6 +194,13 @@
       padding: 13px 15px; background: linear-gradient(160deg, rgba(193,154,82,.06), rgba(193,154,82,.01)); }
     .ta-proof .pt { color: #e6c478; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
     .ta-proof .ps { color: #7f858f; font-size: 11.5px; margin-top: 4px; line-height: 1.5; }
+    /* İçerik kartı — altın-cam, yumuşak gölge, hover derinliği (bütünlük) */
+    .ta-card { border: 1px solid rgba(193,154,82,.2); border-radius: 13px;
+      background: linear-gradient(168deg, rgba(13,17,27,.72), rgba(7,10,17,.6));
+      box-shadow: 0 20px 50px -38px rgba(0,0,0,.85), inset 0 1px 0 rgba(230,196,120,.045);
+      transition: border-color .2s, box-shadow .2s; }
+    .ta-card:hover { border-color: rgba(193,154,82,.38);
+      box-shadow: 0 26px 60px -38px rgba(0,0,0,.9), 0 0 42px -22px rgba(201,162,90,.22); }
 
     /* ── U-02: dosya sekmeleri — mobilde tek satır kaydırmalı ── */
     @media (max-width: 600px) {
@@ -538,7 +545,7 @@
             </sc-if>
             <div style="display: grid; gap: 12px; margin-top: 22px;">
               <sc-for list="{{ docBlocks }}" as="db" hint-placeholder-count="6">
-                <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 16px 20px; display: grid; gap: 8px;">
+                <div class="ta-card" style="padding: 16px 20px; display: grid; gap: 8px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                     <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">{{ db.head }}</span>
                     <button onClick="{{ db.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer; white-space: nowrap;" style-hover="color: #e6c478;">{{ db.copyLabel }}</button>
@@ -775,7 +782,7 @@
             <sc-if value="{{ tabSenaryo }}" hint-placeholder-val="{{ false }}">
               <div style="display: grid; gap: 14px;">
                 <sc-for list="{{ resSenaryo }}" as="sec" hint-placeholder-count="4">
-                  <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 22px 24px;">
+                  <div class="ta-card" style="padding: 22px 24px;">
                     <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px;">
                       <span style="font-family: 'Playfair Display', serif; font-weight: 700; font-size: 19px; color: #e6c478;">{{ sec.bolum }}</span>
                       <span style="display: flex; gap: 10px; align-items: center;">
@@ -793,7 +800,7 @@
             <!-- SESLENDİRME -->
             <sc-if value="{{ tabSes }}" hint-placeholder-val="{{ false }}">
               <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; align-items: start;">
-                <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 22px 24px;">
+                <div class="ta-card" style="padding: 22px 24px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                     <span style="font-weight: 700; letter-spacing: .04em;">Seslendirme Metni</span>
                     <button onClick="{{ copyVoice }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 7px 12px; font-size: 11px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ copyVoiceLabel }}</button>
@@ -963,7 +970,7 @@
                   </sc-if>
                 </sc-if>
                 <sc-for list="{{ resGorsel }}" as="gp" hint-placeholder-count="3">
-                  <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 13px 16px; display: grid; gap: 7px;">
+                  <div class="ta-card" style="padding: 13px 16px; display: grid; gap: 7px;">
                     <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
                       <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="border: 1px solid rgba(193,154,82,.5); color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; padding: 4px 9px; white-space: nowrap;">{{ gp.no }}</span>
@@ -1005,7 +1012,7 @@
             <sc-if value="{{ tabVideo }}" hint-placeholder-val="{{ false }}">
               <div style="display: grid; gap: 10px;">
                 <sc-for list="{{ resVideo }}" as="vp" hint-placeholder-count="3">
-                  <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 13px 16px; display: grid; gap: 7px;">
+                  <div class="ta-card" style="padding: 13px 16px; display: grid; gap: 7px;">
                     <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
                       <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="border: 1px solid rgba(193,154,82,.5); color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; padding: 4px 9px; white-space: nowrap;">{{ vp.no }}</span>
@@ -1123,7 +1130,7 @@
             <!-- YAYIN PAKETİ -->
             <sc-if value="{{ tabYayin }}" hint-placeholder-val="{{ false }}">
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start;">
-                <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 22px 24px; display: grid; gap: 14px;">
+                <div class="ta-card" style="padding: 22px 24px; display: grid; gap: 14px;">
                   <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-weight: 700;">YouTube</span>
                     <span style="display: flex; gap: 8px;">
@@ -1148,7 +1155,7 @@
                     </div>
                   </div>
                 </div>
-                <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; padding: 22px 24px; display: grid; gap: 14px;">
+                <div class="ta-card" style="padding: 22px 24px; display: grid; gap: 14px;">
                   <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-weight: 700;">Instagram</span>
                     <span style="display: flex; gap: 8px;">
