@@ -751,13 +751,17 @@ var STIL_CORE = {
 // 5. eleman yalnız sunucuda SESSİZ yedek (ElevenLabs anlık hata verirse ses kesilmesin).
 var SESLER = [
   ['kadir', 'Kadir Kayışçı · İmza', 'eleven', 'j82ax9yhzfYwq9lDvRWL', 'onyx'],
-  ['erkek', 'Erkek · Anlatıcı', 'eleven', 'pNInz6obpgDQGcFmaJgB', 'onyx'],
-  ['erkek-gizemli', 'Erkek · Gizemli', 'eleven', 'ErXwobaYiN019PkySvjV', 'echo'],
-  ['erkek-net', 'Erkek · Net', 'eleven', 'TxGEqnHWrfWFTfGW9XjX', 'ash'],
-  ['kadin-belgesel', 'Kadın · Belgesel', 'eleven', 'EXAVITQu4vr4xnSDxMaL', 'nova'],
-  ['kadin-olgun', 'Kadın · Olgun', 'eleven', '21m00Tcm4TlvDq8ikWAM', 'sage'],
+  ['seyfullah', 'Seyfullah Kartal · Derin', 'eleven', 'mF7tIc9VLrznhGooGjaT', 'onyx'],
+  ['sultan', 'Sultan · Tiyatral Anlatıcı', 'eleven', 'gyxPK6bLXQAkBSCeAKvk', 'echo'],
+  ['emin', 'Emin · Derin & Yumuşak', 'eleven', 'DsbR47WNEv8o9x37ib9X', 'onyx'],
+  ['doga', 'Doğa · Canlı & Zengin', 'eleven', 'IuRRIAcbQK5AQk1XevPj', 'ash'],
+  ['adam', 'Adam · Koyu & Sert', 'eleven', 'J17lijyP1BHYcM7ld0Rg', 'onyx'],
+  ['sevval', 'Şevval Kılınç · Genç Kadın', 'eleven', '8LQS4H6IYf1unP46qbKD', 'nova'],
+  ['belma', 'Belma · Kadın Anlatıcı', 'eleven', 'KbaseEXyT9EE0CQLEfbB', 'shimmer'],
+  ['mahidevran', 'Mahidevran · Sıcak Fısıltı', 'eleven', 'yp3v9dmYlNwJf3mXPBLV', 'sage'],
+  ['cassius', 'Cassius · Kadifemsi (TR: dinle)', 'eleven', 'ktrGUw7rURIQyMrQZqCu', 'onyx'],
   ['animasyon-ses', 'Animasyon · Anlatıcı', 'eleven', 'DUnzBkwtjRWXPr6wRbmL', 'nova'],
-  ['premium', 'Sinematik · Premium ⚡ (3× kredi)', 'eleven', 'bFrjFL4nlpeYNwNRhXxq', 'onyx', true]   // 6. eleman: premium (pahalı)
+  ['mossbeard', 'Mossbeard · Vahşi ⚡ (4× kredi)', 'eleven', 'bFrjFL4nlpeYNwNRhXxq', 'onyx', true]   // premium (pahalı ×4)
 ];
 var uret = { ton: 'merak', stil: 'sinematik', sure: 60, ses: 'kadir', oran: 'dikey', busy: false, sonuc: null, hata: '', konu: '', ozel: '' };
 // GÖRSEL STÜDYO durumu — bağımsız görsel üretimi + kalıcı geçmiş
@@ -1121,7 +1125,7 @@ function ttsMetin() {
 }
 function ttsKredi() {   // ElevenLabs: 1000 karakter = 15 KR · premium ses (6. eleman) 3×
   var v = null; for (var i = 0; i < SESLER.length; i++) if (SESLER[i][0] === uret.ses) v = SESLER[i];
-  var mult = (v && v[5]) ? 3 : 1;
+  var mult = (v && v[5]) ? 4 : 1;   // Mossbeard (premium) → 4×
   return Math.max(15, Math.ceil(ttsMetin().length / 1000) * 15) * mult;
 }
 function seslendir() {
