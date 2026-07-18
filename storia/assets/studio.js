@@ -260,7 +260,7 @@
       '<div class="opt-group"><div class="opt-title">İçerik dili</div><div class="seg">' + langSeg + '</div></div>' +
       '<div class="opt-group"><div class="opt-title">Hazır modlar</div><div class="modes">' + modes + '</div></div>' +
       '<div class="opt-group"><div class="opt-title">Anlatım tonu</div><div class="seg">' + toneSeg + '</div></div>' +
-      '<div class="opt-group"><div class="opt-title">Anlatıcı sesi</div><div class="tiles">' + voiceTiles + '</div></div>' +
+      '<div class="opt-group"><div class="opt-title">Anlatıcı sesi</div><div class="tiles">' + voiceTiles + '</div>' + vengHtml() + '</div>' +
       '<div class="opt-group"><div class="opt-title">Görsel stil</div><div class="tiles">' + styleTiles + '</div></div>' +
       '<div class="opt-group"><div class="opt-title">Format</div><div class="aspects">' + aspects + '</div></div>' +
       '<div class="opt-group"><div class="opt-title">Süre</div><div class="slider-card"><div class="sh"><span class="sv" id="durVal">' + fmtDur(sec) + '</span><span class="pc-cr">yaklaşık ' + costGen(sec) + ' kredi</span></div>' +
@@ -508,7 +508,7 @@
         '<div class="opt-group"><div class="opt-title">Metin</div>' +
           '<textarea class="field" id="ssTextInput" placeholder="Seslendirmek istediğin metni buraya yaz…" style="min-height:150px">' + esc(S.ssText) + '</textarea>' +
           '<div id="ssMeta" style="text-align:right;font-size:12px;color:var(--muted);margin-top:6px">' + chars + ' karakter · ~' + cost + ' kredi</div></div>' +
-        '<div class="opt-group"><div class="opt-title">Anlatıcı sesi</div><div class="tiles">' + voiceTiles + '</div></div>' +
+        '<div class="opt-group"><div class="opt-title">Anlatıcı sesi</div><div class="tiles">' + voiceTiles + '</div>' + vengHtml() + '</div>' +
         '<button class="btn btn-gold btn-lg" data-act="ssTts" style="width:100%">✦ Seslendir</button>' +
       '</div><div>' +
         '<div class="pv-card" style="padding:18px"><div id="ssOut">' + out + '</div></div>' +
@@ -526,7 +526,7 @@
     var v = VOICES[S.ssVoice], slot = document.getElementById('ssOut');
     if (slot) slot.innerHTML = '<p style="color:var(--muted);font-size:13px">Ses üretiliyor…</p>';
     callFn({ action: 'tts', text: text, engine: 'eleven', voiceId: v.ev, voice: v.ov, speed: 1 }).then(function (d) {
-      if (d && d.ok && d.url) { S.ssOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; render(); chrome(); ttsToast(d); }
+      if (d && d.ok && d.url) { S.ssOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; setEngineStatus(d); render(); chrome(); ttsToast(d); }
       else { if (slot) slot.innerHTML = ''; toast((d && d.error) || 'Ses üretilemedi'); }
     }).catch(function () { toast('Bağlantı hatası'); });
   }
@@ -1148,6 +1148,19 @@
     for (var i = 0; i < vs.length; i++) { if (new RegExp('^' + lc, 'i').test(vs[i].lang)) { u.voice = vs[i]; break; } }
     window.speechSynthesis.speak(u); return true;
   }
+  var _engMsg = '', _engOk = false;
+  function engText(d) {
+    if (!d) return '';
+    if (typeof d.engine === 'undefined') return '⚠ Backend eski sürüm — güncel storia-generate dosyasını Supabase\'e deploy et';
+    if (d.engine === 'eleven') return '🎙️ ElevenLabs aktif — sesler gerçek';
+    return '⚠ OpenAI sesine düşüldü · ElevenLabs: ' + (d.elevenErr || 'bilinmeyen sebep');
+  }
+  function setEngineStatus(d) {
+    _engMsg = engText(d); _engOk = !!(d && d.engine === 'eleven');
+    var el = document.getElementById('veng');
+    if (el) { el.textContent = _engMsg; el.style.display = _engMsg ? '' : 'none'; el.className = 'veng ' + (_engOk ? 'ok' : 'warn'); }
+  }
+  function vengHtml() { return '<div class="veng ' + (_engOk ? 'ok' : 'warn') + '" id="veng"' + (_engMsg ? '' : ' style="display:none"') + '>' + esc(_engMsg) + '</div>'; }
   var _prevAudio = null, _prevToken = 0;
   function stopPreview() {
     if (_prevAudio) { try { _prevAudio.pause(); _prevAudio.currentTime = 0; } catch (e) {} _prevAudio = null; }
@@ -1161,7 +1174,8 @@
     toast('Önizleme · ' + v.name + '…');
     callFn({ action: 'tts', preview: true, engine: 'eleven', voiceId: v.ev, voice: v.ov }).then(function (d) {
       if (tok !== _prevToken) return;    // daha yeni bir önizleme istendi → bunu çalma
-      if (d && d.ok && d.url) { try { _prevAudio = new Audio(d.url); _prevAudio.play(); } catch (e) {} if (d.engine && d.engine !== 'eleven') toast('⚠ OpenAI önizleme — ElevenLabs: ' + String(d.elevenErr || '?').slice(0, 80)); } else toast('Önizleme alınamadı');
+      setEngineStatus(d);
+      if (d && d.ok && d.url) { try { _prevAudio = new Audio(d.url); _prevAudio.play(); } catch (e) {} } else toast('Önizleme alınamadı');
     }).catch(function () { if (tok === _prevToken) toast('Bağlantı hatası'); });
   }
   function doTts() {
@@ -1178,7 +1192,7 @@
     if (!S.user) { openAuth(); return; }
     var slot = document.getElementById('audioSlot'); if (slot) slot.innerHTML = '<p style="color:var(--on-ink-muted);font-size:13px;margin-top:12px">Ses üretiliyor…</p>';
     callFn({ action: 'tts', text: text, engine: 'eleven', voiceId: VOICES[S.voiceIdx].ev, voice: VOICES[S.voiceIdx].ov, speed: S.ttsRate }).then(function (d) {
-      if (d && d.ok && d.url) { S.audio = d.url; if (typeof d.credits === 'number') S.credits = d.credits; if (slot) slot.innerHTML = '<audio controls src="' + esc(d.url) + '"></audio>'; chrome(); ttsToast(d); }
+      if (d && d.ok && d.url) { S.audio = d.url; if (typeof d.credits === 'number') S.credits = d.credits; setEngineStatus(d); if (slot) slot.innerHTML = '<audio controls src="' + esc(d.url) + '"></audio>'; chrome(); ttsToast(d); }
       else { if (slot) slot.innerHTML = ''; toast((d && d.error) || 'Ses üretilemedi'); }
     }).catch(function () { if (slot) slot.innerHTML = ''; toast('Bağlantı hatası'); });
   }
