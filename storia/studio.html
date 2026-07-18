@@ -141,6 +141,16 @@ body { background: var(--paper); overflow: hidden; }
 .tile.on { border-color: var(--champ); background: var(--champ-wash); }
 .tile .t-name { font-family: var(--serif); font-size: 16px; color: var(--ink); }
 .tile .t-desc { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.voice-tile { position: relative; }
+.v-prev { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--surface); color: var(--champ-deep); display: grid; place-items: center; cursor: pointer; transition: all .2s var(--ease); }
+.v-prev svg { width: 11px; height: 11px; margin-left: 1px; }
+.v-prev:hover { background: var(--champ-wash); border-color: var(--champ); transform: scale(1.08); }
+.tile.on .v-prev { border-color: var(--champ); }
+.prem { font-size: 9px; letter-spacing: .05em; text-transform: uppercase; font-weight: 700; color: var(--champ-deep); background: var(--champ-wash); border: 1px solid var(--champ-line); padding: 1px 6px; border-radius: 999px; margin-left: 7px; vertical-align: middle; }
+.rate-seg { display: inline-flex; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 3px; }
+.rate-seg button { border: 0; background: transparent; color: var(--on-ink-muted); font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 999px; cursor: pointer; transition: all .2s; }
+.rate-seg button.on { background: var(--gold-sheen); color: #241a08; }
+.rate-seg button:hover:not(.on) { color: var(--on-ink); }
 @media (max-width: 560px){ .tiles { grid-template-columns: 1fr 1fr; } }
 
 .aspects { display: flex; gap: 10px; }

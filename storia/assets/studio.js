@@ -18,7 +18,7 @@
     durationSec: 270, provider: 'claude', custom: '',
     result: null, tab: 'senaryo', genJob: null,
     user: null, credits: REAL ? null : 500, creditMax: 500,
-    images: {}, audio: null, history: [],
+    images: {}, audio: null, history: [], ttsRate: 1,
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null
   };
@@ -42,11 +42,12 @@
   var VOICES = [
     { name: 'Derin Erkek', desc: 'Sıcak, güven veren', ov: 'onyx' },
     { name: 'Anlatıcı', desc: 'Net, dengeli', ov: 'echo' },
-    { name: 'Gizemli', desc: 'Alçak, merak uyandıran', ov: 'ash' },
+    { name: 'Gizemli', desc: 'Alçak, merak uyandıran', ov: 'ash', premium: true },
     { name: 'Enerjik', desc: 'Genç, dinamik', ov: 'nova' },
-    { name: 'Belgesel Kadın', desc: 'Olgun, akıcı', ov: 'sage' },
+    { name: 'Belgesel Kadın', desc: 'Olgun, akıcı', ov: 'sage', premium: true },
     { name: 'Sıcak Kadın', desc: 'Samimi, davetkâr', ov: 'shimmer' }
   ];
+  var RATES = [{ v: 0.9, l: 'Yavaş' }, { v: 1, l: 'Normal' }, { v: 1.12, l: 'Hızlı' }];
   var STYLES = [
     { id: 'sinematik', name: 'Sinematik', desc: 'Film karesi, dramatik ışık', en: 'cinematic film still, dramatic lighting, shallow depth of field, 35mm' },
     { id: 'fotogercek', name: 'Foto-gerçekçi', desc: 'Gerçek fotoğraf dokusu', en: 'photorealistic, natural light, high detail, DSLR photograph' },
@@ -144,7 +145,13 @@
   function renderRoom() {
     var sec = S.durationSec;
     var toneSeg = TONES.map(function (t) { return '<button class="' + (S.tone === t.id ? 'on' : '') + '" data-act="tone" data-v="' + t.id + '">' + esc(t.name) + '</button>'; }).join('');
-    var voiceTiles = VOICES.map(function (v, i) { return '<div class="tile ' + (S.voiceIdx === i ? 'on' : '') + '" data-act="voice" data-v="' + i + '"><div class="t-name">' + esc(v.name) + '</div><div class="t-desc">' + esc(v.desc) + '</div></div>'; }).join('');
+    var voiceTiles = VOICES.map(function (v, i) {
+      var prem = v.premium ? '<span class="prem">Premium</span>' : '';
+      return '<div class="tile voice-tile ' + (S.voiceIdx === i ? 'on' : '') + '" data-act="voice" data-v="' + i + '">' +
+        '<button class="v-prev" data-act="voicePrev" data-v="' + i + '" aria-label="Sesi önizle" title="Önizle">' +
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
+        '<div class="t-name">' + esc(v.name) + prem + '</div><div class="t-desc">' + esc(v.desc) + '</div></div>';
+    }).join('');
     var styleTiles = STYLES.map(function (st) { return '<div class="tile ' + (S.style === st.id ? 'on' : '') + '" data-act="style" data-v="' + st.id + '"><div class="t-name">' + esc(st.name) + '</div><div class="t-desc">' + esc(st.desc) + '</div></div>'; }).join('');
     var aspects = [{ id: '16:9', w: 36, h: 21, l: 'Yatay' }, { id: '9:16', w: 21, h: 36, l: 'Dikey' }, { id: '1:1', w: 28, h: 28, l: 'Kare' }]
       .map(function (a) { return '<div class="asp ' + (S.aspect === a.id ? 'on' : '') + '" data-act="aspect" data-v="' + a.id + '"><span class="fr" style="width:' + a.w + 'px;height:' + a.h + 'px"></span><span class="l">' + a.l + ' ' + a.id + '</span></div>'; }).join('');
@@ -231,7 +238,9 @@
           '<div class="pl-meta"><div class="pl-name">' + esc(VOICES[S.voiceIdx].name) + '</div><div class="pl-sub">' + vo.length + ' karakter · ' + esc(toneName()) + ' ton</div></div></div>' +
           '<div class="pl-wave">' + waveBars() + '</div>' +
           '<div id="audioSlot">' + (S.audio ? '<audio controls src="' + esc(S.audio) + '"></audio>' : '') + '</div>' +
-          '<div class="pl-controls"><button class="btn btn-gold btn-sm" data-act="tts">▶ Seslendir</button><button class="btn btn-quiet btn-sm" data-act="copyVo" style="color:var(--on-ink);border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.06)">Metni kopyala</button></div>' +
+          '<div class="pl-controls"><button class="btn btn-gold btn-sm" data-act="tts">▶ Seslendir</button>' +
+          '<div class="rate-seg">' + RATES.map(function (r) { return '<button class="' + (S.ttsRate === r.v ? 'on' : '') + '" data-act="ttsRate" data-v="' + r.v + '">' + r.l + '</button>'; }).join('') + '</div>' +
+          '<button class="btn btn-quiet btn-sm" data-act="copyVo" style="color:var(--on-ink);border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.06)">Metni kopyala</button></div>' +
         '</div>' +
         '<div class="panel"><h3>Seslendirme metni</h3><p class="p-note">' + esc(r.seslendirme_notu || 'Doğal, akıcı bir anlatıma göre hazırlandı.') + '</p><div class="panel-txt">' + esc(vo) + '</div></div>';
     }
@@ -371,6 +380,8 @@
       case 'copyIg': var ig = S.result.instagram || {}; copy((ig.aciklama || '') + '\n\n' + (ig.hashtagler || []).map(function (t) { return t[0] === '#' ? t : '#' + t; }).join(' ')); break;
       case 'download': downloadFile(); break;
       case 'tts': doTts(); break;
+      case 'voicePrev': previewVoice(parseInt(v, 10)); break;
+      case 'ttsRate': S.ttsRate = parseFloat(v); document.querySelectorAll('.rate-seg button').forEach(function (x) { x.classList.remove('on'); }); el.classList.add('on'); break;
       case 'image': doImage(parseInt(v, 10)); break;
       case 'genAll': genAll(); break;
       case 'editImg': openEdit(parseInt(v, 10)); break;
@@ -538,17 +549,31 @@
   }
 
   // ── TTS ──────────────────────────────────────────────────────────────
+  function speak(text, rate) {
+    if (!('speechSynthesis' in window)) return false;
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text); u.lang = 'tr-TR'; u.rate = rate || 1;
+    var vs = window.speechSynthesis.getVoices() || [];
+    for (var i = 0; i < vs.length; i++) { if (/tr(-|_)/i.test(vs[i].lang)) { u.voice = vs[i]; break; } }
+    window.speechSynthesis.speak(u); return true;
+  }
+  function previewVoice(i) {
+    var v = VOICES[i]; var sample = 'Storia ile hikâyen hayat buluyor. Bu ses senin anlatıcın olabilir.';
+    if (!REAL) { if (!speak(sample, S.ttsRate)) toast('Tarayıcı seslendirmeyi desteklemiyor'); else toast('Önizleme · ' + v.name); return; }
+    toast('Önizleme hazırlanıyor…');
+    callFn({ action: 'tts', preview: true, engine: 'openai', voice: v.ov }).then(function (d) {
+      if (d && d.ok && d.url) { try { new Audio(d.url).play(); } catch (e) {} } else toast('Önizleme alınamadı');
+    }).catch(function () { toast('Bağlantı hatası'); });
+  }
   function doTts() {
     var text = narrationText(); if (!text) { toast('Seslendirilecek metin yok'); return; }
     if (!REAL) {
-      if (!('speechSynthesis' in window)) { toast('Tarayıcı seslendirmeyi desteklemiyor'); return; }
-      window.speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(text.slice(0, 600)); u.lang = 'tr-TR'; u.rate = 0.98;
-      window.speechSynthesis.speak(u); toast('Demo seslendirme (gerçek modda indirilebilir mp3)'); return;
+      if (!speak(text.slice(0, 600), S.ttsRate)) { toast('Tarayıcı seslendirmeyi desteklemiyor'); return; }
+      toast('Demo seslendirme (gerçek modda indirilebilir mp3)'); return;
     }
     if (!S.user) { openAuth(); return; }
     var slot = document.getElementById('audioSlot'); if (slot) slot.innerHTML = '<p style="color:var(--on-ink-muted);font-size:13px;margin-top:12px">Ses üretiliyor…</p>';
-    callFn({ action: 'tts', text: text, engine: 'openai', voice: VOICES[S.voiceIdx].ov }).then(function (d) {
+    callFn({ action: 'tts', text: text, engine: 'openai', voice: VOICES[S.voiceIdx].ov, speed: S.ttsRate }).then(function (d) {
       if (d && d.ok && d.url) { S.audio = d.url; if (typeof d.credits === 'number') S.credits = d.credits; if (slot) slot.innerHTML = '<audio controls src="' + esc(d.url) + '"></audio>'; chrome(); toast('Seslendirme hazır'); }
       else { if (slot) slot.innerHTML = ''; toast((d && d.error) || 'Ses üretilemedi'); }
     }).catch(function () { if (slot) slot.innerHTML = ''; toast('Bağlantı hatası'); });
