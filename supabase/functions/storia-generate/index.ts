@@ -643,16 +643,16 @@ const cleanJob = (v: unknown) => String(v || "").replace(/[^a-zA-Z0-9_-]/g, "").
 // İş kimliğine sağlayıcı ön eki eklenir ("grok:<id>" / "kling:<id>") ki poll
 // doğru API'ye gitsin. Kredi maliyeti her ikisinde aynı (marj sağlayıcıda değişir).
 // AI video marj koruması — sağlayıcıya göre AYRI fiyat (gerçek maliyet farklı):
-//  • Grok  ≈ 20₺/5sn → 30 kr/sn, taban 150 (5sn=150, 10sn=300)
-//  • Kling v2.6/v3 (sinematik/premium; gerçek maliyet daha yüksek) → 50 kr/sn, taban 250 (5sn=250, 10sn=500)
-// Oranlar env ile ayarlanabilir: VIDEO_COST_GROK_SEC / VIDEO_COST_KLING_SEC.
+//  • Grok  ≈ 20₺/5sn → 30 kr/sn, taban 150 (hızlı)
+//  • Kling v2-6 (doğrudan API, sinematik) → 50 kr/sn, taban 250
+//  • Kling 3.0 Pro (fal.ai, en sinematik) → 60 kr/sn, taban 300
+// Oranlar env ile: VIDEO_COST_GROK_SEC / VIDEO_COST_KLING_SEC / VIDEO_COST_KLING3_SEC.
 function videoCost(sec: number, provider?: string): number {
   const s = Math.round(Math.min(15, Math.max(3, sec)));
-  const kling = String(provider || "").toLowerCase() === "kling";
-  const rate = kling
-    ? (Number(Deno.env.get("VIDEO_COST_KLING_SEC")) || 50)
-    : (Number(Deno.env.get("VIDEO_COST_GROK_SEC")) || 30);
-  return Math.max(kling ? 250 : 150, s * rate);
+  const p = String(provider || "").toLowerCase();
+  if (p === "kling3") return Math.max(300, s * (Number(Deno.env.get("VIDEO_COST_KLING3_SEC")) || 60));
+  if (p === "kling") return Math.max(250, s * (Number(Deno.env.get("VIDEO_COST_KLING_SEC")) || 50));
+  return Math.max(150, s * (Number(Deno.env.get("VIDEO_COST_GROK_SEC")) || 30));
 }
 function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "grok").toLowerCase(); }
 
@@ -662,17 +662,61 @@ function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "gr
 async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string, want?: string): Promise<{ id?: string; err?: string; used?: string }> {
   const klingReady = !!(Deno.env.get("KLING_ACCESS_KEY") && Deno.env.get("KLING_SECRET_KEY"));
   const grokReady = !!Deno.env.get("XAI_API_KEY");
-  let choice = (want && (want === "grok" || want === "kling")) ? want : videoProvider();
-  // İstenen sağlayıcı yapılandırılmamışsa, hazır olana düş.
-  if (choice === "kling" && !klingReady && grokReady) choice = "grok";
-  if (choice === "grok" && !grokReady && klingReady) choice = "kling";
+  const falReady = !!(Deno.env.get("FAL_KEY") || Deno.env.get("FAL_API_KEY"));
+  let choice = (want && (want === "grok" || want === "kling" || want === "kling3")) ? want : videoProvider();
+  // İstenen sağlayıcı yapılandırılmamışsa, hazır olana düş (kullanıcı takılmasın).
+  if (choice === "kling3" && !falReady) choice = klingReady ? "kling" : "grok";
+  if (choice === "kling" && !klingReady) choice = grokReady ? "grok" : (falReady ? "kling3" : "kling");
+  if (choice === "grok" && !grokReady) choice = klingReady ? "kling" : (falReady ? "kling3" : "grok");
+  if (choice === "kling3") { const r = await submitFal(prompt, imageUrl, dur, aspect); return r.id ? { id: "fal:" + r.id, used: "kling3" } : r; }
   if (choice === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id, used: "kling" } : r; }
   const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id, used: "grok" } : r;
 }
 async function pollVideo(job: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+  if (job.indexOf("fal:") === 0) return pollFal(job.slice(4));
   if (job.indexOf("kling:") === 0) return pollKling(job.slice(6));
   if (job.indexOf("grok:") === 0) return pollGrok(job.slice(5));
   return pollGrok(job); // ön eksiz eski işler → Grok
+}
+// ── Kling 3.0 Pro via fal.ai (queue REST API) ───────────────────────────
+// FAL_KEY secret gerekir. Model FAL_KLING_MODEL ile değiştirilebilir.
+function falModel(): string { return Deno.env.get("FAL_KLING_MODEL") || "fal-ai/kling-video/v3/pro/image-to-video"; }
+function falApp(): string { return falModel().split("/").slice(0, 2).join("/"); } // "fal-ai/kling-video"
+async function submitFal(prompt: string, imageUrl: string, dur: number, _aspect: string): Promise<{ id?: string; err?: string }> {
+  const key = Deno.env.get("FAL_KEY") || Deno.env.get("FAL_API_KEY");
+  if (!key) return { err: "FAL_KEY secret eksik (Kling 3.0 için)." };
+  if (!imageUrl) return { err: "Kling 3.0 için sahne görseli gerekli." };
+  const body: Record<string, unknown> = {
+    image_url: imageUrl,
+    prompt: (prompt || "").slice(0, 2000),
+    duration: dur > 7 ? "10" : "5",
+  };
+  try {
+    const r = await fetchT("https://queue.fal.run/" + falModel(), {
+      method: "POST", headers: { Authorization: "Key " + key, "Content-Type": "application/json" }, body: JSON.stringify(body),
+    }, 60_000);
+    const d = await r.json().catch(() => ({} as any));
+    if (!r.ok) return { err: (d && (d.detail || d.message || (Array.isArray(d.detail) && d.detail[0]?.msg))) || ("fal " + r.status) };
+    const id = d.request_id || d.requestId;
+    if (!id) return { err: "fal request_id alınamadı." };
+    return { id: String(id) };
+  } catch (e) { return { err: String(e).slice(0, 160) }; }
+}
+async function pollFal(id: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+  const key = Deno.env.get("FAL_KEY") || Deno.env.get("FAL_API_KEY");
+  if (!key) return { done: false, err: "FAL_KEY eksik." };
+  const base = "https://queue.fal.run/" + falApp() + "/requests/" + encodeURIComponent(id);
+  try {
+    const sr = await fetchT(base + "/status", { headers: { Authorization: "Key " + key } }, 30_000);
+    const sd = await sr.json().catch(() => ({} as any));
+    const st = String(sd.status || "").toUpperCase();
+    if (st === "FAILED" || st === "ERROR") return { done: false, failed: true, err: "üretim başarısız" };
+    if (st !== "COMPLETED") return { done: false };
+    const rr = await fetchT(base, { headers: { Authorization: "Key " + key } }, 30_000);
+    const rd = await rr.json().catch(() => ({} as any));
+    const url = rd?.video?.url || rd?.output?.video?.url || (Array.isArray(rd?.videos) && rd.videos[0]?.url) || "";
+    return url ? { done: true, url } : { done: false };
+  } catch (e) { return { done: false, err: String(e).slice(0, 120) }; }
 }
 
 // ── Kling (Kuaishou) — image→video, JWT (HS256) auth ────────────────────

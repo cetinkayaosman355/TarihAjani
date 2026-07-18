@@ -415,11 +415,13 @@
   // Görsel kalite seçici (müşteri seçer — Grok/Kling mantığı). Standart = ucuz
   // (medium), Yüksek = premium (gpt-image üst / 4K). Kredi farkı sunucuda uygulanır.
   // AI video klip maliyeti (backend videoCost ile birebir) — sağlayıcıya göre:
-  // Grok 30 kr/sn (taban 150), Kling v2.6/v3 50 kr/sn (taban 250, sinematik/premium).
+  // Grok 30/sn (taban 150), Kling v2-6 50/sn (taban 250), Kling 3.0 Pro 60/sn (taban 300).
   function vcost(sec, provider) {
-    var kling = (provider || S.vengine) === 'kling';
+    var p = provider || S.vengine;
     var s = Math.round(Math.min(15, Math.max(3, sec)));
-    return Math.max(kling ? 250 : 150, s * (kling ? 50 : 30));
+    if (p === 'kling3') return Math.max(300, s * 60);
+    if (p === 'kling') return Math.max(250, s * 50);
+    return Math.max(150, s * 30);
   }
   function imgCr() { return S.imgQuality === 'yuksek' ? 45 : 12; }
   function imgQualHtml() {
@@ -734,8 +736,9 @@
         '<button class="btn btn-quiet btn-sm" data-act="brandKit" style="margin-top:12px">🎨 Marka kiti' + (S.brand.logo || S.brand.name ? ' ✓' : '') + '</button></div>' +
         '<button class="btn btn-gold" data-act="exportVid"' + (doneImgs ? '' : ' disabled') + '>🎬 Video oluştur &amp; indir</button></div>';
       var engSeg = '<div class="veng-pick"><span class="cp-lbl">Video motoru</span><div class="cap-seg">' +
-        '<button class="' + (S.vengine === 'grok' ? 'on' : '') + '" data-act="vengine" data-v="grok">Grok · hızlı · ' + vcost(5, 'grok') + 'kr</button>' +
-        '<button class="' + (S.vengine === 'kling' ? 'on' : '') + '" data-act="vengine" data-v="kling">Kling · sinematik · ' + vcost(5, 'kling') + 'kr</button>' +
+        '<button class="' + (S.vengine === 'grok' ? 'on' : '') + '" data-act="vengine" data-v="grok" title="En hızlı, en ekonomik">Grok · ' + vcost(5, 'grok') + 'kr</button>' +
+        '<button class="' + (S.vengine === 'kling' ? 'on' : '') + '" data-act="vengine" data-v="kling" title="Sinematik hareket">Kling 2.6 · ' + vcost(5, 'kling') + 'kr</button>' +
+        '<button class="' + (S.vengine === 'kling3' ? 'on' : '') + '" data-act="vengine" data-v="kling3" title="En gerçekçi & sinematik (fal.ai)">Kling 3.0 · ' + vcost(5, 'kling3') + 'kr</button>' +
         '</div></div>';
       var durSeg = '<div class="veng-pick"><span class="cp-lbl">Klip süresi</span><div class="cap-seg">' +
         '<button class="' + (S.vsec === 5 ? 'on' : '') + '" data-act="vsec" data-v="5">5 sn · ' + vcost(5) + 'kr</button>' +
@@ -949,7 +952,7 @@
       case 'video': doVideo(parseInt(v, 10)); break;
       case 'exportVid': exportVideo(); break;
       case 'capStyle': S.capStyle = v; refreshTab(); break;
-      case 'vengine': S.vengine = v; refreshTab(); toast(v === 'kling' ? 'Kling · sinematik seçildi' : 'Grok · hızlı seçildi'); break;
+      case 'vengine': S.vengine = v; refreshTab(); toast(v === 'kling3' ? 'Kling 3.0 · en sinematik · ' + vcost(S.vsec, 'kling3') + 'kr' : v === 'kling' ? 'Kling 2.6 · sinematik · ' + vcost(S.vsec, 'kling') + 'kr' : 'Grok · hızlı · ' + vcost(S.vsec, 'grok') + 'kr'); break;
       case 'imgQual': S.imgQuality = v; refreshTab(); toast(v === 'yuksek' ? 'Yüksek kalite · 45kr/görsel' : 'Standart kalite · 12kr/görsel'); break;
       case 'vsec': S.vsec = parseInt(v, 10) || 5; refreshTab(); toast(S.vsec + ' sn klip · ' + vcost(S.vsec) + 'kr'); break;
       case 'brandKit': openBrandModal(); break;
