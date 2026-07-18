@@ -388,13 +388,13 @@ const ELEVEN_ALLOWED = new Set([
 // Premium (pahalı) sesler → TTS ücreti PREMIUM_MULT katına çıkar (sadece gerekliyse).
 const ELEVEN_PREMIUM = new Set(["bFrjFL4nlpeYNwNRhXxq"]);
 const PREMIUM_MULT = 4;
-async function generateSpeechEleven(text: string, voiceId: string, opts?: { stability?: number; style?: number }): Promise<Uint8Array | null> {
+async function generateSpeechEleven(text: string, voiceId: string, opts?: { stability?: number; style?: number }): Promise<{ bytes: Uint8Array | null; err?: string }> {
   const key = Deno.env.get("ELEVENLABS_API_KEY");
   // TEŞHİS: Kadir/ElevenLabs "gelmiyor" şikâyeti → neden başarısız olduğu Supabase
-  // function loglarında görünsün (sessiz OpenAI fallback'ini artık kör bırakmıyoruz).
-  if (!key) { console.error("[eleven] ELEVENLABS_API_KEY YOK → OpenAI'ya düşülüyor"); return null; }
-  if (!ELEVEN_ALLOWED.has(voiceId)) { console.error("[eleven] voiceId izinli değil: " + voiceId); return null; }
-  if (!text.trim()) return null;
+  // function loglarında GÖRÜNSÜN ve YANITTA istemciye dönsün (sessiz fallback bitti).
+  if (!key) { console.error("[eleven] ELEVENLABS_API_KEY YOK → OpenAI'ya düşülüyor"); return { bytes: null, err: "ELEVENLABS_API_KEY secret'ı Supabase'de tanımlı değil" }; }
+  if (!ELEVEN_ALLOWED.has(voiceId)) { console.error("[eleven] voiceId izinli değil: " + voiceId); return { bytes: null, err: "ses kimliği izinli listede değil: " + voiceId }; }
+  if (!text.trim()) return { bytes: null, err: "boş metin" };
   const chunks: string[] = [];
   let rest = text.trim();
   while (rest.length && chunks.length < 5) {
@@ -432,25 +432,35 @@ async function generateSpeechEleven(text: string, voiceId: string, opts?: { stab
         const body = await r.text().catch(() => "");
         // 401=API key hatalı · 404=ses hesapta yok · 422=parametre · 429=kota
         console.error(`[eleven] HATA ${r.status} voice=${voiceId}: ${body.slice(0, 300)}`);
-        return null;
+        const hint = r.status === 401 ? "API anahtarı geçersiz/yetkisiz"
+          : r.status === 404 ? "bu ses ElevenLabs hesabında yok (voiceId hatalı)"
+          : r.status === 429 ? "ElevenLabs kotası/kredisi bitti"
+          : r.status === 422 ? "parametre hatası"
+          : "HTTP " + r.status;
+        return { bytes: null, err: "ElevenLabs " + r.status + " — " + hint };
       }
       parts.push(new Uint8Array(await r.arrayBuffer()));
-    } catch (e) { console.error("[eleven] exception: " + String(e).slice(0, 200)); return null; }
+    } catch (e) { console.error("[eleven] exception: " + String(e).slice(0, 200)); return { bytes: null, err: "ElevenLabs bağlantı hatası: " + String(e).slice(0, 80) }; }
   }
-  if (!parts.length) return null;
+  if (!parts.length) return { bytes: null, err: "ses üretilemedi" };
   const total = parts.reduce((a, p) => a + p.length, 0);
   const out = new Uint8Array(total);
   let off = 0;
   for (const p of parts) { out.set(p, off); off += p.length; }
-  return out;
+  return { bytes: out };
 }
 // Motor yönlendirici: engine='eleven' + izinli voiceId → ElevenLabs; yoksa/başarısızsa → OpenAI.
-async function synthSpeech(text: string, b: Record<string, unknown>): Promise<Uint8Array | null> {
-  if (String(b.engine || "") === "eleven" && ELEVEN_ALLOWED.has(String(b.voiceId || ""))) {
-    const out = await generateSpeechEleven(text, String(b.voiceId), { stability: Number(b.stability), style: Number(b.style) });
-    if (out) return out;
+// Hangi motorun kullanıldığını ve ElevenLabs neden düştüğünü çağırana döndürür (teşhis).
+async function synthSpeech(text: string, b: Record<string, unknown>): Promise<{ bytes: Uint8Array | null; engine: string; elevenErr?: string }> {
+  const wantEleven = String(b.engine || "") === "eleven" && ELEVEN_ALLOWED.has(String(b.voiceId || ""));
+  if (wantEleven) {
+    const e = await generateSpeechEleven(text, String(b.voiceId), { stability: Number(b.stability), style: Number(b.style) });
+    if (e.bytes) return { bytes: e.bytes, engine: "eleven" };
+    const ob = await generateSpeech(text, String(b.voice || ""));
+    return { bytes: ob, engine: ob ? "openai" : "none", elevenErr: e.err };
   }
-  return generateSpeech(text, String(b.voice || ""));
+  const ob = await generateSpeech(text, String(b.voice || ""));
+  return { bytes: ob, engine: ob ? "openai" : "none" };
 }
 // Ses ÖNİZLEME metni (kısa ~5 sn) — ücretsiz, kredi düşmez, kullanıcı sesi seçmeden dinler
 const PREVIEW_TEXT = "Tarih Ajanı dosyayı açıyor. Bu ses, senin anlatıcın olabilir.";
@@ -978,17 +988,18 @@ Deno.serve(async (req) => {
 
     // SES ÖNİZLEME — ücretsiz, kredi düşmez, giriş gerekmez; kısa örnek data URI döner
     if (isPreview) {
-      const bytes = await synthSpeech(PREVIEW_TEXT, b);
-      if (!bytes) return json({ ok: false, error: "Önizleme üretilemedi." }, 502);
-      return json({ ok: true, url: "data:audio/mpeg;base64," + bytesToB64(bytes), charged: false });
+      const sp = await synthSpeech(PREVIEW_TEXT, b);
+      if (!sp.bytes) return json({ ok: false, error: "Önizleme üretilemedi." + (sp.elevenErr ? " (" + sp.elevenErr + ")" : "") }, 502);
+      return json({ ok: true, url: "data:audio/mpeg;base64," + bytesToB64(sp.bytes), charged: false, engine: sp.engine, elevenErr: sp.elevenErr });
     }
 
     // SESLENDİRME ÜRETİMİ — mp3 üret, Storage'a yükle, başarılıysa kredi düş
     if (String(b.action || "") === "tts") {
       if (!ttsText) return json({ ok: false, error: "Seslendirme metni boş." }, 400);
-      const bytes = await synthSpeech(ttsText, b);
-      logRun({ action: "tts", ok: !!bytes, ms: Date.now() - t0, user_id: userId || null, err: bytes ? null : "uretilemedi" });
-      if (!bytes) return json({ ok: false, error: "Ses üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
+      const sp = await synthSpeech(ttsText, b);
+      const bytes = sp.bytes;
+      logRun({ action: "tts", ok: !!bytes, ms: Date.now() - t0, user_id: userId || null, err: bytes ? (sp.engine === "eleven" ? null : "fallback:" + (sp.elevenErr || sp.engine)) : "uretilemedi" });
+      if (!bytes) return json({ ok: false, error: "Ses üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." + (sp.elevenErr ? " [" + sp.elevenErr + "]" : "") }, 502);
       let url = "";
       if (admin) {
         try {
@@ -1014,9 +1025,9 @@ Deno.serve(async (req) => {
       }
       if (cost > 0 && admin && userId) {
         const credits = await spendSafe(admin, userId, cost, "seslendirme");
-        return json({ ok: true, url, charged: true, credits, cost, truncated: ttsTruncated });
+        return json({ ok: true, url, charged: true, credits, cost, truncated: ttsTruncated, engine: sp.engine, elevenErr: sp.elevenErr });
       }
-      return json({ ok: true, url, charged: false, cost, truncated: ttsTruncated });
+      return json({ ok: true, url, charged: false, cost, truncated: ttsTruncated, engine: sp.engine, elevenErr: sp.elevenErr });
     }
 
     // VIDEO ÜRETİMİ — sağlayıcıya (Grok/Kling) iş gönder; başarılıysa kredi düş.
