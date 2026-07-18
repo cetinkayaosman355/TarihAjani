@@ -427,7 +427,7 @@ async function generateSpeechEleven(text: string, voiceId: string, opts?: { stab
           next_text: nextTxt,
           voice_settings: { stability: stab, similarity_boost: 0.85, style: sty, use_speaker_boost: true },
         }),
-      });
+      }, 120_000);   // KRİTİK: timeout ms ARGÜMANI ŞART — yoksa setTimeout(abort, undefined) ANINDA iptal eder
       if (!r.ok) {
         const body = await r.text().catch(() => "");
         // 401=API key hatalı · 404=ses hesapta yok · 422=parametre · 429=kota
