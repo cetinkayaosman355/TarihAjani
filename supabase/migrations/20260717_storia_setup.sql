@@ -45,7 +45,7 @@ insert into public.tier_defs (id, name, price_monthly, quota, features) values
   ('kesif',       'Keşif',        0,    0,     array['Hoş geldin kredisi', 'Temel özellikler']),
   ('yaratici',    'Yaratıcı',     599,  1000,  array['Aylık 1.000 kredi', 'Tüm formatlar']),
   ('profesyonel', 'Profesyonel',  1299, 5000,  array['Aylık 5.000 kredi', 'Öncelikli üretim', 'Premium sesler']),
-  ('studio',      'Stüdyo',       1999, 15000, array['Aylık 15.000 kredi', 'Ekip kullanımı', 'Öncelikli destek'])
+  ('studio',      'Stüdyo',       1999, 10000, array['Aylık 10.000 kredi', 'Ekip kullanımı', 'Öncelikli destek'])
 on conflict (id) do update set name = excluded.name, price_monthly = excluded.price_monthly,
   quota = excluded.quota, features = excluded.features;
 

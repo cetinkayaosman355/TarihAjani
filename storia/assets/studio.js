@@ -1952,7 +1952,7 @@
   var PLANS = [
     { id: 'yaratici', name: 'Yaratıcı', price: '599₺', cr: '1.000', videos: '≈ 8', feats: ['Ayda ≈ 8 tam kısa video (ya da 25+ senaryo paketi)', 'Senaryo + görsel + seslendirme + yayın metni', 'Standart anlatıcı sesleri', 'Tüm formatlar (16:9 · 9:16 · 1:1)'] },
     { id: 'profesyonel', name: 'Profesyonel', price: '1.299₺', cr: '5.000', videos: '≈ 40', feat: true, feats: ['Ayda ≈ 40 tam kısa video', 'Yaratıcı’daki her şey', 'Premium anlatıcı sesleri', 'Karakter & görsel devamlılığı', 'Öncelikli üretim + cihazlar arası kütüphane'] },
-    { id: 'studio', name: 'Stüdyo', price: '1.999₺', cr: '15.000', videos: '≈ 125', feats: ['Ayda ≈ 125 tam kısa video', 'Profesyonel’deki her şey', 'Ekip kullanımı & marka profilleri', 'Öncelikli destek'] }
+    { id: 'studio', name: 'Stüdyo', price: '1.999₺', cr: '10.000', videos: '≈ 80', feats: ['Ayda ≈ 80 tam kısa video', 'Profesyonel’deki her şey', 'Ekip kullanımı & marka profilleri', 'Öncelikli destek'] }
   ];
   function openPlanModal() { renderPlanCards(); document.getElementById('planModal').classList.add('show'); }
   function closePlan() { document.getElementById('planModal').classList.remove('show'); }
