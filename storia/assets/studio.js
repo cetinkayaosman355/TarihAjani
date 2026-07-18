@@ -241,10 +241,11 @@
       var cards = prompts.map(function (p, i) {
         var img = S.images[i];
         var box = img ? '<img src="' + esc(img) + '" alt="">' : '<div class="ph" style="background:' + GRADS[i % GRADS.length] + '">' + (REAL ? '✦ Üret' : 'Örnek görsel') + '</div>';
+        var acts = img
+          ? '<button class="btn btn-quiet btn-sm" data-act="image" data-v="' + i + '">↻ Yeniden</button><button class="btn btn-gold btn-sm" data-act="editImg" data-v="' + i + '">✏ Düzenle</button>'
+          : '<button class="btn btn-gold btn-sm" data-act="image" data-v="' + i + '">✦ Üret · 12</button><button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(p) + '">Kopyala</button>';
         return '<div class="gcard"><div class="gimg">' + box + '</div><div class="gbody"><div class="gno">Görsel ' + (i + 1) + '</div>' +
-          '<div class="gtxt">' + esc(p) + '</div><div class="gacts">' +
-          '<button class="btn btn-gold btn-sm" data-act="image" data-v="' + i + '">✦ Üret · 12</button>' +
-          '<button class="btn btn-quiet btn-sm" data-act="copyOne" data-v="' + esc(p) + '">Kopyala</button></div></div></div>';
+          '<div class="gtxt">' + esc(p) + '</div><div class="gacts">' + acts + '</div></div></div>';
       }).join('');
       var doneCount = prompts.filter(function (_, i) { return S.images[i]; }).length;
       return '<div class="tab-tools"><span class="tt-note"><b>' + esc(styleObj().name) + '</b> stilinde ' + prompts.length + ' görsel · ' + doneCount + ' üretildi</span><button class="btn btn-gold btn-sm" data-act="genAll">✦ Tümünü üret</button></div><div class="gallery">' + cards + '</div>';
@@ -372,6 +373,7 @@
       case 'tts': doTts(); break;
       case 'image': doImage(parseInt(v, 10)); break;
       case 'genAll': genAll(); break;
+      case 'editImg': openEdit(parseInt(v, 10)); break;
       case 'openHist': openHist(parseInt(v, 10)); break;
       case 'istyle': S.imgStyle = v; render(); break;
       case 'iaspect': S.imgAspect = v; render(); break;
@@ -470,6 +472,29 @@
     }).catch(function () { toast('Bağlantı hatası'); });
   }
   function refreshTab() { var tb = document.getElementById('tabBody'); if (tb) tb.innerHTML = renderTab(); }
+  // ── Image editing ─────────────────────────────────────────────────────
+  var _editIdx = null;
+  function openEdit(idx) { if (S.images[idx] == null) return; _editIdx = idx; var t = document.getElementById('editText'); t.value = ''; document.getElementById('editModal').classList.add('show'); setTimeout(function () { t.focus(); }, 50); }
+  function closeEdit() { document.getElementById('editModal').classList.remove('show'); }
+  function toDataUri(url) {
+    if (url.indexOf('data:') === 0) return Promise.resolve(url);
+    return fetch(url).then(function (r) { return r.blob(); }).then(function (bl) { return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(bl); }); });
+  }
+  function applyEdit() {
+    var idx = _editIdx; var instr = document.getElementById('editText').value.trim();
+    if (idx == null || !S.images[idx]) return;
+    if (!instr) { toast('Ne değiştireyim yaz'); return; }
+    closeEdit();
+    if (!REAL) { S.images[idx] = demoImage(idx, S.aspect); refreshTab(); toast('Düzenlendi (demo): ' + instr.slice(0, 36)); return; }
+    if (!S.user) { openAuth(); return; }
+    toast('Görsel düzenleniyor…');
+    toDataUri(S.images[idx]).then(function (du) {
+      return callFn({ action: 'edit', image: du, prompt: instr, size: S.aspect });
+    }).then(function (d) {
+      if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; refreshTab(); chrome(); toast('Görsel düzenlendi'); }
+      else toast((d && d.error) || 'Görsel düzenlenemedi');
+    }).catch(function () { toast('Bağlantı hatası'); });
+  }
   function genAll() {
     var r = S.result || {}; var prompts = r.gorsel_promptlar || [];
     if (!prompts.length) return;
@@ -604,6 +629,12 @@
     modal.addEventListener('click', function (e) { if (e.target === modal) closeAuth(); });
     document.getElementById('authSwitch').addEventListener('click', switchAuth);
     document.getElementById('authSubmit').addEventListener('click', doAuth);
+    // edit image modal
+    var editModal = document.getElementById('editModal');
+    document.getElementById('editApply').addEventListener('click', applyEdit);
+    document.getElementById('editCancel').addEventListener('click', closeEdit);
+    editModal.addEventListener('click', function (e) { if (e.target === editModal) closeEdit(); });
+    document.getElementById('editText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) applyEdit(); });
     // keyboard: N = new
     document.addEventListener('keydown', function (e) {
       if (e.key.toLowerCase() === 'n' && !/input|textarea/i.test((e.target.tagName || '')) && !document.getElementById('authModal').classList.contains('show')) { startNew(); }
