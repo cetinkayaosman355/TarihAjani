@@ -132,6 +132,12 @@
     // hero içindeki altın butonların koyu metni korunur
     L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) a[style*="linear-gradient"],' +
     L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) button[style*="linear-gradient"]{color:#171207 !important;}' +
+    // hero içindeki KOYU CAM butonlar (ör. "ÖRNEK DOSYAYI GÖR", sosyal ikonlar:
+    // background: rgba(3,5,11,.5)) <a>/<button> olduğundan koruma dışında kalıp
+    // rgbaBgSel ile BEYAZA dönüyordu → koyu zemin + açık altın metin geri verilir.
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) a[style*="rgba(3,5,11"],' +
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) button[style*="rgba(3,5,11"],' +
+    L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) a[style*="rgba(3, 5, 11"]{background:rgba(3,5,11,.5) !important;color:#e6c478 !important;border-color:rgba(193,154,82,.6) !important;}' +
     // hero içindeki gradient (clip:text) başlıklar koyu zeminde AÇIK altın kalır
     L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) [style*="-webkit-background-clip: text"],' +
     L + 'section:has(img[style*="position: absolute"][style*="object-fit: cover"]) [style*="background-clip: text"]' +
