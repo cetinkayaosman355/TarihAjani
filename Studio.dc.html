@@ -729,6 +729,9 @@
                               <button onClick="{{ sv.makeKling }}" style="border: 1px solid rgba(230,196,120,.5); background: rgba(230,196,120,.1); color: #f4ead0; padding: 7px 9px; font-size: 10.5px; cursor: pointer; border-radius: 5px; display: flex; justify-content: space-between; gap: 8px;"><span>👑 Kling · en iyi</span><span style="color: #e6c478; font-size: 9.5px;">300 KR</span></button>
                             </div>
                           </sc-if>
+                          <sc-if value="{{ sv.vidErrShow }}" hint-placeholder-val="{{ false }}">
+                            <p style="margin: 6px 0 0; color: #e8a9a9; font-size: 10.5px; line-height: 1.4;">{{ sv.vidStatus }}</p>
+                          </sc-if>
                         </div>
                       </sc-if>
                       <div style="display: flex; gap: 6px; padding: 6px;">
@@ -1248,6 +1251,9 @@
                           <sc-if value="{{ gp.img.vidBusy }}" hint-placeholder-val="{{ false }}">
                             <span style="color: #c4a7ff; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .08em;">{{ gp.img.vidStatus }}</span>
                           </sc-if>
+                          <sc-if value="{{ gp.img.vidErrShow }}" hint-placeholder-val="{{ false }}">
+                            <span style="color: #e8a9a9; font-size: 11.5px; line-height: 1.4;">{{ gp.img.vidStatus }}</span>
+                          </sc-if>
                         </div>
                         <sc-if value="{{ gp.img.vidMenuOpen }}" hint-placeholder-val="{{ false }}">
                           <div style="display: grid; gap: 7px; max-width: 380px; padding: 11px; border: 1px solid rgba(146,87,238,.32); border-radius: 8px; background: rgba(109,59,212,.08);">
@@ -1327,6 +1333,9 @@
                   <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
                     <sc-for list="{{ imgQueue }}" as="iq" hint-placeholder-count="2">
                       <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12;">
+                        <sc-if value="{{ iq.label }}" hint-placeholder-val="{{ false }}">
+                          <p style="margin: 0; padding: 8px 12px 0; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .12em;">{{ iq.label }}</p>
+                        </sc-if>
                         <sc-if value="{{ iq.hasUrl }}" hint-placeholder-val="{{ false }}">
                           <label style="display: flex; align-items: center; gap: 7px; padding: 8px 10px 2px; color: #a4a9b5; font-size: 11px; cursor: pointer;"><input type="checkbox" checked="{{ iq.sel }}" onChange="{{ iq.onSel }}" style="accent-color: #c19a52; width: 15px; height: 15px; cursor: pointer;">İndirmek için seç</label>
                           <img loading="lazy" data-zoomable="1" src="{{ iq.url }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
@@ -1392,6 +1401,9 @@
                                 <button onClick="{{ sv.makeGrok }}" style="border: 1px solid rgba(146,87,238,.4); background: rgba(146,87,238,.12); color: #efe8ff; padding: 7px 9px; font-size: 10.5px; cursor: pointer; border-radius: 5px; display: flex; justify-content: space-between; gap: 8px;"><span>⚡ Grok · hızlı</span><span style="color: #c4a7ff; font-size: 9.5px;">120 KR</span></button>
                                 <button onClick="{{ sv.makeKling }}" style="border: 1px solid rgba(230,196,120,.5); background: rgba(230,196,120,.1); color: #f4ead0; padding: 7px 9px; font-size: 10.5px; cursor: pointer; border-radius: 5px; display: flex; justify-content: space-between; gap: 8px;"><span>👑 Kling · en iyi</span><span style="color: #e6c478; font-size: 9.5px;">300 KR</span></button>
                               </div>
+                            </sc-if>
+                            <sc-if value="{{ sv.vidErrShow }}" hint-placeholder-val="{{ false }}">
+                              <p style="margin: 6px 0 0; color: #e8a9a9; font-size: 10.5px; line-height: 1.4;">{{ sv.vidStatus }}</p>
                             </sc-if>
                           </div>
                         </sc-if>
@@ -2484,7 +2496,7 @@ class Component extends DCLogic {
   // Kademeli fiyat: ilk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR
   // (uzun videoda çok görsel üretimini ucuzlatır). idx = sahne sırası (0 tabanlı).
   IMG_COST(idx) { return (typeof idx === 'number' && idx >= 20) ? 8 : 12; }
-  async imageServer(prompt, arKey, idx, onAttempt) {
+  async imageServer(prompt, arKey, idx, onAttempt, opId) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect] || '16:9';
@@ -2499,7 +2511,9 @@ class Component extends DCLogic {
         const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0) })
+          // opId: aynı görselin TÜM tekrar denemeleri aynı iş kimliğini taşır →
+          // sunucuda tek rezervasyon (idempotent), çift düşüm/asılı rezervasyon olmaz.
+          body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined })
         });
         const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
         if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
@@ -2642,11 +2656,22 @@ class Component extends DCLogic {
     const sty = this.state.imgStyle || this.state.style;    // stil seçilmediyse sihirbazda seçilen stil
     const sendPrompt = this.withAspect(prompt, ar, sty);    // kadraj + stil prompta yerleşir
     const id = 'img' + Date.now() + Math.floor(Math.random() * 1000);
+    // SAHNE ETİKETİ: rafta hangi kartın hangi sahne olduğu yazsın (karışmasın)
+    let label = '';
+    if (sceneKey === 'kapak') label = '🏷 KAPAK';
+    else {
+      const skm = /^([a-z]+)(\d+)$/.exec(sceneKey || '');
+      if (skm) {
+        const si2 = +skm[2];
+        const gpl = ((this.state.result || {}).gorsel_promptlar || []);
+        label = 'SAHNE ' + (si2 + 1) + ((gpl[si2] && gpl[si2].sahne) ? ' · ' + String(gpl[si2].sahne).slice(0, 26) : '');
+      }
+    }
     // Basıldığı anda görünür geri bildirim: buton etiketi ÜRETİLİYOR'a döner (imgJobs sayacı)
-    this.setState(st => ({ imgJobs: (st.imgJobs || 0) + 1, imgQueue: [{ id, prompt, ar, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue].slice(0, 40) }));
+    this.setState(st => ({ imgJobs: (st.imgJobs || 0) + 1, imgQueue: [{ id, prompt, ar, label, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue].slice(0, 40) }));
     const onAttempt = (n) => this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'TEKRAR DENENİYOR… (' + (n + 1) + '/3)' } : x) }));
     const done = () => this.setState(st => ({ imgJobs: Math.max(0, (st.imgJobs || 0) - 1) }));
-    return this.imageServer(sendPrompt, ar, idx, onAttempt).then(url => {
+    return this.imageServer(sendPrompt, ar, idx, onAttempt, id).then(url => {
       done();
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url } : x) }));
       if (sceneKey) this.setSceneImg(sceneKey, { url });   // satır içi önizleme
@@ -2765,7 +2790,9 @@ class Component extends DCLogic {
       this._setGalVid(x.id, { busy: true, job, status: '🎬 ' + label + ' HAZIRLANIYOR… (1-3 dk)' });
       this.pollGalVideo(x, job, 0);
     }).catch(e => {
-      this._setGalVid(x.id, { busy: false, status: '' });
+      const msg = (e && e.message && e.message !== 'YETERSIZ_KREDI')
+        ? ('⚠ Hata: ' + String(e.message).slice(0, 90) + ' — kredin düşmedi') : '';
+      this._setGalVid(x.id, { busy: false, status: msg });
       if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
     });
   }
@@ -2910,6 +2937,9 @@ class Component extends DCLogic {
       vidUrl, hasVid: !!vidUrl, vidBusy,
       canVideo: !!url && !vidBusy,
       vidStatus: (si && si.vidStatus) || '',
+      // Hata/uyarı görünürlüğü: eski şablon durumu YALNIZ vidBusy iken gösteriyordu →
+      // başarısızlık mesajları hiç render edilmiyordu ("hiç tepki yok" kök nedeni #2).
+      vidErrShow: !vidBusy && !!((si && si.vidStatus) || ''),
       vidMenuOpen: !!(si && si.vidMenuOpen) && !vidBusy,
       vidLabel: vidBusy ? ((si && si.vidStatus) || '🎬 HAZIRLANIYOR…') : (vidUrl ? '🎬 TEKRAR VİDEO ▾' : '🎬 VİDEO ÜRET ▾'),
       toggleVidMenu: () => { const cur = (this.state.sceneImgs || {})[key] || {}; this.setSceneImg(key, { vidMenuOpen: !cur.vidMenuOpen }); },
@@ -2949,7 +2979,10 @@ class Component extends DCLogic {
       this.setSceneImg(key, { vidJob: job, vidBusy: true, vidStatus: '🎬 ' + label + ' HAZIRLANIYOR… (1-3 dk)' });
       this.pollVideo(key, job, 0);
     }).catch(e => {
-      this.setSceneImg(key, { vidBusy: false, vidStatus: '' });
+      // Hata ASLA sessiz yutulmaz: kullanıcı "hiç tepki yok" sanıyordu (kritik).
+      const msg = (e && e.message && e.message !== 'YETERSIZ_KREDI')
+        ? ('⚠ Hata: ' + String(e.message).slice(0, 90) + ' — kredin düşmedi, tekrar dene') : '';
+      this.setSceneImg(key, { vidBusy: false, vidStatus: msg });
       if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
     });
   }
@@ -4224,6 +4257,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           vidBusy: !!gv.busy,
           vidMenuOpen: !!gv.menuOpen && !gv.busy,
           vidStatus: gv.status || '',
+          vidErrShow: !gv.busy && !!(gv.status || ''),
           vidBtnLabel: gv.busy ? (gv.status || '🎬 HAZIRLANIYOR…') : '🎬 VİDEO ÜRET ▾',
           toggleVidMenu: () => this._setGalVid(x.id, { menuOpen: !gv.menuOpen }),
           makeGrok: () => this.makeGalVideo(x, 'grok'),

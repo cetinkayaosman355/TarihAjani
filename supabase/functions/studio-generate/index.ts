@@ -237,9 +237,12 @@ const NO_SPLIT =
 
 // Gerçek görsel üretimi — OpenAI gpt-image-1.5 (base64 → data URI, süresiz).
 // Başarısız olursa dall-e-3'e (url) düşer. Boş dönerse üretim başarısız sayılır.
-async function generateImage(prompt: string, size: string): Promise<string> {
+// diag: başarısızlıkta SON gerçek sebep (model + HTTP durumu) buraya yazılır →
+// istemciye iletilir; "Görsel üretilemedi" artık kör bir mesaj değil.
+async function generateImage(prompt: string, size: string, diag?: { d: string }): Promise<string> {
   const key = Deno.env.get("OPENAI_API_KEY");
-  if (!key || !prompt.trim()) return "";
+  if (!key) { if (diag) diag.d = "OPENAI_API_KEY tanımsız"; return ""; }
+  if (!prompt.trim()) return "";
   // gpt-image oranları: kare / yatay (3:2) / dikey (2:3)
   // gpt-image oranları: kare / yatay (3:2) / dikey (2:3). STANDART çözünürlük.
   const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
@@ -283,9 +286,11 @@ async function generateImage(prompt: string, size: string): Promise<string> {
       // 429/5xx → geçici; çağıran taraf tekrar dener. 4xx (model/boyut yok, moderasyon) → kalıcı.
       const body = await r.text().catch(() => "");
       console.error(`generateImage ${model} @${gSize} HTTP ${r.status}: ${body.slice(0, 300)}`);
+      if (diag) diag.d = `${model} HTTP ${r.status}` + (r.status === 429 ? " (sağlayıcı hız sınırı)" : r.status === 400 ? " (istek reddedildi)" : "");
       return r.status === 429 || r.status >= 500 ? "RETRY" : "";
     } catch (e) {
       console.error(`generateImage ${model} @${gSize} exception: ${String(e).slice(0, 200)}`);
+      if (diag) diag.d = `${model} zaman aşımı/ağ hatası`;
       return "RETRY";   // ağ/zaman aşımı → tekrar denenebilir
     }
   }
@@ -1151,15 +1156,17 @@ Deno.serve(async (req) => {
       const opId = cleanJob(b.opId) || crypto.randomUUID();
       const res = await reserveOp(admin, userId, cost, "gorsel", opId);
       if (!res.ok) return json({ ok: false, error: "Yetersiz kredi", credits: res.credits }, 402);
-      let url = await generateImage(String(b.prompt || ""), String(b.size || ""));
+      const diag = { d: "" };
+      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), diag);
       if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
       // CİHAZLAR ARASI: data: URI cihaza özeldir → Storage'a yükle, kalıcı URL ver
       if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
-      logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "uretilemedi" });
+      logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : (diag.d || "uretilemedi").slice(0, 90) });
       if (!url) {
         let credits: number | undefined;
         if (res.reserved) credits = await refundOp(admin, userId, opId);
-        return json({ ok: false, error: "Görsel üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi).", credits }, 502);
+        // Sebep artık GÖRÜNÜR: kullanıcı/destek loglara bakmadan neyin patladığını bilir
+        return json({ ok: false, error: "Görsel üretilemedi" + (diag.d ? " — sebep: " + diag.d : "") + ". Kredi düşülmedi, tekrar dene.", credits }, 502);
       }
       if (cost > 0 && admin && userId) {
         let credits = res.credits;
