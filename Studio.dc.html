@@ -2468,14 +2468,18 @@ class Component extends DCLogic {
   // Blob'tan yüklendiği için canvas taint olmaz (aynı köken).
   _cropAspectBlob(srcUrl, arKey) {
     return new Promise((resolve, reject) => {
-      const target = { yatay: 16 / 9, dikey: 9 / 16, kare: 1 }[arKey];
-      if (!target) return reject(new Error('no-aspect'));
       const img = new Image();
       img.onload = () => {
         try {
           const sw = img.naturalWidth, sh = img.naturalHeight;
           if (!sw || !sh) return reject(new Error('empty'));
           const srcAr = sw / sh;
+          // Hedef oran GÖRSELİN KENDİSİNDEN gelir: dikey kaynak → 9:16, yatay → 16:9,
+          // kare → dokunma. arKey verilirse (kayıtta oran biliniyorsa) o kazanır.
+          // Eskiden ekrandaki SEÇİLİ orana bakılıyordu → 9:16 üretilen görsel, seçim
+          // "yatay"a döndüğünde 16:9 KESİLİYORDU (kritik hata). Artık imkânsız.
+          const target = { yatay: 16 / 9, dikey: 9 / 16, kare: 1 }[arKey]
+            || (srcAr > 1.05 ? 16 / 9 : (srcAr < 0.95 ? 9 / 16 : 1));
           let cw = sw, ch = sh;
           if (srcAr > target) cw = Math.round(sh * target); else ch = Math.round(sw / target);
           const sx = Math.round((sw - cw) / 2), sy = Math.round((sh - ch) / 2);
@@ -2488,9 +2492,11 @@ class Component extends DCLogic {
       img.src = srcUrl;
     });
   }
-  async dlImage(url) {
+  async dlImage(url, arKey) {
     if (!url) return;
-    const ar = this.state.aspect || 'yatay';
+    // Oran, GÖRSELİN kendi kaydından gelir (arKey); yoksa _cropAspectBlob görselin
+    // en-boyundan kendisi anlar. EKRANDAKİ seçime asla bakılmaz (yanlış kesme hatası).
+    const ar = arKey || '';
     const name = 'tarih-ajani-gorsel-' + Date.now() + '.jpg';
     const save = (href) => { const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
     try {
@@ -2823,9 +2829,9 @@ class Component extends DCLogic {
   goImgStudio() { this.setState({ tab: 'imgstudio' }); }
   // Üretilen tüm görselleri (Üretilenler rafı) toplu indir
   downloadAllImages() {
-    const urls = (this.state.imgQueue || []).filter(v => v && v.url).map(v => v.url);
-    if (!urls.length) return;
-    urls.forEach((u, i) => setTimeout(() => this.dlImage(u), i * 500));  // tarayıcı engellemesin diye aralıklı
+    const items = (this.state.imgQueue || []).filter(v => v && v.url);
+    if (!items.length) return;
+    items.forEach((v, i) => setTimeout(() => this.dlImage(v.url, v.ar), i * 500));  // tarayıcı engellemesin diye aralıklı
   }
   // Seçili görselleri indir (kutucuk işaretli olanlar); hiç seçili yoksa tümü
   toggleImgSel(id) {
@@ -2833,9 +2839,9 @@ class Component extends DCLogic {
   }
   downloadSelectedImages() {
     const sel = this.state.imgSel || {};
-    const urls = (this.state.imgQueue || []).filter(v => v && v.url && sel[v.id]).map(v => v.url);
-    if (!urls.length) { this.downloadAllImages(); return; }
-    urls.forEach((u, i) => setTimeout(() => this.dlImage(u), i * 500));
+    const items = (this.state.imgQueue || []).filter(v => v && v.url && sel[v.id]);
+    if (!items.length) { this.downloadAllImages(); return; }
+    items.forEach((v, i) => setTimeout(() => this.dlImage(v.url, v.ar), i * 500));
   }
   // Prompt yanındaki kalıcı "üretildi" durumu
   sceneImgView(key) {
@@ -4030,7 +4036,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           thumbStyle: this.thumbBox(x.ar),
           pendStyle: { width: '100%', aspectRatio: arCss, maxHeight: '56vh', display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px)', backgroundSize: '34px 34px', animation: 'ta-scan .9s linear infinite' },
           zoom: () => this.openZoom(x.url),
-          dl: () => this.dlImage(x.url),
+          dl: () => this.dlImage(x.url, x.ar),
           sel: !!(s.imgSel || {})[x.id],
           onSel: () => this.toggleImgSel(x.id),
           // gerçek düzenleme kutusu (mevcut görseli korur, istediğini değiştirir)
@@ -4146,7 +4152,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           vidUrl: x.vidUrl || '',
           thumbStyle: this.thumbBox(x.ar),
           zoom: () => this.openZoom(x.url),
-          dl: () => this.dlImage(hasVid ? x.vidUrl : x.url),
+          dl: () => this.dlImage(hasVid ? x.vidUrl : x.url, x.ar),
           del: () => this.delSavedImg(x.id),
           // Galeriden video üretimi (yalnız videosu olmayan görsellerde)
           canMakeVid: !hasVid,

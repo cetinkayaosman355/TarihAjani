@@ -1425,14 +1425,17 @@ function acGaleri(kind, i) {
 // indirmede seçilen orana merkezden kes (blob'tan yüklenir → canvas taint olmaz).
 function _cropAspectBlob(srcUrl, arKey) {
   return new Promise(function (resolve, reject) {
-    var target = { yatay: 16 / 9, dikey: 9 / 16, kare: 1 }[arKey];
-    if (!target) return reject(new Error('no-aspect'));
     var img = new Image();
     img.onload = function () {
       try {
         var sw = img.naturalWidth, sh = img.naturalHeight;
         if (!sw || !sh) return reject(new Error('empty'));
         var srcAr = sw / sh, cw = sw, ch = sh;
+        // Hedef oran GÖRSELİN KENDİSİNDEN: dikey → 9:16, yatay → 16:9, kare → dokunma.
+        // Eskiden o anki uret.oran seçimine bakılıyordu → 9:16 görsel seçim değişince
+        // 16:9 KESİLİYORDU. arKey açıkça verilirse o kazanır.
+        var target = { yatay: 16 / 9, dikey: 9 / 16, kare: 1 }[arKey]
+          || (srcAr > 1.05 ? 16 / 9 : (srcAr < 0.95 ? 9 / 16 : 1));
         if (srcAr > target) cw = Math.round(sh * target); else ch = Math.round(sw / target);
         var sx = Math.round((sw - cw) / 2), sy = Math.round((sh - ch) / 2);
         var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
@@ -1444,10 +1447,12 @@ function _cropAspectBlob(srcUrl, arKey) {
     img.src = srcUrl;
   });
 }
-async function dlGorsel(url) {
+async function dlGorsel(url, arKey) {
   if (!url) return;
   var ad = 'tarih-ajani-gorsel-' + Date.now() + '.jpg';
-  var ar = (typeof uret !== 'undefined' && uret.oran) ? uret.oran : 'dikey';
+  // Oran ekran seçiminden DEĞİL, görselin kendisinden anlaşılır (_cropAspectBlob);
+  // arKey verilirse (görselin üretim oranı biliniyorsa) o kullanılır.
+  var ar = arKey || '';
   var tikla = function (href) { var a = document.createElement('a'); a.href = href; a.download = ad; document.body.appendChild(a); a.click(); a.remove(); };
   try {
     var srcUrl = url;
