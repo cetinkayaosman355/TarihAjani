@@ -1340,6 +1340,9 @@
                           <label style="display: flex; align-items: center; gap: 7px; padding: 8px 10px 2px; color: #a4a9b5; font-size: 11px; cursor: pointer;"><input type="checkbox" checked="{{ iq.sel }}" onChange="{{ iq.onSel }}" style="accent-color: #c19a52; width: 15px; height: 15px; cursor: pointer;">İndirmek için seç</label>
                           <img loading="lazy" data-zoomable="1" src="{{ iq.url }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
                         </sc-if>
+                        <sc-if value="{{ iq.hasVid }}" hint-placeholder-val="{{ false }}">
+                          <video src="{{ iq.vidUrl }}" controls playsinline loop style="width: 100%; border-radius: 7px; border: 1px solid rgba(193,154,82,.3); margin-top: 2px;"></video>
+                        </sc-if>
                         <sc-if value="{{ iq.pending }}" hint-placeholder-val="{{ true }}">
                           <div style="{{ iq.pendStyle }}">
                             <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em; text-align: center; padding: 10px;">{{ iq.status }}</span>
@@ -1351,6 +1354,20 @@
                             <button onClick="{{ iq.zoom }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="color: #e6c478;">🔍 BÜYÜT</button>
                             <button onClick="{{ iq.dl }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
                             <button onClick="{{ iq.edit }}" style="{{ iq.editBtnStyle }}">{{ iq.editToggleLabel }}</button>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ iq.canMakeVid }}" hint-placeholder-val="{{ false }}">
+                          <div style="padding: 0 10px 10px;">
+                            <button onClick="{{ iq.toggleVidMenu }}" disabled="{{ iq.vidBusy }}" style="width: 100%; border: 0; background: linear-gradient(115deg, #6d3bd4, #9257ee 52%, #b57bff); color: #fff; padding: 8px; font-size: 10.5px; font-weight: 800; letter-spacing: .05em; cursor: pointer; border-radius: 6px;" style-hover="box-shadow: 0 6px 20px rgba(120,70,220,.4);">{{ iq.vidBtnLabel }}</button>
+                            <sc-if value="{{ iq.vidMenuOpen }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: grid; gap: 6px; margin-top: 6px;">
+                                <button onClick="{{ iq.makeGrok }}" style="border: 1px solid rgba(146,87,238,.4); background: rgba(146,87,238,.12); color: #efe8ff; padding: 8px 10px; font-size: 11px; cursor: pointer; border-radius: 6px; display: flex; justify-content: space-between; gap: 8px;"><span>⚡ Grok · hızlı</span><span style="color: #c4a7ff; font-size: 9.5px;">120 KR</span></button>
+                                <button onClick="{{ iq.makeKling }}" style="border: 1px solid rgba(230,196,120,.5); background: rgba(230,196,120,.1); color: #f4ead0; padding: 8px 10px; font-size: 11px; cursor: pointer; border-radius: 6px; display: flex; justify-content: space-between; gap: 8px;"><span>👑 Kling · en iyi</span><span style="color: #e6c478; font-size: 9.5px;">300 KR</span></button>
+                              </div>
+                            </sc-if>
+                            <sc-if value="{{ iq.vidErrShow }}" hint-placeholder-val="{{ false }}">
+                              <p style="margin: 6px 0 0; color: #e8a9a9; font-size: 10.5px; line-height: 1.4;">{{ iq.vidStatus }}</p>
+                            </sc-if>
                           </div>
                         </sc-if>
                         <sc-if value="{{ iq.editOpen }}" hint-placeholder-val="{{ false }}">
@@ -2806,7 +2823,8 @@ class Component extends DCLogic {
         body: JSON.stringify({ action: 'video_status', videoJob: job })
       }).then(r => r.json()).then(d => {
         if (d && d.ok && d.done && d.url) {
-          this._setGalVid(x.id, { busy: false, job: '', status: '' });
+          // url'i galVid'e de yaz → raf/kart videoyu ANINDA oynatıcıyla gösterir
+          this._setGalVid(x.id, { busy: false, job: '', status: '', url: d.url });
           this.saveImg({ id: x.id, prompt: x.prompt || '🎬 Video', ar: x.ar || '', url: x.url, vidUrl: d.url, ts: Date.now() });
           return;
         }
@@ -4129,8 +4147,19 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       hasImgQueue: (s.imgQueue || []).length > 0,
       imgQueue: (s.imgQueue || []).map(x => {
         const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[x.ar] || '16/9';
+        const gv = (s.galVid || {})[x.id] || {};   // rafta da video üretimi
         return {
           ...x, hasUrl: !!x.url, pending: !x.url,
+          hasVid: !!gv.url, vidUrl: gv.url || '',
+          canMakeVid: !!x.url && !gv.url,
+          vidBusy: !!gv.busy,
+          vidMenuOpen: !!gv.menuOpen && !gv.busy,
+          vidStatus: gv.status || '',
+          vidErrShow: !gv.busy && !!(gv.status || '') && !gv.url,
+          vidBtnLabel: gv.busy ? (gv.status || '🎬 HAZIRLANIYOR…') : '🎬 VİDEO ÜRET ▾',
+          toggleVidMenu: () => this._setGalVid(x.id, { menuOpen: !gv.menuOpen }),
+          makeGrok: () => this.makeGalVideo(x, 'grok'),
+          makeKling: () => this.makeGalVideo(x, 'kling'),
           thumbStyle: this.thumbBox(x.ar),
           pendStyle: { width: '100%', aspectRatio: arCss, maxHeight: '56vh', display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px)', backgroundSize: '34px 34px', animation: 'ta-scan .9s linear infinite' },
           zoom: () => this.openZoom(x.url),
