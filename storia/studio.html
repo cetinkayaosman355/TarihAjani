@@ -487,6 +487,28 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .player .pl-wave i { flex: 1; background: rgba(180,145,77,.32); border-radius: 2px; }
 .player audio { width: 100%; margin-top: 14px; }
 .player .pl-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+/* Kompakt seslendirme oynatıcı — dikey alanı yer kaplamasın */
+.player.player-sm { padding: 16px 18px; margin-bottom: 14px; }
+.player.player-sm .pl-top { gap: 13px; flex-wrap: wrap; }
+.player.player-sm .pl-play { width: 42px; height: 42px; box-shadow: 0 5px 14px rgba(0,0,0,.25); }
+.player.player-sm .pl-play svg { width: 17px; height: 17px; }
+.player.player-sm .pl-name { font-size: 16px; }
+.player.player-sm .pl-meta { flex: 1; }
+.player.player-sm .rate-seg { margin-left: auto; }
+.player.player-sm .pl-controls { margin-top: 12px; }
+.player.player-sm audio { margin-top: 10px; height: 38px; }
+/* Sessiz üret / seslendirme modu seçici */
+.ses-mode { display: inline-flex; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 999px; margin-bottom: 16px; }
+.ses-mode button { border: 0; background: none; padding: 8px 16px; border-radius: 999px; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; }
+.ses-mode button.on { background: var(--champ-wash); color: var(--champ-deep); box-shadow: var(--sh-1); }
+.ses-silent { display: flex; gap: 14px; align-items: flex-start; padding: 18px 20px; border-radius: var(--r-md); background: var(--champ-wash); border: 1px solid var(--champ-line); margin-bottom: 16px; }
+.ses-silent .ss-ic { font-size: 26px; line-height: 1; flex: none; }
+.ses-silent b { font-size: 15px; color: var(--ink); }
+.ses-silent p { font-size: 13.5px; color: var(--muted); margin-top: 4px; max-width: 60ch; }
+.panel-compact { padding: 16px 18px; }
+.panel-compact .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.panel-compact .panel-head h3 { margin: 0; }
+.pw-cnt { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 8px; }
 
 .empty { text-align: center; padding: 90px 20px; }
 .empty .e-ic { width: 66px; height: 66px; margin: 0 auto 20px; border-radius: 20px; background: var(--champ-wash); border: 1px solid var(--champ-line); display: grid; place-items: center; }

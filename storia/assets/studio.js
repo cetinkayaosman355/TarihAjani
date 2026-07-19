@@ -39,6 +39,8 @@
     libFilter: 'all',
     // Tarz ekranında canlı üretilen stil önizlemeleri (stil id → görsel url), busy stil id
     stylePreview: {}, spBusy: null,
+    // sessiz üret: seslendirme yok — kullanıcı kendi sesini/müziğini ekler
+    silent: false,
     // açık olan geçmiş kaydı (üretilen medya buraya kalıcı yazılır)
     _cur: null
   };
@@ -649,7 +651,7 @@
     if (id === 'senaryo') return !!sc.length;
     if (id === 'story') return imgsDone;
     if (id === 'gorselvideo') return imgsDone && Object.keys(S.videos).length > 0;
-    if (id === 'ses') return !!S.audio;
+    if (id === 'ses') return S.silent || !!S.audio;
     if (id === 'yayin') return !!((r.youtube || {}).baslik);
     return false;
   }
@@ -743,17 +745,24 @@
     }
     if (S.tab === 'seslendirme') {
       var vo = narrationText();
-      return '<div class="player"><div class="pl-top">' +
+      var modeSeg = '<div class="ses-mode"><button class="' + (!S.silent ? 'on' : '') + '" data-act="silentMode" data-v="0">🔊 Storia seslendirsin</button>' +
+        '<button class="' + (S.silent ? 'on' : '') + '" data-act="silentMode" data-v="1">🔇 Sessiz üret</button></div>';
+      if (S.silent) {
+        return modeSeg +
+          '<div class="ses-silent"><span class="ss-ic">🔇</span><div><b>Sessiz mod</b><p>Bu dosya seslendirmesiz üretilecek — videoya kendi anlatımını ya da müziğini sonradan ekleyebilirsin. Aşağıdaki metni kayıt için kullanabilirsin.</p></div></div>' +
+          '<div class="panel panel-compact"><div class="panel-head"><h3>Anlatım metni <span class="pw-cnt">' + vo.length + ' karakter</span></h3><button class="btn btn-quiet btn-sm" data-act="copyVo">Kopyala</button></div><div class="panel-txt">' + esc(vo) + '</div></div>';
+      }
+      return modeSeg +
+        '<div class="player player-sm"><div class="pl-top">' +
           '<button class="pl-play" data-act="tts" aria-label="Seslendir"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>' +
-          '<div class="pl-meta"><div class="pl-name">' + esc(VOICES[S.voiceIdx].name) + '</div><div class="pl-sub">' + vo.length + ' karakter · ' + esc(toneName()) + ' ton</div></div></div>' +
-          '<div class="pl-wave">' + waveBars() + '</div>' +
+          '<div class="pl-meta"><div class="pl-name">' + esc(VOICES[S.voiceIdx].name) + '</div><div class="pl-sub">' + vo.length + ' karakter · ' + esc(toneName()) + ' ton</div></div>' +
+          '<div class="rate-seg">' + RATES.map(function (r) { return '<button class="' + (S.ttsRate === r.v ? 'on' : '') + '" data-act="ttsRate" data-v="' + r.v + '">' + r.l + '</button>'; }).join('') + '</div></div>' +
           '<div id="audioSlot">' + (S.audio ? '<audio controls src="' + esc(S.audio) + '"></audio>' : '') + '</div>' +
           '<div class="pl-controls"><button class="btn btn-gold btn-sm" data-act="tts">▶ Seslendir</button>' +
-          '<div class="rate-seg">' + RATES.map(function (r) { return '<button class="' + (S.ttsRate === r.v ? 'on' : '') + '" data-act="ttsRate" data-v="' + r.v + '">' + r.l + '</button>'; }).join('') + '</div>' +
-          (S.audio ? '<button class="btn btn-quiet btn-sm" data-act="dlAudio">↓ Sesi indir</button>' : '') +
+          (S.audio ? '<button class="btn btn-quiet btn-sm" data-act="dlAudio">↓ İndir</button>' : '') +
           '<button class="btn btn-quiet btn-sm" data-act="copyVo">Metni kopyala</button></div>' +
         '</div>' +
-        '<div class="panel"><h3>Seslendirme metni</h3><p class="p-note">' + esc(r.seslendirme_notu || 'Doğal, akıcı bir anlatıma göre hazırlandı.') + '</p><div class="panel-txt">' + esc(vo) + '</div></div>';
+        '<div class="panel panel-compact"><div class="panel-head"><h3>Seslendirme metni</h3></div><p class="p-note">' + esc(r.seslendirme_notu || 'Doğal, akıcı bir anlatıma göre hazırlandı.') + '</p><div class="panel-txt">' + esc(vo) + '</div></div>';
     }
     if (S.tab === 'karakterler') {
       var chars = r.karakterler || [];
@@ -1216,6 +1225,7 @@
       case 'generateAuto': S._autoAfter = true; startGenerate(false); break;
       case 'autopilot': autoPilot(); break;
       case 'stylePreview': genStylePreview(); break;
+      case 'silentMode': S.silent = v === '1'; if (S._cur) { S._cur.silent = S.silent; saveHist(); } refreshTab(); break;
       case 'regen': startGenerate(true); break;
       case 'reviseChat': openChat(); break;
       case 'dubOpen': S.dub.open = !S.dub.open; render(); break;
@@ -1289,7 +1299,7 @@
 
   function applyMode(i) { var m = MODES[i]; if (!m) return; S.durationSec = m.sec; S.aspect = m.aspect; S.tone = m.tone; render(); toast(m.name + ' seçildi'); }
   function applyTemplate(i) { var t = TEMPLATES[i]; if (!t) return; S.template = i; S.tone = t.tone; S.style = t.style; S.durationSec = t.sec; S.aspect = t.aspect; render(); toast(t.name + ' şablonu · tarz ayarlandı'); }
-  function startNew() { S.result = null; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.idea = ''; S.custom = ''; S.stylePreview = {}; S.spBusy = null; S.autopilot = false; S._autoAfter = false; S._apStop = true; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
+  function startNew() { S.result = null; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.idea = ''; S.custom = ''; S.stylePreview = {}; S.spBusy = null; S.silent = false; S.autopilot = false; S._autoAfter = false; S._apStop = true; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
 
   // ── Generation ───────────────────────────────────────────────────────
   function startGenerate(isRegen) {
@@ -1315,7 +1325,7 @@
     S.result = result; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.tab = 'senaryo';
     if (typeof credits === 'number') S.credits = credits;
     else if (!REAL && charged) S.credits = Math.max(0, (S.credits || 0) - costGen(S.durationSec));
-    var ent = { result: result, idea: S.idea, meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect, ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec, images: {}, covers: {}, videos: {}, audio: null };
+    var ent = { result: result, idea: S.idea, meta: fmtDur(S.durationSec) + ' · ' + styleObj().name + ' · ' + S.aspect, ts: Date.now(), aspect: S.aspect, style: S.style, voiceIdx: S.voiceIdx, durationSec: S.durationSec, images: {}, covers: {}, videos: {}, audio: null, silent: S.silent };
     S.history.unshift(ent); S._cur = ent;
     S.chat._revised = false;  // yeni dosya için düzenleme karşılaması yeniden gösterilsin
     saveHist();
@@ -1370,14 +1380,14 @@
     var miss = 0; for (var k = 0; k < prompts.length; k++) if (!S.images[k]) miss++;
     var imgC = miss * imgCr();
     var txt = narrationText();
-    var ttsC = (S.audio || !txt) ? 0 : Math.max(10, Math.ceil(Math.min(txt.length, Math.max(240, S.durationSec * 22)) / 1000) * 5) * (VOICES[S.voiceIdx].x || 2);
+    var ttsC = (S.silent || S.audio || !txt) ? 0 : Math.max(10, Math.ceil(Math.min(txt.length, Math.max(240, S.durationSec * 22)) / 1000) * 5) * (VOICES[S.voiceIdx].x || 2);
     return { imgs: miss, imgC: imgC, ttsC: ttsC, total: imgC + ttsC };
   }
   function autoPilot() {
     if (!S.result || S.result.gecersiz) { toast('Önce dosyayı üret'); return; }
     if (S.autopilot) { toast('Otomatik pilot zaten çalışıyor…'); return; }
     var c = autoCost();
-    if (!c.imgs && S.audio) { S.tab = 'youtube'; render(); toast('Her şey zaten hazır ✦'); return; }
+    if (!c.imgs && (S.silent || S.audio)) { S.tab = 'youtube'; render(); toast('Her şey zaten hazır ✦'); return; }
     if (REAL && !S.user) { openAuth(); return; }
     S.autopilot = true; S._apStop = false;
     toast('⚡ Otomatik pilot: ' + (c.imgs ? c.imgs + ' görsel' : '') + (c.imgs && c.ttsC ? ' + ' : '') + (c.ttsC ? 'seslendirme' : '') + ' üretiliyor…');
@@ -1388,6 +1398,8 @@
       setTimeout(function () {
         if (!S.autopilot) return;
         S.tab = 'seslendirme'; render();
+        // Sessiz modda seslendirmeyi atla — doğrudan yayına geç
+        if (S.silent) { S.autopilot = false; setTimeout(function () { S.tab = 'youtube'; render(); toast('✦ Sessiz paket hazır — kendi sesini ekleyebilirsin'); }, 700); return; }
         doTts(function () {
           if (!S.autopilot) return;
           S.autopilot = false;
@@ -1460,7 +1472,7 @@
 
   function openHist(i) {
     var h = S.history[i]; if (!h) return;
-    S.result = h.result; S.images = h.images || {}; S.covers = h.covers || {}; S.videos = h.videos || {}; S.videoJobs = {}; S.chars = {}; S.audio = h.audio || null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S._cur = h; S.tab = 'senaryo'; S.view = 'new'; S.step = 4;
+    S.result = h.result; S.images = h.images || {}; S.covers = h.covers || {}; S.videos = h.videos || {}; S.videoJobs = {}; S.chars = {}; S.audio = h.audio || null; S.silent = !!h.silent; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S._cur = h; S.tab = 'senaryo'; S.view = 'new'; S.step = 4;
     // Yarım kalmış video render'larını kaldığı yerden takip et (kredi kaybı olmasın)
     if (REAL && h.jobs) {
       for (var k in h.jobs) {
