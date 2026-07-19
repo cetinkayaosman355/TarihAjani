@@ -1049,7 +1049,7 @@
       callFn({ action: 'video_status', videoJob: job }).then(function (d) {
         if (d && d.ok && d.done && d.url) { S.vsOut = d.url; S.vsJob = null; addMedia('vid', d.url, 'Video stüdyo · ' + S.vsPrompt.slice(0, 60)); render(); toast('Video hazır ✦ Kütüphanene eklendi'); }
         else if (d && d.ok && !d.done) { pollVs(job, tries + 1); }
-        else { S.vsJob = null; render(); toast((d && d.error) || 'Video üretilemedi'); }
+        else { S.vsJob = null; if (typeof (d && d.credits) === 'number') S.credits = d.credits; render(); chrome(); toast((d && d.error) || 'Video üretilemedi'); }
       }).catch(function () { pollVs(job, tries + 1); });
     }, 5000);
   }
@@ -2040,7 +2040,7 @@
       callFn({ action: 'video_status', videoJob: job }).then(function (d) {
         if (d && d.ok && d.done && d.url) { S.videos[idx] = d.url; delete S.videoJobs[idx]; persistMedia(); refreshTab(); toast('Video hazır ✦'); }
         else if (d && d.ok && !d.done) { pollVideoJob(idx, job, tries + 1); }
-        else { delete S.videoJobs[idx]; refreshTab(); toast((d && d.error) || 'Video üretilemedi'); }
+        else { delete S.videoJobs[idx]; if (typeof (d && d.credits) === 'number') { S.credits = d.credits; chrome(); } persistMedia(); refreshTab(); toast((d && d.error) || 'Video üretilemedi'); }
       }).catch(function () { pollVideoJob(idx, job, tries + 1); });
     }, 5000);
   }
