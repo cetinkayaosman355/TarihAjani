@@ -235,115 +235,138 @@ const NO_SPLIT =
   "NO before/after comparison, NO internal borders, frames or dividing lines. The main subject appears only once. " +
   "Fill the entire frame edge-to-edge with a single coherent, photorealistic image.";
 
-// Gerçek görsel üretimi — OpenAI gpt-image-1.5 (base64 → data URI, süresiz).
-// Başarısız olursa dall-e-3'e (url) düşer. Boş dönerse üretim başarısız sayılır.
-// diag: başarısızlıkta SON gerçek sebep (model + HTTP durumu) buraya yazılır →
-// istemciye iletilir; "Görsel üretilemedi" artık kör bir mesaj değil.
-async function generateImage(prompt: string, size: string, diag?: { d: string }): Promise<string> {
+// ── STABİLİZASYON Faz 3: GÖRSEL HATA SINIFLANDIRMASI ──────────────
+// Tek tip hata sınıfı: hem sunucu logları hem istemci mesajı için. "transient"
+// = tekrar denenebilir (429/5xx/ağ/timeout). "modelMissing" = model düzeyi sorun
+// (o model bu hesapta yok) → aynı prompt YEDEK modelde çalışabilir.
+type ImgErrClass = "RATE_LIMIT" | "AUTH_ERROR" | "INVALID_REQUEST" | "MODERATION" | "PROVIDER_ERROR" | "TIMEOUT";
+function classifyImgErr(status: number, timeout: boolean, body: string): { cls: ImgErrClass; transient: boolean; modelMissing: boolean } {
+  const b = (body || "").toLowerCase();
+  const modelMissing = status === 404 || b.includes("model_not_found") || b.includes("does not exist")
+    || b.includes("no such model") || b.includes("unknown model") || b.includes("invalid model");
+  if (timeout) return { cls: "TIMEOUT", transient: true, modelMissing: false };
+  if (status === 429) return { cls: "RATE_LIMIT", transient: true, modelMissing: false };
+  if (status >= 500) return { cls: "PROVIDER_ERROR", transient: true, modelMissing: false };
+  if (status === 401 || status === 403) return { cls: "AUTH_ERROR", transient: false, modelMissing: false };
+  if (modelMissing) return { cls: "INVALID_REQUEST", transient: false, modelMissing: true };
+  if (status === 400) {
+    if (b.includes("moderation") || b.includes("safety") || b.includes("content_policy")
+        || b.includes("content policy") || b.includes("rejected") || b.includes("blocked")) {
+      return { cls: "MODERATION", transient: false, modelMissing: false };
+    }
+    return { cls: "INVALID_REQUEST", transient: false, modelMissing: false };
+  }
+  return { cls: "PROVIDER_ERROR", transient: false, modelMissing: false };
+}
+function imgErrMsg(model: string, cls: ImgErrClass, status: number): string {
+  const t: Record<ImgErrClass, string> = {
+    RATE_LIMIT: "sağlayıcı hız sınırı (429)",
+    AUTH_ERROR: "kimlik/yetki hatası (" + status + ")",
+    INVALID_REQUEST: "istek reddedildi (" + status + ")",
+    MODERATION: "içerik güvenlik filtresine takıldı",
+    PROVIDER_ERROR: "sağlayıcı hatası (" + status + ")",
+    TIMEOUT: "zaman aşımı / ağ hatası",
+  };
+  return model + ": " + t[cls];
+}
+
+// Gerçek görsel üretimi — OpenAI gpt-image (base64 → data URI, süresiz).
+// STABİLİZASYON Faz 3 — RETRY FIRTINASI DURDURULDU:
+//   • TEK birincil model (TA_IMAGE_PRIMARY_MODEL, vars. gpt-image-1.5) + TEK yedek
+//     (TA_IMAGE_FALLBACK_MODEL, vars. gpt-image-1). gpt-image-2 VARSAYILANDAN ÇIKTI;
+//     yalnız secret ile açılır. dall-e-3 kuyruğu KALDIRILDI.
+//   • Birincil YALNIZ 429/5xx/ağ/timeout'ta EN FAZLA bir kez daha denenir.
+//   • 400/401/403/moderation'da aynı model TEKRAR DENENMEZ.
+//   • Birincil model düzeyi sorun (model yok) ya da geçici tükenmede YALNIZ BİR KEZ
+//     yedek modele geçilir; içerik/moderasyon/geçersiz istekte geçilmez (yedekte de
+//     aynı prompt reddedilir → boş çağrı yapılmaz).
+//   • Toplam API çağrısı: normal 1, geçici en fazla 2, yedek dahil MUTLAK EN FAZLA 3.
+//   • Her denemede loglanır: opId, model, attempt, HTTP/hata sınıfı, süre.
+// diag: başarısızlıkta SON gerçek sebep (model + sınıf) + sınıf kodu buraya yazılır.
+async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string }, opId?: string): Promise<string> {
   const key = Deno.env.get("OPENAI_API_KEY");
-  if (!key) { if (diag) diag.d = "OPENAI_API_KEY tanımsız"; return ""; }
+  if (!key) { if (diag) { diag.d = "OPENAI_API_KEY tanımsız"; diag.cls = "AUTH_ERROR"; } return ""; }
   if (!prompt.trim()) return "";
-  // gpt-image oranları: kare / yatay (3:2) / dikey (2:3)
   // gpt-image oranları: kare / yatay (3:2) / dikey (2:3). STANDART çözünürlük.
   const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
-  // YÜKSEK ÇÖZÜNÜRLÜK (opt-in): gpt-image-2 için ~4K kademesi. Secret TA_IMAGE_HD=1
-  // ile açılır. Boyutlar da secret'tan ayarlanabilir (API farklı string isterse
-  // deploy'suz düzeltilir). API boyutu KABUL ETMEZSE otomatik STANDART boyuta düşer
-  // (aşağıdaki zincir) → 4K denemesi asla üretimi bozmaz.
+  // YÜKSEK ÇÖZÜNÜRLÜK: Faz 3'te VARSAYILAN KAPALI (ek çağrı/maliyet üretmez).
+  // Secret TA_IMAGE_HD=1 ile açılır; yalnız BİRİNCİL modelin boyutunu büyütür
+  // (ayrı bir 2. çağrı AÇMAZ → çağrı bütçesi korunur). Boyut reddedilirse birincil
+  // kalıcı başarısız sayılır → yedek modele standart boyutta geçilir.
   const hdOn = Deno.env.get("TA_IMAGE_HD") === "1";
   const gHd = size === "9:16" ? (Deno.env.get("TA_IMAGE_HD_9x16") || "1536x2048")
             : size === "16:9" ? (Deno.env.get("TA_IMAGE_HD_16x9") || "2048x1536")
             : (Deno.env.get("TA_IMAGE_HD_1x1") || "2048x2048");
   const p = prompt.trim().slice(0, 29000) + NO_SPLIT;   // anti-split kural (kesilmeye karşı sonda, prompt kırpılmış)
 
-  // gpt-image tek denemesi. Başarı → data URI; başarısızsa hatayı LOG'la (Supabase
-  // function loglarında görünür, teşhis için) ve boş dön ki sıradaki yol denensin.
-  async function tryGptImage(model: string, gSize: string): Promise<string> {
+  const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-1.5").trim();
+  const fallback = (Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1").trim();
+  const chain = (fallback && fallback !== primary) ? [primary, fallback] : [primary];
+
+  // TEK API çağrısı. Başarı → data URI/url; hata → HTTP durumu + gövde (sınıflama için).
+  async function callOnce(model: string, gSize: string): Promise<{ url: string; status: number; timeout: boolean; body: string }> {
     try {
       const r = await fetchT("https://api.openai.com/v1/images/generations", {
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model,
-          prompt: p,
-          n: 1,
-          size: gSize,
-          quality: "high",              // kalite > maliyet (ChatGPT ile aynı kademe;
-                                        // medium kalabalık sahnede saydam/hayalet insan üretiyordu)
+          model, prompt: p, n: 1, size: gSize,
+          quality: "high",              // kalite > maliyet (ChatGPT ile aynı kademe)
           output_format: "jpeg",        // Storage'a yüklenir → boyut sorun değil, netlik önce
-          output_compression: 100,      // near-lossless: JPEG yumuşamasını bitir (ChatGPT'deki netlik)
+          output_compression: 100,      // near-lossless
           moderation: "low",            // tarihî sahne (savaş/ölüm) yanlış engelini azalt
         }),
       }, 120_000);
       if (r.ok) {
         const d = await r.json();
         const b64 = d.data?.[0]?.b64_json;
-        if (b64) return "data:image/jpeg;base64," + b64;
+        if (b64) return { url: "data:image/jpeg;base64," + b64, status: 200, timeout: false, body: "" };
         const u = d.data?.[0]?.url;
-        if (u) return u;
-        return "";
+        if (u) return { url: u, status: 200, timeout: false, body: "" };
+        return { url: "", status: 200, timeout: false, body: "empty-response" };
       }
-      // 429/5xx → geçici; çağıran taraf tekrar dener. 4xx (model/boyut yok, moderasyon) → kalıcı.
       const body = await r.text().catch(() => "");
-      console.error(`generateImage ${model} @${gSize} HTTP ${r.status}: ${body.slice(0, 300)}`);
-      if (diag) diag.d = `${model} HTTP ${r.status}` + (r.status === 429 ? " (sağlayıcı hız sınırı)" : r.status === 400 ? " (istek reddedildi)" : "");
-      return r.status === 429 || r.status >= 500 ? "RETRY" : "";
+      return { url: "", status: r.status, timeout: false, body };
     } catch (e) {
-      console.error(`generateImage ${model} @${gSize} exception: ${String(e).slice(0, 200)}`);
-      if (diag) diag.d = `${model} zaman aşımı/ağ hatası`;
-      return "RETRY";   // ağ/zaman aşımı → tekrar denenebilir
+      return { url: "", status: 0, timeout: true, body: String(e).slice(0, 200) };
     }
   }
 
-  // Model zinciri env'den ayarlanır (varsayılan: EN YENİ gpt-image-2 önce → 1.5 → 1).
-  // Secret TA_IMAGE_MODELS ile deploy'suz değiştirilebilir. gpt-image-2 hesapta yoksa
-  // 4xx döner → otomatik sıradaki modele geçilir (mevcut sistem KIRILMAZ).
-  const models = (Deno.env.get("TA_IMAGE_MODELS") || "gpt-image-2,gpt-image-1.5,gpt-image-1")
-    .split(",").map((s) => s.trim()).filter(Boolean);
-  for (const model of models) {
-    // HD açık + gpt-image-2 ise önce yüksek çözünürlük; reddedilirse aynı modelde standart.
-    const sizes = (hdOn && model.includes("gpt-image-2")) ? [gHd, gStd] : [gStd];
-    let dead = false;
-    for (let si = 0; si < sizes.length && !dead; si++) {
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const out = await tryGptImage(model, sizes[si]);
-        if (out && out !== "RETRY") return out;          // başarı
-        if (out === "RETRY") continue;                   // geçici hata → tekrar dene
-        if (si < sizes.length - 1) break;                // kalıcı: daha küçük boyutu dene (HD→STD)
-        dead = true; break;                              // tüm boyutlar bitti → sıradaki model
+  const MAX_CALLS = 3;
+  let totalCalls = 0;
+  for (let mi = 0; mi < chain.length; mi++) {
+    const model = chain[mi];
+    const isPrimary = mi === 0;
+    const gSize = (hdOn && isPrimary) ? gHd : gStd;   // HD yalnız birincil, tek çağrı
+    let transientTries = 0;
+    while (totalCalls < MAX_CALLS) {
+      const attemptNo = transientTries + 1;
+      const t0 = Date.now();
+      totalCalls++;
+      const res = await callOnce(model, gSize);
+      const ms = Date.now() - t0;
+      if (res.url) {
+        console.log(`img_ok op=${opId || "-"} model=${model} attempt=${attemptNo} calls=${totalCalls} ms=${ms}`);
+        return res.url;
       }
+      const ci = classifyImgErr(res.status, res.timeout, res.body);
+      console.error(`img_fail op=${opId || "-"} model=${model} attempt=${attemptNo} calls=${totalCalls} status=${res.status} class=${ci.cls} ms=${ms} :: ${(res.body || "").slice(0, 200)}`);
+      if (diag) { diag.d = imgErrMsg(model, ci.cls, res.status); diag.cls = ci.cls; }
+      // Geçici hata → AYNI modeli EN FAZLA bir kez daha dene (1200–2000ms bekleme).
+      if (ci.transient && transientTries < 1 && totalCalls < MAX_CALLS) {
+        transientTries++;
+        await new Promise((r) => setTimeout(r, 1200 + Math.floor(Math.random() * 800)));
+        continue;
+      }
+      // Kalıcı VEYA geçici tavan. Yedek modele YALNIZ model düzeyi sorunda (model yok)
+      // ya da geçici tükendiğinde geç. Moderasyon/geçersiz istek/yetki hatasında GEÇME
+      // (aynı prompt yedekte de reddedilir → boş çağrı yapma, kredi/gecikme koru).
+      const goFallback = isPrimary && (mi + 1 < chain.length) && (ci.modelMissing || ci.transient);
+      if (goFallback) break;    // dıştaki for → yedek model
+      return "";                // yedek yok / uygun değil → başarısız
     }
+    if (totalCalls >= MAX_CALLS) break;
   }
-
-  // Son yedek: dall-e-3. URL'si ~1 saatte ölür → K-03: burada İNDİRİP kalıcı
-  // data URI olarak döndürürüz; kullanıcı arşivinde görsel asla kaybolmaz.
-  const dSize = size === "9:16" ? "1024x1792" : size === "16:9" ? "1792x1024" : "1024x1024";
-  try {
-    const r = await fetchT("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "dall-e-3", prompt: (prompt.trim().slice(0, 3400) + NO_SPLIT).slice(0, 3990), n: 1, size: dSize, quality: "hd" }),
-    }, 90_000);
-    if (r.ok) {
-      const d = await r.json();
-      const u = d.data?.[0]?.url ?? "";
-      if (u) {
-        try {
-          const img = await fetchT(u, {}, 60_000);
-          if (img.ok) {
-            const bytes = new Uint8Array(await img.arrayBuffer());
-            let bin = "";
-            for (let i = 0; i < bytes.length; i += 32768) bin += String.fromCharCode(...bytes.subarray(i, i + 32768));
-            return "data:image/png;base64," + btoa(bin);
-          }
-        } catch (_e) { /* indirilemezse geçici URL yine de döner */ }
-        return u;
-      }
-    } else {
-      const body = await r.text().catch(() => "");
-      console.error(`generateImage dall-e-3 HTTP ${r.status}: ${body.slice(0, 300)}`);
-    }
-  } catch (e) { console.error(`generateImage dall-e-3 exception: ${String(e).slice(0, 200)}`); }
   return "";
 }
 
@@ -1211,23 +1234,30 @@ Deno.serve(async (req) => {
       const opId = cleanJob(b.opId) || crypto.randomUUID();
       const res = await reserveOp(admin, userId, cost, "gorsel", opId);
       if (!res.ok) return json({ ok: false, error: "Yetersiz kredi", credits: res.credits }, 402);
-      const diag = { d: "" };
-      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), diag);
+      // STABİLİZASYON Faz 3: ücretli görselde rezervasyon altyapısı YOKSA (RPC eksik)
+      // eski krediye SESSİZCE düşme — güvenli düşüm garantisi olmadan API çağrısı yapma.
+      // Böylece "kredi kaçağı" (üretildi ama düşemedi / düştü ama üretilemedi) imkânsız.
+      if (cost > 0 && userId && admin && !res.reserved) {
+        logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId, err: "CREDIT_SYSTEM_UNAVAILABLE" });
+        return json({ ok: false, error: "Kredi sistemi şu an kullanılamıyor. Görsel üretilmedi, kredi düşülmedi. Lütfen birazdan tekrar deneyin.", errClass: "CREDIT_SYSTEM_UNAVAILABLE" }, 503);
+      }
+      const diag: { d: string; cls?: string } = { d: "" };
+      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), diag, opId);
       if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
       // CİHAZLAR ARASI: data: URI cihaza özeldir → Storage'a yükle, kalıcı URL ver
       if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
-      logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : (diag.d || "uretilemedi").slice(0, 90) });
+      logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : (diag.cls ? diag.cls + ":" : "") + (diag.d || "uretilemedi").slice(0, 80) });
       if (!url) {
         let credits: number | undefined;
-        if (res.reserved) credits = await refundOp(admin, userId, opId);
-        // Sebep artık GÖRÜNÜR: kullanıcı/destek loglara bakmadan neyin patladığını bilir
-        return json({ ok: false, error: "Görsel üretilemedi" + (diag.d ? " — sebep: " + diag.d : "") + ". Kredi düşülmedi, tekrar dene.", credits }, 502);
+        if (res.reserved) credits = await refundOp(admin, userId, opId);   // hata → rezervasyon iade
+        // Sebep + hata sınıfı GÖRÜNÜR: kullanıcı/destek loglara bakmadan neyin patladığını bilir
+        return json({ ok: false, error: "Görsel üretilemedi" + (diag.d ? " — sebep: " + diag.d : "") + ". Kredi düşülmedi, tekrar dene.", errClass: diag.cls, credits }, 502);
       }
       if (cost > 0 && admin && userId) {
-        let credits = res.credits;
-        if (res.reserved) { await finalizeOp(admin, opId); }
-        else { credits = await spendSafe(admin, userId, cost, "gorsel"); if (credits === undefined) credits = await balanceOf(admin, userId); }
-        return json({ ok: true, url, charged: true, credits });
+        // Buraya geldiysek res.reserved KESİN true (aksi halde yukarıda 503 döndük) →
+        // rezervasyonu finalize et; eski spendSafe'e sessiz düşüş YOK.
+        await finalizeOp(admin, opId);
+        return json({ ok: true, url, charged: true, credits: res.credits });
       }
       return json({ ok: true, url, charged: false });
     }
