@@ -40,14 +40,56 @@
 | 4 | `finalize_reservation` RPC var mı? | ✅ `20260718d` | ⬜ | `select proname from pg_proc where proname='finalize_reservation';` |
 | 5 | `refund_reservation` RPC var mı? | ✅ `20260718d` | ⬜ | `select proname from pg_proc where proname='refund_reservation';` |
 | 6 | `video_jobs` tablosu var mı? | ✅ `20260718e_video_jobs.sql` | ⬜ | `select to_regclass('public.video_jobs');` |
-| 7 | `op_locks` tablosu var mı? | ⬜ (önceki migration — repoda ayrı) | ⬜ | `select to_regclass('public.op_locks');` |
+| 7 | `op_locks` tablosu var mı? | ✅ `20260718_kredi_iki_kova_odeme.sql` / `20260718b` | ⬜ | `select to_regclass('public.op_locks');` |
 | 8 | `rate_hits` tablosu ve `rl_hit` RPC var mı? | ✅ `20260718f_dagitik_rate_limit.sql` | ⬜ | `select to_regclass('public.rate_hits');` + `select proname from pg_proc where proname='rl_hit';` |
-| 9 | `uretim_log` tablosu var mı? | ⬜ (kod `logRun` ile yazıyor; migration ayrı) | ⬜ | `select to_regclass('public.uretim_log');` |
-| 10 | `studio-ses` Storage bucket var mı? | — | ⬜ | Supabase → Storage → bucket listesi |
+| 9 | `uretim_log` tablosu var mı? | ✅ `20260716_uretim_log.sql` | ⬜ | `select to_regclass('public.uretim_log');` |
+| 10 | `studio-ses` Storage bucket var mı? | ✅ `20260712_studio_ses.sql` | ⬜ | Supabase → Storage → bucket listesi (ya da `select id from storage.buckets where id='studio-ses';`) |
 | 11 | `20260719a` asılı rezervasyon düzeltmesi çalıştırılmış mı? | ✅ dosya mevcut | ⬜ | `reserve_credits` gövdesinde "15 minutes" asılı-iade bloğu var mı: `select prosrc from pg_proc where proname='reserve_credits';` |
 | 12 | Secret durumları: OpenAI / Anthropic / ElevenLabs / xAI / Kling / **FAL** | — | ⬜ | Supabase → Edge Functions → Secrets: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`/`ELEVEN_API_KEY`, `XAI_API_KEY`, `KLING_ACCESS_KEY`+`KLING_SECRET_KEY`, `FAL_KEY` var mı? |
 
 **Faz 1 çıkışı:** Tüm satırlar ⬜ → ✅/⛔ olana kadar Faz 2'ye geçilmez.
+
+### Faz 1 — Canlı doğrulama (TEK SEFERDE ÇALIŞTIR)
+
+> Aşağıdaki blok **yalnız okur, hiçbir şey değiştirmez**. Supabase → SQL Editor'e
+> yapıştır, çalıştır, çıktının tamamını raporla. Envanteri ben ✅/⛔ olarak
+> güncelleyeceğim.
+
+```sql
+-- TARİH AJANI — Faz 1 canlı envanter (salt-okunur)
+select 'credit_reservations' as ad, to_regclass('public.credit_reservations')::text as var_mi
+union all select 'video_jobs',   to_regclass('public.video_jobs')::text
+union all select 'op_locks',     to_regclass('public.op_locks')::text
+union all select 'rate_hits',    to_regclass('public.rate_hits')::text
+union all select 'uretim_log',   to_regclass('public.uretim_log')::text
+union all select 'credit_log',   to_regclass('public.credit_log')::text
+union all select 'profiles',     to_regclass('public.profiles')::text;
+
+-- RPC'ler (var = 1 satır döner)
+select proname as rpc from pg_proc
+where proname in ('reserve_credits','finalize_reservation','refund_reservation','rl_hit','spend_credits','refresh_profile_credits')
+order by proname;
+
+-- reserve_credits gövdesinde ASILI-İADE (15 dk) bloğu var mı? (20260719a çalıştı mı)
+select case when prosrc ilike '%15 minutes%' then 'ASILI-IADE VAR (20260719a uygulanmis)'
+            else 'ASILI-IADE YOK (20260719a UYGULANMAMIS)' end as asili_iade
+from pg_proc where proname='reserve_credits';
+
+-- studio-ses Storage bucket
+select coalesce((select 'VAR' from storage.buckets where id='studio-ses'), 'YOK') as studio_ses_bucket;
+
+-- Halen ASILI (reserved, 15 dk+) rezervasyon var mı? (kredi kaçağı göstergesi)
+select count(*) as asili_rezervasyon_sayisi
+from public.credit_reservations
+where status='reserved' and created_at < now() - interval '15 minutes';
+```
+
+### Faz 1 — Dashboard kontrolleri (SQL dışı)
+
+1. **Edge Function sürümü:** Supabase → Edge Functions → `studio-generate` → son deploy zamanı. GitHub `main` son commit'inden ESKİYSE canlı ≠ repo (madde 1 ⛔).
+2. **Secrets:** Edge Functions → Secrets/Environment. Şunları TEK TEK gör (değerini paylaşma, sadece VAR/YOK):
+   `OPENAI_API_KEY` · `ANTHROPIC_API_KEY` · `ELEVENLABS_API_KEY` (veya `ELEVEN_API_KEY`) · `XAI_API_KEY` · `KLING_ACCESS_KEY` + `KLING_SECRET_KEY` · `FAL_KEY`
+3. **Storage:** Storage sekmesinde `studio-ses` bucket'ı ve `gorsel/ video/ ses/` klasörleri görünüyor mu.
 
 ---
 
