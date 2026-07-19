@@ -2524,32 +2524,23 @@ class Component extends DCLogic {
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect] || '16:9';
     const token = this._token() || SB_KEY;
-    // Sunucu görseli YALNIZ başarıda ücretlendirir → geçici hatada tekrar denemek
-    // güvenli (çift kredi düşmez). Anlık 502/zaman aşımı görseli "hata"da bırakmasın:
-    // 3 deneme, artan bekleme. Yalnız YETERSIZ_KREDI'de hemen dur.
-    let lastErr = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      if (attempt > 0 && onAttempt) { try { onAttempt(attempt); } catch (_e) {} }
-      try {
-        const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          // opId: aynı görselin TÜM tekrar denemeleri aynı iş kimliğini taşır →
-          // sunucuda tek rezervasyon (idempotent), çift düşüm/asılı rezervasyon olmaz.
-          body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined })
-        });
-        const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
-        if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
-        if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Görsel üretilemedi');
-        if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
-        return data.url;
-      } catch (e) {
-        if (e.message === 'YETERSIZ_KREDI') throw e;   // krediyi tekrar deneme
-        lastErr = e;
-        if (attempt < 2) await new Promise(r => setTimeout(r, 1200 * (attempt + 1)));
-      }
-    }
-    throw lastErr || new Error('Görsel üretilemedi');
+    // STABİLİZASYON Faz 3 — RETRY FIRTINASI DURDURULDU: istemci ARTIK KENDİ BAŞINA
+    // aynı ücretli isteği TEKRAR GÖNDERMEZ. Kontrollü tekrar (429/5xx/ağ) yalnız
+    // SUNUCUDA yapılır (tek birincil + tek yedek model, mutlak en fazla 3 çağrı).
+    // İstemci TEK istek atar; sunucu hata döndürürse GERÇEK sebebi kullanıcıya gösterir
+    // (kör "tekrar deneniyor" döngüsü ve çift rezervasyon riski biter). opId sabit
+    // kalır → sunucuda tek rezervasyon (idempotent), çift düşüm/asılı rezervasyon olmaz.
+    if (onAttempt) { /* geriye dönük uyum: istemci tarafı tekrar yok, çağrılmaz */ }
+    const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined })
+    });
+    const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
+    if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
+    if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Görsel üretilemedi');
+    if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
+    return data.url;
   }
   // Görseli GERÇEKTEN indir (yeni sekmede açmaz): data URI doğrudan, Storage/uzak
   // URL blob olarak indirilir. Hem mobil hem web'de tek tıkla dosya iner.
@@ -2709,7 +2700,7 @@ class Component extends DCLogic {
     });
   }
 
-  // ── U-05: TÜM SAHNELERİ ÜRET — sıralı kuyruk (2 paralel), toplam maliyet onaylı ──
+  // ── U-05: TÜM SAHNELERİ ÜRET — SIRALI kuyruk (Faz 3: concurrency=1), toplam maliyet onaylı ──
   async genAllScenes() {
     const s = this.state;
     if (s.batchBusy || !s.result) return;
@@ -2730,7 +2721,7 @@ class Component extends DCLogic {
         const si = (this.state.sceneImgs || {})[it.key] || {};
         this.setSceneImg(it.key, { done: true, count: (si.count || 0) + 1 });
       }
-    }, 2, (fin) => this.setState({ batchDone: fin }));
+    }, 1, (fin) => this.setState({ batchDone: fin }));   // Faz 3: concurrency=1 (retry fırtınası/eşzamanlı rezervasyon baskısını kes)
     this.setState({ batchBusy: false });
   }
 
