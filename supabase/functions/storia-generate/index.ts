@@ -718,17 +718,24 @@ async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect
   const klingReady = !!(Deno.env.get("KLING_ACCESS_KEY") && Deno.env.get("KLING_SECRET_KEY"));
   const grokReady = !!Deno.env.get("XAI_API_KEY");
   const falReady = !!(Deno.env.get("FAL_KEY") || Deno.env.get("FAL_API_KEY"));
+  const geminiReady = !!geminiKey();
   let choice = (want && (want === "grok" || want === "kling" || want === "kling3" || want === "veo")) ? want : videoProvider();
   // İstenen sağlayıcı yapılandırılmamışsa, hazır olana düş (kullanıcı takılmasın).
-  if ((choice === "kling3" || choice === "veo") && !falReady) choice = klingReady ? "kling" : "grok";
+  // Veo: önce doğrudan Gemini (ucuz), yoksa fal; ikisi de yoksa Kling/Grok'a düş.
+  if (choice === "veo" && !geminiReady && !falReady) choice = klingReady ? "kling" : "grok";
+  if (choice === "kling3" && !falReady) choice = klingReady ? "kling" : "grok";
   if (choice === "kling" && !klingReady) choice = grokReady ? "grok" : (falReady ? "kling3" : "kling");
   if (choice === "grok" && !grokReady) choice = klingReady ? "kling" : (falReady ? "kling3" : "grok");
-  if (choice === "veo") { const r = await submitFalModel(falVeoModel(), prompt, imageUrl, dur); return r.id ? { id: "veo:" + r.id, used: "veo" } : r; }
+  if (choice === "veo") {
+    if (geminiReady) { const r = await submitVeoGemini(prompt, imageUrl, dur, aspect); return r.id ? { id: "veog:" + r.id, used: "veo" } : r; }
+    const r = await submitFalModel(falVeoModel(), prompt, imageUrl, dur); return r.id ? { id: "veo:" + r.id, used: "veo" } : r;
+  }
   if (choice === "kling3") { const r = await submitFalModel(falKlingModel(), prompt, imageUrl, dur); return r.id ? { id: "fal:" + r.id, used: "kling3" } : r; }
   if (choice === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id, used: "kling" } : r; }
   const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id, used: "grok" } : r;
 }
 async function pollVideo(job: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+  if (job.indexOf("veog:") === 0) return pollVeoGemini(job.slice(5));
   if (job.indexOf("veo:") === 0) return pollFalModel(falVeoModel(), job.slice(4));
   if (job.indexOf("fal:") === 0) return pollFalModel(falKlingModel(), job.slice(4));
   if (job.indexOf("kling:") === 0) return pollKling(job.slice(6));
@@ -770,6 +777,64 @@ async function pollFalModel(model: string, id: string): Promise<{ done: boolean;
     const rd = await rr.json().catch(() => ({} as any));
     const url = rd?.video?.url || rd?.output?.video?.url || (Array.isArray(rd?.videos) && rd.videos[0]?.url) || "";
     return url ? { done: true, url } : { done: false };
+  } catch (e) { return { done: false, err: String(e).slice(0, 120) }; }
+}
+
+// ── Veo — DOĞRUDAN Gemini API (fal gerekmez, aynı model daha ucuz) ───────
+// GEMINI_API_KEY yeter. Async operation: predictLongRunning → operation poll.
+function geminiVideoModel(): string { return Deno.env.get("GEMINI_VIDEO_MODEL") || "veo-3.1-generate-001"; }
+async function fetchImageB64(url: string): Promise<{ data: string; mime: string } | null> {
+  try {
+    const m0 = /^data:([^;]+);base64,(.*)$/.exec(url); if (m0) return { data: m0[2], mime: m0[1] };
+    const r = await fetchT(url, {}, 60_000); if (!r.ok) return null;
+    const mime = r.headers.get("content-type") || "image/png";
+    const buf = new Uint8Array(await r.arrayBuffer());
+    let bin = ""; for (let i = 0; i < buf.length; i += 32768) bin += String.fromCharCode(...buf.subarray(i, i + 32768));
+    return { data: btoa(bin), mime };
+  } catch { return null; }
+}
+async function submitVeoGemini(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
+  const key = geminiKey(); if (!key) return { err: "GEMINI_API_KEY secret eksik (Veo için)." };
+  const instance: Record<string, unknown> = { prompt: (prompt || "").slice(0, 2000) };
+  if (imageUrl) { const im = await fetchImageB64(imageUrl); if (im) instance.image = { imageBytes: im.data, mimeType: im.mime }; }
+  const params: Record<string, unknown> = { durationSeconds: dur > 7 ? 10 : 5 };
+  if (aspect === "9:16" || aspect === "16:9") params.aspectRatio = aspect;
+  try {
+    const r = await fetchT(`https://generativelanguage.googleapis.com/v1beta/models/${geminiVideoModel()}:predictLongRunning?key=${key}`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ instances: [instance], parameters: params }),
+    }, 60_000);
+    const d = await r.json().catch(() => ({} as any));
+    if (!r.ok) return { err: (d && (d.error?.message || d.message)) || ("Veo " + r.status) };
+    const name = d.name; if (!name) return { err: "Veo operation adı alınamadı." };
+    return { id: String(name) };
+  } catch (e) { return { err: String(e).slice(0, 160) }; }
+}
+async function pollVeoGemini(opName: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+  const key = geminiKey(); if (!key) return { done: false, err: "GEMINI_API_KEY eksik." };
+  try {
+    const r = await fetchT(`https://generativelanguage.googleapis.com/v1beta/${opName}?key=${key}`, {}, 30_000);
+    const d = await r.json().catch(() => ({} as any));
+    if (d.error) return { done: false, failed: true, err: String(d.error.message || "Veo hata").slice(0, 120) };
+    if (!d.done) return { done: false };
+    const resp = d.response || {};
+    const samples = resp.generateVideoResponse?.generatedSamples || resp.generatedSamples || resp.generateVideoResponse?.generatedVideos || resp.generatedVideos || [];
+    const s0 = Array.isArray(samples) && samples[0] ? samples[0] : null;
+    const vid = (s0 && (s0.video || s0)) || {};
+    const inlineB64 = vid.videoBytes || vid.bytesBase64Encoded;
+    if (inlineB64) return { done: true, url: "data:video/mp4;base64," + inlineB64 };
+    const uri = vid.uri || vid.url || "";
+    if (uri) {
+      const dl = uri + (uri.indexOf("?") >= 0 ? "&" : "?") + "key=" + key;
+      const vr = await fetchT(dl, {}, 90_000);
+      if (vr.ok) {
+        const buf = new Uint8Array(await vr.arrayBuffer());
+        if (buf.length && buf.length < 45_000_000) {
+          let bin = ""; for (let i = 0; i < buf.length; i += 32768) bin += String.fromCharCode(...buf.subarray(i, i + 32768));
+          return { done: true, url: "data:video/mp4;base64," + btoa(bin) };
+        }
+      }
+    }
+    return { done: false };
   } catch (e) { return { done: false, err: String(e).slice(0, 120) }; }
 }
 
@@ -870,10 +935,18 @@ async function pollGrok(id: string): Promise<{ done: boolean; url?: string; fail
 }
 async function uploadVideo(admin: any, userId: string, url: string): Promise<string> {
   try {
-    if (!admin || !url || url.indexOf("http") !== 0) return url;
-    const r = await fetchT(url, {}, 90_000);
-    if (!r.ok) return url;
-    const bytes = new Uint8Array(await r.arrayBuffer());
+    if (!admin || !url) return url;
+    let bytes: Uint8Array;
+    const dm = /^data:video\/[a-z0-9.+-]+;base64,(.*)$/i.exec(url);
+    if (dm) {
+      const bin = atob(dm[1]); bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    } else {
+      if (url.indexOf("http") !== 0) return url;
+      const r = await fetchT(url, {}, 90_000);
+      if (!r.ok) return url;
+      bytes = new Uint8Array(await r.arrayBuffer());
+    }
     if (bytes.length > 45_000_000) return url;   // >45MB: xAI URL'sini olduğu gibi bırak
     const path = "video/" + (userId || "anon") + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".mp4";
     const up = await admin.storage.from(BUCKET).upload(path, bytes, { contentType: "video/mp4", upsert: false });
@@ -1039,10 +1112,14 @@ Deno.serve(async (req) => {
         logRun({ action: "video", ok: false, ms: Date.now() - t0, user_id: userId || null, err: (sub.err || "submit").slice(0, 60) });
         return json({ ok: false, error: "Video başlatılamadı — " + (sub.err || "bilinmeyen hata") + " (kredi düşülmedi)" }, 502);
       }
+      // Gerçekte kullanılan sağlayıcıya göre ücretlendir (istenen motor hazır
+      // değilse ucuz olana düştüyse fazladan ücret ALINMAZ).
+      const actualCost = sub.used ? videoCost(sec, sub.used) : cost;
+      const charge = Math.min(cost, actualCost);
       let credits: number | undefined;
-      if (cost > 0 && admin && userId) credits = await spendSafe(admin, userId, cost, "video");
+      if (charge > 0 && admin && userId) credits = await spendSafe(admin, userId, charge, "video");
       logRun({ action: "video", ok: true, ms: Date.now() - t0, user_id: userId || null });
-      return json({ ok: true, videoJob: sub.id, used: sub.used, charged: cost > 0, credits, cost });
+      return json({ ok: true, videoJob: sub.id, used: sub.used, charged: charge > 0, credits, cost: charge });
     }
 
     if (isPreview) {
