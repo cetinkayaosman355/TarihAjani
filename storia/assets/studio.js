@@ -28,6 +28,10 @@
     tools: { open: false },
     // image studio
     imgPrompt: '', imgStyle: 'sinematik', imgAspect: '1:1', imgOut: null, imgMode: 'gorsel',
+    // video stüdyo (görsel üret → videoya çevir)
+    vsPrompt: '', vsStyle: 'sinematik', vsAspect: '9:16', vsImg: null, vsOut: null, vsJob: null, vsBusy: false,
+    // avatar stüdyo
+    avPrompt: '', avStyle: 'ultra', avAspect: '1:1', avOut: null,
     // ses stüdyo
     ssText: '', ssVoice: 0, ssOut: null,
     // açık olan geçmiş kaydı (üretilen medya buraya kalıcı yazılır)
@@ -471,7 +475,7 @@
     if (S.view === 'new') tb.innerHTML = miniSteps();
     else tb.innerHTML = '<span class="tb-title">' + esc(viewTitle()) + '</span>';
   }
-  function viewTitle() { return S.view === 'images' ? 'Görsel stüdyo' : S.view === 'audio' ? 'Ses stüdyo' : S.view === 'library' ? 'Kütüphane' : S.view === 'history' ? 'Geçmiş' : 'Yeni dosya'; }
+  function viewTitle() { return S.view === 'images' ? 'Görsel stüdyo' : S.view === 'video' ? 'Video stüdyo' : S.view === 'avatar' ? 'Avatar stüdyo' : S.view === 'audio' ? 'Ses stüdyo' : S.view === 'library' ? 'Kütüphane' : S.view === 'history' ? 'Geçmiş' : 'Yeni dosya'; }
   function miniSteps() {
     var labels = ['Fikir', 'Tarz', 'Üretim', 'Dosya'];
     var h = '<div class="mini-steps">';
@@ -491,6 +495,8 @@
     if (S.view === 'new') {
       html = S.step === 1 ? renderComposer() : S.step === 2 ? renderRoom() : S.step === 3 ? renderGen() : renderDoc();
     } else if (S.view === 'images') html = renderImages();
+    else if (S.view === 'video') html = renderVideoStudio();
+    else if (S.view === 'avatar') html = renderAvatarStudio();
     else if (S.view === 'audio') html = renderAudio();
     else if (S.view === 'library') html = renderLibrary();
     else html = renderHistory();
@@ -801,10 +807,124 @@
         '<div class="opt-group"><div class="opt-title">Stil</div><div class="tiles">' + styleTiles + '</div></div>' +
         '<div class="opt-group"><div class="opt-title">Format</div><div class="aspects">' + aspects + '</div></div>' +
         '<div class="opt-group"><div class="opt-title">Görsel kalitesi</div>' + imgQualHtml() + '</div>' +
-        '<button class="btn btn-gold btn-lg" data-act="genImage" style="width:100%">✦ Görseli üret · ' + (S.imgQuality === 'yuksek' ? 45 : 12) + ' kredi</button>' +
+        '<button class="btn btn-gold btn-lg" data-act="genImage" style="width:100%">✦ Görseli üret · ' + imgCr() + ' kredi</button>' +
       '</div><div>' +
         '<div class="pv-card" style="padding:16px"><div id="imgOut">' + out + '</div></div>' +
       '</div></div></div>';
+  }
+
+  // Yeniden kullanılabilir video motoru / süre seçicileri (kredileriyle).
+  function vengPickHtml() {
+    return '<div class="veng-pick"><span class="cp-lbl">Video motoru</span><div class="cap-seg">' +
+      '<button class="' + (S.vengine === 'grok' ? 'on' : '') + '" data-act="vengine" data-v="grok" title="En hızlı, en ekonomik">Grok · ' + vcost(5, 'grok') + 'kr</button>' +
+      '<button class="' + (S.vengine === 'kling' ? 'on' : '') + '" data-act="vengine" data-v="kling" title="Sinematik">Kling 2.6 · ' + vcost(5, 'kling') + 'kr</button>' +
+      '<button class="' + (S.vengine === 'kling3' ? 'on' : '') + '" data-act="vengine" data-v="kling3" title="En gerçekçi">Kling 3.0 · ' + vcost(5, 'kling3') + 'kr</button>' +
+      '</div></div>';
+  }
+  function vsecPickHtml() {
+    return '<div class="veng-pick"><span class="cp-lbl">Klip süresi</span><div class="cap-seg">' +
+      '<button class="' + (S.vsec === 5 ? 'on' : '') + '" data-act="vsec" data-v="5">5 sn · ' + vcost(5) + 'kr</button>' +
+      '<button class="' + (S.vsec === 10 ? 'on' : '') + '" data-act="vsec" data-v="10">10 sn · ' + vcost(10) + 'kr</button>' +
+      '</div></div>';
+  }
+
+  // ── Video stüdyo (görsel üret → videoya çevir) ───────────────────────
+  function renderVideoStudio() {
+    var styleTiles = STYLES.map(function (st) { return '<div class="tile ' + (S.vsStyle === st.id ? 'on' : '') + '" data-act="vsStyle" data-v="' + st.id + '"><div class="t-name">' + esc(st.name) + '</div></div>'; }).join('');
+    var aspects = [{ id: '9:16', l: 'Dikey', w: 21, h: 36 }, { id: '16:9', l: 'Yatay', w: 36, h: 21 }, { id: '1:1', l: 'Kare', w: 28, h: 28 }]
+      .map(function (a) { return '<div class="asp ' + (S.vsAspect === a.id ? 'on' : '') + '" data-act="vsAspect" data-v="' + a.id + '"><span class="fr" style="width:' + a.w + 'px;height:' + a.h + 'px"></span><span class="l">' + a.l + '</span></div>'; }).join('');
+    var ratio = S.vsAspect === '9:16' ? '9/16' : S.vsAspect === '1:1' ? '1/1' : '16/9';
+    var right;
+    if (S.vsOut) right = '<video class="vid" src="' + esc(S.vsOut) + '" controls playsinline style="width:100%;border-radius:var(--r-md);aspect-ratio:' + ratio + '"></video>' +
+      '<div class="is-acts"><a class="btn btn-quiet btn-sm" href="' + esc(S.vsOut) + '" download="storia-video.mp4" target="_blank" rel="noopener">↓ İndir</a><button class="btn btn-quiet btn-sm" data-act="vsReset">＋ Yeni</button></div>';
+    else if (S.vsJob) right = '<div class="ph" style="aspect-ratio:' + ratio + ';display:grid;place-items:center;border-radius:var(--r-md);border:1px solid var(--line);gap:10px"><span class="mini-orb"></span><span style="color:var(--muted)">Video render ediliyor… (~1-2 dk)</span></div>';
+    else if (S.vsImg) right = '<img src="' + esc(S.vsImg) + '" style="width:100%;border-radius:var(--r-md);border:1px solid var(--line);aspect-ratio:' + ratio + ';object-fit:cover">' +
+      '<div class="is-acts"><button class="btn btn-quiet btn-sm" data-act="vsGenImg">↻ Görseli yenile</button></div>';
+    else right = '<div class="ph" style="aspect-ratio:' + ratio + ';display:grid;place-items:center;border-radius:var(--r-md);border:1px solid var(--line);background:linear-gradient(135deg,var(--paper-2),var(--paper-3));color:var(--muted);font-size:14px">Önce sahneyi üret</div>';
+    var step2 = S.vsImg && !S.vsOut && !S.vsJob
+      ? '<div class="opt-group"><div class="opt-title">2 · Videoya çevir</div>' + vengPickHtml() + vsecPickHtml() +
+        '<button class="btn btn-gold btn-lg" data-act="vsToVideo" style="width:100%;margin-top:12px"' + (S.vsBusy ? ' disabled' : '') + '>🎬 Videoya çevir · ' + vcost(S.vsec) + ' kredi</button></div>'
+      : '';
+    return '<div class="imgstudio"><div class="room-head"><h1>Video stüdyo</h1><p>Bir sahne tarif et; STORIA görselini üretsin, sonra yapay zekâyla videoya çevir. Motor ve süreyi kredisiyle seç.</p></div>' +
+      '<div class="is-grid"><div>' +
+        '<div class="opt-group"><div class="opt-title">1 · Sahneyi tarif et</div><textarea class="field" id="vsPromptInput" placeholder="Örn: yağmurlu bir gece, neon ışıklı sokakta yürüyen bir dedektif" style="min-height:96px">' + esc(S.vsPrompt) + '</textarea></div>' +
+        '<div class="opt-group"><div class="opt-title">Stil</div><div class="tiles">' + styleTiles + '</div></div>' +
+        '<div class="opt-group"><div class="opt-title">Format</div><div class="aspects">' + aspects + '</div></div>' +
+        '<div class="opt-group"><div class="opt-title">Görsel motoru</div>' + imgQualHtml() + '</div>' +
+        '<button class="btn ' + (S.vsImg ? 'btn-quiet' : 'btn-gold') + ' btn-lg" data-act="vsGenImg" style="width:100%"' + (S.vsBusy ? ' disabled' : '') + '>✦ ' + (S.vsImg ? 'Görseli yeniden üret' : 'Sahne görselini üret') + ' · ' + imgCr() + ' kredi</button>' +
+        step2 +
+      '</div><div><div class="pv-card" style="padding:16px">' + right + '</div></div></div></div>';
+  }
+
+  // ── Avatar stüdyo (karakter/portre üretimi) ──────────────────────────
+  function renderAvatarStudio() {
+    var styleTiles = STYLES.map(function (st) { return '<div class="tile ' + (S.avStyle === st.id ? 'on' : '') + '" data-act="avStyle" data-v="' + st.id + '"><div class="t-name">' + esc(st.name) + '</div></div>'; }).join('');
+    var aspects = [{ id: '1:1', l: 'Kare', w: 28, h: 28 }, { id: '9:16', l: 'Dikey', w: 21, h: 36 }, { id: '16:9', l: 'Yatay', w: 36, h: 21 }]
+      .map(function (a) { return '<div class="asp ' + (S.avAspect === a.id ? 'on' : '') + '" data-act="avAspect" data-v="' + a.id + '"><span class="fr" style="width:' + a.w + 'px;height:' + a.h + 'px"></span><span class="l">' + a.l + '</span></div>'; }).join('');
+    var out = S.avOut
+      ? '<img src="' + esc(S.avOut) + '" alt="" style="width:100%;border-radius:var(--r-md);border:1px solid var(--line)">' +
+        '<div class="is-acts"><button class="btn btn-quiet btn-sm" data-act="avGen">↻ Yeniden</button>' +
+        '<a class="btn btn-quiet btn-sm" href="' + esc(S.avOut) + '" download="storia-avatar.jpg" target="_blank" rel="noopener">↓ İndir</a></div>'
+      : '<div class="ph" style="aspect-ratio:1;display:grid;place-items:center;border-radius:var(--r-md);border:1px solid var(--line);background:linear-gradient(135deg,var(--paper-2),var(--paper-3));color:var(--muted);font-size:14px">Avatarın burada belirir</div>';
+    return '<div class="imgstudio"><div class="room-head"><h1>Avatar stüdyo</h1><p>Kanalın için tutarlı bir karakter/sunucu yüzü üret. Aynı avatarı sahneler arasında koru.</p></div>' +
+      '<div class="is-grid"><div>' +
+        '<div class="opt-group"><div class="opt-title">Karakteri tarif et</div><textarea class="field" id="avPromptInput" placeholder="Örn: 30’lu yaşlarında, kısa siyah saçlı, gözlüklü, sıcak gülümseyen bir kadın sunucu; sade stüdyo arka planı" style="min-height:110px">' + esc(S.avPrompt) + '</textarea></div>' +
+        '<div class="opt-group"><div class="opt-title">Stil</div><div class="tiles">' + styleTiles + '</div></div>' +
+        '<div class="opt-group"><div class="opt-title">Format</div><div class="aspects">' + aspects + '</div></div>' +
+        '<div class="opt-group"><div class="opt-title">Görsel motoru</div>' + imgQualHtml() + '</div>' +
+        '<button class="btn btn-gold btn-lg" data-act="avGen" style="width:100%">✦ Avatarı üret · ' + imgCr() + ' kredi</button>' +
+      '</div><div><div class="pv-card" style="padding:16px">' + out + '</div></div></div></div>';
+  }
+  // Video stüdyo mantığı
+  function vsGenImg() {
+    var t = document.getElementById('vsPromptInput'); if (t) S.vsPrompt = t.value;
+    if (!S.vsPrompt.trim()) { toast('Önce sahneyi tarif et'); return; }
+    if (!REAL) { S.vsImg = demoImage(0, S.vsAspect); S.vsOut = null; render(); toast('Demo sahne görseli'); return; }
+    if (!S.user) { openAuth(); return; }
+    S.vsBusy = true; render();
+    var full = S.vsPrompt + ' — ' + styleObj(S.vsStyle).en;
+    callFn({ action: 'image', prompt: full, size: S.vsAspect, imgIndex: 0, quality: S.imgQuality }).then(function (d) {
+      S.vsBusy = false;
+      if (d && d.ok && d.url) { S.vsImg = d.url; S.vsOut = null; S.vsJob = null; if (typeof d.credits === 'number') S.credits = d.credits; chrome(); render(); toast('Sahne hazır — şimdi videoya çevir'); }
+      else { render(); toast((d && d.error) || 'Görsel üretilemedi'); }
+    }).catch(function () { S.vsBusy = false; render(); toast('Bağlantı hatası'); });
+  }
+  function vsToVideo() {
+    if (!S.vsImg) { toast('Önce sahne görselini üret'); return; }
+    if (!REAL) { toast('Video gerçek modda üretilir'); return; }
+    if (!S.user) { openAuth(); return; }
+    var motion = S.vsPrompt + ', ' + (styleObj(S.vsStyle).mo || 'smooth cinematic camera move, natural motion');
+    S.vsBusy = true; S.vsJob = { state: 'submit' }; render();
+    callFn({ action: 'video', image: S.vsImg, prompt: motion, size: S.vsAspect, vsec: S.vsec, vprovider: S.vengine }).then(function (d) {
+      S.vsBusy = false;
+      if (!d || !d.ok || !d.videoJob) { S.vsJob = null; render(); toast((d && d.error) || 'Video başlatılamadı'); return; }
+      if (typeof d.credits === 'number') S.credits = d.credits; chrome();
+      S.vsJob = { job: d.videoJob }; render();
+      pollVs(d.videoJob, 0);
+    }).catch(function () { S.vsBusy = false; S.vsJob = null; render(); toast('Bağlantı hatası'); });
+  }
+  function pollVs(job, tries) {
+    if (tries > 60) { S.vsJob = null; render(); toast('Video zaman aşımı — tekrar dene'); return; }
+    setTimeout(function () {
+      callFn({ action: 'video_status', videoJob: job }).then(function (d) {
+        if (d && d.ok && d.done && d.url) { S.vsOut = d.url; S.vsJob = null; render(); toast('Video hazır ✦'); }
+        else if (d && d.ok && !d.done) { pollVs(job, tries + 1); }
+        else { S.vsJob = null; render(); toast((d && d.error) || 'Video üretilemedi'); }
+      }).catch(function () { pollVs(job, tries + 1); });
+    }, 5000);
+  }
+  // Avatar stüdyo mantığı
+  function avGen() {
+    var t = document.getElementById('avPromptInput'); if (t) S.avPrompt = t.value;
+    if (!S.avPrompt.trim()) { toast('Önce karakteri tarif et'); return; }
+    if (!REAL) { S.avOut = demoImage(1, S.avAspect); render(); toast('Demo avatar'); return; }
+    if (!S.user) { openAuth(); return; }
+    toast('Avatar üretiliyor…');
+    var full = 'Character portrait, consistent identity, single subject, ' + S.avPrompt + ' — ' + styleObj(S.avStyle).en + ', clean flattering lighting, looking toward camera';
+    callFn({ action: 'image', prompt: full, size: S.avAspect, imgIndex: 0, quality: S.imgQuality }).then(function (d) {
+      if (d && d.ok && d.url) { S.avOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; chrome(); render(); toast('Avatar hazır'); }
+      else toast((d && d.error) || 'Avatar üretilemedi');
+    }).catch(function () { toast('Bağlantı hatası'); });
   }
 
   // ── Ses stüdyo (bağımsız TTS, ElevenLabs) ────────────────────────────
@@ -957,9 +1077,9 @@
       case 'video': doVideo(parseInt(v, 10)); break;
       case 'exportVid': exportVideo(); break;
       case 'capStyle': S.capStyle = v; refreshTab(); break;
-      case 'vengine': S.vengine = v; refreshTab(); toast(v === 'kling3' ? 'Kling 3.0 · en sinematik · ' + vcost(S.vsec, 'kling3') + 'kr' : v === 'kling' ? 'Kling 2.6 · sinematik · ' + vcost(S.vsec, 'kling') + 'kr' : 'Grok · hızlı · ' + vcost(S.vsec, 'grok') + 'kr'); break;
-      case 'imgQual': S.imgQuality = v; refreshTab(); toast(v === 'nano' ? 'Nano Banana · 10kr/görsel' : v === 'yuksek' ? 'Yüksek · 45kr/görsel' : 'Standart · 12kr/görsel'); break;
-      case 'vsec': S.vsec = parseInt(v, 10) || 5; refreshTab(); toast(S.vsec + ' sn klip · ' + vcost(S.vsec) + 'kr'); break;
+      case 'vengine': S.vengine = v; reRenderTabOrView(); toast(v === 'kling3' ? 'Kling 3.0 · en sinematik · ' + vcost(S.vsec, 'kling3') + 'kr' : v === 'kling' ? 'Kling 2.6 · sinematik · ' + vcost(S.vsec, 'kling') + 'kr' : 'Grok · hızlı · ' + vcost(S.vsec, 'grok') + 'kr'); break;
+      case 'imgQual': S.imgQuality = v; reRenderTabOrView(); toast(v === 'nano' ? 'Nano Banana · 10kr/görsel' : v === 'yuksek' ? 'Yüksek · 45kr/görsel' : 'Standart · 12kr/görsel'); break;
+      case 'vsec': S.vsec = parseInt(v, 10) || 5; reRenderTabOrView(); toast(S.vsec + ' sn klip · ' + vcost(S.vsec) + 'kr'); break;
       case 'brandKit': openBrandModal(); break;
       case 'musicPick': openMusicModal(); break;
       case 'musicClear': if (S.bgMusic && S.bgMusic.indexOf('blob:') === 0) { try { URL.revokeObjectURL(S.bgMusic); } catch (e) {} } S.bgMusic = null; S.bgMusicName = ''; refreshTab(); break;
@@ -971,6 +1091,14 @@
       case 'iaspect': S.imgAspect = v; render(); break;
       case 'genImage': genStandaloneImage(); break;
       case 'editStudio': openEditStudio(); break;
+      case 'vsStyle': var _vp = document.getElementById('vsPromptInput'); if (_vp) S.vsPrompt = _vp.value; S.vsStyle = v; render(); break;
+      case 'vsAspect': var _vp2 = document.getElementById('vsPromptInput'); if (_vp2) S.vsPrompt = _vp2.value; S.vsAspect = v; render(); break;
+      case 'vsGenImg': vsGenImg(); break;
+      case 'vsToVideo': vsToVideo(); break;
+      case 'vsReset': S.vsImg = null; S.vsOut = null; S.vsJob = null; render(); break;
+      case 'avStyle': var _ap = document.getElementById('avPromptInput'); if (_ap) S.avPrompt = _ap.value; S.avStyle = v; render(); break;
+      case 'avAspect': var _ap2 = document.getElementById('avPromptInput'); if (_ap2) S.avPrompt = _ap2.value; S.avAspect = v; render(); break;
+      case 'avGen': avGen(); break;
       case 'imgMode': S.imgMode = v; render(); break;
       case 'ssVoice': S.ssVoice = parseInt(v, 10); render(); break;
       case 'ssTts': doStudioTts(); break;
@@ -1213,6 +1341,8 @@
     }).catch(function () { toast('Bağlantı hatası'); });
   }
   function refreshTab() { var tb = document.getElementById('tabBody'); if (tb) tb.innerHTML = renderTab(); }
+  // Sonuç sayfasında sekmeyi tazele; stüdyo görünümlerinde tam yeniden çiz.
+  function reRenderTabOrView() { if (S.view === 'new' && document.getElementById('tabBody')) refreshTab(); else render(); }
 
   // ── Lightbox + indirme ────────────────────────────────────────────────
   var _lb = { list: [], i: 0 };
