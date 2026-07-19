@@ -369,6 +369,27 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .da-mini { --pad-y: 8px; --pad-x: 13px; font-size: 12.5px; }
 @media (max-width: 640px) { .da-sep { display: none; } .doc-acts { gap: 9px; } }
 
+/* Üretim hattı — Fikir → Senaryo → Storyboard → Görsel & Video → Ses → Yayın */
+.prod-steps { display: flex; align-items: center; gap: 4px; margin-bottom: 14px; overflow-x: auto; padding: 4px 2px 8px; }
+.prod-steps::-webkit-scrollbar { height: 0; }
+.ps { display: flex; align-items: center; gap: 9px; padding: 9px 15px; border-radius: 999px; border: 1px solid transparent; background: none; color: var(--muted); font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: all .2s; }
+.ps .pn { width: 23px; height: 23px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; font-size: 11.5px; flex: none; transition: all .2s; }
+.ps:hover { color: var(--ink); background: var(--surface); border-color: var(--line-2); }
+.ps.on { color: var(--ink); background: var(--surface); border-color: var(--champ); box-shadow: var(--sh-1); }
+.ps.on .pn { background: var(--champ); border-color: var(--champ); color: #fff; }
+.ps.done:not(.on) { color: var(--ink-2); }
+.ps.done .pn { background: var(--champ-wash); border-color: var(--champ); color: var(--champ-deep); }
+.ps.done.on .pn { background: var(--champ); color: #fff; }
+.ps-sep { width: 16px; height: 1px; background: var(--line-2); flex: none; }
+.sub-tabs { display: flex; gap: 4px; margin-bottom: 22px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+.sub-tabs::-webkit-scrollbar { height: 0; }
+.sub-tabs button { padding: 10px 15px; border: 0; background: none; color: var(--muted); font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s; }
+.sub-tabs button:hover { color: var(--ink); }
+.sub-tabs button.on { color: var(--ink); border-bottom-color: var(--champ); }
+.next-step { display: flex; justify-content: flex-end; margin-top: 30px; }
+.doc-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 26px; padding: 14px 4px 6px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; }
+.doc-foot .df-save { color: var(--champ-deep); font-weight: 600; }
+
 .tabs { display: flex; gap: 4px; margin-bottom: 26px; overflow-x: auto; padding-bottom: 2px; border-bottom: 1px solid var(--line); }
 .tabs::-webkit-scrollbar { height: 0; }
 .tabs button { padding: 12px 16px; border: 0; background: none; color: var(--muted); font-size: 14.5px; font-weight: 600; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s; }

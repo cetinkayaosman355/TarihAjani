@@ -597,12 +597,75 @@
       '<div class="gen-list">' + rows + '</div></div>';
   }
 
-  // ── Result document (step 4) ─────────────────────────────────────────
+  // ── Result document (step 4) — üretim hattı (adım adım, geri dönülebilir)
+  var PROD_STEPS = [
+    { id: 'fikir', label: 'Fikir', tabs: [] },
+    { id: 'senaryo', label: 'Senaryo', tabs: [['senaryo', 'Senaryo']] },
+    { id: 'story', label: 'Storyboard', tabs: [['storyboard', 'Film şeridi'], ['karakterler', 'Karakterler']] },
+    { id: 'gorselvideo', label: 'Görsel & Video', tabs: [['gorsel', 'Görseller'], ['video', 'Video']] },
+    { id: 'ses', label: 'Ses', tabs: [['seslendirme', 'Seslendirme']] },
+    { id: 'yayin', label: 'Yayın', tabs: [['youtube', 'YouTube'], ['instagram', 'Instagram'], ['kapak', 'Kapak & paket']] }
+  ];
+  function prodStepTabs(st) {
+    // Karakterler sekmesi yalnız senaryoda karakter varsa görünür
+    return st.tabs.filter(function (t) { return t[0] !== 'karakterler' || ((S.result || {}).karakterler || []).length; });
+  }
+  function prodStepOf(tab) {
+    for (var i = 0; i < PROD_STEPS.length; i++) {
+      var ts = PROD_STEPS[i].tabs;
+      for (var j = 0; j < ts.length; j++) if (ts[j][0] === tab) return i;
+    }
+    return 1;
+  }
+  function prodDone(id) {
+    var r = S.result || {};
+    var sc = r.senaryo || [];
+    var imgsDone = sc.length && sc.every(function (_, i) { return !!S.images[i]; });
+    if (id === 'fikir') return true;
+    if (id === 'senaryo') return !!sc.length;
+    if (id === 'story') return imgsDone;
+    if (id === 'gorselvideo') return imgsDone && Object.keys(S.videos).length > 0;
+    if (id === 'ses') return !!S.audio;
+    if (id === 'yayin') return !!((r.youtube || {}).baslik);
+    return false;
+  }
+  function prodStepsHtml() {
+    var curIdx = prodStepOf(S.tab);
+    var h = '<div class="prod-steps">';
+    PROD_STEPS.forEach(function (st, i) {
+      var on = i === curIdx, done = prodDone(st.id);
+      var cls = 'ps' + (on ? ' on' : '') + (done ? ' done' : '');
+      h += '<button class="' + cls + '" data-act="prodStep" data-v="' + st.id + '" title="' + esc(st.label) + ' adımına git">' +
+        '<span class="pn">' + (done && !on ? '✓' : (i + 1)) + '</span><span class="pl">' + esc(st.label) + '</span></button>';
+      if (i < PROD_STEPS.length - 1) h += '<span class="ps-sep"></span>';
+    });
+    return h + '</div>';
+  }
+  function subTabsHtml() {
+    var st = PROD_STEPS[prodStepOf(S.tab)];
+    var ts = prodStepTabs(st);
+    if (ts.length < 2) return '';
+    return '<div class="sub-tabs">' + ts.map(function (t) {
+      return '<button class="' + (S.tab === t[0] ? 'on' : '') + '" data-act="tab" data-v="' + t[0] + '">' + esc(t[1]) + '</button>';
+    }).join('') + '</div>';
+  }
+  function nextStepHtml() {
+    var i = prodStepOf(S.tab);
+    if (i >= PROD_STEPS.length - 1) return '';
+    var nx = PROD_STEPS[i + 1];
+    return '<div class="next-step"><button class="btn btn-gold" data-act="prodStep" data-v="' + nx.id + '">Sonraki adım: ' + esc(nx.label) + ' →</button></div>';
+  }
+  function docFootHtml() {
+    var r = S.result || {};
+    var words = narrationText().split(/\s+/).filter(Boolean).length;
+    var sc = (r.senaryo || []).length;
+    var imgs = (r.senaryo || []).filter(function (_, i) { return S.images[i]; }).length;
+    return '<div class="doc-foot"><span class="df-save">✦ Otomatik kaydedildi</span>' +
+      '<span>' + words + ' kelime · ' + sc + ' sahne · ' + imgs + ' görsel · ' + fmtDur(S.durationSec) + '</span>' +
+      '<span>1080p · H.264 · ' + esc(S.aspect) + '</span></div>';
+  }
   function renderDoc() {
     var r = S.result || {};
-    var tabs = [['senaryo', 'Senaryo'], ['seslendirme', 'Seslendirme'], ['gorsel', 'Görseller'], ['storyboard', 'Storyboard'], ['video', 'Video'], ['youtube', 'YouTube'], ['instagram', 'Instagram'], ['kapak', 'Kapak & yayın']];
-    if (((S.result || {}).karakterler || []).length) tabs.splice(3, 0, ['karakterler', 'Karakterler']);
-    var tabBtns = tabs.map(function (t) { return '<button class="' + (S.tab === t[0] ? 'on' : '') + '" data-act="tab" data-v="' + t[0] + '">' + t[1] + '</button>'; }).join('');
     var meta = [fmtDur(S.durationSec), styleObj().name, S.aspect, VOICES[S.voiceIdx].name].map(function (m) { return '<span class="m">' + esc(m) + '</span>'; }).join('');
     var hero = '<div class="doc-hero"><div class="doc-eyebrow">✦ Dosyan hazır</div>' +
       '<h1 class="doc-title">' + esc(r.baslik || S.idea) + '</h1>' +
@@ -625,7 +688,9 @@
         '</div>' +
       '</div>' +
       (S.dub.open ? renderDub() : '') + '</div>';
-    return '<div class="doc">' + hero + '<div class="tabs">' + tabBtns + '</div><div class="tab-body" id="tabBody">' + renderTab() + '</div></div>';
+    return '<div class="doc">' + hero + prodStepsHtml() + subTabsHtml() +
+      '<div class="tab-body" id="tabBody">' + renderTab() + '</div>' +
+      nextStepHtml() + docFootHtml() + '</div>';
   }
 
   function aspRatio() { return S.aspect === '9:16' ? '9/16' : S.aspect === '1:1' ? '1/1' : '16/9'; }
@@ -1056,7 +1121,12 @@
       case 'dubClose': S.dub.open = false; render(); break;
       case 'dubGo': doDub(v); break;
       case 'restart': case 'goNew': startNew(); break;
-      case 'tab': S.tab = v; document.querySelectorAll('.tabs button').forEach(function (b) { b.classList.remove('on'); }); el.classList.add('on'); document.getElementById('tabBody').innerHTML = renderTab(); break;
+      case 'tab': S.tab = v; render(); break;
+      case 'prodStep':
+        if (v === 'fikir') { S.step = 1; render(); break; }
+        var _ps = null; for (var _pi = 0; _pi < PROD_STEPS.length; _pi++) if (PROD_STEPS[_pi].id === v) _ps = PROD_STEPS[_pi];
+        if (_ps) { var _pt = prodStepTabs(_ps); if (_pt.length) { S.tab = _pt[0][0]; render(); } }
+        break;
       case 'copyScript': copy((S.result.senaryo || []).map(function (s, i) { return (i + 1) + '. ' + (s.baslik || '') + '\n' + (s.anlatim || ''); }).join('\n\n')); break;
       case 'copyVo': copy(narrationText()); break;
       case 'copyOne': copy(v); break;
@@ -1343,7 +1413,12 @@
       else toast((d && d.error) || 'Görsel üretilemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
-  function refreshTab() { var tb = document.getElementById('tabBody'); if (tb) tb.innerHTML = renderTab(); }
+  function refreshTab() {
+    var tb = document.getElementById('tabBody'); if (tb) tb.innerHTML = renderTab();
+    // Üretim hattı adım rozetleri + alt durum çubuğu da tazelensin (✓ işaretleri canlı)
+    var ps = document.querySelector('.prod-steps'); if (ps) ps.outerHTML = prodStepsHtml();
+    var df = document.querySelector('.doc-foot'); if (df) df.outerHTML = docFootHtml();
+  }
   // Sonuç sayfasında sekmeyi tazele; stüdyo görünümlerinde tam yeniden çiz.
   function reRenderTabOrView() { if (S.view === 'new' && document.getElementById('tabBody')) refreshTab(); else render(); }
 
