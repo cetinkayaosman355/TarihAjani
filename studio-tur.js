@@ -11,7 +11,7 @@
 
   var STEPS = [
     { n: '1', t: 'Fikrini yaz', d: 'Bir tarih konusu gir (ör. “Grek Ateşi”). Aklına gelmezse <b>Sen Öner</b>’e bas, ajan sana konu bulsun.' },
-    { n: '2', t: 'Tarzını seç', d: 'Süre, kadraj (9:16 · 16:9 · 1:1) ve tonu ayarla — ya da <b>Hazır Mod</b>’dan (Kısa Video / Uzun Video / Belgesel) tek tıkla uygula.' },
+    { n: '2', t: 'Tarzını seç', d: 'Süre, kadraj (9:16 · 16:9 · 1:1) ve tonu ayarla — ya da <b>Hazır Mod</b>’dan (⚡ Viral Reels / Uzun Video / Belgesel) tek tıkla uygula.' },
     { n: '3', t: 'Dosyanı al', d: 'Senaryo, seslendirme, görsel & video promptları ve yayın paketi <b>tek dosyada</b> hazır. Seslendir, görsel üret, indir ve düzenle.' }
   ];
 

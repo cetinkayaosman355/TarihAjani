@@ -304,6 +304,16 @@ audio{width:100%;margin-top:10px}
 #imglb .nav.l{left:6px}#imglb .nav.r{right:6px}
 #imglb .say{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:.14em;color:#a8a498}
 #imglb .lbtn{border:1px solid rgba(129,135,151,.4);background:none;color:#cdd2dc;font-size:11px;letter-spacing:.1em;padding:11px 18px;border-radius:10px;cursor:pointer}
+/* ═══ PREMIUM CİLA (2026): mikro-geçiş + dokunma geri bildirimi + net odak ═══ */
+button{transition:transform .15s ease,box-shadow .2s ease,background .2s ease,border-color .2s ease,color .2s ease}
+button:active{transform:scale(.96)}
+.kart{transition:transform .18s ease,box-shadow .22s ease,border-color .2s ease;box-shadow:0 1px 0 rgba(230,196,120,.05) inset,0 14px 34px -22px rgba(0,0,0,.8)}
+.kart:active{transform:scale(.985)}
+input,textarea,select{transition:border-color .2s ease,box-shadow .2s ease}
+input:focus,textarea:focus,select:focus{outline:none;border-color:rgba(230,196,120,.65)!important;box-shadow:0 0 0 3px rgba(193,154,82,.16)}
+:focus-visible{outline:2px solid rgba(230,196,120,.55);outline-offset:2px;border-radius:6px}
+::selection{background:rgba(193,154,82,.35);color:#fff}
+@media (prefers-reduced-motion:reduce){button,.kart,input,textarea{transition:none!important}}
 </style>
 </head>
 <body>
