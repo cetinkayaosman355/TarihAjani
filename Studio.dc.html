@@ -538,11 +538,9 @@
         </aside>
         <div class="ta-maincol">
 
-          <!-- Yeniden başla (yeni üretim) — FİKİR adımının solunda, her adımda erişilebilir -->
-          <div style="display: flex; align-items: center; padding: 16px 44px 0;">
-            <button onClick="{{ newFile }}" title="Yeniden başla (sıfırdan yeni üretim)" aria-label="Yeniden başla" style="flex: none; display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; border: 1px solid rgba(193,154,82,.4); background: rgba(193,154,82,.08); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; line-height: 1; cursor: pointer;" style-hover="background: rgba(193,154,82,.18);"><span style="font-size: 15px;">↺</span><span>BAŞTAN</span></button>
-          </div>
-
+          <!-- Yeniden başla (solda, mutlak) + adım göstergesi (ortada) — TEK satır, boşluk yok -->
+          <div style="position: relative; min-height: 34px; padding: 16px 44px 0;">
+            <button onClick="{{ newFile }}" title="Yeniden başla (sıfırdan yeni üretim)" aria-label="Yeniden başla" style="position: absolute; left: 44px; top: 16px; z-index: 2; flex: none; display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; border: 1px solid rgba(193,154,82,.4); background: rgba(193,154,82,.08); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; line-height: 1; cursor: pointer;" style-hover="background: rgba(193,154,82,.18);"><span style="font-size: 15px;">↺</span><span>BAŞTAN</span></button>
           <!-- adım göstergesi -->
           <div class="ta-steps" style="{{ stepRowStyle }}">
             <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
@@ -552,6 +550,7 @@
                 <sc-if value="{{ st.hasLine }}" hint-placeholder-val="{{ false }}"><div style="{{ st.lineStyle }}"></div></sc-if>
               </div>
             </sc-for>
+          </div>
           </div>
 
       <main style="flex: 1; width: 100%; max-width: 1560px; margin: 0 auto; padding: 34px 44px 90px;">
@@ -1309,6 +1308,10 @@
               <div style="display: grid; gap: 14px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                   <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">GEÇMİŞ GÖRSELLER · {{ savedImgCount }} <span style="color: #676d7c; letter-spacing: 0; font-size: 11px;">(bu cihazda kalıcı saklanır)</span></p>
+                  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <sc-if value="{{ vidImportMsg }}" hint-placeholder-val="{{ false }}"><span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .06em;">{{ vidImportMsg }}</span></sc-if>
+                    <button onClick="{{ importVideos }}" disabled="{{ vidImportBusy }}" title="Sunucudaki tamamlanmış videolarını getirip galeriye ekler" style="border: 1px solid rgba(146,87,238,.5); background: rgba(146,87,238,.12); color: #d9c8ff; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; padding: 8px 13px; cursor: pointer;" style-hover="background: rgba(146,87,238,.24);">{{ vidImportLabel }}</button>
+                  </div>
                 </div>
                 <sc-if value="{{ hasSavedImgs }}" hint-placeholder-val="{{ true }}">
                   <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
@@ -1554,7 +1557,8 @@ class Component extends DCLogic {
       elKey: saved.elKey || '', ttsBusy: false, ttsError: '', audioUrl: '',
       sysTtsBusy: false, sysTtsError: '', sysAudioUrl: (w && w.sysAudioUrl) || '', audioDl: false,
       copied: {},
-      lightTheme: (function () { try { return localStorage.getItem('ta_tema') === 'light'; } catch (e) { return false; } })()
+      lightTheme: (function () { try { return localStorage.getItem('ta_tema') === 'light'; } catch (e) { return false; } })(),
+      vidImportBusy: false, vidImportMsg: ''
     };
   }
 
@@ -2633,6 +2637,31 @@ class Component extends DCLogic {
       all.sort((a, b) => (b.ts || 0) - (a.ts || 0));
       this.setState({ savedImgs: all.slice(0, 120) });
     } catch (e) {}
+  }
+  // VIDEO KURTARMA: sunucudaki tamamlanmış videoları (video_jobs) çekip kalıcı
+  // "Geçmiş Görseller" galerisine ekler — yerelde iz kaybolduysa (cihaz/yenileme)
+  // kullanıcı videolarını buradan geri getirir.
+  async importVideos() {
+    const s = this._sbUrlKey();
+    const token = this._token() || s.key;
+    if (!token) { this.setState({ vidImportMsg: 'Giriş gerekli' }); return; }
+    this.setState({ vidImportBusy: true, vidImportMsg: '' });
+    try {
+      const r = await fetch(s.url + '/functions/v1/studio-generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ action: 'video_list' })
+      });
+      const d = await r.json();
+      if (d && d.ok && Array.isArray(d.videos)) {
+        let n = 0;
+        for (const v of d.videos) {
+          if (v && v.url) { await this.saveImg({ id: 'rv_' + v.id, prompt: '🎬 Video', ar: this.state.aspect || '', url: v.url, vidUrl: v.url, ts: v.ts || Date.now() }); n++; }
+        }
+        this.setState({ vidImportBusy: false, vidImportMsg: n ? (n + ' video galeriye eklendi ✓') : 'Sunucuda tamamlanmış video bulunamadı' });
+      } else {
+        this.setState({ vidImportBusy: false, vidImportMsg: (d && d.error) ? d.error : 'Getirilemedi' });
+      }
+    } catch (e) { this.setState({ vidImportBusy: false, vidImportMsg: 'Bağlantı hatası' }); }
   }
   async delSavedImg(id) {
     try { const db = await this._openImgDB(); db.transaction('imgs', 'readwrite').objectStore('imgs').delete(id); } catch (e) {}
@@ -4053,6 +4082,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           del: () => this.delSavedImg(x.id)
         };
       }),
+      importVideos: () => this.importVideos(),
+      vidImportBusy: s.vidImportBusy,
+      vidImportMsg: s.vidImportMsg || '',
+      vidImportLabel: s.vidImportBusy ? '⏳ Getiriliyor…' : '🎬 Videolarımı Getir',
 
       idea: s.idea,
       onIdea: e => this.setState({ idea: e.target.value, ideaWarn: '' }),

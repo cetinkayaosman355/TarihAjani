@@ -959,7 +959,7 @@ Deno.serve(async (req) => {
     // action + prompt eskiden ücretsiz metin üretimine (gen) düşüp endpoint'i genel
     // amaçlı AI servisi gibi kullandırabiliyordu. "" = uygulama içi ücretsiz metin
     // yardımcıları (sohbet, konu önerisi, Shorts, bölüm metni) — izinli kalır.
-    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "fetch_result"]);
+    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result"]);
     if (!ALLOWED_ACTIONS.has(act)) return json({ ok: false, error: "Geçersiz işlem." }, 400);
     // Hız limiti: kimliksiz/ücretsiz istekler dakikada 30, tümü 90 (IP başına)
     const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
@@ -979,6 +979,31 @@ Deno.serve(async (req) => {
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
     // TTS/video'nun prompt/konusu yok — bu kontrolden muaf
     if (!prompt && act !== "tts" && act !== "fetch_result" && act !== "video" && act !== "video_status") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
+
+    // VIDEO KURTARMA — kullanıcının TAMAMLANMIŞ tüm videolarını döndürür. İstemci
+    // yerelde iz kaybettiyse (başka cihaz / sayfa yenilendi / dosya değişti) buradan
+    // getirip kalıcı galeriye ekler. Yalnız sahibinin videoları (user_id eşleşmesi).
+    if (act === "video_list") {
+      const U = Deno.env.get("SUPABASE_URL"), K = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (!U || !K) return json({ ok: true, videos: [] });   // tablo/altyapı yoksa boş (kırılmaz)
+      const adm = createClient(U, K);
+      const vjwt = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+      const { data: vud } = await adm.auth.getUser(vjwt);
+      const uid = vud?.user?.id;
+      if (!uid) return json({ ok: false, error: "Giriş gerekli." }, 401);
+      try {
+        const { data: rows } = await adm.from("video_jobs")
+          .select("id, result_path, created_at, provider")
+          .eq("user_id", uid).eq("status", "completed")
+          .order("created_at", { ascending: false }).limit(50);
+        const videos = (rows || [])
+          .filter((r: any) => r && r.result_path)
+          .map((r: any) => ({ id: r.id, url: r.result_path, ts: r.created_at ? Date.parse(r.created_at) : Date.now(), provider: r.provider || "" }));
+        return json({ ok: true, videos });
+      } catch (_e) {
+        return json({ ok: true, videos: [] });   // tablo yoksa/legacy → boş, üretim akışını etkilemez
+      }
+    }
 
     // VIDEO DURUM SORGUSU (poll) — video submit'te REZERVE edildi; burada sonuç
     // belirlenir: tamamlandıysa finalize, başarısızsa kredi İADE (rapor 4.4/4.5).
