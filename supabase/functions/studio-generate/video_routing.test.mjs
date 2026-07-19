@@ -99,6 +99,23 @@ test("index.ts: submitVideo veo → VEO_PROVIDER_NOT_CONFIGURED döndürür", ()
   assert.ok(sv.includes('submitFal(') && sv.includes('submitKling(') && sv.includes('submitGrok('), "seçilen sağlayıcı doğrudan çağrılmalı");
 });
 
+test("index.ts: Grok (xAI) entegrasyonu resmî endpoint/model + GROK_KEY_MISSING", () => {
+  const sg = indexSrc.slice(indexSrc.indexOf("async function submitGrok("), indexSrc.indexOf("async function pollGrok("));
+  assert.ok(sg.includes('if (!key) return { err: "GROK_KEY_MISSING" };'), "XAI_API_KEY yoksa GROK_KEY_MISSING dönmeli");
+  assert.ok(sg.includes('"https://api.x.ai/v1/videos/generations"'), "resmî POST endpoint'i olmalı");
+  assert.ok(sg.includes('Deno.env.get("XAI_VIDEO_MODEL") || "grok-imagine-video"'), "model varsayılanı grok-imagine-video olmalı");
+  assert.ok(!sg.includes("grok-imagine-video-1.5"), "eski 1.5 model sabiti kalmamalı (secret ile override edilebilir)");
+  assert.ok(sg.includes("d.request_id"), "request_id okunmalı");
+  assert.ok(!sg.includes('"fal"') && !sg.includes("submitFal"), "submitGrok içinde Fal'a geçiş olmamalı");
+});
+
+test("index.ts: pollGrok resmî GET /v1/videos/{request_id} + video.url + expire", () => {
+  const pg = indexSrc.slice(indexSrc.indexOf("async function pollGrok("), indexSrc.indexOf("// ── fal.ai"));
+  assert.ok(pg.includes('"https://api.x.ai/v1/videos/" + encodeURIComponent(id)'), "resmî poll GET endpoint'i olmalı");
+  assert.ok(pg.includes("d.video?.url"), "done → video.url okunmalı (resmî yanıt)");
+  assert.ok(pg.includes('status.includes("expire")'), "expired durumu başarısız sayılmalı");
+});
+
 test("index.ts: kredi/iş takibi değişmezleri korunur (reserve/refund/video_jobs/opId)", () => {
   assert.ok(indexSrc.includes('reserve_credits'), "kredi rezervasyonu korunmalı");
   assert.ok(indexSrc.includes('await doRefund()'), "başarısızlıkta iade korunmalı");
