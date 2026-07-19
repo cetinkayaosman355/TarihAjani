@@ -70,9 +70,13 @@
       [style*="grid-template-columns: 250px"], [style*="grid-template-columns: 230px"] { grid-template-columns: 1fr !important; }
       [style*="grid-template-columns: 1.5fr 1fr"] { grid-template-columns: 1fr !important; }
     }
-    /* Mobilde nav gizlenir ama tema+başa dön butonları görünür kalır (nav dışındalar);
-       sağ üstteki ☰ burger'a binmemeleri için sağ boşluk bırakılır. */
-    @media (max-width: 840px) { .ta-hdr-right { margin-right: 50px; } }
+    /* Mobilde nav gizlenir ama tema butonu görünür kalır (nav dışında). Header
+       TEK SATIR kalsın: buton logo satırının sağına yaslanır, ☰ burger'a binmesin
+       diye sağdan boşluk bırakır. (Eskiden alt satıra tek başına sarkıyordu.) */
+    @media (max-width: 840px) {
+      .ta-studio-wrap header { flex-wrap: nowrap !important; }
+      .ta-hdr-right { margin-left: auto; margin-right: 52px; }
+    }
     @media (max-width: 600px) {
       [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
       [style*="padding: 120px"] { padding-top: 130px !important; }
@@ -381,6 +385,36 @@
     /* tema düğmesi aydınlıkta da görünür dursun */
     html[data-theme="light"] #ta-tema-btn { background: #fbf6ea !important; color: #8a6417 !important;
       border-color: rgba(150,116,52,.4) !important; box-shadow: 0 8px 24px rgba(120,90,30,.22) !important; }
+    /* ═══ PREMIUM CİLA KATMANI (2026) — markup'a dokunmadan çağdaş his ═══
+       İlke: köşe yumuşaklığı + derinlik + akıcı mikro-geçişler + net odak hali.
+       Inline border-radius (50% avatar/FAB gibi) her zaman kazanır → bozulmaz. */
+    button { border-radius: 9px; transition: transform .16s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease, color .2s ease; }
+    button:active { transform: scale(.97); }
+    a { transition: color .18s ease, background .2s ease, box-shadow .2s ease; }
+    input, textarea, select { border-radius: 10px; transition: border-color .2s ease, box-shadow .2s ease; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: rgba(230,196,120,.65) !important; box-shadow: 0 0 0 3px rgba(193,154,82,.16); }
+    :focus-visible { outline: 2px solid rgba(230,196,120,.55); outline-offset: 2px; border-radius: 6px; }
+    ::selection { background: rgba(193,154,82,.35); color: #fff; }
+    /* Kartlara derinlik + hover yaşamı (inline bordered kutular dahil) */
+    .ta-card { box-shadow: 0 1px 0 rgba(230,196,120,.05) inset, 0 14px 34px -22px rgba(0,0,0,.8); transition: transform .18s ease, box-shadow .22s ease, border-color .2s ease; }
+    .ta-card:hover { border-color: rgba(193,154,82,.38); box-shadow: 0 1px 0 rgba(230,196,120,.08) inset, 0 18px 44px -20px rgba(0,0,0,.85); }
+    /* Adım 2 seçim kartları / genel çerçeveli kutular: yumuşak köşe + hover */
+    main [style*="border: 1px solid rgba(129,135,151"] { border-radius: 10px; transition: border-color .2s ease, background .2s ease, box-shadow .2s ease; }
+    main div[onclick][style*="cursor: pointer"]:hover, main button[style*="border: 1px solid rgba(129,135,151"]:hover { border-color: rgba(193,154,82,.45) !important; box-shadow: 0 8px 26px -16px rgba(0,0,0,.7); }
+    main [style*="border: 1px solid rgba(193,154,82"] { border-radius: 10px; }
+    /* Altın CTA'lara premium parlama */
+    button[style*="linear-gradient(110deg"], a[style*="linear-gradient(110deg"] { box-shadow: 0 6px 22px -8px rgba(193,154,82,.45), 0 1px 0 rgba(255,240,177,.4) inset; }
+    button[style*="linear-gradient(110deg"]:hover { box-shadow: 0 10px 34px -8px rgba(230,196,120,.55), 0 1px 0 rgba(255,240,177,.5) inset; transform: translateY(-1px); }
+    /* Header'a incecik altın ışık çizgisi (derinlik) */
+    .ta-studio-wrap header { box-shadow: 0 1px 0 rgba(230,196,120,.10), 0 12px 30px -18px rgba(0,0,0,.8); }
+    /* Görsel/galeri kutuları: köşe + taşma kilidi */
+    [style*="background: #070a12"] { border-radius: 10px; overflow: hidden; }
+    /* Kaydırma çubuğu premium ince altın */
+    .ta-studio-wrap ::-webkit-scrollbar { width: 9px; height: 9px; }
+    .ta-studio-wrap ::-webkit-scrollbar-thumb { background: rgba(193,154,82,.35); border-radius: 8px; border: 2px solid rgba(5,7,13,.9); }
+    .ta-studio-wrap ::-webkit-scrollbar-thumb:hover { background: rgba(193,154,82,.55); }
+    /* Hareket azaltma tercihi olan kullanıcıya saygı */
+    @media (prefers-reduced-motion: reduce) { button, a, .ta-card, input, textarea { transition: none !important; } }
 </style>
   <script>window.__taFadeBg='#06070d';</script>
   <script src="page-transition.js"></script>
