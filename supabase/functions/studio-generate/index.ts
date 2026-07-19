@@ -270,41 +270,135 @@ function imgErrMsg(model: string, cls: ImgErrClass, status: number): string {
   return model + ": " + t[cls];
 }
 
-// Gerçek görsel üretimi — OpenAI gpt-image (base64 → data URI, süresiz).
-// STABİLİZASYON Faz 3 — RETRY FIRTINASI DURDURULDU:
-//   • TEK birincil model (TA_IMAGE_PRIMARY_MODEL, vars. gpt-image-1.5) + TEK yedek
-//     (TA_IMAGE_FALLBACK_MODEL, vars. gpt-image-1). gpt-image-2 VARSAYILANDAN ÇIKTI;
-//     yalnız secret ile açılır. dall-e-3 kuyruğu KALDIRILDI.
+// ── ORTAK RETRY/FALLBACK ORCHESTRATOR (sağlayıcıdan bağımsız) ──────
+// STABİLİZASYON Faz 3 değişmezleri (Faz 4'te de KORUNUR):
 //   • Birincil YALNIZ 429/5xx/ağ/timeout'ta EN FAZLA bir kez daha denenir.
 //   • 400/401/403/moderation'da aynı model TEKRAR DENENMEZ.
 //   • Birincil model düzeyi sorun (model yok) ya da geçici tükenmede YALNIZ BİR KEZ
-//     yedek modele geçilir; içerik/moderasyon/geçersiz istekte geçilmez (yedekte de
-//     aynı prompt reddedilir → boş çağrı yapılmaz).
+//     yedek modele geçilir; içerik/moderasyon/geçersiz istekte geçilmez.
 //   • Toplam API çağrısı: normal 1, geçici en fazla 2, yedek dahil MUTLAK EN FAZLA 3.
-//   • Her denemede loglanır: opId, model, attempt, HTTP/hata sınıfı, süre.
+//   • Her denemede loglanır: opId, sağlayıcı, model, attempt, HTTP/hata sınıfı, süre.
+// callOnce(model, isPrimary): tek API çağrısı → başarı {url}, hata {status,timeout,body}.
+type ImgCall = { url: string; status: number; timeout: boolean; body: string };
+async function runImageChain(
+  chain: string[],
+  provider: string,
+  opId: string | undefined,
+  diag: { d: string; cls?: string } | undefined,
+  callOnce: (model: string, isPrimary: boolean) => Promise<ImgCall>,
+): Promise<string> {
+  const MAX_CALLS = 3;
+  let totalCalls = 0;
+  for (let mi = 0; mi < chain.length; mi++) {
+    const model = chain[mi];
+    const isPrimary = mi === 0;
+    let transientTries = 0;
+    while (totalCalls < MAX_CALLS) {
+      const attemptNo = transientTries + 1;
+      const t0 = Date.now();
+      totalCalls++;
+      const res = await callOnce(model, isPrimary);
+      const ms = Date.now() - t0;
+      if (res.url) {
+        console.log(`img_ok op=${opId || "-"} provider=${provider} model=${model} attempt=${attemptNo} calls=${totalCalls} ms=${ms}`);
+        return res.url;
+      }
+      const ci = classifyImgErr(res.status, res.timeout, res.body);
+      console.error(`img_fail op=${opId || "-"} provider=${provider} model=${model} attempt=${attemptNo} calls=${totalCalls} status=${res.status} class=${ci.cls} ms=${ms} :: ${(res.body || "").slice(0, 200)}`);
+      if (diag) { diag.d = imgErrMsg(model, ci.cls, res.status); diag.cls = ci.cls; }
+      // Geçici hata → AYNI modeli EN FAZLA bir kez daha dene (1200–2000ms bekleme).
+      if (ci.transient && transientTries < 1 && totalCalls < MAX_CALLS) {
+        transientTries++;
+        await new Promise((r) => setTimeout(r, 1200 + Math.floor(Math.random() * 800)));
+        continue;
+      }
+      // Kalıcı VEYA geçici tavan. Yedek modele YALNIZ model düzeyi sorunda (model yok)
+      // ya da geçici tükendiğinde geç. Moderasyon/geçersiz istek/yetki hatasında GEÇME.
+      const goFallback = isPrimary && (mi + 1 < chain.length) && (ci.modelMissing || ci.transient);
+      if (goFallback) break;    // dıştaki for → yedek model
+      return "";                // yedek yok / uygun değil → başarısız
+    }
+    if (totalCalls >= MAX_CALLS) break;
+  }
+  return "";
+}
+
+// Gerçek görsel üretimi — çok sağlayıcılı. TA_IMAGE_PROVIDER ile seçilir:
+//   • "openai" (VARSAYILAN): gpt-image (Faz 3 mantığı — DAVRANIŞ DEĞİŞMEDİ).
+//   • "gemini": Google Gemini (Nano Banana) — YALNIZ Gemini kullanılır, OpenAI'ye
+//     OTOMATİK DÜŞÜLMEZ (OpenAI bakiyesi yoksa da güvenli). GEMINI_API_KEY gerekir.
+// Her iki yol da AYNI ortak orchestrator'ı (runImageChain) kullanır → Faz 3
+// değişmezleri (max 3 çağrı, geçici retry, hata sınıflandırma, opId log) korunur.
 // diag: başarısızlıkta SON gerçek sebep (model + sınıf) + sınıf kodu buraya yazılır.
 async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string }, opId?: string): Promise<string> {
+  if (!prompt.trim()) return "";
+  const provider = (Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim().toLowerCase();
+  const p = prompt.trim().slice(0, 29000) + NO_SPLIT;   // anti-split kural (kesilmeye karşı sonda, prompt kırpılmış)
+
+  // ── GEMINI YOLU ── (yalnız TA_IMAGE_PROVIDER=gemini). OpenAI'ye düşülmez.
+  if (provider === "gemini") {
+    const gkey = Deno.env.get("GEMINI_API_KEY");
+    if (!gkey) { if (diag) { diag.d = "GEMINI_API_KEY tanımsız"; diag.cls = "AUTH_ERROR"; } return ""; }
+    // Model secret ile ayarlanabilir (Google model adı değişirse deploy'suz düzeltilir).
+    // Varsayılan: gemini-2.5-flash-image (Nano Banana) — GA, AI Studio API anahtarıyla erişilir.
+    const gm = (Deno.env.get("TA_GEMINI_IMAGE_MODEL") || "gemini-2.5-flash-image").trim();
+    const gfb = (Deno.env.get("TA_GEMINI_FALLBACK_MODEL") || "").trim();   // opsiyonel yedek Gemini modeli
+    const gchain = (gfb && gfb !== gm) ? [gm, gfb] : [gm];
+    // responseModalities: bazı modeller ["IMAGE"], bazıları ["TEXT","IMAGE"] ister → secret ile ayarlanabilir.
+    const mods = (Deno.env.get("TA_GEMINI_RESPONSE_MODALITIES") || "IMAGE").split(",").map((s) => s.trim()).filter(Boolean);
+    // Opsiyonel oran (yalnız TA_GEMINI_ASPECT=1): yeni modeller imageConfig.aspectRatio destekler;
+    // varsayılan KAPALI → bilinmeyen alan 400 riski yok, oran istemci prompt'u + cropToAspect ile korunur.
+    const aspOn = Deno.env.get("TA_GEMINI_ASPECT") === "1";
+    const aspRatio = size === "9:16" ? "9:16" : size === "16:9" ? "16:9" : "1:1";
+    const genCfg: Record<string, unknown> = { responseModalities: mods };
+    if (aspOn) genCfg.imageConfig = { aspectRatio: aspRatio };
+
+    const callGemini = async (model: string): Promise<ImgCall> => {
+      try {
+        const r = await fetchT(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": gkey },
+          body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: p }] }], generationConfig: genCfg }),
+        }, 120_000);
+        if (r.ok) {
+          const d = await r.json();
+          const parts = d?.candidates?.[0]?.content?.parts || [];
+          for (const pt of parts) {
+            const inl = pt?.inlineData || pt?.inline_data;
+            if (inl?.data) {
+              const mt = inl.mimeType || inl.mime_type || "image/png";
+              return { url: `data:${mt};base64,${inl.data}`, status: 200, timeout: false, body: "" };
+            }
+          }
+          // 200 ama görsel yok → güvenlik engeli mi (blockReason/finishReason)? → MODERATION (kalıcı, boş retry yok)
+          const br = String(d?.promptFeedback?.blockReason || d?.candidates?.[0]?.finishReason || "");
+          const blocked = /safety|block|prohibit|recitation/i.test(br);
+          return { url: "", status: blocked ? 400 : 200, timeout: false, body: blocked ? ("blocked: " + br) : "empty-response" };
+        }
+        const body = await r.text().catch(() => "");
+        return { url: "", status: r.status, timeout: false, body };
+      } catch (e) {
+        return { url: "", status: 0, timeout: true, body: String(e).slice(0, 200) };
+      }
+    };
+    return await runImageChain(gchain, "gemini", opId, diag, callGemini);
+  }
+
+  // ── OPENAI YOLU (VARSAYILAN) ── Faz 3 mantığı — DAVRANIŞ AYNEN KORUNDU.
   const key = Deno.env.get("OPENAI_API_KEY");
   if (!key) { if (diag) { diag.d = "OPENAI_API_KEY tanımsız"; diag.cls = "AUTH_ERROR"; } return ""; }
-  if (!prompt.trim()) return "";
   // gpt-image oranları: kare / yatay (3:2) / dikey (2:3). STANDART çözünürlük.
   const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
-  // YÜKSEK ÇÖZÜNÜRLÜK: Faz 3'te VARSAYILAN KAPALI (ek çağrı/maliyet üretmez).
-  // Secret TA_IMAGE_HD=1 ile açılır; yalnız BİRİNCİL modelin boyutunu büyütür
-  // (ayrı bir 2. çağrı AÇMAZ → çağrı bütçesi korunur). Boyut reddedilirse birincil
-  // kalıcı başarısız sayılır → yedek modele standart boyutta geçilir.
   const hdOn = Deno.env.get("TA_IMAGE_HD") === "1";
   const gHd = size === "9:16" ? (Deno.env.get("TA_IMAGE_HD_9x16") || "1536x2048")
             : size === "16:9" ? (Deno.env.get("TA_IMAGE_HD_16x9") || "2048x1536")
             : (Deno.env.get("TA_IMAGE_HD_1x1") || "2048x2048");
-  const p = prompt.trim().slice(0, 29000) + NO_SPLIT;   // anti-split kural (kesilmeye karşı sonda, prompt kırpılmış)
-
   const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-1.5").trim();
   const fallback = (Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1").trim();
   const chain = (fallback && fallback !== primary) ? [primary, fallback] : [primary];
 
-  // TEK API çağrısı. Başarı → data URI/url; hata → HTTP durumu + gövde (sınıflama için).
-  async function callOnce(model: string, gSize: string): Promise<{ url: string; status: number; timeout: boolean; body: string }> {
+  const callOpenAI = async (model: string, isPrimary: boolean): Promise<ImgCall> => {
+    const gSize = (hdOn && isPrimary) ? gHd : gStd;   // HD yalnız birincil, tek çağrı
     try {
       const r = await fetchT("https://api.openai.com/v1/images/generations", {
         method: "POST",
@@ -330,44 +424,8 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
     } catch (e) {
       return { url: "", status: 0, timeout: true, body: String(e).slice(0, 200) };
     }
-  }
-
-  const MAX_CALLS = 3;
-  let totalCalls = 0;
-  for (let mi = 0; mi < chain.length; mi++) {
-    const model = chain[mi];
-    const isPrimary = mi === 0;
-    const gSize = (hdOn && isPrimary) ? gHd : gStd;   // HD yalnız birincil, tek çağrı
-    let transientTries = 0;
-    while (totalCalls < MAX_CALLS) {
-      const attemptNo = transientTries + 1;
-      const t0 = Date.now();
-      totalCalls++;
-      const res = await callOnce(model, gSize);
-      const ms = Date.now() - t0;
-      if (res.url) {
-        console.log(`img_ok op=${opId || "-"} model=${model} attempt=${attemptNo} calls=${totalCalls} ms=${ms}`);
-        return res.url;
-      }
-      const ci = classifyImgErr(res.status, res.timeout, res.body);
-      console.error(`img_fail op=${opId || "-"} model=${model} attempt=${attemptNo} calls=${totalCalls} status=${res.status} class=${ci.cls} ms=${ms} :: ${(res.body || "").slice(0, 200)}`);
-      if (diag) { diag.d = imgErrMsg(model, ci.cls, res.status); diag.cls = ci.cls; }
-      // Geçici hata → AYNI modeli EN FAZLA bir kez daha dene (1200–2000ms bekleme).
-      if (ci.transient && transientTries < 1 && totalCalls < MAX_CALLS) {
-        transientTries++;
-        await new Promise((r) => setTimeout(r, 1200 + Math.floor(Math.random() * 800)));
-        continue;
-      }
-      // Kalıcı VEYA geçici tavan. Yedek modele YALNIZ model düzeyi sorunda (model yok)
-      // ya da geçici tükendiğinde geç. Moderasyon/geçersiz istek/yetki hatasında GEÇME
-      // (aynı prompt yedekte de reddedilir → boş çağrı yapma, kredi/gecikme koru).
-      const goFallback = isPrimary && (mi + 1 < chain.length) && (ci.modelMissing || ci.transient);
-      if (goFallback) break;    // dıştaki for → yedek model
-      return "";                // yedek yok / uygun değil → başarısız
-    }
-    if (totalCalls >= MAX_CALLS) break;
-  }
-  return "";
+  };
+  return await runImageChain(chain, "openai", opId, diag, callOpenAI);
 }
 
 // Gerçek seslendirme — OpenAI gpt-4o-mini-tts (mp3). Uzun metin ≤3800
