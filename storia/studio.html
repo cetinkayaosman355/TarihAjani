@@ -310,6 +310,12 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .pv-canvas::before { content:""; position:absolute; inset:0; background: radial-gradient(circle at 70% 20%, rgba(217,188,128,.35), transparent 60%); }
 .pv-frame { position: relative; border-radius: 8px; background: var(--gold-sheen); box-shadow: 0 12px 34px rgba(0,0,0,.35); display: grid; place-items: center; transition: width .35s var(--ease), height .35s var(--ease); }
 .pv-frame .pv-mark { width: 30px; height: 30px; opacity: .9; }
+.pv-frame .pv-sample { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+/* Stil kartlarında gerçek örnek kare */
+.tile.stile { display: flex; align-items: center; gap: 12px; }
+.t-thumb { width: 62px; height: 42px; border-radius: 8px; background-size: cover; background-position: center; flex: none; border: 1px solid var(--line-2); box-shadow: var(--sh-1); }
+.stile .t-txt { min-width: 0; }
+.stile .t-name, .stile .t-desc { display: block; }
 .pv-body { padding: 20px 22px 22px; }
 .pv-eyebrow { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--champ-deep); font-weight: 600; }
 .pv-title { font-family: var(--serif); font-size: 21px; color: var(--ink); margin: 8px 0 2px; line-height: 1.2; min-height: 25px; }

@@ -369,6 +369,20 @@
     { id: 'pixar', name: 'Sinematik 3D Animasyon', desc: 'Pixar tarzı sinema animasyonu', en: 'cinematic 3D animated film still, Pixar/DreamWorks quality, appealing stylized characters, soft global illumination, warm cinematic lighting, rich subsurface skin, shallow depth of field, feature-film render polish', mo: 'smooth animated camera move, buttery cinematic dolly, expressive character motion' },
     { id: 'minimal', name: 'Minimal', desc: 'Sade, zarif, geometrik', en: 'minimalist editorial composition, elegant negative space, refined geometry, single hero subject, soft even studio light, muted premium palette, crisp and clean', mo: 'slow elegant push-in, calm steady motion, refined restraint' }
   ];
+  // Her görsel stil için GERÇEK örnek kare — aynı sahne (deniz feneri), 9 farklı tarz.
+  // Tarz seçerken sağdaki önizlemede ve stil kartlarında görünür.
+  var STYLE_CDN = 'https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/';
+  var STYLE_SAMPLES = {
+    ultra: STYLE_CDN + 'hf_20260719_155707_9f739878-53e4-43b4-9d0f-3831fde31ba0_min.webp',
+    sinematik: STYLE_CDN + 'hf_20260719_155708_fe9a6803-575b-4cbc-b629-66b5af8a6cf6_min.webp',
+    fotogercek: STYLE_CDN + 'hf_20260719_155710_f9fbb21b-fb79-4664-a3b1-108093ac4ea0_min.webp',
+    belgesel: STYLE_CDN + 'hf_20260719_155711_ef7a28a8-14fa-4935-ac87-695c722f7342_min.webp',
+    render3d: STYLE_CDN + 'hf_20260719_155712_05aaba1b-aa33-4ff3-827e-146764f5d259_min.webp',
+    illus: STYLE_CDN + 'hf_20260719_155714_2a1d731f-0c2d-47e7-b638-e447d66457d0_min.webp',
+    anime: STYLE_CDN + 'hf_20260719_155716_c3c2b2a2-2dfb-408f-89e0-bde5d7a700a6_min.webp',
+    pixar: STYLE_CDN + 'hf_20260719_155717_34f06797-6396-4a0f-aa8b-da6a7af9facb_min.webp',
+    minimal: STYLE_CDN + 'hf_20260719_155718_88b7f435-9944-4c35-b894-d06d408f34ba_min.webp'
+  };
   var MODES = [
     { name: 'Shorts / TikTok', desc: '15 sn · Dikey', sec: 15, aspect: '9:16', tone: 'enerjik' },
     { name: 'Kısa Video', desc: '60 sn · Dikey', sec: 60, aspect: '9:16', tone: 'enerjik' },
@@ -548,7 +562,12 @@
         '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>' +
         '<div class="t-name">' + esc(v.name) + prem + chk + '</div><div class="t-desc">' + esc(v.desc) + '</div></div>';
     }).join('');
-    var styleTiles = STYLES.map(function (st) { return '<div class="tile ' + (S.style === st.id ? 'on' : '') + '" data-act="style" data-v="' + st.id + '"><div class="t-name">' + esc(st.name) + '</div><div class="t-desc">' + esc(st.desc) + '</div></div>'; }).join('');
+    var styleTiles = STYLES.map(function (st) {
+      var sm = STYLE_SAMPLES[st.id];
+      return '<div class="tile' + (sm ? ' stile' : '') + (S.style === st.id ? ' on' : '') + '" data-act="style" data-v="' + st.id + '">' +
+        (sm ? '<span class="t-thumb" style="background-image:url(\'' + sm + '\')"></span>' : '') +
+        '<span class="t-txt"><span class="t-name">' + esc(st.name) + '</span><span class="t-desc">' + esc(st.desc) + '</span></span></div>';
+    }).join('');
     var aspects = [{ id: '16:9', w: 36, h: 21, l: 'Yatay' }, { id: '9:16', w: 21, h: 36, l: 'Dikey' }, { id: '1:1', w: 28, h: 28, l: 'Kare' }]
       .map(function (a) { return '<div class="asp ' + (S.aspect === a.id ? 'on' : '') + '" data-act="aspect" data-v="' + a.id + '"><span class="fr" style="width:' + a.w + 'px;height:' + a.h + 'px"></span><span class="l">' + a.l + ' ' + a.id + '</span></div>'; }).join('');
     var modes = MODES.map(function (m, i) { return '<button class="mode" data-act="mode" data-v="' + i + '"><div class="mn">' + esc(m.name) + '</div><div class="md">' + esc(m.desc) + '</div></button>'; }).join('');
@@ -574,10 +593,15 @@
     var sec = S.durationSec, scenes = sceneFor(sec), cost = costGen(sec);
     var dim = S.aspect === '9:16' ? [92, 164] : S.aspect === '1:1' ? [130, 130] : [176, 99];
     var title = S.idea.trim() ? esc(S.idea.trim().slice(0, 60)) : 'Dosya başlığın burada';
+    var sample = STYLE_SAMPLES[S.style];
     return '<div class="preview"><div class="pv-card">' +
-      '<div class="pv-canvas"><div class="pv-frame" style="width:' + dim[0] + 'px;height:' + dim[1] + 'px"><img class="pv-mark" src="/storia/assets/mark.svg" alt=""></div></div>' +
+      '<div class="pv-canvas"><div class="pv-frame" style="width:' + (sample ? Math.round(dim[0] * 1.5) : dim[0]) + 'px;height:' + (sample ? Math.round(dim[1] * 1.5) : dim[1]) + 'px">' +
+        (sample
+          ? '<img class="pv-sample" src="' + sample + '" alt="' + esc(styleObj().name) + ' stil örneği" onerror="this.remove()">'
+          : '<img class="pv-mark" src="/storia/assets/mark.svg" alt="">') +
+      '</div></div>' +
       '<div class="pv-body">' +
-        '<div class="pv-eyebrow">Önizleme · ' + S.aspect + '</div>' +
+        '<div class="pv-eyebrow">Önizleme · ' + S.aspect + (sample ? ' · gerçek stil örneği' : '') + '</div>' +
         '<div class="pv-title">' + title + '</div>' +
         '<div class="pv-chips"><span>' + (S.lang === 'en' ? 'English' : 'Türkçe') + '</span><span>' + esc(toneName()) + '</span><span>' + esc(VOICES[S.voiceIdx].name) + '</span><span>' + esc(styleObj().name) + '</span></div>' +
         '<div class="pv-stats">' +
@@ -587,6 +611,7 @@
         '</div>' +
       '</div>' +
       '<div class="pv-cta"><button class="btn btn-gold btn-lg" data-act="generate">Dosyayı üret →</button>' +
+      '<button class="btn btn-quiet btn-sm" data-act="generateAuto" style="margin-top:10px" title="Dosya + tüm sahne görselleri + seslendirme, tek tuşla sırayla üretilir">⚡ Tek tuşla üret — görseller + ses dahil</button>' +
       '<span class="pv-back" data-act="back">← Fikri düzenle</span></div>' +
     '</div></div>';
   }
@@ -676,6 +701,11 @@
       '<div class="doc-meta">' + meta + '</div>' +
       '<div class="doc-acts">' +
         '<div class="da-group">' +
+          (function () {
+            if (S.autopilot) return '<button class="btn btn-gold btn-sm" disabled>⏳ Otomatik pilot çalışıyor…</button>';
+            var ac = autoCost();
+            return (ac.imgs || ac.ttsC) ? '<button class="btn btn-gold btn-sm" data-act="autopilot" title="Görselleri ve seslendirmeyi tek tuşla sırayla üretir">⚡ Tek tuşla tamamla' + (REAL ? ' · ~' + ac.total + 'kr' : '') + '</button>' : '';
+          })() +
           '<button class="btn btn-gold btn-sm" data-act="reviseChat">✎ Konuşarak düzenle</button>' +
           '<button class="btn btn-sm btn-soft" data-act="dubOpen">🌍 Dublaj</button>' +
         '</div>' +
@@ -1187,6 +1217,8 @@
       case 'template': applyTemplate(parseInt(v, 10)); break;
       case 'lang': S.lang = v; render(); break;
       case 'generate': startGenerate(false); break;
+      case 'generateAuto': S._autoAfter = true; startGenerate(false); break;
+      case 'autopilot': autoPilot(); break;
       case 'regen': startGenerate(true); break;
       case 'reviseChat': openChat(); break;
       case 'dubOpen': S.dub.open = !S.dub.open; render(); break;
@@ -1260,7 +1292,7 @@
 
   function applyMode(i) { var m = MODES[i]; if (!m) return; S.durationSec = m.sec; S.aspect = m.aspect; S.tone = m.tone; render(); toast(m.name + ' seçildi'); }
   function applyTemplate(i) { var t = TEMPLATES[i]; if (!t) return; S.template = i; S.tone = t.tone; S.style = t.style; S.durationSec = t.sec; S.aspect = t.aspect; render(); toast(t.name + ' şablonu · tarz ayarlandı'); }
-  function startNew() { S.result = null; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.idea = ''; S.custom = ''; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
+  function startNew() { S.result = null; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.idea = ''; S.custom = ''; S.autopilot = false; S._autoAfter = false; S._apStop = true; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
 
   // ── Generation ───────────────────────────────────────────────────────
   function startGenerate(isRegen) {
@@ -1291,6 +1323,8 @@
     S.chat._revised = false;  // yeni dosya için düzenleme karşılaması yeniden gösterilsin
     saveHist();
     S.step = 4; render();
+    // Tek tuşla üretim seçildiyse: dosya hazır olur olmaz kalan her şeyi sırayla üret
+    if (S._autoAfter) { S._autoAfter = false; setTimeout(autoPilot, 700); }
   }
   // Üretilen medyayı (görsel/kapak/video/ses — hepsi kalıcı depo URL'leri) açık
   // olan geçmiş kaydına yaz ki dosya yeniden açıldığında kaybolmasın (kredi boşa gitmesin).
@@ -1306,6 +1340,41 @@
     saveHist();
   }
   function demoGenerate() { setTimeout(function () { finishGen(synthDemo(), true); }, 5200); }
+
+  // ── Otomatik pilot — TEK TUŞLA: görseller → seslendirme → yayın paketi.
+  // Stepper gözle görülür şekilde adım adım ilerler; her aşama bitince sıradakine geçer.
+  function autoCost() {
+    var r = S.result || {}; var prompts = r.gorsel_promptlar || [];
+    var miss = 0; for (var k = 0; k < prompts.length; k++) if (!S.images[k]) miss++;
+    var imgC = miss * imgCr();
+    var txt = narrationText();
+    var ttsC = (S.audio || !txt) ? 0 : Math.max(10, Math.ceil(Math.min(txt.length, Math.max(240, S.durationSec * 22)) / 1000) * 5) * (VOICES[S.voiceIdx].x || 2);
+    return { imgs: miss, imgC: imgC, ttsC: ttsC, total: imgC + ttsC };
+  }
+  function autoPilot() {
+    if (!S.result || S.result.gecersiz) { toast('Önce dosyayı üret'); return; }
+    if (S.autopilot) { toast('Otomatik pilot zaten çalışıyor…'); return; }
+    var c = autoCost();
+    if (!c.imgs && S.audio) { S.tab = 'youtube'; render(); toast('Her şey zaten hazır ✦'); return; }
+    if (REAL && !S.user) { openAuth(); return; }
+    S.autopilot = true; S._apStop = false;
+    toast('⚡ Otomatik pilot: ' + (c.imgs ? c.imgs + ' görsel' : '') + (c.imgs && c.ttsC ? ' + ' : '') + (c.ttsC ? 'seslendirme' : '') + ' üretiliyor…');
+    S.tab = 'gorsel'; render();
+    genAll(function () {
+      if (!S.autopilot) return;
+      S.tab = 'storyboard'; render();          // film şeridi tamamlandı olarak görünsün
+      setTimeout(function () {
+        if (!S.autopilot) return;
+        S.tab = 'seslendirme'; render();
+        doTts(function () {
+          if (!S.autopilot) return;
+          S.autopilot = false;
+          S.tab = 'youtube'; render();
+          toast('✦ Yayın paketi hazır — başlık, açıklama ve kapak seni bekliyor');
+        });
+      }, 900);
+    });
+  }
 
   function buildPrompt() {
     var scenes = sceneFor(S.durationSec), st = styleObj(), min = Math.min(scenes, 8);
@@ -1364,7 +1433,7 @@
       finishGen(obj, d.charged, d.credits);
     }).catch(function () { genError('Bağlantı hatası.'); });
   }
-  function genError(msg) { _timers.forEach(clearTimeout); S.step = 2; render(); toast(msg || 'Üretim başarısız — tekrar dene'); }
+  function genError(msg) { _timers.forEach(clearTimeout); S._autoAfter = false; S.step = 2; render(); toast(msg || 'Üretim başarısız — tekrar dene'); }
   function safeParse(t) { try { return JSON.parse(t); } catch (e) { return null; } }
 
   function openHist(i) {
@@ -1957,17 +2026,18 @@
       else toast((d && d.error) || 'Görsel düzenlenemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
-  function genAll() {
+  function genAll(cb) {
     var r = S.result || {}; var prompts = r.gorsel_promptlar || [];
-    if (!prompts.length) return;
+    if (!prompts.length) { if (cb) cb(); return; }
     var idxs = []; for (var k = 0; k < prompts.length; k++) if (!S.images[k]) idxs.push(k);
-    if (!idxs.length) { toast('Zaten hepsi üretildi'); return; }
-    if (!REAL) { idxs.forEach(function (i) { S.images[i] = demoImage(i, S.aspect); }); persistMedia(); refreshTab(); toast(idxs.length + ' görsel üretildi (demo)'); return; }
+    if (!idxs.length) { if (cb) cb(); else toast('Zaten hepsi üretildi'); return; }
+    if (!REAL) { idxs.forEach(function (i) { S.images[i] = demoImage(i, S.aspect); }); persistMedia(); refreshTab(); toast(idxs.length + ' görsel üretildi (demo)'); if (cb) setTimeout(cb, 700); return; }
     if (!S.user) { openAuth(); return; }
     toast(idxs.length + ' görsel sırayla üretiliyor…');
     var n = 0;
     (function next() {
-      if (n >= idxs.length) { toast('Tüm görseller hazır'); return; }
+      if (S._apStop) { S._apStop = false; return; }
+      if (n >= idxs.length) { toast('Tüm görseller hazır'); if (cb) cb(); return; }
       var idx = idxs[n++]; var full = prompts[idx] + ' — ' + styleObj().en;
       callFn({ action: 'image', prompt: full, size: S.aspect, imgIndex: idx, quality: S.imgQuality }).then(function (d) {
         if (d && d.ok && d.url) { S.images[idx] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; persistMedia(); refreshTab(); chrome(); }
@@ -2039,23 +2109,25 @@
       if (d && d.ok && d.url) { try { _prevAudio = new Audio(d.url); _prevAudio.play(); } catch (e) {} } else toast('Önizleme alınamadı');
     }).catch(function () { if (tok === _prevToken) toast('Bağlantı hatası'); });
   }
-  function doTts() {
-    var text = narrationText(); if (!text) { toast('Seslendirilecek metin yok'); return; }
+  function doTts(cb) {
+    var text = narrationText(); if (!text) { toast('Seslendirilecek metin yok'); if (cb) cb(); return; }
     // süre-bazlı güvenlik sınırı: AI metni aşırı uzatırsa seslendirme (ve ElevenLabs
     // maliyeti) süreyle orantılı kalsın. ~22 karakter/sn cömert bir tavan; sadece
     // ciddi taşmayı, mümkünse cümle sonunda budar.
     var capChars = Math.max(240, Math.round(S.durationSec * 22));
     if (text.length > capChars) { var cut = text.lastIndexOf('. ', capChars); text = (cut > capChars * 0.6) ? text.slice(0, cut + 1) : text.slice(0, capChars); }
     if (!REAL) {
-      if (!speak(text.slice(0, 600), S.ttsRate)) { toast('Tarayıcı seslendirmeyi desteklemiyor'); return; }
-      toast('Demo seslendirme (gerçek modda indirilebilir mp3)'); return;
+      if (!speak(text.slice(0, 600), S.ttsRate)) { toast('Tarayıcı seslendirmeyi desteklemiyor'); } else toast('Demo seslendirme (gerçek modda indirilebilir mp3)');
+      if (cb) setTimeout(cb, 900);
+      return;
     }
     if (!S.user) { openAuth(); return; }
     var slot = document.getElementById('audioSlot'); if (slot) slot.innerHTML = '<p style="color:var(--on-ink-muted);font-size:13px;margin-top:12px">Ses üretiliyor…</p>';
     callFn({ action: 'tts', text: text, engine: 'eleven', voiceId: VOICES[S.voiceIdx].ev, voice: VOICES[S.voiceIdx].ov, speed: S.ttsRate }).then(function (d) {
       if (d && d.ok && d.url) { S.audio = d.url; if (typeof d.credits === 'number') S.credits = d.credits; persistMedia(); setEngineStatus(d); if (slot) slot.innerHTML = '<audio controls src="' + esc(d.url) + '"></audio>'; chrome(); ttsToast(d); }
       else { if (slot) slot.innerHTML = ''; toast((d && d.error) || 'Ses üretilemedi'); }
-    }).catch(function () { if (slot) slot.innerHTML = ''; toast('Bağlantı hatası'); });
+      if (cb) cb();
+    }).catch(function () { if (slot) slot.innerHTML = ''; toast('Bağlantı hatası'); if (cb) cb(); });
   }
 
   // ── Demo synth ───────────────────────────────────────────────────────
