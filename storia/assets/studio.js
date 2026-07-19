@@ -34,6 +34,9 @@
     avPrompt: '', avStyle: 'ultra', avAspect: '1:1', avOut: null,
     // ses stüdyo
     ssText: '', ssVoice: 0, ssOut: null,
+    // stüdyolarda üretilen medyanın kalıcı listesi (Kütüphane'de görünür)
+    media: [],
+    libFilter: 'all',
     // açık olan geçmiş kaydı (üretilen medya buraya kalıcı yazılır)
     _cur: null
   };
@@ -511,7 +514,7 @@
     var chips = shuffledIdeas().slice(_ideaIdx, _ideaIdx + 5).concat(shuffledIdeas().slice(0, 5)).slice(0, 5).map(function (t) { return '<button class="chip" data-act="useIdea" data-v="' + esc(t) + '"><span class="dot"></span>' + esc(t) + '</button>'; }).join('');
     return '<div class="composer">' +
       '<span class="eyebrow">Yeni dosya</span>' +
-      '<h1 class="display">Ne anlatmak<br>istiyorsun?</h1>' +
+      '<h1 class="display">Ne anlatmak istiyorsun?</h1>' +
       '<p class="sub">Bir cümle yeter. Gerisini Storia stüdyosu kurar.</p>' +
       '<div class="compose-box">' +
         '<textarea id="ideaInput" placeholder="Örn: Okyanusun en derin noktasında ne var?" rows="2">' + esc(S.idea) + '</textarea>' +
@@ -828,12 +831,14 @@
       var yt = r.youtube || {};
       var tags = (yt.etiketler || []).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('');
       return '<div class="panel"><button class="btn btn-quiet btn-sm copybtn" data-act="copyYt">Kopyala</button><h3>Başlık</h3><div class="panel-txt">' + esc(yt.baslik || r.baslik || '') + '</div></div>' +
+        hookMeterHtml(yt.baslik || r.baslik || '', 'Başlık hook gücü') +
         '<div class="panel"><h3>Açıklama</h3><div class="panel-txt">' + esc(yt.aciklama || '') + '</div>' + (tags ? '<div class="taglist">' + tags + '</div>' : '') + '</div>';
     }
     if (S.tab === 'instagram') {
       var ig = r.instagram || {};
       var htags = (ig.hashtagler || []).map(function (t) { return '<span>' + esc(t.charAt(0) === '#' ? t : '#' + t) + '</span>'; }).join('');
-      return '<div class="panel"><button class="btn btn-quiet btn-sm copybtn" data-act="copyIg">Kopyala</button><h3>Reels / Instagram metni</h3><div class="panel-txt">' + esc(ig.aciklama || '') + '</div>' + (htags ? '<div class="taglist">' + htags + '</div>' : '') + '</div>';
+      return '<div class="panel"><button class="btn btn-quiet btn-sm copybtn" data-act="copyIg">Kopyala</button><h3>Reels / Instagram metni</h3><div class="panel-txt">' + esc(ig.aciklama || '') + '</div>' + (htags ? '<div class="taglist">' + htags + '</div>' : '') + '</div>' +
+        hookMeterHtml(String(ig.aciklama || '').split('\n')[0], 'İlk satır hook gücü');
     }
     if (S.tab === 'kapak') {
       var kp = r.kapak || [];
@@ -848,6 +853,29 @@
         (r.uretim_notu ? '<div class="panel" style="margin-top:18px"><h3>Yapım notu</h3><div class="panel-txt">' + esc(r.uretim_notu) + '</div></div>' : '');
     }
     return '';
+  }
+  // Hook gücü — başlık/ilk satır için hafif sezgisel skor (viral pratiklerine göre)
+  function hookScore(t) {
+    t = String(t || '').trim();
+    if (!t) return { score: 0, tips: ['Önce bir başlık üret'] };
+    var s = 40, tips = [];
+    if (t.length >= 20 && t.length <= 60) s += 15;
+    else tips.push(t.length > 60 ? 'Başlığı ~60 karakterin altına indir — kesilmesin' : 'Biraz uzat: merak uyandıran bir vaat ekle');
+    if (/\d/.test(t)) s += 12; else tips.push('Bir sayı ekle (ör. "3 sır", "5 hata") — tıklanmayı artırır');
+    if (/[?!]/.test(t)) s += 8;
+    if (/(nasıl|neden|sır|gerç|asla|kimse|bilmediğ|son |ilk |tek |gizli|değiştir|how|why|secret|truth|never|nobody|hidden)/i.test(t)) s += 15;
+    else tips.push('Merak kelimesi dene: "sır", "gerçek", "kimse", "neden"…');
+    if (/(sen|siz\b|you)/i.test(t)) s += 5;
+    if (s > 98) s = 98;
+    if (!tips.length) tips.push('Güçlü görünüyor — "Konuşarak düzenle" ile bir varyant daha deneyip A/B yapabilirsin');
+    return { score: s, tips: tips.slice(0, 2) };
+  }
+  function hookMeterHtml(txt, label) {
+    var hs = hookScore(txt);
+    var col = hs.score >= 75 ? 'var(--champ-deep)' : hs.score >= 55 ? '#b48a3c' : '#c26a5a';
+    return '<div class="panel"><h3>' + esc(label || 'Hook gücü') + '</h3>' +
+      '<div class="hook-box"><div class="hook-bar"><i style="width:' + hs.score + '%"></i></div><b style="color:' + col + '">' + hs.score + '/100</b></div>' +
+      '<ul class="hook-tips">' + hs.tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>';
   }
   function waveBars() { var h = ''; for (var i = 0; i < 48; i++) { var hh = 20 + Math.round(Math.abs(Math.sin(i * 0.7)) * 78); h += '<i style="height:' + hh + '%"></i>'; } return h; }
   function emptyInline() { return '<div class="empty"><h3>İçerik yok</h3><p>Bu sekme için çıktı bulunamadı.</p></div>'; }
@@ -921,7 +949,16 @@
         '<div class="opt-group"><div class="opt-title">Görsel motoru</div>' + imgQualHtml() + '</div>' +
         '<button class="btn ' + (S.vsImg ? 'btn-quiet' : 'btn-gold') + ' btn-lg" data-act="vsGenImg" style="width:100%"' + (S.vsBusy ? ' disabled' : '') + '>✦ ' + (S.vsImg ? 'Görseli yeniden üret' : 'Sahne görselini üret') + ' · ' + imgCr() + ' kredi</button>' +
         step2 +
-      '</div><div><div class="pv-card" style="padding:16px">' + right + '</div></div></div></div>';
+      '</div><div><div class="pv-card" style="padding:16px">' + right + '</div>' + vsRecentHtml() + '</div></div></div>';
+  }
+  // Son üretilen videolar — stüdyoda kaybolmaz, hızlı erişim şeridi
+  function vsRecentHtml() {
+    var vids = collectMedia().filter(function (m) { return m.t === 'vid' && m.url !== S.vsOut; }).slice(0, 4);
+    if (!vids.length) return '';
+    return '<div class="vs-recent"><div class="opt-title" style="margin-top:18px">Son videoların <button class="btn btn-quiet btn-sm" data-act="goLibrary" style="float:right">Kütüphane →</button></div>' +
+      '<div class="vs-recent-grid">' + vids.map(function (m) {
+        return '<div class="vsr-card"><video src="' + esc(m.url) + '" controls playsinline preload="metadata"></video><span class="vsr-t">' + esc(m.title) + '</span></div>';
+      }).join('') + '</div></div>';
   }
 
   // ── Avatar stüdyo (karakter/portre üretimi) ──────────────────────────
@@ -953,7 +990,7 @@
     var full = S.vsPrompt + ' — ' + styleObj(S.vsStyle).en;
     callFn({ action: 'image', prompt: full, size: S.vsAspect, imgIndex: 0, quality: S.imgQuality }).then(function (d) {
       S.vsBusy = false;
-      if (d && d.ok && d.url) { S.vsImg = d.url; S.vsOut = null; S.vsJob = null; if (typeof d.credits === 'number') S.credits = d.credits; chrome(); render(); toast('Sahne hazır — şimdi videoya çevir'); }
+      if (d && d.ok && d.url) { S.vsImg = d.url; S.vsOut = null; S.vsJob = null; if (typeof d.credits === 'number') S.credits = d.credits; addMedia('img', d.url, 'Video stüdyo · sahne · ' + S.vsPrompt.slice(0, 50)); chrome(); render(); toast('Sahne hazır — şimdi videoya çevir'); }
       else { render(); toast((d && d.error) || 'Görsel üretilemedi'); }
     }).catch(function () { S.vsBusy = false; render(); toast('Bağlantı hatası'); });
   }
@@ -975,7 +1012,7 @@
     if (tries > 60) { S.vsJob = null; render(); toast('Video zaman aşımı — tekrar dene'); return; }
     setTimeout(function () {
       callFn({ action: 'video_status', videoJob: job }).then(function (d) {
-        if (d && d.ok && d.done && d.url) { S.vsOut = d.url; S.vsJob = null; render(); toast('Video hazır ✦'); }
+        if (d && d.ok && d.done && d.url) { S.vsOut = d.url; S.vsJob = null; addMedia('vid', d.url, 'Video stüdyo · ' + S.vsPrompt.slice(0, 60)); render(); toast('Video hazır ✦ Kütüphanene eklendi'); }
         else if (d && d.ok && !d.done) { pollVs(job, tries + 1); }
         else { S.vsJob = null; render(); toast((d && d.error) || 'Video üretilemedi'); }
       }).catch(function () { pollVs(job, tries + 1); });
@@ -990,7 +1027,7 @@
     toast('Avatar üretiliyor…');
     var full = 'Character portrait, consistent identity, single subject, ' + S.avPrompt + ' — ' + styleObj(S.avStyle).en + ', clean flattering lighting, looking toward camera';
     callFn({ action: 'image', prompt: full, size: S.avAspect, imgIndex: 0, quality: S.imgQuality }).then(function (d) {
-      if (d && d.ok && d.url) { S.avOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; chrome(); render(); toast('Avatar hazır'); }
+      if (d && d.ok && d.url) { S.avOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; addMedia('img', d.url, 'Avatar · ' + S.avPrompt.slice(0, 60)); chrome(); render(); toast('Avatar hazır ✦ Kütüphanene eklendi'); }
       else toast((d && d.error) || 'Avatar üretilemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
@@ -1030,24 +1067,59 @@
     var v = VOICES[S.ssVoice], slot = document.getElementById('ssOut');
     if (slot) slot.innerHTML = '<p style="color:var(--muted);font-size:13px">Ses üretiliyor…</p>';
     callFn({ action: 'tts', text: text, engine: 'eleven', voiceId: v.ev, voice: v.ov, speed: 1 }).then(function (d) {
-      if (d && d.ok && d.url) { S.ssOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; setEngineStatus(d); render(); chrome(); ttsToast(d); }
+      if (d && d.ok && d.url) { S.ssOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; addMedia('aud', d.url, 'Ses stüdyo · ' + text.slice(0, 60)); setEngineStatus(d); render(); chrome(); ttsToast(d); }
       else { if (slot) slot.innerHTML = ''; toast((d && d.error) || 'Ses üretilemedi'); }
     }).catch(function () { toast('Bağlantı hatası'); });
   }
   // ── Library / History ────────────────────────────────────────────────
   function renderLibrary() {
-    if (!S.history.length) return '<div class="empty"><div class="e-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 5h10v14H4zM14 7h6v12h-6"/></svg></div><h3>Kütüphanen boş</h3><p>Ürettiğin dosyalar burada toplanır. İlk dosyanı oluşturmaya ne dersin?</p><button class="btn btn-gold" data-act="goNew">＋ Yeni dosya</button></div>';
-    return renderHistory();
+    var all = collectMedia();
+    if (!all.length) return '<div class="empty"><div class="e-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 5h10v14H4zM14 7h6v12h-6"/></svg></div><h3>Kütüphanen boş</h3><p>Ürettiğin her görsel, video ve ses otomatik olarak burada toplanır — hiçbir şey kaybolmaz.</p><button class="btn btn-gold" data-act="goNew">＋ Yeni dosya</button></div>';
+    var vids = all.filter(function (m) { return m.t === 'vid'; });
+    var imgs = all.filter(function (m) { return m.t === 'img'; });
+    var auds = all.filter(function (m) { return m.t === 'aud'; });
+    var f = S.libFilter;
+    var seg = [['all', 'Tümü · ' + all.length], ['vid', '🎬 Videolar · ' + vids.length], ['img', '🖼 Görseller · ' + imgs.length], ['aud', '🔊 Sesler · ' + auds.length]]
+      .map(function (o) { return '<button class="' + (f === o[0] ? 'on' : '') + '" data-act="libFilter" data-v="' + o[0] + '">' + o[1] + '</button>'; }).join('');
+    function vidCard(m) {
+      return '<div class="gcard"><div class="gimg" style="aspect-ratio:16/10;background:#000"><video src="' + esc(m.url) + '" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:contain"></video></div>' +
+        '<div class="gbody"><div class="gno">🎬 ' + esc(m.title || 'Video') + '</div><div class="gacts"><button class="btn btn-quiet btn-sm" data-act="dl" data-v="' + esc(m.url) + '">↓ İndir</button></div></div></div>';
+    }
+    function imgCard(m) {
+      return '<div class="gcard"><div class="gimg" style="aspect-ratio:16/10"><img class="zoomable" src="' + esc(m.url) + '" data-act="zoom" data-v="' + esc(m.url) + '" alt="" loading="lazy"></div>' +
+        '<div class="gbody"><div class="gno">' + esc(m.title || 'Görsel') + '</div><div class="gacts"><button class="btn btn-quiet btn-sm" data-act="dl" data-v="' + esc(m.url) + '">↓ İndir</button></div></div></div>';
+    }
+    function audRow(m) {
+      return '<div class="pv-card" style="padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px"><span style="font-size:13.5px;color:var(--ink-2);flex:1;min-width:160px">🔊 ' + esc(m.title || 'Seslendirme') + '</span><audio controls src="' + esc(m.url) + '" style="height:36px"></audio><button class="btn btn-quiet btn-sm" data-act="dl" data-v="' + esc(m.url) + '">↓</button></div>';
+    }
+    var body = '';
+    if ((f === 'all' || f === 'vid') && vids.length) body += '<h3 class="lib-h">Videolar</h3><div class="gallery">' + vids.map(vidCard).join('') + '</div>';
+    if ((f === 'all' || f === 'img') && imgs.length) body += '<h3 class="lib-h">Görseller</h3><div class="gallery">' + imgs.map(imgCard).join('') + '</div>';
+    if ((f === 'all' || f === 'aud') && auds.length) body += '<h3 class="lib-h">Sesler</h3>' + auds.map(audRow).join('');
+    if (!body) body = '<div class="empty"><h3>Bu türde üretim yok</h3><p>Filtreyi değiştir ya da yeni bir üretim yap.</p></div>';
+    return '<div class="room-head" style="max-width:900px"><h1>Kütüphane</h1><p>Ürettiğin her şey — görsel, video, ses — burada kalıcı olarak toplanır. Dosya geçmişinden ve stüdyolardan otomatik gelir.</p></div>' +
+      '<div class="tab-tools" style="max-width:900px;margin:0 auto 20px"><div class="cap-seg">' + seg + '</div></div>' +
+      '<div style="max-width:900px;margin:0 auto">' + body + '</div>';
   }
   function renderHistory() {
     if (!S.history.length) return '<div class="empty"><div class="e-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg></div><h3>Henüz geçmiş yok</h3><p>Ürettiğin her dosya burada kalıcı olarak toplanır.</p><button class="btn btn-gold" data-act="goNew">＋ Yeni dosya</button></div>';
     var items = S.history.map(function (h, i) {
       var when = h.ts ? new Date(h.ts).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) : '';
-      return '<div class="hist-item"><div class="hi-th" data-act="openHist" data-v="' + i + '" style="background:' + GRADS[i % GRADS.length] + '"></div>' +
-        '<div class="hi-body" data-act="openHist" data-v="' + i + '"><div class="hi-title">' + esc((h.result && h.result.baslik) || h.idea || 'Dosya') + '</div><div class="hi-meta">' + esc(h.meta) + (when ? ' · ' + when : '') + '</div></div>' +
+      var im = h.images || {}, vd = h.videos || {}, ik = Object.keys(im), vk = Object.keys(vd);
+      var first = ik.length ? im[ik[0]] : null;
+      var th = first
+        ? '<div class="hi-th" data-act="openHist" data-v="' + i + '" style="background:url(' + esc(first) + ') center/cover"></div>'
+        : '<div class="hi-th" data-act="openHist" data-v="' + i + '" style="background:' + GRADS[i % GRADS.length] + '"></div>';
+      var badges = [];
+      if (vk.length) badges.push('🎬 ' + vk.length);
+      if (ik.length) badges.push('🖼 ' + ik.length);
+      if (h.audio) badges.push('🔊 ses');
+      var badgeHtml = badges.length ? '<span class="hi-badges">' + badges.join(' · ') + '</span>' : '';
+      return '<div class="hist-item">' + th +
+        '<div class="hi-body" data-act="openHist" data-v="' + i + '"><div class="hi-title">' + esc((h.result && h.result.baslik) || h.idea || 'Dosya') + '</div><div class="hi-meta">' + esc(h.meta) + (when ? ' · ' + when : '') + ' ' + badgeHtml + '</div></div>' +
         '<button class="hi-del" data-act="delHist" data-v="' + i + '" title="Sil" aria-label="Sil">✕</button><div class="hi-go" data-act="openHist" data-v="' + i + '">→</div></div>';
     }).join('');
-    return '<div class="room-head" style="max-width:760px"><h1>Geçmiş</h1><p>Ürettiğin dosyalar bu cihazda kalıcı olarak saklanır.</p></div><div class="hist">' + items + '</div>';
+    return '<div class="room-head" style="max-width:760px"><h1>Geçmiş</h1><p>Ürettiğin dosyalar bu cihazda kalıcı olarak saklanır — görsel ve videolar dosyanın içinde seni bekler.</p></div><div class="hist">' + items + '</div>';
   }
 
   // ── Dynamic bindings ─────────────────────────────────────────────────
@@ -1121,7 +1193,9 @@
       case 'dubClose': S.dub.open = false; render(); break;
       case 'dubGo': doDub(v); break;
       case 'restart': case 'goNew': startNew(); break;
+      case 'goLibrary': S.view = 'library'; render(); break;
       case 'tab': S.tab = v; render(); break;
+      case 'libFilter': S.libFilter = v; render(); break;
       case 'prodStep':
         if (v === 'fikir') { S.step = 1; render(); break; }
         var _ps = null; for (var _pi = 0; _pi < PROD_STEPS.length; _pi++) if (PROD_STEPS[_pi].id === v) _ps = PROD_STEPS[_pi];
@@ -1224,6 +1298,11 @@
     if (!S._cur) return;
     S._cur.images = S.images; S._cur.covers = S.covers; S._cur.videos = S.videos;
     S._cur.audio = (S.audio && String(S.audio).indexOf('http') === 0) ? S.audio : null;
+    // Render'ı süren video işleri de kaydedilir — sayfa kapansa bile dosya
+    // açıldığında kaldığı yerden takip edilir (kredi boşa gitmez).
+    var jobs = {};
+    for (var k in S.videoJobs) if (S.videoJobs[k] && S.videoJobs[k].job) jobs[k] = S.videoJobs[k].job;
+    S._cur.jobs = jobs;
     saveHist();
   }
   function demoGenerate() { setTimeout(function () { finishGen(synthDemo(), true); }, 5200); }
@@ -1288,7 +1367,20 @@
   function genError(msg) { _timers.forEach(clearTimeout); S.step = 2; render(); toast(msg || 'Üretim başarısız — tekrar dene'); }
   function safeParse(t) { try { return JSON.parse(t); } catch (e) { return null; } }
 
-  function openHist(i) { var h = S.history[i]; if (!h) return; S.result = h.result; S.images = h.images || {}; S.covers = h.covers || {}; S.videos = h.videos || {}; S.videoJobs = {}; S.chars = {}; S.audio = h.audio || null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S._cur = h; S.tab = 'senaryo'; S.view = 'new'; S.step = 4; render(); }
+  function openHist(i) {
+    var h = S.history[i]; if (!h) return;
+    S.result = h.result; S.images = h.images || {}; S.covers = h.covers || {}; S.videos = h.videos || {}; S.videoJobs = {}; S.chars = {}; S.audio = h.audio || null; S.aspect = h.aspect; S.style = h.style; S.voiceIdx = h.voiceIdx; S.durationSec = h.durationSec; S.idea = h.idea; S._cur = h; S.tab = 'senaryo'; S.view = 'new'; S.step = 4;
+    // Yarım kalmış video render'larını kaldığı yerden takip et (kredi kaybı olmasın)
+    if (REAL && h.jobs) {
+      for (var k in h.jobs) {
+        if (S.videos[k]) continue;
+        S.videoJobs[k] = { state: 'render', job: h.jobs[k] };
+        pollVideoJob(parseInt(k, 10), h.jobs[k], 0);
+      }
+      if (Object.keys(S.videoJobs).length) toast('Yarım kalan video üretimi devam ediyor…');
+    }
+    render();
+  }
   function delHist(i) { S.history.splice(i, 1); saveHist(); render(); toast('Dosya geçmişten silindi'); }
   // Geçmiş kalıcılığı: tarayıcıda saklanır (yenilemede kaybolmaz). Kullanıcıya
   // göre anahtarlanır ki farklı hesaplar birbirinin geçmişini görmesin.
@@ -1300,12 +1392,44 @@
       // küçüktür; bu yol yalnız data-URI'li nadir durumlarda tetiklenir).
       try {
         localStorage.setItem(histKey(), JSON.stringify(S.history.slice(0, 30).map(function (h) {
-          return { result: h.result, idea: h.idea, meta: h.meta, ts: h.ts, aspect: h.aspect, style: h.style, voiceIdx: h.voiceIdx, durationSec: h.durationSec, images: h.images, covers: h.covers, videos: h.videos };
+          return { result: h.result, idea: h.idea, meta: h.meta, ts: h.ts, aspect: h.aspect, style: h.style, voiceIdx: h.voiceIdx, durationSec: h.durationSec, images: h.images, covers: h.covers, videos: h.videos, jobs: h.jobs };
         })));
       } catch (_e) {}
     }
   }
-  function loadHist() { try { var h = JSON.parse(localStorage.getItem(histKey()) || '[]'); S.history = Array.isArray(h) ? h : []; } catch (e) { S.history = []; } }
+  function loadHist() { try { var h = JSON.parse(localStorage.getItem(histKey()) || '[]'); S.history = Array.isArray(h) ? h : []; } catch (e) { S.history = []; } loadMedia(); }
+  // ── Üretilen medya deposu — stüdyo çıktıları da kaybolmaz, Kütüphane'de toplanır
+  function mediaKey() { return 'storia_media_' + ((S.user && S.user.id) ? S.user.id.slice(0, 12) : 'guest'); }
+  function loadMedia() { try { var m = JSON.parse(localStorage.getItem(mediaKey()) || '[]'); S.media = Array.isArray(m) ? m : []; } catch (e) { S.media = []; } }
+  function saveMediaList() {
+    try { localStorage.setItem(mediaKey(), JSON.stringify(S.media.slice(0, 200))); }
+    catch (e) {
+      // Kota koruması: data-URI'li ağır kayıtları at, URL'li kayıtları koru
+      try { localStorage.setItem(mediaKey(), JSON.stringify(S.media.slice(0, 200).filter(function (m) { return String(m.url).indexOf('data:') !== 0; }))); } catch (_e) {}
+    }
+  }
+  function addMedia(type, url, title) {
+    if (!url) return;
+    if (String(url).indexOf('data:') === 0 && String(url).length > 300000) return; // dev data-URI localStorage'ı doldurmasın
+    for (var i = 0; i < S.media.length; i++) if (S.media[i].url === url) return;
+    S.media.unshift({ t: type, url: url, title: String(title || '').slice(0, 90), ts: Date.now() });
+    saveMediaList();
+  }
+  // Kütüphane için tüm kaynaklardan medya topla (stüdyolar + dosya geçmişi)
+  function collectMedia() {
+    var seen = {}, out = [];
+    function push(t, url, title, ts) { if (!url || seen[url]) return; seen[url] = 1; out.push({ t: t, url: url, title: title || '', ts: ts || 0 }); }
+    S.media.forEach(function (m) { push(m.t, m.url, m.title, m.ts); });
+    S.history.forEach(function (h) {
+      var ttl = (h.result && h.result.baslik) || h.idea || 'Dosya';
+      Object.keys(h.videos || {}).forEach(function (k) { push('vid', h.videos[k], ttl + ' · Sahne ' + (parseInt(k, 10) + 1), h.ts); });
+      Object.keys(h.images || {}).forEach(function (k) { push('img', h.images[k], ttl + ' · Sahne ' + (parseInt(k, 10) + 1), h.ts); });
+      Object.keys(h.covers || {}).forEach(function (k) { push('img', h.covers[k], ttl + ' · Kapak', h.ts); });
+      if (h.audio) push('aud', h.audio, ttl + ' · Seslendirme', h.ts);
+    });
+    out.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+    return out;
+  }
   // Marka kiti (logo/renk/isim/handle/outro) — cihazda, kullanıcıya göre saklanır
   function brandKey() { return 'storia_brand_' + ((S.user && S.user.id) ? S.user.id.slice(0, 12) : 'guest'); }
   function saveBrand() { try { localStorage.setItem(brandKey(), JSON.stringify(S.brand)); } catch (e) {} }
@@ -1790,7 +1914,7 @@
     callFn({ action: 'video', image: img, prompt: motion, size: S.aspect, vsec: S.vsec, vprovider: S.vengine }).then(function (d) {
       if (!d || !d.ok || !d.videoJob) { delete S.videoJobs[idx]; refreshTab(); toast((d && d.error) || 'Video başlatılamadı'); return; }
       if (typeof d.credits === 'number') S.credits = d.credits; chrome();
-      S.videoJobs[idx] = { state: 'render', job: d.videoJob }; refreshTab();
+      S.videoJobs[idx] = { state: 'render', job: d.videoJob }; persistMedia(); refreshTab();
       pollVideoJob(idx, d.videoJob, 0);
     }).catch(function () { delete S.videoJobs[idx]; refreshTab(); toast('Bağlantı hatası'); });
   }
@@ -1829,7 +1953,7 @@
     toDataUri(src).then(function (du) {
       return callFn({ action: 'edit', image: du, prompt: instr, size: size });
     }).then(function (d) {
-      if (d && d.ok && d.url) { if (studio) S.imgOut = d.url; else { S.images[_editIdx] = d.url; persistMedia(); } if (typeof d.credits === 'number') S.credits = d.credits; if (studio) render(); else refreshTab(); chrome(); toast('Görsel düzenlendi'); }
+      if (d && d.ok && d.url) { if (studio) { S.imgOut = d.url; addMedia('img', d.url, 'Görsel stüdyo · düzenleme'); } else { S.images[_editIdx] = d.url; persistMedia(); } if (typeof d.credits === 'number') S.credits = d.credits; if (studio) render(); else refreshTab(); chrome(); toast('Görsel düzenlendi'); }
       else toast((d && d.error) || 'Görsel düzenlenemedi');
     }).catch(function () { toast('Bağlantı hatası'); });
   }
@@ -1870,7 +1994,7 @@
     toast('Görsel üretiliyor…');
     var out = document.getElementById('imgOut'); if (out) out.innerHTML = '<div class="ph" style="aspect-ratio:1;display:grid;place-items:center;border-radius:var(--r-md);background:var(--paper-2);color:var(--muted)">Üretiliyor…</div>';
     callFn({ action: 'image', prompt: full, size: S.imgAspect, imgIndex: 0, quality: S.imgQuality }).then(function (d) {
-      if (d && d.ok && d.url) { S.imgOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; render(); toast('Görsel üretildi'); }
+      if (d && d.ok && d.url) { S.imgOut = d.url; if (typeof d.credits === 'number') S.credits = d.credits; addMedia('img', d.url, 'Görsel stüdyo · ' + S.imgPrompt.slice(0, 60)); render(); toast('Görsel üretildi ✦ Kütüphanene eklendi'); }
       else { render(); toast((d && d.error) || 'Görsel üretilemedi'); }
     }).catch(function () { render(); toast('Bağlantı hatası'); });
   }
@@ -1995,8 +2119,20 @@
 
   // ── Auth ─────────────────────────────────────────────────────────────
   var authMode = 'in';
-  function openAuth() { if (!REAL) { toast('Demo modu — kurulum sonrası giriş aktifleşir'); return; } document.getElementById('authModal').classList.add('show'); }
-  function closeAuth() { document.getElementById('authModal').classList.remove('show'); }
+  function openAuth() {
+    if (!REAL) { toast('Demo modu — kurulum sonrası giriş aktifleşir'); return; }
+    // Gerçek input tiplerini ancak modal açılınca ver (Safari autofill balonunu önler)
+    var ae = document.getElementById('authEmail'), ap = document.getElementById('authPass');
+    if (ae) { ae.type = 'email'; ae.setAttribute('autocomplete', 'email'); }
+    if (ap) { ap.type = 'password'; ap.setAttribute('autocomplete', 'current-password'); ap.style.webkitTextSecurity = ''; }
+    document.getElementById('authModal').classList.add('show');
+  }
+  function closeAuth() {
+    var ae = document.getElementById('authEmail'), ap = document.getElementById('authPass');
+    if (ae) { ae.type = 'text'; ae.setAttribute('autocomplete', 'off'); }
+    if (ap) { ap.type = 'text'; ap.setAttribute('autocomplete', 'off'); ap.style.webkitTextSecurity = 'disc'; }
+    document.getElementById('authModal').classList.remove('show');
+  }
   function toggleTheme() {
     var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', cur);
