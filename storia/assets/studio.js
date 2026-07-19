@@ -373,15 +373,15 @@
   // Tarz seçerken sağdaki önizlemede ve stil kartlarında görünür.
   var STYLE_CDN = 'https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/';
   var STYLE_SAMPLES = {
-    ultra: STYLE_CDN + 'hf_20260719_155707_9f739878-53e4-43b4-9d0f-3831fde31ba0_min.webp',
-    sinematik: STYLE_CDN + 'hf_20260719_155708_fe9a6803-575b-4cbc-b629-66b5af8a6cf6_min.webp',
-    fotogercek: STYLE_CDN + 'hf_20260719_155710_f9fbb21b-fb79-4664-a3b1-108093ac4ea0_min.webp',
-    belgesel: STYLE_CDN + 'hf_20260719_155711_ef7a28a8-14fa-4935-ac87-695c722f7342_min.webp',
-    render3d: STYLE_CDN + 'hf_20260719_155712_05aaba1b-aa33-4ff3-827e-146764f5d259_min.webp',
-    illus: STYLE_CDN + 'hf_20260719_155714_2a1d731f-0c2d-47e7-b638-e447d66457d0_min.webp',
-    anime: STYLE_CDN + 'hf_20260719_155716_c3c2b2a2-2dfb-408f-89e0-bde5d7a700a6_min.webp',
-    pixar: STYLE_CDN + 'hf_20260719_155717_34f06797-6396-4a0f-aa8b-da6a7af9facb_min.webp',
-    minimal: STYLE_CDN + 'hf_20260719_155718_88b7f435-9944-4c35-b894-d06d408f34ba_min.webp'
+    ultra: STYLE_CDN + 'hf_20260719_160339_0bf0c876-e988-4e21-8c29-3e80a22bef27_min.webp',
+    sinematik: STYLE_CDN + 'hf_20260719_160341_5b50d43e-044a-44ce-875a-0f28ba93b9ff_min.webp',
+    fotogercek: STYLE_CDN + 'hf_20260719_160343_d158776e-4b71-4eb1-8514-35a451c62a6f_min.webp',
+    belgesel: STYLE_CDN + 'hf_20260719_160344_0f5a81fb-7a3f-47b6-89df-d57396423200_min.webp',
+    render3d: STYLE_CDN + 'hf_20260719_160346_d8207667-e6ab-4168-911b-986a68d89fe6_min.webp',
+    illus: STYLE_CDN + 'hf_20260719_160348_0301796c-512b-4758-9698-46ea782a1bcf_min.webp',
+    anime: STYLE_CDN + 'hf_20260719_160349_5a9b1814-c7b1-4e35-bd46-8bb39d415558_min.webp',
+    pixar: STYLE_CDN + 'hf_20260719_160351_fb722063-6671-4874-9039-cf1a57667443_min.webp',
+    minimal: STYLE_CDN + 'hf_20260719_160352_7774d00b-f8dd-49ab-9f7b-d84add0bc964_min.webp'
   };
   var MODES = [
     { name: 'Shorts / TikTok', desc: '15 sn · Dikey', sec: 15, aspect: '9:16', tone: 'enerjik' },
