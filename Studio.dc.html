@@ -415,6 +415,22 @@
     .ta-studio-wrap ::-webkit-scrollbar-thumb:hover { background: rgba(193,154,82,.55); }
     /* Hareket azaltma tercihi olan kullanıcıya saygı */
     @media (prefers-reduced-motion: reduce) { button, a, .ta-card, input, textarea { transition: none !important; } }
+
+    /* ═══ KARANLIK MOD OKUNURLUK — soluk gri metinler koyu zeminde siliniyordu ═══
+       En sık kullanılan üç soluk ton bir kademe aydınlatılır (yalnız karanlıkta;
+       aydınlık tema kendi eşlemesini tema.js'te yapıyor). React style'ı rgb()
+       olarak serileştirdiğinden hex + rgb biçimlerinin ikisi de hedeflenir. */
+    html:not([data-theme="light"]) [style*="color: #a4a9b5"],
+    html:not([data-theme="light"]) [style*="color: rgb(164, 169, 181)"] { color: #c6cbd6 !important; }
+    html:not([data-theme="light"]) [style*="color: #818797"],
+    html:not([data-theme="light"]) [style*="color: rgb(129, 135, 151)"] { color: #a3aabb !important; }
+    html:not([data-theme="light"]) [style*="color: #676d7c"],
+    html:not([data-theme="light"]) [style*="color: rgb(103, 109, 124)"] { color: #8d95a6 !important; }
+    html:not([data-theme="light"]) [style*="color: #7c8393"],
+    html:not([data-theme="light"]) [style*="color: rgb(124, 131, 147)"] { color: #9aa2b2 !important; }
+    html:not([data-theme="light"]) .ta-side .ta-sublink { color: #a3aabb; }
+    html:not([data-theme="light"]) .ta-side-head { color: #8b91a0; }
+    html:not([data-theme="light"]) .ta-side .ta-navbtn { color: #c0c5d1; }
 </style>
   <script>window.__taFadeBg='#06070d';</script>
   <script src="page-transition.js"></script>
