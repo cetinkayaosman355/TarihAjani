@@ -1171,6 +1171,11 @@
     if (custom) custom.addEventListener('input', function () { S.custom = custom.value; });
     var imgP = document.getElementById('imgPromptInput');
     if (imgP) imgP.addEventListener('input', function () { S.imgPrompt = imgP.value; });
+    // Video/Avatar stüdyo yazı kutuları — motor/kalite seçince (render) yazı kaybolmasın
+    var vsP = document.getElementById('vsPromptInput');
+    if (vsP) vsP.addEventListener('input', function () { S.vsPrompt = vsP.value; });
+    var avP = document.getElementById('avPromptInput');
+    if (avP) avP.addEventListener('input', function () { S.avPrompt = avP.value; });
     var ssT = document.getElementById('ssTextInput');
     if (ssT) ssT.addEventListener('input', function () {
       S.ssText = ssT.value;
@@ -1253,7 +1258,7 @@
       case 'ttsRate': S.ttsRate = parseFloat(v); document.querySelectorAll('.rate-seg button').forEach(function (x) { x.classList.remove('on'); }); el.classList.add('on'); break;
       case 'image': doImage(parseInt(v, 10)); break;
       case 'zoom': openLightboxByUrl(v); break;
-      case 'dl': downloadFileUrl(v, 'storia-gorsel-' + Date.now() + '.jpg'); break;
+      case 'dl': downloadFileUrl(v, 'storia-' + dlName(v)); break;
       case 'dlAudio': downloadFileUrl(S.audio, 'storia-seslendirme.mp3'); break;
       case 'genAll': genAll(); break;
       case 'charImg': doCharImage(parseInt(v, 10)); break;
@@ -1669,6 +1674,14 @@
   function lbNav(d) { if (!_lb.list.length) return; _lb.i = (_lb.i + d + _lb.list.length) % _lb.list.length; showLb(); }
   function closeLb() { document.getElementById('lightbox').classList.remove('show'); }
   function lbOpen() { return document.getElementById('lightbox').classList.contains('show'); }
+  // İndirme dosya adı — içerik türüne göre doğru uzantı (video/ses .jpg inmesin)
+  function dlName(url) {
+    var u = String(url || ''), ts = Date.now();
+    if (/^data:video|\.(mp4|webm|mov)(\?|$)/i.test(u)) return 'video-' + ts + '.mp4';
+    if (/^data:audio|\.(mp3|wav|m4a|ogg)(\?|$)/i.test(u)) return 'ses-' + ts + '.mp3';
+    if (/^data:image\/png|\.png(\?|$)/i.test(u)) return 'gorsel-' + ts + '.png';
+    return 'gorsel-' + ts + '.jpg';
+  }
   function downloadFileUrl(url, name) {
     if (!url) return;
     fetch(url).then(function (r) { return r.blob(); }).then(function (b) {
@@ -2068,6 +2081,7 @@
     if (!REAL) { idxs.forEach(function (i) { S.images[i] = demoImage(i, S.aspect); }); persistMedia(); refreshTab(); toast(idxs.length + ' görsel üretildi (demo)'); if (cb) setTimeout(cb, 700); return; }
     if (!S.user) { openAuth(); return; }
     toast(idxs.length + ' görsel sırayla üretiliyor…');
+    S._apStop = false;   // taze çağrı — startNew'den kalan bayat "durdur" bayrağını temizle
     var n = 0;
     (function next() {
       if (S._apStop) { S._apStop = false; return; }
