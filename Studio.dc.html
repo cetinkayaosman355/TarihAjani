@@ -416,6 +416,9 @@
     /* Hareket azaltma tercihi olan kullanıcıya saygı */
     @media (prefers-reduced-motion: reduce) { button, a, .ta-card, input, textarea { transition: none !important; } }
 
+    /* AJANLA KONUŞ FAB (sağ-alt sabit) masaüstünde içeriğin son satırını örtmesin */
+    @media (min-width: 841px) { .ta-studio-wrap main { padding-bottom: 120px !important; } }
+
     /* ═══ KARANLIK MOD OKUNURLUK — soluk gri metinler koyu zeminde siliniyordu ═══
        En sık kullanılan üç soluk ton bir kademe aydınlatılır (yalnız karanlıkta;
        aydınlık tema kendi eşlemesini tema.js'te yapıyor). React style'ı rgb()
@@ -891,8 +894,11 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
                   <sc-for list="{{ prodModes }}" as="pm" hint-placeholder-count="3">
                     <button onClick="{{ pm.pick }}" style="{{ pm.cardStyle }}" style-hover="border-color: rgba(193,154,82,.7);">
+                      <sc-if value="{{ pm.check }}" hint-placeholder-val="{{ false }}">
+                        <span style="position: absolute; top: 10px; right: 12px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .12em;">{{ pm.check }}</span>
+                      </sc-if>
                       <span style="{{ pm.nameStyle }}">{{ pm.name }}</span>
-                      <span style="color: #818797; font-size: 12px; line-height: 1.45;">{{ pm.desc }}</span>
+                      <span style="color: #9aa2b2; font-size: 12px; line-height: 1.45;">{{ pm.desc }}</span>
                     </button>
                   </sc-for>
                 </div>
@@ -4338,12 +4344,17 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         return {
           name: m.name, desc: m.desc,
           pick: () => this.applyProdMode(m.id),
+          on,
           cardStyle: {
-            cursor: 'pointer', textAlign: 'left', display: 'grid', gap: '4px', padding: '14px 16px',
-            border: '1px solid ' + (on ? '#c19a52' : 'rgba(129,135,151,.3)'),
-            background: on ? 'rgba(193,154,82,.12)' : 'rgba(3,5,11,.5)'
+            cursor: 'pointer', textAlign: 'left', display: 'grid', gap: '4px', padding: '14px 16px', borderRadius: '11px',
+            border: '1.5px solid ' + (on ? '#e6c478' : 'rgba(129,135,151,.3)'),
+            background: on ? 'linear-gradient(150deg, rgba(193,154,82,.22), rgba(193,154,82,.08))' : 'rgba(3,5,11,.5)',
+            boxShadow: on ? '0 0 0 3px rgba(193,154,82,.14), 0 12px 30px -16px rgba(230,196,120,.4)' : 'none',
+            transition: 'border-color .2s, background .2s, box-shadow .2s, transform .15s',
+            transform: on ? 'translateY(-1px)' : 'none', position: 'relative'
           },
-          nameStyle: { color: on ? '#e6c478' : '#e9dfc8', fontWeight: 700, fontSize: '14px', letterSpacing: '.02em' }
+          nameStyle: { color: on ? '#f4e4c1' : '#e9dfc8', fontWeight: 700, fontSize: '14px', letterSpacing: '.02em' },
+          check: on ? '✓ SEÇİLİ' : ''
         };
       }),
       durVal: String(this.durationSec()),
