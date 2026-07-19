@@ -907,23 +907,22 @@ function videoCost(sec: number, provider?: string): number {
   return Math.max(kling ? 300 : 120, s * (kling ? 60 : 24));
 }
 function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "grok").toLowerCase(); }
-// İstemci sağlayıcıyı seçebilir; geçersizse env varsayılanına düşer.
+// İstemci sağlayıcıyı AÇIKÇA seçer; geçersiz/boşsa env varsayılanına düşer.
+// STABİLİZASYON Faz 5: "veo" ARTIK fal'a EŞLENMEZ — olduğu gibi döner. submitVideo
+// doğrudan Veo entegrasyonu olmadığından bunu VEO_PROVIDER_NOT_CONFIGURED'a çevirir.
 function pickProvider(p?: string): string {
   const v = String(p || "").toLowerCase();
-  return (v === "kling" || v === "grok" || v === "fal" || v === "veo") ? (v === "veo" ? "fal" : v) : videoProvider();
+  return (v === "kling" || v === "grok" || v === "fal" || v === "veo") ? v : videoProvider();
 }
 
 async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string, provider?: string): Promise<{ id?: string; err?: string }> {
-  const haveGrok = !!Deno.env.get("XAI_API_KEY");
-  const haveKling = !!(Deno.env.get("KLING_ACCESS_KEY") && Deno.env.get("KLING_SECRET_KEY"));
-  const haveFal = !!falKey();
-  // İstenen sağlayıcının anahtarı YOKSA çalışan bir sağlayıcıya OTOMATİK düş
-  // (fal öncelikli — genelde tek anahtarla çok model). Böylece kullanıcı hangi
-  // butona basarsa bassın, eldeki anahtarla video üretilir; sessiz hata olmaz.
-  let use = pickProvider(provider);
-  if (use === "grok" && !haveGrok) use = haveFal ? "fal" : (haveKling ? "kling" : "grok");
-  else if (use === "kling" && !haveKling) use = haveFal ? "fal" : (haveGrok ? "grok" : "kling");
-  else if (use === "fal" && !haveFal) use = haveGrok ? "grok" : (haveKling ? "kling" : "fal");
+  // STABİLİZASYON Faz 5 — OTOMATİK FAL FALLBACK KALDIRILDI. Kullanıcı hangi sağlayıcıyı
+  // seçtiyse YALNIZ O çağrılır; anahtar eksikse ilgili submit fonksiyonu NET hata döndürür
+  // (sessizce başka sağlayıcıya DÜŞÜLMEZ → beklenmeyen sağlayıcı/kredi sürprizi olmaz).
+  const use = pickProvider(provider);
+  // Veo: doğrudan entegrasyon YOK (eskiden sessizce fal'a düşülüyordu). Artık AÇIK hata.
+  if (use === "veo") return { err: "VEO_PROVIDER_NOT_CONFIGURED" };
+  // Fal YALNIZ kullanıcı açıkça Fal seçtiğinde çağrılır.
   if (use === "fal") return await submitFal(prompt, imageUrl, dur, aspect);   // id zaten "fal:" ön ekli
   if (use === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
   const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id } : r;
