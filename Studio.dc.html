@@ -1564,7 +1564,7 @@ class Component extends DCLogic {
       step: w ? 4 : 1,
       idea: (w && w.idea) || '', ideaWarn: '',
       fromArsiv: false, arsivPick: false, chipSeed: this._pickChips(),
-      tone: (w && w.tone) || 'merak', voice: (w && w.voice) || 'kadir', style: (w && w.style) || 'sinematik', duration: (w && w.duration) || 'dk4', model: (w && w.model) || 'claude', aspect: (w && w.aspect) || 'yatay', regenKey: null,
+      tone: (w && w.tone) || 'merak', voice: (w && w.voice) || 'kadir', style: (w && w.style) || 'sinematik', duration: (w && w.duration) || 'dk4', model: (w && w.model) || 'claude', aspect: (w && w.aspect) || 'yatay', format: (w && w.format) || 'belgesel', regenKey: null,
       fineOpen: (typeof window === 'undefined') || window.innerWidth > 840,   // U-01: ince ayar mobilde kapalı gelir
       advOpen: false, batchBusy: false, batchDone: 0, batchTotal: 0,
       generating: false, genMsg: '', genError: '', genPct: 0, genWarn: '',
@@ -1708,7 +1708,7 @@ class Component extends DCLogic {
     const work = (s.result && s.mode === 'wizard') ? {
       result: s.result, sceneImgs: s.sceneImgs || {}, fileNo: s.fileNo, tab: s.tab || 'senaryo',
       idea: s.idea, tone: s.tone, voice: s.voice, style: s.style, aspect: s.aspect,
-      duration: s.duration, model: s.model, sysAudioUrl: s.sysAudioUrl || '', ts: Date.now()
+      duration: s.duration, model: s.model, format: s.format || 'belgesel', sysAudioUrl: s.sysAudioUrl || '', ts: Date.now()
     } : null;
     // Aktif dosyanın görsel/video/ses durumunu kendi geçmiş kaydına da işle → dosyayı
     // Geçmiş/Arşiv'ten tekrar açınca üretilenler geri gelir (yalnız aktif kaydı günceller).
@@ -1776,22 +1776,25 @@ class Component extends DCLogic {
 
   set(patch) { this.setState(patch, () => this.persist()); }
 
-  // Hazır üretim modları (madde 7.4): tek tıkla süre + kadraj + ton + stil ayarlar
+  // Hazır üretim modları (madde 7.4): tek tıkla süre + kadraj + ton + stil ayarlar.
+  // format alanı SENARYO ÜSLUBUNU değiştirir: 'reels' = viral kısa video zanaati
+  // (2 sn kanca, hızlı kesme, vurucu kısa cümleler); 'belgesel' = mevcut sinematik anlatı.
   prodModes() {
     return [
-      { id: 'kisa',     name: 'Kısa Video',  desc: 'Shorts · Reels · 60 sn · dikey',      duration: 's60',  aspect: 'dikey', tone: 'merak',    style: 'sinematik' },
-      { id: 'uzun',     name: 'Uzun Video',  desc: 'YouTube · 8 dk · yatay',              duration: 's480', aspect: 'yatay', tone: 'dramatik', style: 'sinematik' },
-      { id: 'belgesel', name: 'Belgesel',    desc: 'Derin anlatı · 10 dk · yatay',        duration: 's600', aspect: 'yatay', tone: 'belgesel', style: 'belgeselfoto' }
+      { id: 'reels',    name: '⚡ Viral Reels', desc: 'Kanca 2 sn · hızlı kesme · 45 sn · dikey', duration: 's45',  aspect: 'dikey', tone: 'merak',    style: 'sinematik',    format: 'reels' },
+      { id: 'uzun',     name: 'Uzun Video',     desc: 'YouTube · 8 dk · yatay',                   duration: 's480', aspect: 'yatay', tone: 'dramatik', style: 'sinematik',    format: 'belgesel' },
+      { id: 'belgesel', name: 'Belgesel',       desc: 'Derin anlatı · 10 dk · yatay',             duration: 's600', aspect: 'yatay', tone: 'belgesel', style: 'belgeselfoto', format: 'belgesel' }
     ];
   }
   applyProdMode(id) {
     const m = this.prodModes().find(x => x.id === id);
     if (!m) return;
-    this.set({ duration: m.duration, aspect: m.aspect, tone: m.tone, style: m.style });
+    this.set({ duration: m.duration, aspect: m.aspect, tone: m.tone, style: m.style, format: m.format || 'belgesel' });
   }
   prodModeActive(m) {
     return this.state.duration === m.duration && this.state.aspect === m.aspect
-      && this.state.tone === m.tone && this.state.style === m.style;
+      && this.state.tone === m.tone && this.state.style === m.style
+      && (this.state.format || 'belgesel') === (m.format || 'belgesel');
   }
 
   // Proje silme (madde 7.11)
@@ -3125,7 +3128,15 @@ BU ÜRETİMİN PARAMETRELERİ:
 - Anlatım tonu: ${tonStr}
 - Seslendirme tarzı: ${sesStr}
 - Görsel stil çekirdeği (her görsel/video promptunun BAŞINA birebir konur): ${stilStr}
-- Kadraj / en-boy oranı: ${oran}
+- Kadraj / en-boy oranı: ${oran}${s.format === 'reels' ? `
+- ⚡ VİRAL REELS MODU (ZORUNLU ÜSLUP — bu bir belgesel DEĞİL, viral kısa video; aşağıdaki kurallar diğer üslup kurallarıyla çelişirse BUNLAR kazanır):
+  · KANCA (en kritik): İlk cümle 8-14 kelimelik ŞOK edici iddia, çelişki ya da soru — izleyici İLK 2 SANİYEDE durmalı. "Bugün size ... anlatacağım", "Tarihte bir gün..." tarzı ısınma girişleri KESİNLİKLE YASAK; doğrudan bombayla aç.
+  · TEMPO: Kısa, vurucu cümleler (ortalama 6-12 kelime). Her cümle YENİ bir bilgi ya da kıvrım versin; nefes/dolgu cümlesi YOK. Merak boşluğu bırak: bir sonraki cümleyi dinlemeden duramasın.
+  · YAPI: kanca → tek cümlelik bağlam → 2-3 şaşırtıcı kanıt/kıvrım (her biri bir öncekinden büyük) → payoff (asıl şok) → tek cümlelik organik CTA (ör. devamı/serinin kalanı için takip çağrısı — yalvarma tonu YASAK).
+  · DİL: Akıcı konuşma Türkçesi; izleyiciye doğrudan hitap ("düşün", "bak", "sence") serbest. Her cümle altyazıda TEK BAŞINA anlamlı ve vurucu olsun (kısa videolar sessiz izlenir).
+  · SAHNELER: hızlı kesme hissi — her sahne TEK güçlü an/imge; sahneler arası görsel çeşitlilik yüksek (ölçek/açı zıplasın: makro detay → geniş plan → yüz).
+  · GÖRSEL PROMPTLAR (reels uyarlaması): bold central subject filling the vertical frame, high contrast, punchy saturated color grade, dramatic scale and depth, mobile-first composition with clear focal point.
+  · VİDEO PROMPTLAR (reels uyarlaması): yüksek enerji — fast push-in, whip pan, speed-ramp feel, dramatic reveal; yine 5-8 sn TEK hareket, stabil anatomi.` : ''}
 - Format: ${fmt.etiket} · ${chaptered ? bolumN + ' numaralı bölüm' : fmt.bolum} · toplam seslendirme HEDEFİ ${fmt.kelime} kelime
 - ⏱ SÜRE KİLİDİ (EN ÖNEMLİ KURAL): Bu video ${fmt.etiket} (≈ ${sec} saniye) UZUNLUĞUNDA olacak. Türkçe seslendirme ≈ 2.4 kelime/saniye okunur. Bu yüzden TÜM senaryo[].metin alanlarındaki kelimelerin TOPLAMI ${wmin}-${wmax} kelime olmalı; ÜST SINIR ${wmax} kelimeyi ASLA AŞMA. Daha fazla yazarsan video ${fmt.etiket}'yi aşar — bu KESİN bir HATADIR. Kısa videoda az sözle çok şey anlat, doldurma/tekrar yapma.
 - SAHNE SAYISI (KESİN KURAL): KAPAK HARİÇ tam ${fmt.sahne} sahne. gorsel_promptlar ve video_promptlar dizilerinin HER BİRİ tam ${fmt.sahne} öğe içermeli. Kapak bu sayıya dahil değildir. ÖNEMLİ: Sahneler yalnızca GÖRSEL bölünmedir; sahne sayısı seslendirmeye kelime EKLEMEZ. Aynı ${wmin}-${wmax} kelimelik seslendirmeyi ${fmt.sahne} görsel âna DAĞIT — her sahne için fazladan cümle yazıp süreyi uzatma.${chaptered ? `
@@ -3209,7 +3220,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     return {
       stilStr: m.stil[s.style] || m.stil.sinematik,
       oran: { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal',
-      treatment: this.treatmentFor(s.tone),
+      // Reels modunda sahne promptları da viral enerjiye çekilir (ayrı aşamada
+      // üretildiklerinden ana prompttaki reels bloğunu görmezler — burada verilir).
+      treatment: this.treatmentFor(s.tone) + (s.format === 'reels'
+        ? ' REELS ENERGY OVERRIDE: bold central subject filling the vertical frame, high contrast punchy saturated grade, dramatic scale, mobile-first single clear focal point per scene; video motion high-energy (fast push-in, whip pan, speed-ramp feel, dramatic reveal) — still one single 5-8s camera move, stable anatomy.'
+        : ''),
       anti: s.style === 'gravur'
         ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects, no transparent or ghostly figures.'
         : 'No modern text, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces, no transparent or ghostly figures, no double exposure — every person fully solid and opaque.',
@@ -3517,7 +3532,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       const job = (s.pendingJob && s.pendingJob.idea === s.idea && s.pendingJob.job)
         ? s.pendingJob.job
         : ('j' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
-      this.setState({ pendingJob: { job, idea: s.idea, picks: { tone: s.tone, voice: s.voice, style: s.style, duration: s.duration, model: s.model, aspect: s.aspect } } }, () => this.persist());
+      this.setState({ pendingJob: { job, idea: s.idea, picks: { tone: s.tone, voice: s.voice, style: s.style, duration: s.duration, model: s.model, aspect: s.aspect, format: s.format || 'belgesel' } } }, () => this.persist());
       this._genJob = job;
       let text;
       try {
