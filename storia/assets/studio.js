@@ -427,6 +427,7 @@
   function vcost(sec, provider) {
     var p = provider || S.vengine;
     var s = Math.round(Math.min(15, Math.max(3, sec)));
+    if (p === 'veo') return Math.max(600, s * 120);
     if (p === 'kling3') return Math.max(300, s * 60);
     if (p === 'kling') return Math.max(250, s * 50);
     return Math.max(150, s * 30);
@@ -750,6 +751,7 @@
         '<button class="' + (S.vengine === 'grok' ? 'on' : '') + '" data-act="vengine" data-v="grok" title="En hızlı, en ekonomik">Grok · ' + vcost(5, 'grok') + 'kr</button>' +
         '<button class="' + (S.vengine === 'kling' ? 'on' : '') + '" data-act="vengine" data-v="kling" title="Sinematik hareket">Kling 2.6 · ' + vcost(5, 'kling') + 'kr</button>' +
         '<button class="' + (S.vengine === 'kling3' ? 'on' : '') + '" data-act="vengine" data-v="kling3" title="En gerçekçi & sinematik (fal.ai)">Kling 3.0 · ' + vcost(5, 'kling3') + 'kr</button>' +
+        '<button class="' + (S.vengine === 'veo' ? 'on' : '') + '" data-act="vengine" data-v="veo" title="Google Veo — sinema kalitesi">Veo · ' + vcost(5, 'veo') + 'kr</button>' +
         '</div></div>';
       var durSeg = '<div class="veng-pick"><span class="cp-lbl">Klip süresi</span><div class="cap-seg">' +
         '<button class="' + (S.vsec === 5 ? 'on' : '') + '" data-act="vsec" data-v="5">5 sn · ' + vcost(5) + 'kr</button>' +
@@ -818,7 +820,8 @@
     return '<div class="veng-pick"><span class="cp-lbl">Video motoru</span><div class="cap-seg">' +
       '<button class="' + (S.vengine === 'grok' ? 'on' : '') + '" data-act="vengine" data-v="grok" title="En hızlı, en ekonomik">Grok · ' + vcost(5, 'grok') + 'kr</button>' +
       '<button class="' + (S.vengine === 'kling' ? 'on' : '') + '" data-act="vengine" data-v="kling" title="Sinematik">Kling 2.6 · ' + vcost(5, 'kling') + 'kr</button>' +
-      '<button class="' + (S.vengine === 'kling3' ? 'on' : '') + '" data-act="vengine" data-v="kling3" title="En gerçekçi">Kling 3.0 · ' + vcost(5, 'kling3') + 'kr</button>' +
+      '<button class="' + (S.vengine === 'kling3' ? 'on' : '') + '" data-act="vengine" data-v="kling3" title="En gerçekçi (fal.ai)">Kling 3.0 · ' + vcost(5, 'kling3') + 'kr</button>' +
+      '<button class="' + (S.vengine === 'veo' ? 'on' : '') + '" data-act="vengine" data-v="veo" title="Google Veo — sinema kalitesi">Veo · ' + vcost(5, 'veo') + 'kr</button>' +
       '</div></div>';
   }
   function vsecPickHtml() {
@@ -1077,7 +1080,7 @@
       case 'video': doVideo(parseInt(v, 10)); break;
       case 'exportVid': exportVideo(); break;
       case 'capStyle': S.capStyle = v; refreshTab(); break;
-      case 'vengine': S.vengine = v; reRenderTabOrView(); toast(v === 'kling3' ? 'Kling 3.0 · en sinematik · ' + vcost(S.vsec, 'kling3') + 'kr' : v === 'kling' ? 'Kling 2.6 · sinematik · ' + vcost(S.vsec, 'kling') + 'kr' : 'Grok · hızlı · ' + vcost(S.vsec, 'grok') + 'kr'); break;
+      case 'vengine': S.vengine = v; reRenderTabOrView(); toast(v === 'veo' ? 'Veo · sinema kalitesi · ' + vcost(S.vsec, 'veo') + 'kr' : v === 'kling3' ? 'Kling 3.0 · en sinematik · ' + vcost(S.vsec, 'kling3') + 'kr' : v === 'kling' ? 'Kling 2.6 · sinematik · ' + vcost(S.vsec, 'kling') + 'kr' : 'Grok · hızlı · ' + vcost(S.vsec, 'grok') + 'kr'); break;
       case 'imgQual': S.imgQuality = v; reRenderTabOrView(); toast(v === 'nano' ? 'Nano Banana · 10kr/görsel' : v === 'yuksek' ? 'Yüksek · 45kr/görsel' : 'Standart · 12kr/görsel'); break;
       case 'vsec': S.vsec = parseInt(v, 10) || 5; reRenderTabOrView(); toast(S.vsec + ' sn klip · ' + vcost(S.vsec) + 'kr'); break;
       case 'brandKit': openBrandModal(); break;
