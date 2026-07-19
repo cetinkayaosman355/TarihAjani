@@ -829,14 +829,26 @@ function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "gr
 // İstemci sağlayıcıyı seçebilir; geçersizse env varsayılanına düşer.
 function pickProvider(p?: string): string {
   const v = String(p || "").toLowerCase();
-  return (v === "kling" || v === "grok") ? v : videoProvider();
+  return (v === "kling" || v === "grok" || v === "fal" || v === "veo") ? (v === "veo" ? "fal" : v) : videoProvider();
 }
 
 async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string, provider?: string): Promise<{ id?: string; err?: string }> {
-  if (pickProvider(provider) === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
+  const haveGrok = !!Deno.env.get("XAI_API_KEY");
+  const haveKling = !!(Deno.env.get("KLING_ACCESS_KEY") && Deno.env.get("KLING_SECRET_KEY"));
+  const haveFal = !!falKey();
+  // İstenen sağlayıcının anahtarı YOKSA çalışan bir sağlayıcıya OTOMATİK düş
+  // (fal öncelikli — genelde tek anahtarla çok model). Böylece kullanıcı hangi
+  // butona basarsa bassın, eldeki anahtarla video üretilir; sessiz hata olmaz.
+  let use = pickProvider(provider);
+  if (use === "grok" && !haveGrok) use = haveFal ? "fal" : (haveKling ? "kling" : "grok");
+  else if (use === "kling" && !haveKling) use = haveFal ? "fal" : (haveGrok ? "grok" : "kling");
+  else if (use === "fal" && !haveFal) use = haveGrok ? "grok" : (haveKling ? "kling" : "fal");
+  if (use === "fal") return await submitFal(prompt, imageUrl, dur, aspect);   // id zaten "fal:" ön ekli
+  if (use === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
   const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id } : r;
 }
 async function pollVideo(job: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+  if (job.indexOf("fal:") === 0) return pollFal(job.slice(4));
   if (job.indexOf("kling:") === 0) return pollKling(job.slice(6));
   if (job.indexOf("grok:") === 0) return pollGrok(job.slice(5));
   return pollGrok(job);
@@ -927,6 +939,49 @@ async function pollGrok(id: string): Promise<{ done: boolean; url?: string; fail
     return { done: false };
   } catch (e) { return { done: false, err: String(e).slice(0, 120) }; }
 }
+// ── fal.ai — image→video (Kling/Veo/Seedance vb. tek çatı; kuyruk API'si) ──
+// Model FAL_VIDEO_MODEL secret'ından ayarlanır (varsayılan Kling image-to-video).
+// Kuyruk yanıtı status_url/response_url döndüğünden onları JOB içine gömüyoruz →
+// alt-yollu model adlarında URL yeniden kurma hatası olmaz.
+function falKey(): string { return Deno.env.get("FAL_KEY") || Deno.env.get("FAL_API_KEY") || ""; }
+function falModel(): string { return Deno.env.get("FAL_VIDEO_MODEL") || "fal-ai/kling-video/v1.6/standard/image-to-video"; }
+async function submitFal(prompt: string, imageUrl: string, dur: number, _aspect: string): Promise<{ id?: string; err?: string }> {
+  const key = falKey();
+  if (!key) return { err: "FAL_KEY secret eksik." };
+  if (!imageUrl) return { err: "fal.ai image→video için sahne görseli gerekli." };
+  const model = falModel();
+  const body: Record<string, unknown> = { image_url: imageUrl, prompt: (prompt || "").slice(0, 2000), duration: dur > 7 ? "10" : "5" };
+  try {
+    const r = await fetchT("https://queue.fal.run/" + model, {
+      method: "POST", headers: { Authorization: "Key " + key, "Content-Type": "application/json" }, body: JSON.stringify(body),
+    }, 60_000);
+    const d = await r.json().catch(() => ({} as any));
+    if (!r.ok) return { err: ("fal " + r.status + (d && (d.detail || d.message) ? ": " + String(typeof d.detail === "string" ? d.detail : JSON.stringify(d.detail || d.message)).slice(0, 120) : "")) };
+    const statusUrl = d.status_url || (d.request_id ? ("https://queue.fal.run/" + model + "/requests/" + d.request_id + "/status") : "");
+    if (!statusUrl) return { err: "fal istek kimliği alınamadı." };
+    return { id: "fal:" + btoa(statusUrl) };   // status_url gömülü → poll birebir kullanır
+  } catch (e) { return { err: String(e).slice(0, 160) }; }
+}
+async function pollFal(enc: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
+  const key = falKey();
+  if (!key) return { done: false, err: "FAL_KEY eksik." };
+  let statusUrl = "";
+  try { statusUrl = atob(enc); } catch (_e) { return { done: false, failed: true, err: "fal iş kimliği bozuk" }; }
+  const resultUrl = statusUrl.replace(/\/status(\?.*)?$/, "");
+  try {
+    const sr = await fetchT(statusUrl, { headers: { Authorization: "Key " + key } }, 30_000);
+    const sd = await sr.json().catch(() => ({} as any));
+    const status = String(sd.status || "").toUpperCase();
+    if (status === "FAILED" || status === "ERROR") return { done: false, failed: true, err: "fal üretim başarısız" };
+    if (status !== "COMPLETED" && status !== "OK") return { done: false };
+    const rr = await fetchT(resultUrl, { headers: { Authorization: "Key " + key } }, 30_000);
+    const rd = await rr.json().catch(() => ({} as any));
+    const url = rd.video?.url || rd.video_url || (Array.isArray(rd.videos) && rd.videos[0]?.url) || rd.output?.video?.url || rd.output?.url || rd.url || "";
+    if (url) return { done: true, url: String(url) };
+    return { done: false, failed: true, err: "fal video URL'si dönmedi" };
+  } catch (e) { return { done: false, err: String(e).slice(0, 140) }; }
+}
+
 // Üretilen mp4'ü Storage'a taşı (kalıcı, cihazlar-arası). Büyükse sağlayıcı URL'si kalır.
 async function uploadVideo(admin: any, userId: string, url: string): Promise<string> {
   try {
