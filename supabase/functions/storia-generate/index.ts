@@ -191,7 +191,9 @@ async function callClaude(prompt: string, maxTokens?: number, jsonMode?: boolean
 
 // ── Google Gemini (metin) — GEMINI_API_KEY / GOOGLE_API_KEY ──────────────
 function geminiKey(): string { return Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY") || ""; }
-const GEMINI_TEXT_MODELS = (Deno.env.get("GEMINI_TEXT_MODELS") || "gemini-3-pro,gemini-3-flash,gemini-2.5-pro").split(",").map((s) => s.trim()).filter(Boolean);
+// Geniş yedek zinciri: yeni modeller anahtara açık değilse mutlaka çalışan
+// birine düşsün (üretim "AI modeli bulunamadı" ile patlamasın).
+const GEMINI_TEXT_MODELS = (Deno.env.get("GEMINI_TEXT_MODELS") || "gemini-3-pro,gemini-3-flash,gemini-2.5-pro,gemini-2.5-flash,gemini-2.0-flash,gemini-flash-latest").split(",").map((s) => s.trim()).filter(Boolean);
 async function callGemini(prompt: string, maxTokens?: number, jsonMode?: boolean): Promise<string> {
   const key = geminiKey();
   if (!key) throw new Error("GEMINI_API_KEY secret missing.");
@@ -1259,10 +1261,11 @@ ${prompt}`;
     const detail = String((e as any)?.message || e).slice(0, 400);
     console.error("storia-generate unexpected error: " + detail);
     let hint = "";
-    if (/authentication|invalid x-api-key|permission|401|403/i.test(detail)) hint = " (AI anahtarı geçersiz — ANTHROPIC_API_KEY / OPENAI_API_KEY secret'ını kontrol edin)";
+    if (/authentication|invalid x-api-key|permission|401|403/i.test(detail)) hint = " (AI anahtarı geçersiz — ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY secret'ını kontrol edin)";
     else if (/credit|balance|quota|insufficient|billing|429/i.test(detail)) hint = " (AI bakiyesi/kotası bitmiş olabilir)";
     else if (/not_found|model|usable model/i.test(detail)) hint = " (AI modeli bulunamadı — model adı değişmiş olabilir)";
-    else if (/secret missing|yapılandırma/i.test(detail)) hint = " (Sunucu secret'ları eksik)";
-    return json({ ok: false, error: "Sunucuda beklenmeyen bir hata oluştu — lütfen tekrar dene." + hint }, 500);
+    else if (/secret missing|yapılandırma/i.test(detail)) hint = " (Sunucu AI secret'ları eksik — en az bir sağlayıcı anahtarı ekleyin: GEMINI_API_KEY, OPENAI_API_KEY ya da ANTHROPIC_API_KEY)";
+    // Gerçek nedeni de göster ki kör kalınmasın (kısaltılmış).
+    return json({ ok: false, error: "Üretim başarısız — lütfen tekrar dene." + hint, detail: detail }, 500);
   }
 });

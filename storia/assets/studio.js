@@ -2272,6 +2272,9 @@
     var acctModal = document.getElementById('acctModal');
     document.getElementById('acctClose').addEventListener('click', closeAcct);
     acctModal.addEventListener('click', function (e) { if (e.target === acctModal) closeAcct(); var r = e.target.closest('[data-am]'); if (r) acctAction(r.getAttribute('data-am')); });
+    var spModal = document.getElementById('spendModal');
+    if (spModal) { document.getElementById('spendClose').addEventListener('click', closeSpend); spModal.addEventListener('click', function (e) { if (e.target === spModal) closeSpend(); }); }
+    var crPill = document.querySelector('.cr-pill'); if (crPill) { crPill.style.cursor = 'pointer'; crPill.title = 'Harcama dökümü'; crPill.addEventListener('click', openSpend); }
     // lightbox
     var lb = document.getElementById('lightbox');
     lb.addEventListener('click', function (e) {
@@ -2495,11 +2498,40 @@
   function acctAction(a) {
     if (a === 'upgrade') { closeAcct(); openPlanModal(); }
     else if (a === 'theme') { toggleTheme(); }
+    else if (a === 'spend') { closeAcct(); openSpend(); }
     else if (a === 'auth') {
       if (S.user) { if (sb) sb.auth.signOut(); S.user = null; S.credits = REAL ? null : 500; loadHist(); chrome(); closeAcct(); toast('Çıkış yapıldı'); render(); }
       else { closeAcct(); openAuth(); }
     }
   }
+  // Harcama dökümü — credit_log'dan (RLS: kullanıcı yalnız kendi satırlarını okur)
+  var SPEND_LABELS = { uretim: '📝 Dosya (senaryo)', gorsel: '🖼 Görsel', gorsel_duzenle: '✏️ Görsel düzenleme', video: '🎬 Video', seslendirme: '🔊 Seslendirme', aylik_kota_yenileme: '＋ Kota yenileme' };
+  function openSpend() {
+    var m = document.getElementById('spendModal'); m.classList.add('show');
+    var body = document.getElementById('spendBody');
+    if (!REAL || !sb || !S.user) {
+      body.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:12px 0">' + (REAL ? 'Harcama dökümü için giriş yapmalısın.' : 'Demo modunda harcama kaydı tutulmaz — gerçek modda her üretimin kredisi buraya işlenir.') + '</p>';
+      return;
+    }
+    body.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:12px 0">Yükleniyor…</p>';
+    var since = new Date(Date.now() - 30 * 864e5).toISOString();
+    sb.from('credit_log').select('delta,reason,created_at').eq('user_id', S.user.id).lt('delta', 0).gte('created_at', since).order('created_at', { ascending: false }).limit(500).then(function (res) {
+      var rows = (res && res.data) || [];
+      if (!rows.length) { body.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:12px 0">Son 30 günde harcama yok.</p>'; return; }
+      var groups = {}, total = 0;
+      rows.forEach(function (r) { var k = r.reason || 'diğer'; var c = Math.abs(r.delta || 0); groups[k] = groups[k] || { n: 0, cr: 0 }; groups[k].n++; groups[k].cr += c; total += c; });
+      var keys = Object.keys(groups).sort(function (a, b) { return groups[b].cr - groups[a].cr; });
+      var maxCr = groups[keys[0]].cr || 1;
+      var html = '<div class="spend-total"><span>Son 30 gün toplam</span><b>' + total + ' kredi</b></div><div class="spend-list">';
+      keys.forEach(function (k) {
+        var g = groups[k], pct = Math.round(g.cr / maxCr * 100);
+        html += '<div class="spend-row"><div class="sr-top"><span class="sr-name">' + (SPEND_LABELS[k] || esc(k)) + '</span><span class="sr-cr">' + g.cr + ' kr <em>· ' + g.n + ' kez</em></span></div><div class="sr-bar"><i style="width:' + pct + '%"></i></div></div>';
+      });
+      html += '</div><p class="spend-note">Ortalama görsel ' + (groups.gorsel ? Math.round(groups.gorsel.cr / groups.gorsel.n) : '—') + ' kr · Ortalama dosya ' + (groups.uretim ? Math.round(groups.uretim.cr / groups.uretim.n) : '—') + ' kr. Masrafı düşürmek için görsellerde <b>Nano Banana</b> (10 kr) seç.</p>';
+      body.innerHTML = html;
+    }, function () { body.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:12px 0">Harcama kaydı okunamadı. (credit_log erişimi)</p>'; });
+  }
+  function closeSpend() { document.getElementById('spendModal').classList.remove('show'); }
   function closeRail() { if (window._closeRail) window._closeRail(); }
   function switchAuth() {
     authMode = authMode === 'in' ? 'up' : 'in';
