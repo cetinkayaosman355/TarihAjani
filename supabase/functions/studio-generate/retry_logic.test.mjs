@@ -108,6 +108,41 @@ test("Normal başarı → tek çağrı", () => {
   assert.ok(r.url);
 });
 
+// ── Faz 4: Gemini TEK model zinciri (yedek yok) — çağrı bütçesi aynı orchestrator ──
+const GEMINI = ["gemini-2.5-flash-image"];   // varsayılan Gemini zinciri (tek model)
+
+test("Gemini tek model: normal başarı → 1 çağrı", () => {
+  const r = runChain(GEMINI, [{ url: "data:image/png;base64,GGGG" }]);
+  assert.equal(r.calls, 1);
+  assert.ok(r.url);
+});
+
+test("Gemini tek model: 429 → başarı → 2 çağrı (aynı model bir kez daha)", () => {
+  const r = runChain(GEMINI, [{ status: 429, body: "RESOURCE_EXHAUSTED" }, { url: "data:image/png;base64,HHHH" }]);
+  assert.equal(r.calls, 2);
+  assert.ok(r.url);
+});
+
+test("Gemini tek model: kalıcı 400 → 1 çağrı (yedek yok, boş çağrı üretmez)", () => {
+  const r = runChain(GEMINI, [{ status: 400, body: "INVALID_ARGUMENT" }]);
+  assert.equal(r.calls, 1);
+  assert.equal(r.url, "");
+});
+
+test("Gemini tek model: sürekli geçici hata → MUTLAK EN FAZLA 2 çağrı (tek model, yedek yok)", () => {
+  const r = runChain(GEMINI, [{ status: 500 }, { status: 500 }, { status: 500 }]);
+  assert.equal(r.calls, 2);
+  assert.equal(r.url, "");
+});
+
+test("Gemini güvenlik engeli (200 ama görsel yok → 400 blocked) → MODERATION, 1 çağrı", () => {
+  // callGemini blockReason'ı status=400 body='blocked: SAFETY' olarak döndürür
+  assert.equal(classifyImgErr(400, false, "blocked: SAFETY").cls, "MODERATION");
+  const r = runChain(GEMINI, [{ status: 400, body: "blocked: SAFETY" }]);
+  assert.equal(r.calls, 1);
+  assert.equal(r.url, "");
+});
+
 test("Hata sınıfları doğru atanır", () => {
   assert.equal(classifyImgErr(429, false, "").cls, "RATE_LIMIT");
   assert.equal(classifyImgErr(401, false, "").cls, "AUTH_ERROR");
@@ -169,6 +204,37 @@ test("index.ts: ücretli görselde rezervasyon yoksa 503 döner, spendSafe'e ses
   assert.ok(imgBlock.includes("!res.reserved"), "rezervasyon-yok koruması olmalı");
   assert.ok(imgBlock.includes("503"), "503 dönüşü olmalı");
   assert.ok(!imgBlock.includes('spendSafe(admin, userId, cost, "gorsel")'), "image başarı yolunda spendSafe sessiz düşüşü kalmamalı");
+});
+
+test("index.ts: Faz 4 Gemini sağlayıcısı — endpoint/model/anahtar/parse doğru", () => {
+  assert.ok(indexSrc.includes('Deno.env.get("TA_IMAGE_PROVIDER") || "openai"'), "TA_IMAGE_PROVIDER anahtarı olmalı (varsayılan openai)");
+  assert.ok(indexSrc.includes('generativelanguage.googleapis.com/v1beta/models/${model}:generateContent'), "resmi Gemini generateContent endpoint'i olmalı");
+  assert.ok(indexSrc.includes('Deno.env.get("TA_GEMINI_IMAGE_MODEL") || "gemini-2.5-flash-image"'), "varsayılan Gemini modeli gemini-2.5-flash-image olmalı");
+  assert.ok(indexSrc.includes('"x-goog-api-key": gkey'), "Gemini API anahtarı x-goog-api-key header ile geçmeli");
+  assert.ok(indexSrc.includes('Deno.env.get("GEMINI_API_KEY")'), "GEMINI_API_KEY okunmalı");
+  assert.ok(indexSrc.includes("responseModalities"), "responseModalities gönderilmeli");
+  assert.ok(indexSrc.includes("inlineData") && indexSrc.includes("inline_data"), "yanıt inlineData/inline_data'dan okunmalı");
+});
+
+test("index.ts: provider=gemini iken OpenAI OTOMATİK ÇAĞRILMAZ (erken return)", () => {
+  // generateImage GÖVDESİ içinde sırayı kontrol et (global 'const key' başka fonksiyonlarda da var)
+  const fnStart = indexSrc.indexOf("async function generateImage(");
+  const fnEnd = indexSrc.indexOf("async function generateSpeech(");
+  const body = indexSrc.slice(fnStart, fnEnd);
+  const gemBranch = body.indexOf('if (provider === "gemini")');
+  const gemReturn = body.indexOf('return await runImageChain(gchain, "gemini"');
+  const openaiBranch = body.indexOf("OPENAI YOLU (VARSAYILAN)");
+  const openaiCall = body.indexOf('fetchT("https://api.openai.com');
+  assert.ok(fnStart >= 0 && fnEnd > fnStart, "generateImage gövdesi bulunmalı");
+  assert.ok(gemBranch >= 0 && gemReturn > gemBranch, "gemini dalı olmalı ve runImageChain ile bitmeli");
+  assert.ok(openaiBranch > gemReturn, "OpenAI dalı gemini return'ünden SONRA gelmeli (gemini iken erişilmez)");
+  assert.ok(openaiCall > gemReturn, "OpenAI API çağrısı gemini return'ünden SONRA (gemini iken çağrılmaz)");
+});
+
+test("index.ts: ortak orchestrator + Faz 3 değişmezleri korunur", () => {
+  assert.ok(indexSrc.includes("async function runImageChain("), "ortak orchestrator olmalı");
+  assert.ok(indexSrc.includes("const MAX_CALLS = 3;"), "MUTLAK çağrı tavanı 3 korunmalı");
+  assert.ok(indexSrc.includes('runImageChain(chain, "openai"'), "OpenAI yolu da ortak orchestrator'ı kullanmalı");
 });
 
 test("Studio.dc.html: toplu sahne üretimi concurrency=1", () => {
