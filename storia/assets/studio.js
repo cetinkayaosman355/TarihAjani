@@ -650,7 +650,7 @@
     if (id === 'fikir') return true;
     if (id === 'senaryo') return !!sc.length;
     if (id === 'story') return imgsDone;
-    if (id === 'gorselvideo') return imgsDone && Object.keys(S.videos).length > 0;
+    if (id === 'gorselvideo') return imgsDone;  // video opsiyonel — görseller bitince adım tamam
     if (id === 'ses') return S.silent || !!S.audio;
     if (id === 'yayin') return !!((r.youtube || {}).baslik);
     return false;

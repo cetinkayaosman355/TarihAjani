@@ -668,14 +668,21 @@ function logRun(row: Record<string, unknown>) {
   } catch (_e) { /* telemetry never breaks generation */ }
 }
 
-async function spendSafe(admin: any, userId: string, amount: number, reason: string): Promise<number | undefined> {
+// Atomik harcama. Dönüş: { ok, credits }.
+//  ok=false → bakiye yetmedi ya da DB hatası; hiçbir kredi düşülMEDİ (çağıran
+//  charged:true dememeli). ok=true → düşüldü, credits = yeni bakiye.
+async function spendSafe(admin: any, userId: string, amount: number, reason: string): Promise<{ ok: boolean; credits: number | undefined }> {
   const { data, error } = await admin.rpc("spend_credits", { p_user: userId, p_amount: amount, p_reason: reason });
   if (error) {
     console.error("spend_credits(" + reason + "): " + error.message);
     logRun({ action: "spend_fail", ok: false, err: reason, user_id: userId });
+    return { ok: false, credits: undefined };
   }
   const row = Array.isArray(data) ? data[0] : data;
-  return row && typeof row.new_credits === "number" ? row.new_credits : undefined;
+  const credits = row && typeof row.new_credits === "number" ? row.new_credits : undefined;
+  // RPC ok alanını döndürür; yoksa (eski şema) kredi geldiyse başarı say.
+  const ok = row && typeof row.ok === "boolean" ? row.ok : (credits !== undefined);
+  return { ok, credits };
 }
 
 // ── GENERATION RECOVERY ──────────────────────────────────────────
@@ -982,10 +989,30 @@ Deno.serve(async (req) => {
 
     // VIDEO DURUM SORGUSU (ücretsiz poll) — video zaten submit'te ücretlendi.
     if (act === "video_status") {
-      const id = String(b.videoJob || "");
-      if (!id) return json({ ok: false, error: "videoJob eksik." }, 400);
+      const rawId = String(b.videoJob || "");
+      if (!rawId) return json({ ok: false, error: "videoJob eksik." }, 400);
+      // #c<kredi> son eki: submit'te düşülen ücret (iade için). pollVideo'ya temiz kimlik gider.
+      const hashIdx = rawId.lastIndexOf("#c");
+      const id = hashIdx >= 0 ? rawId.slice(0, hashIdx) : rawId;
+      const refundAmt = hashIdx >= 0 ? (parseInt(rawId.slice(hashIdx + 2), 10) || 0) : 0;
       const st = await pollVideo(id);
-      if (st.failed) return json({ ok: false, error: st.err || "Video üretilemedi." }, 502);
+      if (st.failed) {
+        // Render başarısız → submit'te düşülen krediyi İADE et (kullanıcı almadığı
+        // video için ödemesin). İlk poll'de yapılır; başarısızlıkta client durur.
+        let refunded: number | undefined;
+        if (refundAmt > 0) {
+          try {
+            const U = Deno.env.get("SUPABASE_URL"), K = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+            if (U && K) {
+              const adm = createClient(U, K);
+              const jwt = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+              const { data: ud } = await adm.auth.getUser(jwt);
+              if (ud?.user?.id) { const { data: gc } = await adm.rpc("grant_credits", { p_user: ud.user.id, p_amount: refundAmt, p_reason: "video_iade" }); refunded = typeof gc === "number" ? gc : undefined; }
+            }
+          } catch (_e) { /* iade edilemedi — hata yine döner */ }
+        }
+        return json({ ok: false, error: (st.err || "Video üretilemedi.") + (refundAmt > 0 ? " Kredin iade edildi." : ""), refunded, credits: refunded }, 502);
+      }
       if (!st.done) return json({ ok: true, done: false });
       let url = st.url || "";
       try {
@@ -1087,8 +1114,8 @@ Deno.serve(async (req) => {
       logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "uretilemedi" });
       if (!url) return json({ ok: false, error: "Görsel üretilemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       if (cost > 0 && admin && userId) {
-        const credits = await spendSafe(admin, userId, cost, "gorsel");
-        return json({ ok: true, url, charged: true, credits });
+        const spent = await spendSafe(admin, userId, cost, "gorsel");
+        return json({ ok: true, url, charged: spent.ok, credits: spent.credits });
       }
       return json({ ok: true, url, charged: false });
     }
@@ -1099,8 +1126,8 @@ Deno.serve(async (req) => {
       logRun({ action: "edit", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "duzenlenemedi" });
       if (!url) return json({ ok: false, error: "Görsel düzenlenemedi. Lütfen tekrar deneyin (kredi düşülmedi)." }, 502);
       if (cost > 0 && admin && userId) {
-        const credits = await spendSafe(admin, userId, cost, "gorsel_duzenle");
-        return json({ ok: true, url, charged: true, credits, cost });
+        const spent = await spendSafe(admin, userId, cost, "gorsel_duzenle");
+        return json({ ok: true, url, charged: spent.ok, credits: spent.credits, cost });
       }
       return json({ ok: true, url, charged: false, cost: 0 });
     }
@@ -1118,10 +1145,13 @@ Deno.serve(async (req) => {
       // değilse ucuz olana düştüyse fazladan ücret ALINMAZ).
       const actualCost = sub.used ? videoCost(sec, sub.used) : cost;
       const charge = Math.min(cost, actualCost);
-      let credits: number | undefined;
-      if (charge > 0 && admin && userId) credits = await spendSafe(admin, userId, charge, "video");
+      let credits: number | undefined; let spentOk = false;
+      if (charge > 0 && admin && userId) { const sp = await spendSafe(admin, userId, charge, "video"); credits = sp.credits; spentOk = sp.ok; }
       logRun({ action: "video", ok: true, ms: Date.now() - t0, user_id: userId || null });
-      return json({ ok: true, videoJob: sub.id, used: sub.used, charged: charge > 0, credits, cost: charge });
+      // Ücreti iş kimliğine göm (#c<kredi>) — video_status başarısız render'da
+      // iade edebilsin; yalnız gerçekten düşüldüyse iade edilebilir olarak işaretle.
+      const jobId = sub.id + (spentOk && charge > 0 ? "#c" + charge : "");
+      return json({ ok: true, videoJob: jobId, used: sub.used, charged: spentOk && charge > 0, credits, cost: charge });
     }
 
     if (isPreview) {
@@ -1154,11 +1184,16 @@ Deno.serve(async (req) => {
         for (let i = 0; i < bytes.length; i += 32768) bin += String.fromCharCode(...bytes.subarray(i, i + 32768));
         url = "data:audio/mpeg;base64," + btoa(bin);
       }
-      if (cost > 0 && admin && userId) {
-        const credits = await spendSafe(admin, userId, cost, "seslendirme");
-        return json({ ok: true, url, charged: true, credits, cost, truncated: ttsTruncated, engine: _ttsEngine, elevenErr: _ttsElevenErr });
+      // Gerçekte kullanılan motora göre ücretlendir: ElevenLabs premium sesi
+      // kotası/hatası yüzünden OpenAI'ye düştüyse premium çarpanı UYGULANMAZ
+      // (aksi halde müşteri OpenAI sesi için 2×–4× fazla öderdi).
+      const ttsActual = ttsCostOf(ttsText.length) * (_ttsEngine === "eleven" ? voiceMult(b) : 1);
+      const ttsCharge = Math.min(cost, ttsActual);
+      if (ttsCharge > 0 && admin && userId) {
+        const spent = await spendSafe(admin, userId, ttsCharge, "seslendirme");
+        return json({ ok: spent.ok, url, charged: spent.ok, credits: spent.credits, cost: ttsCharge, truncated: ttsTruncated, engine: _ttsEngine, elevenErr: _ttsElevenErr });
       }
-      return json({ ok: true, url, charged: false, cost, truncated: ttsTruncated, engine: _ttsEngine, elevenErr: _ttsElevenErr });
+      return json({ ok: true, url, charged: false, cost: ttsCharge, truncated: ttsTruncated, engine: _ttsEngine, elevenErr: _ttsElevenErr });
     }
 
     // İstemci 'claude' gönderse de env ile birincil sağlayıcı değiştirilebilir
@@ -1235,9 +1270,9 @@ ${prompt}`;
     }
 
     if (cost > 0 && admin && userId) {
-      const credits = await spendSafe(admin, userId, cost, String(b.action || "uretim"));
-      if (isGen && job) await saveJobResult(admin, userId, job, { result, credits, charged: true, grounded, ts: Date.now() });
-      return json({ ok: true, result, text: result, charged: true, credits, grounded });
+      const spent = await spendSafe(admin, userId, cost, String(b.action || "uretim"));
+      if (isGen && job) await saveJobResult(admin, userId, job, { result, credits: spent.credits, charged: spent.ok, grounded, ts: Date.now() });
+      return json({ ok: true, result, text: result, charged: spent.ok, credits: spent.credits, grounded });
     }
 
     if (freeRegen && isGen && admin && userId) {
