@@ -462,7 +462,6 @@
         <div class="ta-hdr-right" style="display: flex; align-items: center; gap: 10px;">
           <!-- Tema + başa dön butonları nav DIŞINDA: mobilde "header nav{display:none}"
                nav'ı gizlese de bu butonlar görünür kalır. -->
-          <button onClick="{{ newFile }}" title="Yeniden başla (yeni üretim)" aria-label="Yeniden başla" style="flex: none; display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 13px; border: 1px solid rgba(193,154,82,.4); background: rgba(193,154,82,.08); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; line-height: 1; cursor: pointer;" style-hover="background: rgba(193,154,82,.18);"><span style="font-size: 16px;">↺</span><span>BAŞTAN</span></button>
           <button onClick="{{ toggleTheme }}" title="{{ themeTitle }}" aria-label="Tema değiştir" style="width: 38px; height: 38px; flex: none; display: grid; place-items: center; border: 1px solid rgba(129,135,151,.25); background: transparent; color: #e6c478; font-size: 16px; line-height: 1; cursor: pointer; font-family: inherit;" style-hover="border-color: rgba(193,154,82,.4);">{{ themeIcon }}</button>
           <nav style="display: flex; align-items: center; gap: 10px;">
           <a href="/" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ANA SAYFA</a>
@@ -538,6 +537,11 @@
           </div>
         </aside>
         <div class="ta-maincol">
+
+          <!-- Yeniden başla (yeni üretim) — FİKİR adımının solunda, her adımda erişilebilir -->
+          <div style="display: flex; align-items: center; padding: 16px 44px 0;">
+            <button onClick="{{ newFile }}" title="Yeniden başla (sıfırdan yeni üretim)" aria-label="Yeniden başla" style="flex: none; display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; border: 1px solid rgba(193,154,82,.4); background: rgba(193,154,82,.08); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; line-height: 1; cursor: pointer;" style-hover="background: rgba(193,154,82,.18);"><span style="font-size: 15px;">↺</span><span>BAŞTAN</span></button>
+          </div>
 
           <!-- adım göstergesi -->
           <div class="ta-steps" style="{{ stepRowStyle }}">
@@ -661,7 +665,12 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
                   <sc-for list="{{ savedImgList }}" as="sv" hint-placeholder-count="6">
                     <div style="border: 1px solid rgba(129,135,151,.22); background: #070a12;">
-                      <img loading="lazy" data-zoomable="1" src="{{ sv.url }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
+                      <sc-if value="{{ sv.showImg }}" hint-placeholder-val="{{ true }}">
+                        <img loading="lazy" data-zoomable="1" src="{{ sv.url }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
+                      </sc-if>
+                      <sc-if value="{{ sv.hasVid }}" hint-placeholder-val="{{ false }}">
+                        <video src="{{ sv.vidUrl }}" controls playsinline loop style="{{ sv.thumbStyle }}"></video>
+                      </sc-if>
                       <div style="display: flex; gap: 6px; padding: 6px;">
                         <button onClick="{{ sv.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 9.5px; letter-spacing: .04em; padding: 6px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
                         <button onClick="{{ sv.del }}" title="Sil" style="border: 1px solid rgba(192,57,43,.4); background: transparent; color: #e08a80; font-size: 11px; padding: 6px 9px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12);">🗑</button>
@@ -1305,7 +1314,12 @@
                   <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
                     <sc-for list="{{ savedImgList }}" as="sv" hint-placeholder-count="6">
                       <div style="border: 1px solid rgba(129,135,151,.22); background: #070a12;">
-                        <img loading="lazy" data-zoomable="1" src="{{ sv.url }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
+                        <sc-if value="{{ sv.showImg }}" hint-placeholder-val="{{ true }}">
+                          <img loading="lazy" data-zoomable="1" src="{{ sv.url }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
+                        </sc-if>
+                        <sc-if value="{{ sv.hasVid }}" hint-placeholder-val="{{ false }}">
+                          <video src="{{ sv.vidUrl }}" controls playsinline loop style="{{ sv.thumbStyle }}"></video>
+                        </sc-if>
                         <div style="display: flex; gap: 6px; padding: 6px;">
                           <button onClick="{{ sv.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 9.5px; letter-spacing: .04em; padding: 6px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
                           <button onClick="{{ sv.del }}" title="Sil" style="border: 1px solid rgba(192,57,43,.4); background: transparent; color: #e08a80; font-size: 11px; padding: 6px 9px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12);">🗑</button>
@@ -2808,7 +2822,14 @@ class Component extends DCLogic {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ action: 'video_status', videoJob: job })
       }).then(r => r.json()).then(d => {
-        if (d && d.ok && d.done && d.url) { this.setSceneImg(key, { vidBusy: false, vidUrl: d.url, vidJob: '', vidStatus: '' }); return; }
+        if (d && d.ok && d.done && d.url) {
+          const si0 = (this.state.sceneImgs || {})[key] || {};
+          this.setSceneImg(key, { vidBusy: false, vidUrl: d.url, vidJob: '', vidStatus: '' });
+          // Videoyu KALICI "Geçmiş Görseller" galerisine de ekle → sahneden çıksan da
+          // kaybolmaz, her cihazda bulunur (poster = sahne görseli, oynatılan = video).
+          if (si0.url) this.saveImg({ id: 'v_' + key, prompt: '🎬 Sahne videosu', ar: si0.ar || this.state.aspect || '', url: si0.url, vidUrl: d.url, ts: Date.now() });
+          return;
+        }
         if (d && d.ok && !d.done) { this.setSceneImg(key, { vidStatus: '🎬 HAZIRLANIYOR… (' + (tries + 1) + ')' }); this.pollVideo(key, job, tries + 1); return; }
         // Başarısız: sunucu krediyi İADE ettiyse bakiyeyi güncelle (rapor 4.4)
         if (d && d.refunded && typeof d.credits === 'number') this.setState({ credits: d.credits }, () => this.persist());
@@ -4020,11 +4041,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       hasAnyOutput: ((s.imgQueue || []).length > 0) || ((s.savedImgs || []).length > 0),
       outputCount: Math.max((s.imgQueue || []).filter(x => x.url).length, (s.savedImgs || []).length),
       savedImgList: (s.savedImgs || []).map(x => {
+        const hasVid = !!x.vidUrl;
         return {
           url: x.url,
+          hasVid,
+          showImg: !hasVid,
+          vidUrl: x.vidUrl || '',
           thumbStyle: this.thumbBox(x.ar),
           zoom: () => this.openZoom(x.url),
-          dl: () => this.dlImage(x.url),
+          dl: () => this.dlImage(hasVid ? x.vidUrl : x.url),
           del: () => this.delSavedImg(x.id)
         };
       }),
