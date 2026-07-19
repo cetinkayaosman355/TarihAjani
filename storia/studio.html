@@ -311,6 +311,8 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .pv-frame { position: relative; border-radius: 8px; background: var(--gold-sheen); box-shadow: 0 12px 34px rgba(0,0,0,.35); display: grid; place-items: center; transition: width .35s var(--ease), height .35s var(--ease); }
 .pv-frame .pv-mark { width: 30px; height: 30px; opacity: .9; }
 .pv-frame .pv-sample { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+.pv-frame-lg { overflow: hidden; }
+.pv-frame-lg .mini-orb { margin: auto; }
 /* Stil kartlarında gerçek örnek kare */
 .tile.stile { display: flex; align-items: center; gap: 12px; }
 .t-thumb { width: 62px; height: 42px; border-radius: 8px; background-size: cover; background-position: center; flex: none; border: 1px solid var(--line-2); box-shadow: var(--sh-1); }
@@ -769,8 +771,11 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
     <p id="authSub">Üretim yapmak ve dosyalarını kaydetmek için hesabına gir.</p>
     <!-- type'lar modal açılınca JS ile email/password yapılır; kapalıyken text kalır ki
          Safari sayfada gizli login formu görüp her alanda parola balonu göstermesin -->
-    <input class="field" type="text" id="authEmail" placeholder="E-posta adresin" autocomplete="off" name="storia-mail">
-    <input class="field" type="text" id="authPass" placeholder="Parola" autocomplete="off" name="storia-pass" style="-webkit-text-security:disc">
+    <!-- Kapalıyken tamamen nötr text alanları (maskeleme YOK) — Safari sayfada
+         parola formu görmesin, fikir kutusunda autofill balonu çıkmasın.
+         Modal açılınca JS gerçek email/password tiplerini verir. -->
+    <input class="field" type="text" id="authEmail" placeholder="E-posta adresin" autocomplete="off" autocapitalize="off" autocorrect="off" name="storia_q1" data-1p-ignore data-lpignore="true">
+    <input class="field" type="text" id="authPass" placeholder="Parola" autocomplete="off" autocapitalize="off" autocorrect="off" name="storia_q2" data-1p-ignore data-lpignore="true">
     <button class="btn btn-gold" id="authSubmit">Devam et</button>
     <div class="alt" id="authAlt">Hesabın yok mu? <a id="authSwitch">Kayıt ol</a></div>
     <div class="alt"><a id="authClose">Kapat</a></div>

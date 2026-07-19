@@ -37,6 +37,8 @@
     // stüdyolarda üretilen medyanın kalıcı listesi (Kütüphane'de görünür)
     media: [],
     libFilter: 'all',
+    // Tarz ekranında canlı üretilen stil önizlemeleri (stil id → görsel url), busy stil id
+    stylePreview: {}, spBusy: null,
     // açık olan geçmiş kaydı (üretilen medya buraya kalıcı yazılır)
     _cur: null
   };
@@ -369,20 +371,6 @@
     { id: 'pixar', name: 'Sinematik 3D Animasyon', desc: 'Pixar tarzı sinema animasyonu', en: 'cinematic 3D animated film still, Pixar/DreamWorks quality, appealing stylized characters, soft global illumination, warm cinematic lighting, rich subsurface skin, shallow depth of field, feature-film render polish', mo: 'smooth animated camera move, buttery cinematic dolly, expressive character motion' },
     { id: 'minimal', name: 'Minimal', desc: 'Sade, zarif, geometrik', en: 'minimalist editorial composition, elegant negative space, refined geometry, single hero subject, soft even studio light, muted premium palette, crisp and clean', mo: 'slow elegant push-in, calm steady motion, refined restraint' }
   ];
-  // Her görsel stil için GERÇEK örnek kare — aynı sahne (deniz feneri), 9 farklı tarz.
-  // Tarz seçerken sağdaki önizlemede ve stil kartlarında görünür.
-  var STYLE_CDN = 'https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/';
-  var STYLE_SAMPLES = {
-    ultra: STYLE_CDN + 'hf_20260719_160339_0bf0c876-e988-4e21-8c29-3e80a22bef27_min.webp',
-    sinematik: STYLE_CDN + 'hf_20260719_160341_5b50d43e-044a-44ce-875a-0f28ba93b9ff_min.webp',
-    fotogercek: STYLE_CDN + 'hf_20260719_160343_d158776e-4b71-4eb1-8514-35a451c62a6f_min.webp',
-    belgesel: STYLE_CDN + 'hf_20260719_160344_0f5a81fb-7a3f-47b6-89df-d57396423200_min.webp',
-    render3d: STYLE_CDN + 'hf_20260719_160346_d8207667-e6ab-4168-911b-986a68d89fe6_min.webp',
-    illus: STYLE_CDN + 'hf_20260719_160348_0301796c-512b-4758-9698-46ea782a1bcf_min.webp',
-    anime: STYLE_CDN + 'hf_20260719_160349_5a9b1814-c7b1-4e35-bd46-8bb39d415558_min.webp',
-    pixar: STYLE_CDN + 'hf_20260719_160351_fb722063-6671-4874-9039-cf1a57667443_min.webp',
-    minimal: STYLE_CDN + 'hf_20260719_160352_7774d00b-f8dd-49ab-9f7b-d84add0bc964_min.webp'
-  };
   var MODES = [
     { name: 'Shorts / TikTok', desc: '15 sn · Dikey', sec: 15, aspect: '9:16', tone: 'enerjik' },
     { name: 'Kısa Video', desc: '60 sn · Dikey', sec: 60, aspect: '9:16', tone: 'enerjik' },
@@ -531,7 +519,7 @@
       '<h1 class="display">Ne anlatmak istiyorsun?</h1>' +
       '<p class="sub">Bir cümle yeter. Gerisini Storia stüdyosu kurar.</p>' +
       '<div class="compose-box">' +
-        '<textarea id="ideaInput" placeholder="Örn: Okyanusun en derin noktasında ne var?" rows="2">' + esc(S.idea) + '</textarea>' +
+        '<textarea id="ideaInput" placeholder="Örn: Okyanusun en derin noktasında ne var?" rows="2" autocomplete="off" autocapitalize="sentences" autocorrect="on" data-1p-ignore data-lpignore="true">' + esc(S.idea) + '</textarea>' +
         '<div class="compose-tools"><div class="left">' +
           '<button class="btn btn-quiet btn-sm" data-act="suggest">✦ Sen öner</button>' +
           '<button class="btn btn-quiet btn-sm tool-toggle' + (S.tools.open ? ' on' : '') + '" data-act="toolsToggle">Üretim araçları <span class="chev">' + (S.tools.open ? '▴' : '▾') + '</span></button>' +
@@ -563,9 +551,9 @@
         '<div class="t-name">' + esc(v.name) + prem + chk + '</div><div class="t-desc">' + esc(v.desc) + '</div></div>';
     }).join('');
     var styleTiles = STYLES.map(function (st) {
-      var sm = STYLE_SAMPLES[st.id];
+      var sm = S.stylePreview[st.id];
       return '<div class="tile' + (sm ? ' stile' : '') + (S.style === st.id ? ' on' : '') + '" data-act="style" data-v="' + st.id + '">' +
-        (sm ? '<span class="t-thumb" style="background-image:url(\'' + sm + '\')"></span>' : '') +
+        (sm ? '<span class="t-thumb" style="background-image:url(\'' + esc(sm) + '\')"></span>' : '') +
         '<span class="t-txt"><span class="t-name">' + esc(st.name) + '</span><span class="t-desc">' + esc(st.desc) + '</span></span></div>';
     }).join('');
     var aspects = [{ id: '16:9', w: 36, h: 21, l: 'Yatay' }, { id: '9:16', w: 21, h: 36, l: 'Dikey' }, { id: '1:1', w: 28, h: 28, l: 'Kare' }]
@@ -593,15 +581,22 @@
     var sec = S.durationSec, scenes = sceneFor(sec), cost = costGen(sec);
     var dim = S.aspect === '9:16' ? [92, 164] : S.aspect === '1:1' ? [130, 130] : [176, 99];
     var title = S.idea.trim() ? esc(S.idea.trim().slice(0, 60)) : 'Dosya başlığın burada';
-    var sample = STYLE_SAMPLES[S.style];
+    var sample = S.stylePreview[S.style];       // bu stilde CANLI üretilmiş örnek (senin konun)
+    var busy = S.spBusy === S.style;
+    var big = sample || busy;
+    var frame = big
+      ? '<div class="pv-frame pv-frame-lg" style="width:' + Math.round(dim[0] * 1.55) + 'px;height:' + Math.round(dim[1] * 1.55) + 'px">' +
+          (busy ? '<span class="mini-orb"></span>' : '<img class="pv-sample" src="' + esc(sample) + '" alt="' + esc(styleObj().name) + ' örneği">') +
+        '</div>'
+      : '<div class="pv-frame" style="width:' + dim[0] + 'px;height:' + dim[1] + 'px"><img class="pv-mark" src="/storia/assets/mark.svg" alt=""></div>';
+    var spCta = busy
+      ? '<button class="btn btn-quiet btn-sm" disabled style="margin-top:12px">⏳ ' + esc(styleObj().name) + ' örneği üretiliyor…</button>'
+      : '<button class="btn ' + (sample ? 'btn-quiet' : 'btn-soft') + ' btn-sm" data-act="stylePreview" style="margin-top:12px" title="Yazdığın konuyu bu stilde küçük bir örnek görselle gör">' +
+          (sample ? '↻ ' + esc(styleObj().name) + ' örneğini yenile' : '✨ Bu stili örnekle') + ' · ' + imgCr() + 'kr</button>';
     return '<div class="preview"><div class="pv-card">' +
-      '<div class="pv-canvas"><div class="pv-frame" style="width:' + (sample ? Math.round(dim[0] * 1.5) : dim[0]) + 'px;height:' + (sample ? Math.round(dim[1] * 1.5) : dim[1]) + 'px">' +
-        (sample
-          ? '<img class="pv-sample" src="' + sample + '" alt="' + esc(styleObj().name) + ' stil örneği" onerror="this.remove()">'
-          : '<img class="pv-mark" src="/storia/assets/mark.svg" alt="">') +
-      '</div></div>' +
+      '<div class="pv-canvas">' + frame + '</div>' +
       '<div class="pv-body">' +
-        '<div class="pv-eyebrow">Önizleme · ' + S.aspect + (sample ? ' · gerçek stil örneği' : '') + '</div>' +
+        '<div class="pv-eyebrow">Önizleme · ' + S.aspect + (sample ? ' · ' + esc(styleObj().name) + ' — canlı örnek' : '') + '</div>' +
         '<div class="pv-title">' + title + '</div>' +
         '<div class="pv-chips"><span>' + (S.lang === 'en' ? 'English' : 'Türkçe') + '</span><span>' + esc(toneName()) + '</span><span>' + esc(VOICES[S.voiceIdx].name) + '</span><span>' + esc(styleObj().name) + '</span></div>' +
         '<div class="pv-stats">' +
@@ -609,6 +604,7 @@
           '<div class="pv-stat"><div class="k">~' + scenes + '</div><div class="l">Sahne</div></div>' +
           '<div class="pv-stat"><div class="k">' + cost + '</div><div class="l">Kredi</div></div>' +
         '</div>' +
+        spCta +
       '</div>' +
       '<div class="pv-cta"><button class="btn btn-gold btn-lg" data-act="generate">Dosyayı üret →</button>' +
       '<button class="btn btn-quiet btn-sm" data-act="generateAuto" style="margin-top:10px" title="Dosya + tüm sahne görselleri + seslendirme, tek tuşla sırayla üretilir">⚡ Tek tuşla üret — görseller + ses dahil</button>' +
@@ -1159,7 +1155,7 @@
       var cnt = document.getElementById('ideaCount');
       var upd = function () { S.idea = idea.value; if (cnt) cnt.textContent = idea.value.trim().length ? idea.value.trim().length + ' karakter' : ''; };
       idea.addEventListener('input', upd); upd();
-      idea.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (S.idea.trim()) { S.step = 2; render(); } else toast('Önce bir fikir yaz'); } });
+      idea.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (S.idea.trim()) { if (S.stylePreview._for !== S.idea) S.stylePreview = { _for: S.idea }; S.step = 2; render(); } else toast('Önce bir fikir yaz'); } });
       setTimeout(function () { idea.focus(); }, 60);
     }
     var custom = document.getElementById('customInput');
@@ -1206,7 +1202,7 @@
       case 'seriesToggle': var _ep = S.series.eps[parseInt(v, 10)]; if (_ep) _ep.on = !(_ep.on !== false); break;
       case 'seriesRun': runSeries(); break;
       case 'seriesClose': S.series.open = false; render(); break;
-      case 'toStep2': if (!S.idea.trim()) { toast('Önce bir fikir yaz'); break; } S.step = 2; render(); break;
+      case 'toStep2': if (!S.idea.trim()) { toast('Önce bir fikir yaz'); break; } if (S.stylePreview._for !== S.idea) S.stylePreview = { _for: S.idea }; S.step = 2; render(); break;
       case 'back': S.step = 1; render(); break;
       case 'goStep': var _gn = parseInt(v, 10); if (_gn === 4 && !S.result) break; if (_gn === 3) break; S.step = _gn; render(); break;
       case 'tone': S.tone = v; render(); break;
@@ -1219,6 +1215,7 @@
       case 'generate': startGenerate(false); break;
       case 'generateAuto': S._autoAfter = true; startGenerate(false); break;
       case 'autopilot': autoPilot(); break;
+      case 'stylePreview': genStylePreview(); break;
       case 'regen': startGenerate(true); break;
       case 'reviseChat': openChat(); break;
       case 'dubOpen': S.dub.open = !S.dub.open; render(); break;
@@ -1292,7 +1289,7 @@
 
   function applyMode(i) { var m = MODES[i]; if (!m) return; S.durationSec = m.sec; S.aspect = m.aspect; S.tone = m.tone; render(); toast(m.name + ' seçildi'); }
   function applyTemplate(i) { var t = TEMPLATES[i]; if (!t) return; S.template = i; S.tone = t.tone; S.style = t.style; S.durationSec = t.sec; S.aspect = t.aspect; render(); toast(t.name + ' şablonu · tarz ayarlandı'); }
-  function startNew() { S.result = null; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.idea = ''; S.custom = ''; S.autopilot = false; S._autoAfter = false; S._apStop = true; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
+  function startNew() { S.result = null; S.images = {}; S.covers = {}; S.videos = {}; S.videoJobs = {}; S.chars = {}; S.audio = null; S.idea = ''; S.custom = ''; S.stylePreview = {}; S.spBusy = null; S.autopilot = false; S._autoAfter = false; S._apStop = true; S.step = 1; S.view = 'new'; S.tab = 'senaryo'; render(); }
 
   // ── Generation ───────────────────────────────────────────────────────
   function startGenerate(isRegen) {
@@ -1340,6 +1337,31 @@
     saveHist();
   }
   function demoGenerate() { setTimeout(function () { finishGen(synthDemo(), true); }, 5200); }
+
+  // ── Canlı stil önizlemesi — Grok/Kling gibi: yazdığın konuyu SEÇİLİ stilde
+  // küçük bir örnek görselle gösterir. Kalite seçicisi motoru belirler
+  // (Nano Banana / gpt-image). Her stil ayrı önbelleğe alınır ki stiller arası
+  // "belgesel mi minimal mi" karşılaştırması yapılabilsin.
+  function genStylePreview() {
+    var st = styleObj();
+    if (S.spBusy) { toast('Önce mevcut örnek bitsin'); return; }
+    var subject = S.idea.trim() || (S.lang === 'en' ? 'a striking hero scene for this video' : 'bu video için çarpıcı bir açılış sahnesi');
+    var prompt = subject + ' — ' + st.en + '. No text, no letters, no words, no logo, no watermark.';
+    if (!REAL) {
+      S.spBusy = S.style; render();
+      setTimeout(function () { S.stylePreview[S.style] = demoImage(Object.keys(S.stylePreview).length, S.aspect); S.spBusy = null; render(); toast(st.name + ' örneği hazır (demo)'); }, 900);
+      return;
+    }
+    if (!S.user) { openAuth(); return; }
+    var forStyle = S.style;
+    S.spBusy = forStyle; render();
+    callFn({ action: 'image', prompt: prompt, size: S.aspect, quality: S.imgQuality, stylePrev: 1 }).then(function (d) {
+      S.spBusy = null;
+      if (d && d.ok && d.url) { S.stylePreview[forStyle] = d.url; if (typeof d.credits === 'number') S.credits = d.credits; addMedia('img', d.url, st.name + ' stil örneği · ' + subject.slice(0, 40)); chrome(); toast(st.name + ' örneği hazır ✦'); }
+      else toast((d && d.error) || 'Örnek üretilemedi');
+      render();
+    }).catch(function () { S.spBusy = null; render(); toast('Bağlantı hatası'); });
+  }
 
   // ── Otomatik pilot — TEK TUŞLA: görseller → seslendirme → yayın paketi.
   // Stepper gözle görülür şekilde adım adım ilerler; her aşama bitince sıradakine geçer.
