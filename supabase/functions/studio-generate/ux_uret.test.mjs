@@ -68,6 +68,28 @@ test("Prompt varsayılan gizli: 'Promptu Gör' aç/kapa — metin kaybolmaz", ()
   assert.ok(studioSrc.includes("{{ gp.prompt }}"), "prompt metni hâlâ kaynakta (kaybolmadı)");
 });
 
+test("Ana CTA (Freeze v1): 'Tüm Görselleri Üret · N sahne · X KR' — gerçek tarife", () => {
+  assert.ok(studioSrc.includes("'◈ TÜM GÖRSELLERİ ÜRET · ' + idxs.length + ' sahne · ' + kr + ' KR'"), "CTA metni sahne sayısı + toplam kredi");
+  assert.ok(studioSrc.includes("a + this.IMG_COST(i)"), "kredi toplamı gerçek kademeli tarifeden (sunucu costFor aynası)");
+  assert.ok(!studioSrc.includes("ile Tüm Sahneleri Üret"), "eski CTA metni kalmadı");
+});
+
+test("Taksonomi: oran satırının adı ORAN (Kadraj=çerçeveleme PR-3'e ait)", () => {
+  assert.ok(studioSrc.includes(">ORAN</span>"), "oran seçici etiketi ORAN");
+  assert.ok(!/letter-spacing: \.14em;">KADRAJ</.test(studioSrc), "oran satırında eski KADRAJ etiketi kalmadı");
+});
+
+test("Motor notu (Freeze v1 dili): 'seçildi — bu üretim için öneriliyor'", () => {
+  assert.ok(studioSrc.includes("seçildi — bu üretim için öneriliyor"), "otomatik seçim açıklaması kullanıcı dilinde");
+  assert.ok(studioSrc.includes("Motor elle seçildi: "), "manuel seçim durumu gösterilir");
+});
+
+test("Mobil: ayar satırları yatay carousel + ana CTA sticky", () => {
+  assert.ok((studioSrc.match(/class="ta-setrow"/g) || []).length >= 3, "PLATFORM/ORAN/MOTOR satırları carousel sınıflı");
+  assert.ok(studioSrc.includes(".ta-setrow { flex-wrap: nowrap !important; overflow-x: auto;"), "carousel CSS");
+  assert.ok(studioSrc.includes("position: sticky; bottom: 10px; z-index: 30;"), "ana CTA mobilde sticky");
+});
+
 test("Mobil: ana CTA taşamaz (ta-genall) + 44px dokunma hedefleri", () => {
   assert.ok(studioSrc.includes('class="ta-genall"'), "Tümünü Üret butonunda mobil sınıfı");
   assert.ok(studioSrc.includes(".ta-genall { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; white-space: normal !important;"), "mobilde tam genişlik + sarılabilir");

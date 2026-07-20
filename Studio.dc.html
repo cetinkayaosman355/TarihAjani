@@ -212,10 +212,13 @@
       transition: border-color .2s, box-shadow .2s; }
     .ta-card:hover { border-color: rgba(193,154,82,.38);
       box-shadow: 0 26px 60px -38px rgba(0,0,0,.9), 0 0 42px -22px rgba(201,162,90,.22); }
-    /* PR-2 mobil (≤480px): ana CTA taşamaz (tam genişlik, sarılabilir), dokunma hedefleri ≥44px */
+    /* PR-2 mobil (≤480px): ana CTA taşamaz + sticky; ayar satırları yatay carousel; dokunma ≥44px */
     @media (max-width: 480px) {
-      .ta-genall { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; white-space: normal !important; line-height: 1.35; }
+      .ta-genall { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; white-space: normal !important; line-height: 1.35;
+        position: sticky; bottom: 10px; z-index: 30; box-shadow: 0 10px 30px rgba(0,0,0,.55); }
       .ta-card button { min-height: 44px; }
+      .ta-setrow { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; scrollbar-width: thin; }
+      .ta-setrow button { white-space: nowrap; flex: 0 0 auto; }
     }
 
     /* ── U-02: dosya sekmeleri — mobilde tek satır kaydırmalı ── */
@@ -755,7 +758,7 @@
             </div>
             <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-              <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">KADRAJ</span>
+              <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">ORAN</span>
               <sc-for list="{{ imgAspects }}" as="ia" hint-placeholder-count="3">
                 <button onClick="{{ ia.pick }}" style="{{ ia.style }}">{{ ia.label }}</button>
               </sc-for>
@@ -1247,7 +1250,7 @@
               <div style="display: grid; gap: 10px;">
                 <div style="border: 1px solid rgba(193,154,82,.25); background: rgba(193,154,82,.05); padding: 12px 16px; display: grid; gap: 10px;">
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-                    <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.5; max-width: 62ch;">Aşağıda seçtiğin <strong style="color:#e6c478;">KADRAJ</strong> ve <strong style="color:#e6c478;">STİL</strong> her sahnenin <strong style="color:#e6c478;">GÖRSEL ÜRET</strong>'ine uygulanır (sihirbazda seçtiğin ayar hazır gelir). Üretilenler <strong style="color:#e6c478;">Görsel Stüdyo (Üretilenler)</strong> rafına eklenir; sekme değişmez, hepsini sırayla üretebilirsin. <strong style="color:#e6c478;">İlk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR.</strong></p>
+                    <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.5; max-width: 62ch;">Aşağıda seçtiğin <strong style="color:#e6c478;">PLATFORM</strong>, <strong style="color:#e6c478;">ORAN</strong> ve <strong style="color:#e6c478;">STİL</strong> her sahnenin <strong style="color:#e6c478;">GÖRSEL ÜRET</strong>'ine uygulanır (sihirbazda seçtiğin ayar hazır gelir). Üretilenler <strong style="color:#e6c478;">Görsel Stüdyo (Üretilenler)</strong> rafına eklenir; sekme değişmez, hepsini sırayla üretebilirsin. <strong style="color:#e6c478;">İlk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR.</strong></p>
                     <span style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <sc-if value="{{ hasPendingScenes }}" hint-placeholder-val="{{ true }}">
                       <button class="ta-genall" onClick="{{ genAll }}" disabled="{{ batchBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
@@ -1313,14 +1316,14 @@
                       </div>
                     </div>
                   </sc-if>
-                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <div class="ta-setrow" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                     <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">PLATFORM</span>
                     <sc-for list="{{ imgPlatforms }}" as="pl" hint-placeholder-count="3">
                       <button onClick="{{ pl.pick }}" style="{{ pl.style }}">{{ pl.label }}</button>
                     </sc-for>
                   </div>
-                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                    <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">KADRAJ</span>
+                  <div class="ta-setrow" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">ORAN</span>
                     <sc-for list="{{ imgAspects }}" as="ia" hint-placeholder-count="3">
                       <button onClick="{{ ia.pick }}" style="{{ ia.style }}">{{ ia.label }}</button>
                     </sc-for>
@@ -1333,7 +1336,7 @@
                       <button onClick="{{ st.pick }}" style="{{ st.style }}">{{ st.label }}</button>
                     </sc-for>
                   </div>
-                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <div class="ta-setrow" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                     <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">MOTOR</span>
                     <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
                       <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
@@ -1523,7 +1526,7 @@
                 <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 56ch;">Prompt yaz ya da kapak promptunu al; kadraj ve stili seç, görsel üret. Bu hikâyede ürettiklerin aşağıdaki rafta çıkar. Tüm eski üretimlerin <strong style="color:#e6c478;">Geçmiş Görseller</strong> sekmesinde hesabınıza kalıcı bağlı (cihazlar arası).</p>
                 <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">KADRAJ</span>
+                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">ORAN</span>
                   <sc-for list="{{ imgAspects }}" as="ia" hint-placeholder-count="3">
                     <button onClick="{{ ia.pick }}" style="{{ ia.style }}">{{ ia.label }}</button>
                   </sc-for>
@@ -4873,8 +4876,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           }
         };
       }),
-      // Şeffaflık: Otomatik moddayken gerçekte hangi motorun kullanılacağı açıkça yazılır.
-      imgAutoNote: this._provIsAuto() ? ('⚡ Otomatik: ' + this._provModelLabel() + ' seçildi') : ('✋ Motor elle seçildi: ' + this._provModelLabel()),
+      // Şeffaflık (Freeze v1 dili): hangi motorun seçildiği kısa ve anlaşılır yazılır.
+      imgAutoNote: this._provIsAuto()
+        ? (this._provModelLabel() + ' seçildi — bu üretim için öneriliyor')
+        : ('Motor elle seçildi: ' + this._provNm() + ' · ' + this._provModelLabel()),
       imgGoLabel: (s.imgJobs || 0) > 0 ? '⟳ ÜRETİLİYOR… (' + s.imgJobs + ')' : ('◈ ' + this._provModelLabel(s.imgProvider) + (this._provIsAuto() ? ' (Otomatik)' : '') + ' ile Üret · 12 KR'),
       imgJobsOn: (s.imgJobs || 0) > 0,
       imgJobsMsg: (s.imgJobs || 0) > 1 ? (s.imgJobs + ' GÖRSEL ÜRETİLİYOR… RAFA EKLENECEK') : 'GÖRSEL ÜRETİLİYOR… RAFA EKLENECEK',
@@ -5308,8 +5313,14 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       closeBatchSummary: () => this.closeBatchSummary(),
       batchBusy: !!s.batchRunning,
       batchRunning: !!s.batchRunning,
+      // ANA CTA (Freeze v1): "Tüm Görselleri Üret · N sahne · X KR" — kredi GERÇEK
+      // kademeli tarifeden (IMG_COST, sunucu costFor ile aynı formül); tahmin yok.
       genAllLabel: s.batchRunning ? '⟳ ÜRETİLİYOR…'
-        : ('◈ ' + this._provNm() + ' ile Tüm Sahneleri Üret (' + ((r.gorsel_promptlar || []).filter((x, i) => x && x.prompt && !((((s.sceneImgs || {})['gp' + i]) || {}).done)).length) + ')'),
+        : (() => {
+          const idxs = (r.gorsel_promptlar || []).map((x, i) => (x && x.prompt && !((((s.sceneImgs || {})['gp' + i]) || {}).done)) ? i : -1).filter(i => i >= 0);
+          const kr = idxs.reduce((a, i) => a + this.IMG_COST(i), 0);
+          return '◈ TÜM GÖRSELLERİ ÜRET · ' + idxs.length + ' sahne · ' + kr + ' KR';
+        })(),
       hasPendingScenes: !!s.result && (r.gorsel_promptlar || []).some((x, i) => x && x.prompt && !((((s.sceneImgs || {})['gp' + i]) || {}).done)),
       // ── KUYRUK ÖZETİ · İLERLEME · AKTİF SAHNE · KONTROL · SONUÇ ──
       // Tek geçişte hesaplanır (s.batchTick her sn re-render'ı tetikler → canlı kalan süre).
