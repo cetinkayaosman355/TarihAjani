@@ -235,6 +235,65 @@ const NO_SPLIT =
   "NO before/after comparison, NO internal borders, frames or dividing lines. The main subject appears only once. " +
   "Fill the entire frame edge-to-edge with a single coherent, photorealistic image.";
 
+// ── MERKEZİ STİL SİSTEMİ (tek kaynak) ────────────────────────────────
+// Her stilin KENDİ prompt şablonu. Kullanıcı hangi stili seçtiyse YALNIZ onun
+// şablonu eklenir → stiller birbirine KARIŞMAZ, seçim gerçekten farklı sonuç verir.
+// Anahtar istemciden gelir (b.style); geçersiz/boşsa stil eklenmez.
+const STYLE_TEMPLATES: Record<string, string> = {
+  sinematik: "dark moody cinematic film still, extreme low-key lighting, flame light carving figures out of deep black shadow, strong chiaroscuro and silhouettes, near-monochrome cold palette with warm amber accents, volumetric haze, ultra-photorealistic",
+  hollywood: "ultra-photorealistic cinematic still shot on ARRI Alexa 65 with Zeiss Master Prime lenses, professional cinema lighting, richly and evenly lit epic scale, tack-sharp crisp fine detail, true-to-life skin and fabric textures, rich saturated colors, deep contrast and high dynamic range, vivid punchy color grade, shallow depth of field, 8K clarity, hyperreal",
+  belgeselfoto: "clean realistic documentary photograph, natural daylight, rich true-to-life colors, tack-sharp crisp focus with fine detail, deep contrast and high dynamic range, editorial history-magazine look, grounded and believable",
+  gravur: "vintage engraving illustration, copperplate etching texture, fine cross-hatching, period line-art style, aged parchment tones, full-bleed composition, no decorative frame, no border",
+  minyatur: "traditional Ottoman-Persian miniature illustration, flat stylized perspective, gold-leaf accents, vivid tempera colors, full-bleed composition, no decorative border, no frame",
+  animasyon: "high-quality 3D animated feature film still, Pixar-DreamWorks style stylized characters with expressive faces, soft global illumination, warm vibrant colors, cinematic composition, charming family-animation look",
+};
+const STYLE_LABELS: Record<string, string> = {
+  sinematik: "Sinematik", hollywood: "Gerçekçi", belgeselfoto: "Belgesel",
+  gravur: "Gravür", minyatur: "Minyatür", animasyon: "Animasyon",
+};
+function styleKeyOf(id: unknown): string { return String(id || "").trim().toLowerCase(); }
+function styleTemplate(id: unknown): string {
+  const t = STYLE_TEMPLATES[styleKeyOf(id)];
+  return t ? ("\n\nSTYLE (only this style applies): " + t + ".") : "";
+}
+
+// ── GÖRSEL META (şeffaflık): ham baytlardan çözünürlük + biçim + bayt sayısı ──
+// PNG/JPEG başlığını SAF JS ile okur (WASM gerektirmez). Kartta çözünürlük/biçim/
+// dosya boyutu göstermek için. Çözemezse alanlar 0/"" döner (üretim etkilenmez).
+function imageInfo(dataUri: string): { w: number; h: number; bytes: number; fmt: string } {
+  const out = { w: 0, h: 0, bytes: 0, fmt: "" };
+  const m = /^data:image\/([a-z0-9.+-]+);base64,(.*)$/i.exec(dataUri || "");
+  if (!m) return out;
+  out.fmt = m[1].toLowerCase() === "jpg" ? "jpeg" : m[1].toLowerCase();
+  let bin: string;
+  try { bin = atob(m[2]); } catch { return out; }
+  out.bytes = bin.length;
+  const b = (i: number) => bin.charCodeAt(i) & 0xff;
+  if (out.bytes > 24 && b(0) === 0x89 && b(1) === 0x50 && b(2) === 0x4e && b(3) === 0x47) {   // PNG
+    out.fmt = "png";
+    out.w = (b(16) << 24) | (b(17) << 16) | (b(18) << 8) | b(19);
+    out.h = (b(20) << 24) | (b(21) << 16) | (b(22) << 8) | b(23);
+    return out;
+  }
+  if (out.bytes > 4 && b(0) === 0xff && b(1) === 0xd8) {   // JPEG → SOF marker
+    out.fmt = "jpeg";
+    let i = 2;
+    while (i + 9 < out.bytes) {
+      if (b(i) !== 0xff) { i++; continue; }
+      const marker = b(i + 1);
+      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+        out.h = (b(i + 5) << 8) | b(i + 6);
+        out.w = (b(i + 7) << 8) | b(i + 8);
+        return out;
+      }
+      const len = (b(i + 2) << 8) | b(i + 3);
+      if (len < 2) break;
+      i += 2 + len;
+    }
+  }
+  return out;
+}
+
 // ── STABİLİZASYON Faz 3: GÖRSEL HATA SINIFLANDIRMASI ──────────────
 // Tek tip hata sınıfı: hem sunucu logları hem istemci mesajı için. "transient"
 // = tekrar denenebilir (429/5xx/ağ/timeout). "modelMissing" = model düzeyi sorun
@@ -284,7 +343,7 @@ async function runImageChain(
   chain: string[],
   provider: string,
   opId: string | undefined,
-  diag: { d: string; cls?: string } | undefined,
+  diag: { d: string; cls?: string; model?: string; provider?: string } | undefined,
   callOnce: (model: string, isPrimary: boolean) => Promise<ImgCall>,
 ): Promise<string> {
   const MAX_CALLS = 3;
@@ -301,6 +360,7 @@ async function runImageChain(
       const ms = Date.now() - t0;
       if (res.url) {
         console.log(`img_ok op=${opId || "-"} provider=${provider} model=${model} attempt=${attemptNo} calls=${totalCalls} ms=${ms}`);
+        if (diag) { diag.model = model; diag.provider = provider; }   // META: gerçekten kullanılan model/sağlayıcı
         return res.url;
       }
       const ci = classifyImgErr(res.status, res.timeout, res.body);
@@ -330,7 +390,7 @@ async function runImageChain(
 // Her iki yol da AYNI ortak orchestrator'ı (runImageChain) kullanır → Faz 3
 // değişmezleri (max 3 çağrı, geçici retry, hata sınıflandırma, opId log) korunur.
 // diag: başarısızlıkta SON gerçek sebep (model + sınıf) + sınıf kodu buraya yazılır.
-async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string }, opId?: string, providerOverride?: string): Promise<string> {
+async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string; model?: string; provider?: string }, opId?: string, providerOverride?: string, style?: string): Promise<string> {
   if (!prompt.trim()) return "";
   // Sağlayıcı: istemciden doğrulanmış imageProvider (providerOverride) > env varsayılanı > openai.
   const provider = (providerOverride || Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim().toLowerCase();
@@ -348,7 +408,8 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   const COMPOSITION = "\n\nCOMPOSITION: primary subjects occupy approximately 60-75% of the frame; " +
     "medium shot by default; avoid excessive headroom; avoid large empty space above the subjects; " +
     "cinematic close-medium framing unless the prompt explicitly requests a wide establishing shot.";
-  const p = prompt.trim().slice(0, 29000) + NO_SPLIT + VERTICAL_SAFE + COMPOSITION;   // anti-split + (dikeyde) güvenli kadraj + kompozisyon paritesi
+  // MERKEZİ STİL: yalnız seçilen stilin şablonu eklenir (styleTemplate; boşsa hiç).
+  const p = prompt.trim().slice(0, 29000) + styleTemplate(style) + NO_SPLIT + VERTICAL_SAFE + COMPOSITION;   // stil + anti-split + (dikeyde) güvenli kadraj + kompozisyon paritesi
 
   // ── GEMINI YOLU ── (yalnız TA_IMAGE_PROVIDER=gemini). OpenAI'ye düşülmez.
   if (provider === "gemini") {
@@ -1349,8 +1410,13 @@ Deno.serve(async (req) => {
         logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId, err: "CREDIT_SYSTEM_UNAVAILABLE" });
         return json({ ok: false, error: "Kredi sistemi şu an kullanılamıyor. Görsel üretilmedi, kredi düşülmedi. Lütfen birazdan tekrar deneyin.", errClass: "CREDIT_SYSTEM_UNAVAILABLE" }, 503);
       }
-      const diag: { d: string; cls?: string } = { d: "" };
-      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), diag, opId, imgProv);
+      const diag: { d: string; cls?: string; model?: string; provider?: string } = { d: "" };
+      const styleKey = styleKeyOf(b.style);
+      const tGen = Date.now();
+      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), diag, opId, imgProv, styleKey);
+      const genMs = Date.now() - tGen;
+      // META (şeffaflık): çözünürlük/biçim/bayt HAM data URI'den okunur (upload ÖNCESİ)
+      const info = (url && url.startsWith("data:")) ? imageInfo(url) : { w: 0, h: 0, bytes: 0, fmt: "" };
       if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
       // CİHAZLAR ARASI: data: URI cihaza özeldir → Storage'a yükle, kalıcı URL ver
       if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
@@ -1361,13 +1427,25 @@ Deno.serve(async (req) => {
         // Sebep + hata sınıfı GÖRÜNÜR: kullanıcı/destek loglara bakmadan neyin patladığını bilir
         return json({ ok: false, error: "Görsel üretilemedi" + (diag.d ? " — sebep: " + diag.d : "") + ". Kredi düşülmedi, tekrar dene.", errClass: diag.cls, credits }, 502);
       }
+      // KART META (teknik şeffaflık): sağlayıcı, model, stil, biçim, kadraj, çözünürlük, boyut, süre, kredi
+      const meta = {
+        provider: diag.provider === "gemini" ? "Gemini" : "GPT",
+        model: diag.model || "",
+        style: STYLE_LABELS[styleKey] || "",
+        format: (info.fmt || "").toUpperCase(),
+        aspect: String(b.size || ""),
+        resolution: (info.w && info.h) ? (info.w + "×" + info.h) : "",
+        bytes: info.bytes,
+        ms: genMs,
+        cost,
+      };
       if (cost > 0 && admin && userId) {
         // Buraya geldiysek res.reserved KESİN true (aksi halde yukarıda 503 döndük) →
         // rezervasyonu finalize et; eski spendSafe'e sessiz düşüş YOK.
         await finalizeOp(admin, opId);
-        return json({ ok: true, url, charged: true, credits: res.credits });
+        return json({ ok: true, url, charged: true, credits: res.credits, meta });
       }
-      return json({ ok: true, url, charged: false });
+      return json({ ok: true, url, charged: false, meta });
     }
 
     // GÖRSEL DÜZENLEME — mevcut görseli korur, istenen değişikliği uygular (rezerve-first)
