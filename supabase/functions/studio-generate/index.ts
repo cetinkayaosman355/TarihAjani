@@ -334,7 +334,13 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   if (!prompt.trim()) return "";
   // Sağlayıcı: istemciden doğrulanmış imageProvider (providerOverride) > env varsayılanı > openai.
   const provider = (providerOverride || Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim().toLowerCase();
-  const p = prompt.trim().slice(0, 29000) + NO_SPLIT;   // anti-split kural (kesilmeye karşı sonda, prompt kırpılmış)
+  // DİKEY (9:16) GÜVENLİ KOMPOZİSYON: OpenAI 1024x1536 (2:3) üretir, istemci 9:16'ya kırpar
+  // (üst/alt kesilir). Ana özneyi merkez güvenli alanda tutan talimat YALNIZ dikeyde eklenir →
+  // merkezden kırpma kritik içeriği kesmez (kör kırpma yerine kompozisyon-güvenli sonuç).
+  const VERTICAL_SAFE = size === "9:16"
+    ? "\n\nVERTICAL 9:16 COMPOSITION: main subject inside central safe area, no critical subjects near top/bottom crop zones."
+    : "";
+  const p = prompt.trim().slice(0, 29000) + NO_SPLIT + VERTICAL_SAFE;   // anti-split + (dikeyde) güvenli kadraj
 
   // ── GEMINI YOLU ── (yalnız TA_IMAGE_PROVIDER=gemini). OpenAI'ye düşülmez.
   if (provider === "gemini") {
@@ -389,17 +395,17 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   const key = Deno.env.get("OPENAI_API_KEY");
   if (!key) { if (diag) { diag.d = "OPENAI_API_KEY tanımsız"; diag.cls = "AUTH_ERROR"; } return ""; }
   // gpt-image oranları: kare / yatay (3:2) / dikey (2:3). STANDART çözünürlük.
+  // OpenAI gpt-image YALNIZ şu boyutları destekler: 1024x1536 (9:16), 1536x1024 (16:9),
+  // 1024x1024 (kare). Desteklenmeyen ~4K/2K HD varsayımları KALDIRILDI → API 400 vermez.
+  // Çözünürlük yerine quality=high korunur (aşağıda).
   const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
-  const hdOn = Deno.env.get("TA_IMAGE_HD") === "1";
-  const gHd = size === "9:16" ? (Deno.env.get("TA_IMAGE_HD_9x16") || "1536x2048")
-            : size === "16:9" ? (Deno.env.get("TA_IMAGE_HD_16x9") || "2048x1536")
-            : (Deno.env.get("TA_IMAGE_HD_1x1") || "2048x2048");
   const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-1.5").trim();
   const fallback = (Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1").trim();
   const chain = (fallback && fallback !== primary) ? [primary, fallback] : [primary];
 
   const callOpenAI = async (model: string, isPrimary: boolean): Promise<ImgCall> => {
-    const gSize = (hdOn && isPrimary) ? gHd : gStd;   // HD yalnız birincil, tek çağrı
+    void isPrimary;
+    const gSize = gStd;   // yalnız OpenAI'nin desteklediği standart boyut (HD varsayımı yok)
     try {
       const r = await fetchT("https://api.openai.com/v1/images/generations", {
         method: "POST",
@@ -1301,13 +1307,21 @@ Deno.serve(async (req) => {
       // Sağlayıcı seçimi (istemci imageProvider): gpt→openai, gemini→gemini.
       // higgs backend HAZIR DEĞİL → seçilse bile üretim yapılmaz, kredi ayrılmaz;
       // OTOMATİK BAŞKA SAĞLAYICIYA DÜŞÜLMEZ (gerçek hata + iade mantığı korunur).
+      // DOĞRULANMIŞ ALLOWLIST: yalnız gpt→openai, gemini→gemini. imageProvider BOŞSA
+      // (yalnız ESKİ istemciler) env varsayılanına düşülür; DOLU ama listede yoksa
+      // SESSİZ FALLBACK YAPMA, açıkça REDDET. Böylece GPT seçilince global secret gemini
+      // olsa bile Gemini çalışmaz; seçim gerçekten backend'e ulaşır.
       const ipRaw = String(b.imageProvider || "").trim().toLowerCase();
-      let imgProv = "";   // boş → generateImage env varsayılanını kullanır (openai)
+      let imgProv = "";   // "" → generateImage env varsayılanını kullanır (yalnız eski istemci)
       if (ipRaw === "gpt" || ipRaw === "openai") imgProv = "openai";
       else if (ipRaw === "gemini") imgProv = "gemini";
       else if (ipRaw === "higgs" || ipRaw === "higgsfield") {
         logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "HIGGS_IMAGE_NOT_CONFIGURED" });
         return json({ ok: false, error: "Higgsfield görsel sağlayıcısı henüz aktif değil (yakında). Kredi düşülmedi. Lütfen GPT veya Gemini seç.", errClass: "HIGGS_IMAGE_NOT_CONFIGURED" }, 501);
+      }
+      else if (ipRaw !== "") {
+        logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "INVALID_IMAGE_PROVIDER:" + ipRaw.slice(0, 20) });
+        return json({ ok: false, error: "Geçersiz görsel sağlayıcısı. Kredi düşülmedi. GPT veya Gemini seç.", errClass: "INVALID_IMAGE_PROVIDER" }, 400);
       }
       const opId = cleanJob(b.opId) || crypto.randomUUID();
       const res = await reserveOp(admin, userId, cost, "gorsel", opId);

@@ -87,9 +87,9 @@ test("index.ts: otomatik fal fallback KALDIRILDI", () => {
 
 test("index.ts: pickProvider 'veo'yu artık fal'a EŞLEMİYOR", () => {
   assert.ok(!indexSrc.includes('v === "veo" ? "fal"'), "veo→fal eşlemesi kalmamalı");
-  // pickProvider veo'yu olduğu gibi döndürmeli (dörtlü liste)
-  assert.ok(indexSrc.includes('(v === "kling" || v === "grok" || v === "fal" || v === "veo") ? v : videoProvider()'),
-    "pickProvider veo'yu literal döndürmeli");
+  // pickProvider veo'yu olduğu gibi döndürmeli (higgs eklendi; higgsfield→higgs normalize)
+  assert.ok(indexSrc.includes('v === "veo"') && indexSrc.includes("videoProvider()") && indexSrc.includes('v === "higgsfield" ? "higgs"'),
+    "pickProvider veo'yu literal döndürmeli (higgs normalize dahil)");
 });
 
 test("index.ts: submitVideo veo → VEO_PROVIDER_NOT_CONFIGURED döndürür", () => {

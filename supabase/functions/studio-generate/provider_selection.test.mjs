@@ -18,32 +18,63 @@ const indexSrc = readFileSync(join(HERE, "index.ts"), "utf8");
 const studioSrc = readFileSync(join(REPO, "Studio.dc.html"), "utf8");
 
 // ── (A1) Görsel sağlayıcı eşlemesi (image handler aynası) ───────────────────
+// Allowlist: gpt→openai, gemini→gemini. BOŞ → env varsayılanı (eski istemci).
+// DOLU ama listede yok → REDDET (sessiz fallback yok). higgs → 501 (yakında).
 function mapImageProvider(ipRaw) {
   const v = String(ipRaw || "").trim().toLowerCase();
   if (v === "gpt" || v === "openai") return { imgProv: "openai" };
   if (v === "gemini") return { imgProv: "gemini" };
   if (v === "higgs" || v === "higgsfield") return { err: "HIGGS_IMAGE_NOT_CONFIGURED", status: 501 };
-  return { imgProv: "" }; // boş → env varsayılanı (openai)
+  if (v !== "") return { err: "INVALID_IMAGE_PROVIDER", status: 400 };
+  return { imgProv: "" }; // boş → env varsayılanı (yalnız eski istemci)
 }
+// generateImage sağlayıcı dalı aynası: hangi API çağrılır?
 function resolveGenProvider(providerOverride, envDefault = "openai") {
   return (providerOverride || envDefault || "openai").trim().toLowerCase();
 }
+function apiForProvider(prov) {
+  return prov === "gemini" ? "generativelanguage.googleapis.com" : "api.openai.com";
+}
 
-test("Görsel: gpt → openai, gemini → gemini", () => {
-  assert.equal(mapImageProvider("gpt").imgProv, "openai");
-  assert.equal(mapImageProvider("openai").imgProv, "openai");
-  assert.equal(mapImageProvider("gemini").imgProv, "gemini");
+test("GPT seçimi → OpenAI çağrılır, Gemini ÇAĞRILMAZ", () => {
+  const m = mapImageProvider("gpt");
+  assert.equal(m.imgProv, "openai");
+  const api = apiForProvider(resolveGenProvider(m.imgProv, "gemini")); // env gemini olsa bile
+  assert.equal(api, "api.openai.com");
+  assert.notEqual(api, "generativelanguage.googleapis.com");
+});
+test("Gemini seçimi → Gemini çağrılır, OpenAI ÇAĞRILMAZ", () => {
+  const m = mapImageProvider("gemini");
+  assert.equal(m.imgProv, "gemini");
+  const api = apiForProvider(resolveGenProvider(m.imgProv, "openai")); // env openai olsa bile
+  assert.equal(api, "generativelanguage.googleapis.com");
+  assert.notEqual(api, "api.openai.com");
+});
+test("Geçersiz provider REDDEDİLİR (400, sessiz fallback yok)", () => {
+  const r = mapImageProvider("banana");
+  assert.equal(r.err, "INVALID_IMAGE_PROVIDER");
+  assert.equal(r.status, 400);
+  assert.ok(!("imgProv" in r), "geçersizde imgProv atanmamalı (default'a düşmemeli)");
 });
 test("Görsel: higgs → 501 HIGGS_IMAGE_NOT_CONFIGURED (üretim/kredi yok, fallback yok)", () => {
   const r = mapImageProvider("higgs");
   assert.equal(r.err, "HIGGS_IMAGE_NOT_CONFIGURED");
   assert.equal(r.status, 501);
-  assert.ok(!r.imgProv);
 });
-test("Görsel: boş/geçersiz → env varsayılanı (openai)", () => {
-  assert.equal(resolveGenProvider(mapImageProvider("").imgProv), "openai");
-  assert.equal(resolveGenProvider(mapImageProvider("banana").imgProv), "openai");
-  assert.equal(resolveGenProvider(mapImageProvider("gemini").imgProv), "gemini");
+test("Görsel: BOŞ (eski istemci) → env varsayılanı (global secret yalnız burada geçerli)", () => {
+  assert.equal(mapImageProvider("").imgProv, "");
+  assert.equal(resolveGenProvider(mapImageProvider("").imgProv, "gemini"), "gemini"); // env=gemini → gemini
+  assert.equal(resolveGenProvider(mapImageProvider("").imgProv, "openai"), "openai"); // env=openai → openai
+});
+
+// ── OpenAI boyut güvenliği: yalnız desteklenen boyutlar ─────────────────────
+const OPENAI_SUPPORTED = new Set(["1024x1536", "1536x1024", "1024x1024"]);
+function openaiSize(size) { return size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024"; }
+test("OpenAI: yalnız desteklenen boyutlar; 9:16 → 1024x1536; HD/2048 API'ye gitmez", () => {
+  for (const s of ["9:16", "16:9", "kare", "1:1", ""]) assert.ok(OPENAI_SUPPORTED.has(openaiSize(s)));
+  assert.equal(openaiSize("9:16"), "1024x1536");
+  // desteklenmeyen HD boyutları asla üretilmez
+  for (const bad of ["1536x2048", "2048x1536", "2048x2048"]) assert.ok(!OPENAI_SUPPORTED.has(bad));
 });
 
 // ── (A2) Video yönlendirmesi (submitVideo aynası — fallback YOK) ─────────────
@@ -88,11 +119,25 @@ test("index.ts: generateImage per-istek providerOverride (env'den önce)", () =>
   assert.ok(indexSrc.includes("providerOverride?: string"), "generateImage providerOverride parametresi olmalı");
   assert.ok(indexSrc.includes('(providerOverride || Deno.env.get("TA_IMAGE_PROVIDER") || "openai")'), "override env'den önce gelmeli");
 });
-test("index.ts: image handler imageProvider eşlemesi + higgs 501", () => {
+test("index.ts: image handler imageProvider allowlist + higgs 501 + geçersiz 400", () => {
   const blk = indexSrc.slice(indexSrc.indexOf('String(b.action || "") === "image"'), indexSrc.indexOf("GÖRSEL DÜZENLEME"));
   assert.ok(blk.includes("b.imageProvider"), "imageProvider okunmalı");
   assert.ok(blk.includes("HIGGS_IMAGE_NOT_CONFIGURED"), "higgs 501 hata kodu olmalı");
+  assert.ok(blk.includes("INVALID_IMAGE_PROVIDER") && blk.includes('ipRaw !== ""'), "allowlist dışı DOLU değer 400 ile reddedilmeli");
   assert.ok(blk.includes("generateImage(") && blk.includes("imgProv"), "seçilen sağlayıcı generateImage'a geçmeli");
+});
+test("index.ts: OpenAI desteklenmeyen HD boyutları KALDIRILDI (yalnız standart, quality high)", () => {
+  const gi = indexSrc.slice(indexSrc.indexOf("async function generateImage("), indexSrc.indexOf("async function generateSpeech("));
+  for (const bad of ["1536x2048", "2048x1536", "2048x2048"]) assert.ok(!gi.includes(bad), "HD boyutu kalmamalı: " + bad);
+  assert.ok(!gi.includes("const gHd") && !gi.includes("TA_IMAGE_HD"), "HD boyut mantığı kalmamalı");
+  assert.ok(gi.includes('const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";'), "yalnız desteklenen standart boyutlar");
+  assert.ok(gi.includes("const gSize = gStd;"), "API'ye yalnız standart boyut gitmeli");
+  assert.ok(gi.includes('quality: "high"'), "quality=high korunmalı");
+});
+test("index.ts: dikey 9:16 güvenli-kompozisyon talimatı YALNIZ dikeyde", () => {
+  const gi = indexSrc.slice(indexSrc.indexOf("async function generateImage("), indexSrc.indexOf("async function generateSpeech("));
+  assert.ok(gi.includes('size === "9:16"') && gi.includes("central safe area") && gi.includes("no critical subjects near top/bottom crop zones"), "dikey güvenli-kadraj talimatı olmalı");
+  assert.ok(gi.includes("VERTICAL_SAFE"), "talimat yalnız 9:16'da eklenmeli (koşullu)");
 });
 test("index.ts: video otomatik fallback YOK; veo/higgs açık hata", () => {
   const sv = indexSrc.slice(indexSrc.indexOf("async function submitVideo("), indexSrc.indexOf("async function pollVideo("));
