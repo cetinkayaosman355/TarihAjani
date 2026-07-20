@@ -330,9 +330,10 @@ async function runImageChain(
 // Her iki yol da AYNI ortak orchestrator'ı (runImageChain) kullanır → Faz 3
 // değişmezleri (max 3 çağrı, geçici retry, hata sınıflandırma, opId log) korunur.
 // diag: başarısızlıkta SON gerçek sebep (model + sınıf) + sınıf kodu buraya yazılır.
-async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string }, opId?: string): Promise<string> {
+async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string }, opId?: string, providerOverride?: string): Promise<string> {
   if (!prompt.trim()) return "";
-  const provider = (Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim().toLowerCase();
+  // Sağlayıcı: istemciden doğrulanmış imageProvider (providerOverride) > env varsayılanı > openai.
+  const provider = (providerOverride || Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim().toLowerCase();
   const p = prompt.trim().slice(0, 29000) + NO_SPLIT;   // anti-split kural (kesilmeye karşı sonda, prompt kırpılmış)
 
   // ── GEMINI YOLU ── (yalnız TA_IMAGE_PROVIDER=gemini). OpenAI'ye düşülmez.
@@ -912,18 +913,18 @@ function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "gr
 // doğrudan Veo entegrasyonu olmadığından bunu VEO_PROVIDER_NOT_CONFIGURED'a çevirir.
 function pickProvider(p?: string): string {
   const v = String(p || "").toLowerCase();
-  return (v === "kling" || v === "grok" || v === "fal" || v === "veo") ? v : videoProvider();
+  // Seçim AYNEN korunur; "veo"/"higgs" fal'a EŞLENMEZ (submitVideo bunları açık hataya çevirir).
+  return (v === "kling" || v === "grok" || v === "fal" || v === "veo" || v === "higgs" || v === "higgsfield")
+    ? (v === "higgsfield" ? "higgs" : v) : videoProvider();
 }
 
 async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string, provider?: string): Promise<{ id?: string; err?: string }> {
-  // STABİLİZASYON Faz 5 — OTOMATİK FAL FALLBACK KALDIRILDI. Kullanıcı hangi sağlayıcıyı
-  // seçtiyse YALNIZ O çağrılır; anahtar eksikse ilgili submit fonksiyonu NET hata döndürür
-  // (sessizce başka sağlayıcıya DÜŞÜLMEZ → beklenmeyen sağlayıcı/kredi sürprizi olmaz).
+  // OTOMATİK SAĞLAYICI FALLBACK YOK: kullanıcı hangi sağlayıcıyı seçtiyse YALNIZ o çağrılır.
+  // Anahtar eksik/başarısızsa ilgili submit fonksiyonu NET hata döndürür; başka sağlayıcıya DÜŞÜLMEZ.
   const use = pickProvider(provider);
-  // Veo: doğrudan entegrasyon YOK (eskiden sessizce fal'a düşülüyordu). Artık AÇIK hata.
-  if (use === "veo") return { err: "VEO_PROVIDER_NOT_CONFIGURED" };
-  // Fal YALNIZ kullanıcı açıkça Fal seçtiğinde çağrılır.
-  if (use === "fal") return await submitFal(prompt, imageUrl, dur, aspect);   // id zaten "fal:" ön ekli
+  if (use === "veo") return { err: "VEO_PROVIDER_NOT_CONFIGURED" };     // doğrudan Veo entegrasyonu yok
+  if (use === "higgs") return { err: "HIGGS_PROVIDER_NOT_CONFIGURED" }; // Higgs backend erişimi doğrulanmadı
+  if (use === "fal") return await submitFal(prompt, imageUrl, dur, aspect);   // yalnız açıkça Fal seçilince; id zaten "fal:" ön ekli
   if (use === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
   const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id } : r;
 }
@@ -1297,6 +1298,17 @@ Deno.serve(async (req) => {
     // GÖRSEL ÜRETİMİ — metin üretiminden ayrı akış. REZERVE-first: üretimden önce
     // krediyi atomik ayır (3.3), başarısızsa iade. opId istemciden gelir (idempotency).
     if (String(b.action || "") === "image") {
+      // Sağlayıcı seçimi (istemci imageProvider): gpt→openai, gemini→gemini.
+      // higgs backend HAZIR DEĞİL → seçilse bile üretim yapılmaz, kredi ayrılmaz;
+      // OTOMATİK BAŞKA SAĞLAYICIYA DÜŞÜLMEZ (gerçek hata + iade mantığı korunur).
+      const ipRaw = String(b.imageProvider || "").trim().toLowerCase();
+      let imgProv = "";   // boş → generateImage env varsayılanını kullanır (openai)
+      if (ipRaw === "gpt" || ipRaw === "openai") imgProv = "openai";
+      else if (ipRaw === "gemini") imgProv = "gemini";
+      else if (ipRaw === "higgs" || ipRaw === "higgsfield") {
+        logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "HIGGS_IMAGE_NOT_CONFIGURED" });
+        return json({ ok: false, error: "Higgsfield görsel sağlayıcısı henüz aktif değil (yakında). Kredi düşülmedi. Lütfen GPT veya Gemini seç.", errClass: "HIGGS_IMAGE_NOT_CONFIGURED" }, 501);
+      }
       const opId = cleanJob(b.opId) || crypto.randomUUID();
       const res = await reserveOp(admin, userId, cost, "gorsel", opId);
       if (!res.ok) return json({ ok: false, error: "Yetersiz kredi", credits: res.credits }, 402);
@@ -1308,7 +1320,7 @@ Deno.serve(async (req) => {
         return json({ ok: false, error: "Kredi sistemi şu an kullanılamıyor. Görsel üretilmedi, kredi düşülmedi. Lütfen birazdan tekrar deneyin.", errClass: "CREDIT_SYSTEM_UNAVAILABLE" }, 503);
       }
       const diag: { d: string; cls?: string } = { d: "" };
-      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), diag, opId);
+      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), diag, opId, imgProv);
       if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
       // CİHAZLAR ARASI: data: URI cihaza özeldir → Storage'a yükle, kalıcı URL ver
       if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
