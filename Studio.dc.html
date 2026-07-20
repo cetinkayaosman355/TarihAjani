@@ -2758,6 +2758,13 @@ class Component extends DCLogic {
       window.open(url, '_blank');   // CORS/ağ hatası → son çare yeni sekme
     }
   }
+  // SAĞLAYICI kısa görünen adı (buton etiketleri vb.). Argüman verilmezse mevcut
+  // seçili sağlayıcıya bakar. Bilinmeyen değerde güvenli varsayılan 'GPT' döner —
+  // ASLA undefined/throw olmaz (renderVals bu yüzden çökmemeli).
+  _provNm(p) {
+    const k = String(p || (this.state && this.state.imgProvider) || 'gpt').toLowerCase();
+    return ({ gpt: 'GPT', gemini: 'Gemini', higgs: 'Higgs' })[k] || 'GPT';
+  }
   // KART META (teknik şeffaflık): sunucudan gelen meta'yı kartta gösterilecek
   // etiket/değer satırlarına çevirir. Boş alanlar gizlenir.
   // MODEL adını kullanıcı-dostu göster (teknik id/provider string gösterme):
@@ -2777,16 +2784,18 @@ class Component extends DCLogic {
   // Yeni backend yok — yalnız mevcut meta'nın sunumu iyileştirilir.
   _imgMetaCard(m) {
     if (!m) return { has: false, prov: '', style: '', rows: [] };
+    // Eksik alan sayfayı ASLA çökertmesin: bilinmeyen değer → '-' (model dahil).
+    const dash = (v) => (v === undefined || v === null || v === '') ? '-' : String(v);
     const kb = m.bytes ? (m.bytes >= 1048576 ? (m.bytes / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(m.bytes / 1024)) + ' KB') : '';
     const sn = m.ms ? (m.ms / 1000).toFixed(1) + ' sn' : '';
     const rows = [
-      ['Model', this._modelLabel(m.model)], ['Kadraj', m.aspect], ['Çözünürlük', m.resolution],
-      ['Format', m.format], ['Dosya Boyutu', kb], ['Üretim Süresi', sn],
-      ['Harcanan Kredi', (typeof m.cost === 'number' ? m.cost + ' KR' : '')]
-    ].filter(r => r[1] !== undefined && r[1] !== null && r[1] !== '').map(r => ({ k: r[0], v: String(r[1]) }));
-    const prov = m.provider ? String(m.provider) : '';
-    const style = m.style ? String(m.style) : '';
-    return { has: rows.length > 0 || !!prov || !!style, prov, style, rows };
+      ['Model', m.model ? this._modelLabel(m.model) : '-'], ['Kadraj', dash(m.aspect)], ['Çözünürlük', dash(m.resolution)],
+      ['Format', dash(m.format)], ['Dosya Boyutu', dash(kb)], ['Üretim Süresi', dash(sn)],
+      ['Harcanan Kredi', (typeof m.cost === 'number' ? m.cost + ' KR' : '-')]
+    ].map(r => ({ k: r[0], v: String(r[1]) }));
+    const prov = m.provider ? String(m.provider) : 'Bilinmiyor';   // sağlayıcı bilinmiyorsa 'Bilinmiyor'
+    const style = m.style ? String(m.style) : '';                   // stil yoksa rozet gizli
+    return { has: true, prov, style, rows };
   }
   // Tüm sahne/kapak/üretilen küçük görsellerini tek, dengeli bir "kutu" içinde
   // tut — web'de dev açılmasını ve kutuya oturmamasını önler (mobil bozulmaz).
