@@ -694,6 +694,13 @@
                       </div>
                     </sc-if>
                     <p style="margin: 0; color: #818797; font-size: 11.5px; line-height: 1.5; padding: 10px 12px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ iq.prompt }}</p>
+                        <sc-if value="{{ iq.hasMeta }}" hint-placeholder-val="{{ false }}">
+                          <div style="padding: 0 12px 8px; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 10px; line-height: 1.35;">
+                            <sc-for list="{{ iq.metaRows }}" as="mr" hint-placeholder-count="6">
+                              <span style="color: #676d7c; font-family: 'Special Elite', monospace; letter-spacing: .04em;">{{ mr.k }}</span><span style="color: #a4a9b5; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ mr.v }}</span>
+                            </sc-for>
+                          </div>
+                        </sc-if>
                     <sc-if value="{{ iq.hasUrl }}" hint-placeholder-val="{{ false }}">
                       <div style="display: flex; gap: 6px; flex-wrap: wrap; padding: 0 10px 10px;">
                         <button onClick="{{ iq.zoom }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="color: #e6c478;">🔍 BÜYÜT</button>
@@ -1367,6 +1374,13 @@
                           </div>
                         </sc-if>
                         <p style="margin: 0; color: #818797; font-size: 11.5px; line-height: 1.5; padding: 10px 12px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ iq.prompt }}</p>
+                        <sc-if value="{{ iq.hasMeta }}" hint-placeholder-val="{{ false }}">
+                          <div style="padding: 0 12px 8px; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 10px; line-height: 1.35;">
+                            <sc-for list="{{ iq.metaRows }}" as="mr" hint-placeholder-count="6">
+                              <span style="color: #676d7c; font-family: 'Special Elite', monospace; letter-spacing: .04em;">{{ mr.k }}</span><span style="color: #a4a9b5; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ mr.v }}</span>
+                            </sc-for>
+                          </div>
+                        </sc-if>
                         <sc-if value="{{ iq.hasUrl }}" hint-placeholder-val="{{ false }}">
                           <div style="display: flex; gap: 6px; flex-wrap: wrap; padding: 0 10px 10px;">
                             <button onClick="{{ iq.zoom }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10px; letter-spacing: .06em; padding: 7px 9px; cursor: pointer;" style-hover="color: #e6c478;">🔍 BÜYÜT</button>
@@ -2559,7 +2573,7 @@ class Component extends DCLogic {
   // Kademeli fiyat: ilk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR
   // (uzun videoda çok görsel üretimini ucuzlatır). idx = sahne sırası (0 tabanlı).
   IMG_COST(idx) { return (typeof idx === 'number' && idx >= 20) ? 8 : 12; }
-  async imageServer(prompt, arKey, idx, onAttempt, opId) {
+  async imageServer(prompt, arKey, idx, onAttempt, opId, style) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect] || '16:9';
@@ -2574,13 +2588,13 @@ class Component extends DCLogic {
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: this.state.imgProvider || 'gpt' })
+      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: this.state.imgProvider || 'gpt', style: style || (this.state.imgStyle || this.state.style) || undefined })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
     if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Görsel üretilemedi');
     if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
-    return data.url;
+    return { url: data.url, meta: data.meta || null };   // meta: kart üzerinde teknik şeffaflık için
   }
   // Görseli GERÇEKTEN indir (yeni sekmede açmaz): data URI doğrudan, Storage/uzak
   // URL blob olarak indirilir. Hem mobil hem web'de tek tıkla dosya iner.
@@ -2646,6 +2660,19 @@ class Component extends DCLogic {
       window.open(url, '_blank');   // CORS/ağ hatası → son çare yeni sekme
     }
   }
+  // KART META (teknik şeffaflık): sunucudan gelen meta'yı kartta gösterilecek
+  // etiket/değer satırlarına çevirir. Boş alanlar gizlenir.
+  _imgMetaRows(m) {
+    if (!m) return [];
+    const kb = m.bytes ? (m.bytes >= 1048576 ? (m.bytes / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(m.bytes / 1024)) + ' KB') : '';
+    const sn = m.ms ? (m.ms / 1000).toFixed(1) + ' sn' : '';
+    const rows = [
+      ['Sağlayıcı', m.provider], ['Model', m.model], ['Stil', m.style],
+      ['Biçim', m.format], ['Kadraj', m.aspect], ['Çözünürlük', m.resolution],
+      ['Boyut', kb], ['Süre', sn], ['Kredi', (typeof m.cost === 'number' ? m.cost + ' KR' : '')]
+    ];
+    return rows.filter(r => r[1] !== undefined && r[1] !== null && r[1] !== '').map(r => ({ k: r[0], v: String(r[1]) }));
+  }
   // Tüm sahne/kapak/üretilen küçük görsellerini tek, dengeli bir "kutu" içinde
   // tut — web'de dev açılmasını ve kutuya oturmamasını önler (mobil bozulmaz).
   thumbBox(ar) {
@@ -2692,21 +2719,13 @@ class Component extends DCLogic {
       .replace(/\.\s*\./g, '.')
       .trim();
   }
-  // Görsel stili — üretimde uygulanır (kullanıcı seçebilir)
-  imgStylePhrase(id) {
-    return {
-      sinematik: 'dark moody cinematic film still, extreme low-key lighting, flame light carving figures out of deep black shadow, strong chiaroscuro and silhouettes, near-monochrome cold palette with warm amber accents, volumetric haze, ultra-photorealistic',
-      hollywood: 'ultra-photorealistic cinematic still shot on ARRI Alexa 65 with Zeiss Master Prime lenses, professional cinema lighting, richly and evenly lit epic scale, tack-sharp crisp fine detail, true-to-life skin and fabric textures, rich saturated colors, deep contrast and high dynamic range, vivid punchy color grade, clean and sharp, shallow depth of field, 8K clarity, hyperreal',
-      gravur: 'vintage engraving illustration, copperplate etching texture, fine cross-hatching, period line-art style, aged parchment tones, full-bleed composition, no decorative frame, no border',
-      belgeselfoto: 'clean realistic documentary photograph, natural daylight, rich true-to-life colors, tack-sharp crisp focus with fine detail, deep contrast and high dynamic range, editorial history-magazine look, grounded and believable',
-      minyatur: 'traditional Ottoman-Persian miniature illustration, flat stylized perspective, gold-leaf accents, vivid tempera colors, full-bleed composition, no decorative border, no frame',
-      animasyon: 'high-quality 3D animated feature film still, Pixar-DreamWorks style stylized characters with expressive faces, soft global illumination, warm vibrant colors, cinematic composition, charming family-animation look'
-    }[id] || '';
-  }
-  withAspect(p, arKey, styleKey) {
+  // NOT: Görsel stil şablonları ARTIK SUNUCUDA MERKEZİ (STYLE_TEMPLATES) — tek kaynak.
+  // İstemci yalnız stil ANAHTARINI gönderir; şablon sunucuda eklenir (stiller karışmaz).
+  withAspect(p, arKey) {
     const clean = this.stripAspect(p).replace(/[.,\s]+$/, '');
-    const sty = styleKey ? this.imgStylePhrase(styleKey) : '';
-    return (clean ? clean + '. ' : '') + (sty ? sty + '. ' : '') + this.aspectPhrase(arKey) + '.';
+    // STİL ARTIK SUNUCUDA MERKEZİ (styleTemplate) — istemci prompt'a stil BAKMAZ ki
+    // stiller birbirine karışmasın ve seçilen stil tek kaynaktan uygulansın.
+    return (clean ? clean + '. ' : '') + this.aspectPhrase(arKey) + '.';
   }
   // Promise döndürür (toplu üretim kuyruğu bunun üstüne kurulu); sceneKey verilirse
   // üretilen görsel sahne kartında satır içi gösterilir.
@@ -2719,7 +2738,7 @@ class Component extends DCLogic {
     // yalnız serbest Görsel Stüdyo kuyruğu panel kadrajını (imgAspect) kullanır.
     const ar = arOverride || this.state.imgAspect || this.state.aspect;
     const sty = this.state.imgStyle || this.state.style;    // stil seçilmediyse sihirbazda seçilen stil
-    const sendPrompt = this.withAspect(prompt, ar, sty);    // kadraj + stil prompta yerleşir
+    const sendPrompt = this.withAspect(prompt, ar);         // kadraj prompta yerleşir; STİL sunucuya anahtar olarak gider
     const id = 'img' + Date.now() + Math.floor(Math.random() * 1000);
     // SAHNE ETİKETİ: rafta hangi kartın hangi sahne olduğu yazsın (karışmasın)
     let label = '';
@@ -2736,11 +2755,12 @@ class Component extends DCLogic {
     this.setState(st => ({ imgJobs: (st.imgJobs || 0) + 1, imgQueue: [{ id, prompt, ar, label, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue].slice(0, 40) }));
     const onAttempt = (n) => this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'TEKRAR DENENİYOR… (' + (n + 1) + '/3)' } : x) }));
     const done = () => this.setState(st => ({ imgJobs: Math.max(0, (st.imgJobs || 0) - 1) }));
-    return this.imageServer(sendPrompt, ar, idx, onAttempt, id).then(url => {
+    return this.imageServer(sendPrompt, ar, idx, onAttempt, id, sty).then(res => {
       done();
-      this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url } : x) }));
+      const url = res.url, meta = res.meta || null;   // meta: sağlayıcı/model/stil/biçim/kadraj/çözünürlük/boyut/süre/kredi
+      this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url, meta } : x) }));
       if (sceneKey) this.setSceneImg(sceneKey, { url });   // satır içi önizleme
-      this.saveImg({ id, prompt, ar, url, ts: Date.now() });   // kalıcı arşive (Önceki Üretimler)
+      this.saveImg({ id, prompt, ar, url, meta, ts: Date.now() });   // kalıcı arşive (Önceki Üretimler) — meta dahil
       return true;
     }).catch(e => {
       done();
@@ -4226,8 +4246,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       imgQueue: (s.imgQueue || []).map(x => {
         const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[x.ar] || '16/9';
         const gv = (s.galVid || {})[x.id] || {};   // rafta da video üretimi
+        const metaRows = this._imgMetaRows(x.meta);
         return {
           ...x, hasUrl: !!x.url, pending: !x.url,
+          metaRows, hasMeta: metaRows.length > 0,   // KART: teknik şeffaflık (sağlayıcı/model/stil/biçim/kadraj/çözünürlük/boyut/süre/kredi)
           hasVid: !!gv.url, vidUrl: gv.url || '',
           canMakeVid: !!x.url && !gv.url,
           vidBusy: !!gv.busy,
