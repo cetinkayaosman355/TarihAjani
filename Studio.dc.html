@@ -573,12 +573,15 @@
           <div class="ta-side-head" style="margin-top: 4px;">ÜRET</div>
           <button class="ta-navbtn" onClick="{{ modeWizard }}" style="{{ sideWizActive }}"><span class="ic">◈</span> Hikâye</button>
           <button class="ta-navbtn" onClick="{{ modeGorsel }}" style="{{ sideGorActive }}"><span class="ic">✦</span> Görsel</button>
-          <div class="ta-side-head">ARŞİV</div>
-          <button class="ta-navbtn" onClick="{{ goHistFiles }}" style="{{ sideDosyalarActive }}"><span class="ic">🗂</span> Dosyalar</button>
-          <button class="ta-navbtn" onClick="{{ goHistImages }}" style="{{ sideGorsellerActive }}"><span class="ic">✦</span> Görseller</button>
-          <button class="ta-navbtn" onClick="{{ goHistVideos }}" style="{{ sideVideolarActive }}"><span class="ic">🎬</span> Videolar</button>
-          <button class="ta-navbtn" onClick="{{ modeArsiv }}" style="{{ sideArsActive }}"><span class="ic">❖</span> Hazır Arşiv</button>
+          <button class="ta-navbtn" onClick="{{ uretYakinda }}" style="{{ navSoonStyle }}"><span class="ic">🎬</span> Video <span style="{{ soonTag }}">Yakında</span></button>
+          <button class="ta-navbtn" onClick="{{ uretYakinda }}" style="{{ navSoonStyle }}"><span class="ic">🎙</span> Ses <span style="{{ soonTag }}">Yakında</span></button>
+          <div class="ta-side-head">ÇALIŞMALARIM</div>
+          <button class="ta-navbtn" onClick="{{ goHistFiles }}" style="{{ sideDosyalarActive }}"><span class="ic">🗂</span> Dosyalarım</button>
+          <button class="ta-navbtn" onClick="{{ goHistImages }}" style="{{ sideGorsellerActive }}"><span class="ic">✦</span> Görsellerim</button>
+          <button class="ta-navbtn" onClick="{{ goHistVideos }}" style="{{ sideVideolarActive }}"><span class="ic">🎬</span> Videolarım</button>
+          <button class="ta-navbtn" onClick="{{ goHistSounds }}" style="{{ sideSeslerimActive }}"><span class="ic">🎙</span> Seslerim</button>
           <div class="ta-side-head">KEŞFET</div>
+          <button class="ta-navbtn" onClick="{{ modeArsiv }}" style="{{ sideArsActive }}"><span class="ic">❖</span> Hazır Hikâye Arşivi</button>
           <a class="ta-sublink" href="/">Ana Sayfa</a>
           <a class="ta-sublink" href="/egitim">Eğitim Akademisi</a>
           <a class="ta-sublink" href="/uyelik">Üyelik</a>
@@ -614,13 +617,14 @@
         <!-- GEÇMİŞ -->
         <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
           <div style="animation: ta-rise .5s ease both; max-width: 1240px; margin: 0 auto;">
-            <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ARŞİV</p>
-            <h2 style="margin: 8px 0 14px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700;">Geçmiş Üretimler</h2>
-            <!-- Sekmeler: Dosyalar / Görseller / Videolar -->
-            <div style="display: flex; gap: 2px; border-bottom: 1px solid rgba(129,135,151,.2); margin-bottom: 22px; flex-wrap: wrap;">
-              <button onClick="{{ histTabFiles }}" style="{{ histTabFilesStyle }}">Dosyalar</button>
-              <button onClick="{{ histTabImages }}" style="{{ histTabImagesStyle }}">Görseller</button>
-              <button onClick="{{ histTabVideos }}" style="{{ histTabVideosStyle }}">Videolar</button>
+            <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ÇALIŞMALARIM</p>
+            <h2 style="margin: 8px 0 14px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700;">Çalışmalarım</h2>
+            <!-- Sekmeler: Dosyalarım / Görsellerim / Videolarım / Seslerim (kayıt sayılı; mobilde yatay kaydırılır) -->
+            <div style="display: flex; gap: 2px; border-bottom: 1px solid rgba(129,135,151,.2); margin-bottom: 22px; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+              <button onClick="{{ histTabFiles }}" style="{{ histTabFilesStyle }}">Dosyalarım ({{ histFilesCount }})</button>
+              <button onClick="{{ histTabImages }}" style="{{ histTabImagesStyle }}">Görsellerim ({{ histImagesCount }})</button>
+              <button onClick="{{ histTabVideos }}" style="{{ histTabVideosStyle }}">Videolarım ({{ histVideosCount }})</button>
+              <button onClick="{{ histTabSounds }}" style="{{ histTabSoundsStyle }}">Seslerim ({{ histSoundsCount }})</button>
             </div>
 
             <!-- DOSYALAR -->
@@ -644,7 +648,7 @@
                         <sc-if value="{{ h.canOpen }}" hint-placeholder-val="{{ true }}">
                           <button onClick="{{ h.openFile }}" style="flex: 1; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .1em; padding: 11px 16px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.3);">DOSYAYI AÇ</button>
                         </sc-if>
-                        <button onClick="{{ h.del }}" title="Sil" style="border: 1px solid rgba(192,57,43,.45); background: transparent; color: #e08a80; cursor: pointer; font-size: 14px; padding: 10px 13px;" style-hover="background: rgba(192,57,43,.12);">🗑</button>
+                        <button onClick="{{ h.del }}" title="Sil" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #8a8f9c; cursor: pointer; font-size: 14px; padding: 10px 13px;" style-hover="border-color: rgba(192,57,43,.55); color: #e08a80; background: rgba(192,57,43,.1);">🗑</button>
                       </div>
                     </div>
                   </div>
@@ -667,13 +671,13 @@
                   <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; overflow: hidden; display: flex; flex-direction: column;" style-hover="border-color: rgba(193,154,82,.5);">
                     <img src="{{ im.url }}" alt="{{ im.title }}" data-zoomable onClick="{{ im.zoom }}" style="{{ im.thumbStyle }}">
                     <div style="padding: 13px 15px; display: grid; gap: 5px; flex: 1;">
-                      <strong style="color: #f2ecd9; font-size: 14px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ im.title }}</strong>
+                      <strong style="color: #f2ecd9; font-size: 14px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ im.title }}</strong>
                       <p style="margin: 0; color: #a4a9b5; font-size: 12px;">{{ im.sceneLabel }} · {{ im.provider }} · {{ im.model }}</p>
                       <p style="margin: 0; color: #818797; font-size: 11.5px;">{{ im.style }} · {{ im.aspect }} · {{ im.date }}</p>
                       <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
                         <button onClick="{{ im.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
                         <button onClick="{{ im.reuse }}" style="flex: 1; border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">↻ YENİDEN</button>
-                        <button onClick="{{ im.del }}" title="Listeden kaldır" style="border: 1px solid rgba(192,57,43,.4); background: transparent; color: #e08a80; font-size: 12px; padding: 8px 10px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12);">🗑</button>
+                        <button onClick="{{ im.del }}" title="Listeden kaldır" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #8a8f9c; font-size: 12px; padding: 8px 10px; cursor: pointer;" style-hover="border-color: rgba(192,57,43,.55); color: #e08a80; background: rgba(192,57,43,.1);">🗑</button>
                       </div>
                     </div>
                   </div>
@@ -700,6 +704,30 @@
                         <p style="margin: 0; color: #818797; font-size: 11.5px;">{{ vd.date }}</p>
                         <button onClick="{{ vd.dl }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px; cursor: pointer; margin-top: 4px;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
                       </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </sc-if>
+
+            <!-- SESLERİM -->
+            <sc-if value="{{ isHistSounds }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ noHistSounds }}" hint-placeholder-val="{{ true }}">
+                <div style="border: 1px dashed rgba(193,154,82,.3); background: rgba(193,154,82,.04); padding: 48px 30px; text-align: center; display: grid; gap: 10px; place-items: center;">
+                  <span style="font-size: 34px; opacity: .6;">🎙</span>
+                  <strong style="color: #e6c478; font-family: 'Playfair Display', serif; font-size: 20px;">Henüz kaydedilmiş ses üretimin yok.</strong>
+                  <p style="margin: 0; color: #8a8f9c; font-size: 13.5px; line-height: 1.7; max-width: 46ch;">Bir dosyanın <strong style="color: #c19a52;">Seslendirme</strong> metnini MP3'e çevirdiğinde burada listelenir.</p>
+                </div>
+              </sc-if>
+              <sc-if value="{{ hasHistSounds }}" hint-placeholder-val="{{ false }}">
+                <div style="display: grid; gap: 12px; max-width: 720px;">
+                  <sc-for list="{{ histSounds }}" as="au" hint-placeholder-count="2">
+                    <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; padding: 15px 17px; display: grid; gap: 9px;">
+                      <div style="display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap;">
+                        <strong style="color: #f2ecd9; font-size: 15px; font-family: 'Playfair Display', serif;">{{ au.title }}</strong>
+                        <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em;">{{ au.date }}</span>
+                      </div>
+                      <audio src="{{ au.audioUrl }}" controls preload="none" style="width: 100%; height: 38px;"></audio>
                     </div>
                   </sc-for>
                 </div>
@@ -3280,7 +3308,7 @@ class Component extends DCLogic {
   // Sekme başlığı stili (Dosyalar/Görseller/Videolar) — aktifken altın alt çizgi.
   _tabStyle(on) {
     return {
-      border: 0, background: 'transparent', cursor: 'pointer',
+      border: 0, background: 'transparent', cursor: 'pointer', whiteSpace: 'nowrap', flex: 'none',
       fontFamily: "'Special Elite', monospace", fontSize: '13px', letterSpacing: '.08em',
       padding: '12px 18px', color: on ? '#e6c478' : '#8a8f9c',
       borderBottom: on ? '2px solid #c19a52' : '2px solid transparent'
@@ -3325,6 +3353,13 @@ class Component extends DCLogic {
       vidUrl: x.vidUrl, thumbStyle: this.thumbBox(x.ar),
       title: x.story || (x.prompt ? String(x.prompt).slice(0, 44) : 'Video'),
       date: this._fmtDate(x.ts), dl: () => this.dlImage(x.vidUrl, x.ar)
+    }));
+  }
+  // SESLERİM sekmesi — MEVCUT seslendirmeler (dosya geçmişindeki audioUrl). Yeni backend/
+  // tablo YOK; yalnız var olan veriden gösterim. Veri yoksa premium boş durum.
+  _histSoundCards() {
+    return (this.state.history || []).filter(h => h && h.audioUrl).slice(0, 120).map(h => ({
+      audioUrl: h.audioUrl, title: h.title || 'Seslendirme', date: h.date || '-'
     }));
   }
   // VIDEO KURTARMA: sunucudaki tamamlanmış videoları (video_jobs) çekip kalıcı
@@ -4620,22 +4655,39 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       sideGorActive: s.mode === 'gorsel' ? SIDE_ON : {},
       sideArsActive: s.mode === 'arsiv' ? SIDE_ON : {},
       sideGecActive: s.mode === 'history' ? SIDE_ON : {},
-      // ── BİLGİ MİMARİSİ: ÜRET / ARŞİV ──
+      // ── BİLGİ MİMARİSİ: ÜRET / ÇALIŞMALARIM / KEŞFET ──
+      // ÜRET: Video/Ses ayrı stüdyoları henüz yok → "Yakında" pasif (yanlış route açma).
+      // GELECEK GENİŞLEME NOKTALARI (ayrı PR): Video Studio ve Ses Studio; ayrıca üretim
+      // girişleri — Referans Görsel, Başlangıç Görseli, (ops.) Bitiş Görseli, Karakter/
+      // Stil/Mekân Referansı. Bu PR yalnız bilgi mimarisi + metin; backend/route yok.
+      uretYakinda: () => { try { this._toast ? this._toast('Bu stüdyo yakında.') : null; } catch (e) {} },
+      navSoonStyle: { opacity: .5, cursor: 'default' },
+      soonTag: { marginLeft: 'auto', border: '1px solid rgba(193,154,82,.4)', color: '#c19a52', fontFamily: "'Special Elite', monospace", fontSize: '8.5px', letterSpacing: '.1em', padding: '2px 7px', borderRadius: '999px' },
       sideDosyalarActive: (s.mode === 'history' && (s.histTab || 'files') === 'files') ? SIDE_ON : {},
       sideGorsellerActive: (s.mode === 'history' && s.histTab === 'images') ? SIDE_ON : {},
       sideVideolarActive: (s.mode === 'history' && s.histTab === 'videos') ? SIDE_ON : {},
+      sideSeslerimActive: (s.mode === 'history' && s.histTab === 'sounds') ? SIDE_ON : {},
       goHistFiles: () => this.setState({ mode: 'history', histTab: 'files' }, () => { try { window.scrollTo(0, 0); } catch (e) {} }),
       goHistImages: () => { this.loadServerImages(); this.setState({ mode: 'history', histTab: 'images' }, () => { try { window.scrollTo(0, 0); } catch (e) {} }); },
       goHistVideos: () => this.setState({ mode: 'history', histTab: 'videos' }, () => { try { window.scrollTo(0, 0); } catch (e) {} }),
+      goHistSounds: () => this.setState({ mode: 'history', histTab: 'sounds' }, () => { try { window.scrollTo(0, 0); } catch (e) {} }),
       histTabFiles: () => this.setState({ histTab: 'files' }),
       histTabImages: () => { this.loadServerImages(); this.setState({ histTab: 'images' }); },
       histTabVideos: () => this.setState({ histTab: 'videos' }),
+      histTabSounds: () => this.setState({ histTab: 'sounds' }),
       isHistFiles: (s.histTab || 'files') === 'files',
       isHistImages: s.histTab === 'images',
       isHistVideos: s.histTab === 'videos',
+      isHistSounds: s.histTab === 'sounds',
       histTabFilesStyle: this._tabStyle((s.histTab || 'files') === 'files'),
       histTabImagesStyle: this._tabStyle(s.histTab === 'images'),
       histTabVideosStyle: this._tabStyle(s.histTab === 'videos'),
+      histTabSoundsStyle: this._tabStyle(s.histTab === 'sounds'),
+      // Sekme adı yanı kayıt sayıları: Dosyalarım (N) …
+      histFilesCount: (s.history || []).length,
+      histImagesCount: (s.srvImages || []).filter(x => x && x.url && !this._hiddenSet().has(x.url)).length,
+      histVideosCount: this._histVideoCards().length,
+      histSoundsCount: this._histSoundCards().length,
       // Görseller filtresi
       imgFilterAll: () => this.setState({ imgFilter: 'all' }),
       imgFilterStory: () => this.setState({ imgFilter: 'story' }),
@@ -4648,6 +4700,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       histVideos: this._histVideoCards(),
       hasHistVideos: this._histVideoCards().length > 0,
       noHistVideos: this._histVideoCards().length === 0,
+      histSounds: this._histSoundCards(),
+      hasHistSounds: this._histSoundCards().length > 0,
+      noHistSounds: this._histSoundCards().length === 0,
       isGorsel: s.mode === 'gorsel',
       gorselTabStyle: {
         border: 0, cursor: 'pointer', padding: '10px 16px',
@@ -4707,6 +4762,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       savedList: (s.history || []).map((h, i) => {
         const imgs = (s.srvImages || []).filter(x => x && x.fileId === (h.fileNo || '__none__'));
         const lastProv = imgs.length ? (imgs[0].meta && imgs[0].meta.provider) || '' : '';
+        const lastModelRaw = imgs.length ? (imgs[0].meta && imgs[0].meta.model) || '' : '';
+        const lastModel = lastModelRaw ? this._modelLabel(lastModelRaw) : '';   // gerçek kullanılan model (kullanıcı-dostu)
         const cover = imgs.find(x => x.kind === 'cover') || imgs[0] || null;
         const sceneCount = (h.result && Array.isArray(h.result.gorsel_promptlar)) ? h.result.gorsel_promptlar.length : 0;
         return {
@@ -4715,7 +4772,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         hasCover: !!(cover && cover.url), coverUrl: cover ? cover.url : '',
         coverStyle: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
         sceneInfo: (sceneCount ? sceneCount + ' sahne' : '') + (imgs.length ? (sceneCount ? ' · ' : '') + imgs.length + ' görsel' : ''),
-        provInfo: lastProv || '',
+        provInfo: (lastModel || lastProv) ? ('· ' + (lastModel ? (lastProv ? lastProv + ' · ' + lastModel : lastModel) : lastProv)) : '',
         canOpen: !!h.result,
         openFile: () => this.setState({
           mode: 'wizard', step: 4, tab: 'senaryo',

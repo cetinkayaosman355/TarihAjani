@@ -16,33 +16,44 @@ const REPO = join(HERE, "..", "..", "..");
 const studioSrc = readFileSync(join(REPO, "Studio.dc.html"), "utf8");
 
 // ── (A) Kaynak değişmezleri ─────────────────────────────────────────────────
-test("Sol menü: ÜRET / ARŞİV bilgi mimarisi", () => {
+test("Sol menü: ÜRET / ÇALIŞMALARIM / KEŞFET bilgi mimarisi", () => {
   assert.ok(studioSrc.includes(">ÜRET<"), "ÜRET grubu başlığı");
-  assert.ok(studioSrc.includes(">ARŞİV<"), "ARŞİV grubu başlığı");
-  for (const item of ["Hikâye", "Görsel", "Dosyalar", "Görseller", "Videolar"]) {
-    assert.ok(studioSrc.includes("> " + item + "<") || studioSrc.includes(">" + item + "<"), "menü öğesi: " + item);
+  assert.ok(studioSrc.includes(">ÇALIŞMALARIM<"), "ÇALIŞMALARIM grubu başlığı (ARŞİV değil)");
+  assert.ok(studioSrc.includes(">KEŞFET<"), "KEŞFET grubu");
+  for (const item of ["Hikâye", "Görsel", "Dosyalarım", "Görsellerim", "Videolarım", "Seslerim", "Hazır Hikâye Arşivi"]) {
+    assert.ok(studioSrc.includes(item), "menü öğesi: " + item);
   }
-  assert.ok(studioSrc.includes("goHistFiles") && studioSrc.includes("goHistImages") && studioSrc.includes("goHistVideos"), "arşiv sekmelerine gidiş");
+  // ÜRET: Video/Ses "Yakında" pasif; Hazır Hikâye Arşivi KEŞFET'e taşındı (Çalışmalarım'da değil)
+  assert.ok(studioSrc.includes("uretYakinda") && studioSrc.includes("Yakında"), "Video/Ses Yakında pasif");
+  assert.ok(studioSrc.includes("goHistFiles") && studioSrc.includes("goHistImages") && studioSrc.includes("goHistVideos") && studioSrc.includes("goHistSounds"), "çalışmalarım sekmelerine gidiş");
 });
-test("Geçmiş Üretimler: 3 sekme (Dosyalar/Görseller/Videolar) + varsayılan Dosyalar", () => {
-  assert.ok(studioSrc.includes("histTab: 'files'"), "varsayılan sekme Dosyalar");
-  assert.ok(studioSrc.includes("isHistFiles") && studioSrc.includes("isHistImages") && studioSrc.includes("isHistVideos"), "sekme bayrakları");
-  assert.ok(studioSrc.includes("histTabFiles") && studioSrc.includes("histTabImages") && studioSrc.includes("histTabVideos"), "sekme geçiş handler'ları");
+test("Çalışmalarım: 4 sekme (Dosyalarım/Görsellerim/Videolarım/Seslerim) + varsayılan Dosyalarım + sayaç", () => {
+  assert.ok(studioSrc.includes("histTab: 'files'"), "varsayılan sekme Dosyalarım");
+  assert.ok(studioSrc.includes("isHistFiles") && studioSrc.includes("isHistImages") && studioSrc.includes("isHistVideos") && studioSrc.includes("isHistSounds"), "sekme bayrakları");
+  assert.ok(studioSrc.includes("histTabSounds"), "Seslerim sekme handler'ı");
+  assert.ok(studioSrc.includes("Dosyalarım ({{ histFilesCount }})") && studioSrc.includes("Seslerim ({{ histSoundsCount }})"), "sekme adı yanında kayıt sayısı");
+  assert.ok(studioSrc.includes("overflow-x: auto") && studioSrc.includes("whiteSpace: 'nowrap'"), "mobilde sekmeler yatay kaydırılır");
+  assert.ok(studioSrc.includes(">Çalışmalarım<"), "sayfa başlığı Çalışmalarım (Geçmiş Üretimler değil)");
 });
-test("Görseller sekmesi: studio_images kaynağı + 3 filtre + grid", () => {
+test("Görsellerim sekmesi: studio_images kaynağı + 3 filtre + grid + başlık 2 satır", () => {
   assert.ok(studioSrc.includes("_histImageCards()"), "kaynak srvImages (studio_images)");
   assert.ok(studioSrc.includes("imgFilterAll") && studioSrc.includes("imgFilterStory") && studioSrc.includes("imgFilterStandalone"), "Tümü/Hikâye/Bağımsız filtreleri");
   assert.ok(studioSrc.includes("Hikâye Görselleri") && studioSrc.includes("Bağımsız Görseller"), "filtre etiketleri");
   assert.ok(studioSrc.includes("repeat(auto-fill, minmax(230px"), "görsel-ağırlıklı grid");
   assert.ok(studioSrc.includes("↻ YENİDEN") && studioSrc.includes("⬇ İNDİR"), "kart aksiyonları İndir/Yeniden Kullan");
+  assert.ok(studioSrc.includes("-webkit-line-clamp: 2"), "görsel kartı başlığı en fazla 2 satır");
 });
-test("Videolar sekmesi: premium boş durum + yeni backend yok", () => {
-  assert.ok(studioSrc.includes("Henüz video üretimi yok."), "premium boş durum");
-  assert.ok(studioSrc.includes("_histVideoCards()"), "video kartları mevcut kayıtlardan");
+test("Videolarım/Seslerim: premium boş durum + yeni backend yok", () => {
+  assert.ok(studioSrc.includes("Henüz video üretimi yok."), "video premium boş durum");
+  assert.ok(studioSrc.includes("Henüz kaydedilmiş ses üretimin yok."), "ses premium boş durum");
+  assert.ok(studioSrc.includes("_histVideoCards()") && studioSrc.includes("_histSoundCards()"), "video/ses kartları mevcut kayıtlardan");
 });
-test("Dosyalar kartı: kapak önizleme + sahne/görsel sayısı + son sağlayıcı", () => {
+test("Dosya kartı: kapak önizleme + sahne/görsel sayısı + son gerçek model + nötr Sil", () => {
   assert.ok(studioSrc.includes("hasCover") && studioSrc.includes("coverUrl"), "kapak önizleme");
   assert.ok(studioSrc.includes("sceneInfo") && studioSrc.includes("provInfo"), "sahne/görsel sayısı + sağlayıcı");
+  assert.ok(studioSrc.includes("lastModel") && studioSrc.includes("this._modelLabel(lastModelRaw)"), "son kullanılan gerçek model (kullanıcı-dostu)");
+  // Sil butonu varsayılan nötr, hover'da kırmızı
+  assert.ok(studioSrc.includes("color: #8a8f9c; cursor: pointer; font-size: 14px") && studioSrc.includes('style-hover="border-color: rgba(192,57,43,.55); color: #e08a80'), "Sil nötr→kırmızı hover");
 });
 test("Sil/Yeniden Kullan backend'e dokunmaz (görünümden gizle + prompt taşı)", () => {
   assert.ok(studioSrc.includes("ta_studio_hidden_v1") && studioSrc.includes("hideImage("), "Sil = cihaz-yerel gizleme (Storage silinmez)");
