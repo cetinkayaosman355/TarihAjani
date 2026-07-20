@@ -60,12 +60,47 @@ test("Terminoloji: 'Görsel hazır' (Tamamlandı yerine) — kart + kuyruk tutar
   assert.ok(!studioSrc.includes("'🟢 TAMAMLANDI'"), "eski TAMAMLANDI rozeti kalmadı");
 });
 
-test("Prompt varsayılan gizli: 'Promptu Gör' aç/kapa — metin kaybolmaz", () => {
+test("Prompt varsayılan gizli: erişim ⋯ menüsünden; blok kendi ✕ kapatmasıyla", () => {
   assert.ok(studioSrc.includes("promptShow:"), "promptShow bayrağı");
   assert.ok(studioSrc.includes("togglePrompt:"), "aç/kapa handler");
-  assert.ok(studioSrc.includes("👁 PROMPTU GÖR"), "Promptu Gör etiketi");
+  assert.ok(studioSrc.includes("👁 Promptu Gör"), "menü öğesi: Promptu Gör");
+  assert.ok(!studioSrc.includes("👁 PROMPTU GÖR"), "araç çubuğunda ayrı Promptu Gör butonu YOK (menüye taşındı)");
   assert.ok(studioSrc.includes('sc-if value="{{ gp.promptShow }}"'), "prompt bloğu sc-if arkasında");
+  assert.ok(studioSrc.includes('aria-label="Promptu kapat"'), "kapatma prompt alanının KENDİ içinde (✕)");
   assert.ok(studioSrc.includes("{{ gp.prompt }}"), "prompt metni hâlâ kaynakta (kaybolmadı)");
+});
+
+test("Sahne kartı hiyerarşisi: ana=Yeniden Üret; ⋯ menüsü İndir/Prompt/Sil; Yenile belirsizliği çözüldü", () => {
+  assert.ok(studioSrc.includes("'↻ YENİDEN ÜRET · ' + cost + ' KR'"), "ana eylem adı YENİDEN ÜRET (Tekrar Üret değil)");
+  assert.ok(!studioSrc.includes("'↻ YENİLE · 5 KR'"), "belirsiz YENİLE butonu araç çubuğundan kalktı");
+  assert.ok(studioSrc.includes("↻ Promptu Ajanla Yenile · 5 KR"), "prompt yenileme menüde NET adla (farklı davranış korunur)");
+  assert.ok(studioSrc.includes("toggleMenu:") && studioSrc.includes("sceneMenu"), "⋯ menüsü (tek menü açık)");
+  for (const item of ["⬇ İndir", "✎ Promptu Düzenle", "⧉ Promptu Kopyala", "🗑 Görseli Sil"]) {
+    assert.ok(studioSrc.includes(item), "menü öğesi: " + item);
+  }
+  assert.ok(studioSrc.includes("removeImg:") && studioSrc.includes("setSceneImg(kind + i, { url: '', done: false, count: 0 })"), "Görseli Sil = karttan kaldır (Storage/arşiv silinmez)");
+  assert.ok(studioSrc.includes("🎥 VİDEOYA DÖNÜŞTÜR ▾"), "ikincil aksiyon adı: Videoya Dönüştür");
+});
+
+test("Yükleniyor durumu: iskelet + 'Görsel hazırlanıyor…' (kahverengi placeholder yok)", () => {
+  assert.ok(studioSrc.includes("Görsel hazırlanıyor…"), "yükleniyor metni");
+  assert.ok(studioSrc.includes('sc-if value="{{ gp.img.busy }}"'), "iskelet yalnız üretim sürerken");
+  assert.ok(studioSrc.includes("animation: ta-scan"), "yumuşak shimmer (mevcut ta-scan)");
+});
+
+test("UI metinleri kullanıcı dilinde: sade açıklama + ikincil kredi satırı", () => {
+  assert.ok(studioSrc.includes("Seçtiğin platform, oran ve stil tüm sahnelere uygulanır. Sahne bazında istediğin zaman değiştirebilirsin."), "sade açıklama");
+  assert.ok(studioSrc.includes("İlk 20 sahne görseli 12 KR, sonrası 8 KR."), "kredi kuralı ikincil satırda");
+  assert.ok(studioSrc.includes("✋ Oran elle seçildi"), "rozet kısa kullanıcı dilinde");
+});
+
+test("Ajan aksiyonu: AJANLA DÜZENLE, ikincil ağırlık; mobil dosya işlemleri açılır alanda", () => {
+  assert.ok(studioSrc.includes("AJANLA DÜZENLE"), "görev odaklı ad");
+  assert.ok(!studioSrc.includes(">◈<span class=\"ta-fablabel\">&nbsp;AJANLA KONUŞ</span>"), "eski birincil FAB kalmadı");
+  assert.ok(studioSrc.includes('class="ta-fileacts-mob"') && studioSrc.includes("⋯ DOSYA İŞLEMLERİ"), "mobil Dosya İşlemleri");
+  assert.ok(studioSrc.includes(".ta-fileacts { display: none !important; }"), "mobilde masaüstü aksiyon satırı gizli");
+  assert.ok(studioSrc.includes("inline: 'center', block: 'nearest'"), "seçili sekme görünür alana kayar");
+  assert.ok(studioSrc.includes("padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px))"), "sayfa sonu içerik alt bar arkasında kalmaz (safe-area)");
 });
 
 test("Ana CTA (Freeze v1): 'Tüm Görselleri Üret · N sahne · X KR' — gerçek tarife", () => {
@@ -87,7 +122,7 @@ test("Motor notu (Freeze v1 dili): 'seçildi — bu üretim için öneriliyor'",
 test("Mobil: ayar satırları yatay carousel + ana CTA sticky", () => {
   assert.ok((studioSrc.match(/class="ta-setrow"/g) || []).length >= 3, "PLATFORM/ORAN/MOTOR satırları carousel sınıflı");
   assert.ok(studioSrc.includes(".ta-setrow { flex-wrap: nowrap !important; overflow-x: auto;"), "carousel CSS");
-  assert.ok(studioSrc.includes("position: sticky; bottom: 10px; z-index: 30;"), "ana CTA mobilde sticky");
+  assert.ok(studioSrc.includes("position: sticky; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 30;"), "ana CTA mobilde sticky — alt navigasyonun ÜSTÜNDE (çakışma yok)");
 });
 
 test("Mobil: ana CTA taşamaz (ta-genall) + 44px dokunma hedefleri", () => {

@@ -212,10 +212,19 @@
       transition: border-color .2s, box-shadow .2s; }
     .ta-card:hover { border-color: rgba(193,154,82,.38);
       box-shadow: 0 26px 60px -38px rgba(0,0,0,.9), 0 0 42px -22px rgba(201,162,90,.22); }
-    /* PR-2 mobil (≤480px): ana CTA taşamaz + sticky; ayar satırları yatay carousel; dokunma ≥44px */
+    /* Mobil dosya aksiyonları: masaüstünde satır, mobilde "Dosya İşlemleri" açılır alanı */
+    .ta-fileacts-mob { display: none; }
+    .ta-fileacts-mob > summary::-webkit-details-marker { display: none; }
+    @media (max-width: 840px) {
+      .ta-fileacts { display: none !important; }
+      .ta-fileacts-mob { display: block; }
+      /* Sayfa sonu içerik alt bar / sticky CTA / ajan butonunun arkasında kalmasın (safe-area dahil) */
+      body { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+    }
+    /* Mobil (≤480px): ana CTA taşamaz + alt navigasyonun ÜSTÜNDE sticky; ayar satırları yatay carousel; dokunma ≥44px */
     @media (max-width: 480px) {
       .ta-genall { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; white-space: normal !important; line-height: 1.35;
-        position: sticky; bottom: 10px; z-index: 30; box-shadow: 0 10px 30px rgba(0,0,0,.55); }
+        position: sticky; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 30; box-shadow: 0 10px 30px rgba(0,0,0,.55); }
       .ta-card button { min-height: 44px; }
       .ta-setrow { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; scrollbar-width: thin; }
       .ta-setrow button { white-space: nowrap; flex: 0 0 auto; }
@@ -1146,7 +1155,7 @@
                   </div>
                 </sc-if>
               </div>
-              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <div class="ta-fileacts" style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <sc-if value="{{ fromArsiv }}" hint-placeholder-val="{{ false }}">
                   <button onClick="{{ regenStory }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">↻ HİKÂYEYİ YENİDEN ÜRET</button>
                 </sc-if>
@@ -1154,6 +1163,18 @@
                 <button onClick="{{ copyAll }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ copyAllLabel }}</button>
                 <button onClick="{{ newFile }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px 18px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;">+ YENİ DOSYA</button>
               </div>
+              <!-- Mobil: dosya aksiyonları kompakt "Dosya İşlemleri" açılır alanında (masaüstünde gizli) -->
+              <details class="ta-fileacts-mob">
+                <summary style="list-style: none; cursor: pointer; border: 1px solid rgba(129,135,151,.35); color: #a4a9b5; padding: 10px 14px; font-size: 12px; letter-spacing: .08em; display: inline-flex; align-items: center; gap: 8px;">⋯ DOSYA İŞLEMLERİ</summary>
+                <div style="display: grid; gap: 8px; margin-top: 10px;">
+                  <sc-if value="{{ fromArsiv }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ regenStory }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px; font-size: 12px; letter-spacing: .08em; cursor: pointer;">↻ HİKÂYEYİ YENİDEN ÜRET</button>
+                  </sc-if>
+                  <button onClick="{{ ekitapResult }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px; font-size: 12px; letter-spacing: .08em; cursor: pointer;">📖 E-KİTAP / PDF</button>
+                  <button onClick="{{ copyAll }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px; font-size: 12px; letter-spacing: .08em; cursor: pointer;">{{ copyAllLabel }}</button>
+                  <button onClick="{{ newFile }}" style="border: 1px solid rgba(129,135,151,.4); background: transparent; color: #a4a9b5; padding: 12px; font-size: 12px; letter-spacing: .08em; cursor: pointer;">+ YENİ DOSYA</button>
+                </div>
+              </details>
             </div>
 
             <!-- sekmeler -->
@@ -1250,7 +1271,10 @@
               <div style="display: grid; gap: 10px;">
                 <div style="border: 1px solid rgba(193,154,82,.25); background: rgba(193,154,82,.05); padding: 12px 16px; display: grid; gap: 10px;">
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-                    <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.5; max-width: 62ch;">Aşağıda seçtiğin <strong style="color:#e6c478;">PLATFORM</strong>, <strong style="color:#e6c478;">ORAN</strong> ve <strong style="color:#e6c478;">STİL</strong> her sahnenin <strong style="color:#e6c478;">GÖRSEL ÜRET</strong>'ine uygulanır (sihirbazda seçtiğin ayar hazır gelir). Üretilenler <strong style="color:#e6c478;">Görsel Stüdyo (Üretilenler)</strong> rafına eklenir; sekme değişmez, hepsini sırayla üretebilirsin. <strong style="color:#e6c478;">İlk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR.</strong></p>
+                    <div style="display: grid; gap: 4px; max-width: 62ch;">
+                      <p style="margin: 0; color: #cfc8b4; font-size: 13px; line-height: 1.55;">Seçtiğin platform, oran ve stil tüm sahnelere uygulanır. Sahne bazında istediğin zaman değiştirebilirsin.</p>
+                      <p style="margin: 0; color: #676d7c; font-size: 11.5px; line-height: 1.5;">İlk 20 sahne görseli 12 KR, sonrası 8 KR. Üretilenler Görsel Stüdyo rafına eklenir.</p>
+                    </div>
                     <span style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <sc-if value="{{ hasPendingScenes }}" hint-placeholder-val="{{ true }}">
                       <button class="ta-genall" onClick="{{ genAll }}" disabled="{{ batchBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
@@ -1328,7 +1352,7 @@
                       <button onClick="{{ ia.pick }}" style="{{ ia.style }}">{{ ia.label }}</button>
                     </sc-for>
                     <sc-if value="{{ aspectManualBadge }}" hint-placeholder-val="{{ false }}">
-                      <span style="border: 1px solid rgba(193,154,82,.45); background: rgba(193,154,82,.08); color: #e6c478; font-size: 11px; padding: 4px 10px; border-radius: 999px;">✋ Oran elle değiştirildi — platform seçimin korunur</span>
+                      <span style="border: 1px solid rgba(193,154,82,.45); background: rgba(193,154,82,.08); color: #e6c478; font-size: 11px; padding: 4px 10px; border-radius: 999px;">✋ Oran elle seçildi</span>
                     </sc-if>
                     <span style="width: 1px; height: 20px; background: rgba(129,135,151,.3); margin: 0 4px;"></span>
                     <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">STİL</span>
@@ -1447,18 +1471,43 @@
                           <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ GÖRSEL HAZIR · {{ gp.img.count }}</span>
                           <button onClick="{{ gp.makeImg }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.imgRedoLabel }}</button>
                         </sc-if>
-                        <button onClick="{{ gp.regen }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ gp.regenLabel }}</button>
-                        <button onClick="{{ gp.togglePrompt }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ gp.promptToggleLabel }}</button>
-                        <button onClick="{{ gp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
-                        <button onClick="{{ gp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ gp.copyLabel }}</button>
+                        <span style="position: relative; display: inline-flex;">
+                          <button onClick="{{ gp.toggleMenu }}" aria-label="Diğer işlemler" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 12px; font-size: 13px; line-height: 1.2; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">⋯</button>
+                          <sc-if value="{{ gp.menuOpen }}" hint-placeholder-val="{{ false }}">
+                            <div style="position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 210px; border: 1px solid rgba(193,154,82,.35); background: #0a0f1a; box-shadow: 0 18px 50px rgba(0,0,0,.65); display: grid;">
+                              <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
+                                <button onClick="{{ gp.dlImg }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">⬇ İndir</button>
+                              </sc-if>
+                              <button onClick="{{ gp.togglePrompt }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">{{ gp.promptMenuLabel }}</button>
+                              <button onClick="{{ gp.edit }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">✎ Promptu Düzenle</button>
+                              <button onClick="{{ gp.copy }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">⧉ Promptu Kopyala</button>
+                              <button onClick="{{ gp.regen }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">{{ gp.regenLabel }}</button>
+                              <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
+                                <button onClick="{{ gp.removeImg }}" style="text-align: left; border: 0; border-top: 1px solid rgba(129,135,151,.2); background: transparent; color: #a4a9b5; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12); color: #e08a80;">🗑 Görseli Sil</button>
+                              </sc-if>
+                            </div>
+                          </sc-if>
+                        </span>
                       </div>
                     </div>
                     <sc-if value="{{ gp.anlatim }}" hint-placeholder-val="{{ false }}">
                       <div style="color: #e8dcc0; font-size: 12.5px; line-height: 1.6; font-style: italic; border-left: 2px solid rgba(193,154,82,.55); padding: 2px 0 2px 11px;">🎙 “{{ gp.anlatim }}”</div>
                     </sc-if>
-                    <!-- AI Yönetmen: prompt VARSAYILAN GİZLİ — "Promptu Gör" ile açılır (metin kaybolmaz, ikincilleşir) -->
+                    <!-- Prompt varsayılan gizli — ⋯ menüsünden "Promptu Gör" ile açılır; kapatma alanın kendi içinde -->
                     <sc-if value="{{ gp.promptShow }}" hint-placeholder-val="{{ false }}">
-                      <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px; padding: 12px 14px;">{{ gp.prompt }}</code>
+                      <div style="background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 14px 0;">
+                          <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">GÖRSEL PROMPTU</span>
+                          <button onClick="{{ gp.togglePrompt }}" aria-label="Promptu kapat" style="border: 0; background: transparent; color: #818797; font-size: 14px; line-height: 1; cursor: pointer; padding: 2px 4px;" style-hover="color: #e6c478;">✕</button>
+                        </div>
+                        <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; padding: 8px 14px 12px;">{{ gp.prompt }}</code>
+                      </div>
+                    </sc-if>
+                    <!-- Üretim sürerken: yumuşak iskelet + durum -->
+                    <sc-if value="{{ gp.img.busy }}" hint-placeholder-val="{{ false }}">
+                      <div style="width: 100%; max-width: 300px; aspect-ratio: 9/16; max-height: 46vh; display: grid; place-items: center; background: repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px); background-size: 34px 34px; animation: ta-scan .9s linear infinite; border: 1px solid rgba(129,135,151,.2); border-radius: 6px;">
+                        <span style="color: #a4a9b5; font-size: 12px; letter-spacing: .06em;">Görsel hazırlanıyor…</span>
+                      </div>
                     </sc-if>
                     <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
                       <img loading="lazy" data-zoomable="1" src="{{ gp.img.url }}" alt="Sahne görseli" onClick="{{ gp.img.zoom }}" title="Büyütmek için tıkla" style="{{ gp.img.thumbStyle }}">
@@ -1758,7 +1807,7 @@
 
   <!-- AJANLA KONUŞ · YAN PANEL -->
   <sc-if value="{{ showStudio }}" hint-placeholder-val="{{ false }}">
-    <button onClick="{{ toggleChat }}" class="ta-chatfab" style="position: fixed; z-index: 55; bottom: 24px; right: 24px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(193,154,82,.6); background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 14px 20px; cursor: pointer; box-shadow: 0 12px 40px rgba(0,0,0,.6);" style-hover="box-shadow: 0 12px 50px rgba(230,196,120,.45); transform: translateY(-2px);">◈<span class="ta-fablabel">&nbsp;AJANLA KONUŞ</span></button>
+    <button onClick="{{ toggleChat }}" class="ta-chatfab" style="position: fixed; z-index: 55; bottom: 24px; right: 24px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(193,154,82,.55); background: rgba(10,15,26,.92); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 13px 18px; cursor: pointer; box-shadow: 0 10px 32px rgba(0,0,0,.55);" style-hover="background: rgba(193,154,82,.14); box-shadow: 0 12px 44px rgba(230,196,120,.3);">◈<span class="ta-fablabel">&nbsp;AJANLA DÜZENLE</span></button>
     <div class="ta-chatpanel" style="{{ chatPanelStyle }}">
       <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid rgba(193,154,82,.25); background: rgba(5,7,13,.92);">
         <button onClick="{{ toggleChat }}" aria-label="Geri dön" class="ta-chatback" style="flex: none; border: 1px solid rgba(193,154,82,.45); background: rgba(193,154,82,.08); color: #e6c478; width: 40px; height: 40px; border-radius: 50%; font-size: 21px; line-height: 1; cursor: pointer; padding-bottom: 3px;" style-hover="background: rgba(193,154,82,.18);">‹</button>
@@ -3594,6 +3643,7 @@ class Component extends DCLogic {
     const vidBusy = !!(si && si.vidBusy);
     return {
       done, notDone: !done,
+      busy: !!(si && si.busy),
       count: (si && si.count) || 0,
       url, hasUrl: !!url,
       vidUrl, hasVid: !!vidUrl, vidBusy,
@@ -3603,7 +3653,7 @@ class Component extends DCLogic {
       // başarısızlık mesajları hiç render edilmiyordu ("hiç tepki yok" kök nedeni #2).
       vidErrShow: !vidBusy && !!((si && si.vidStatus) || ''),
       vidMenuOpen: !!(si && si.vidMenuOpen) && !vidBusy,
-      vidLabel: vidBusy ? ((si && si.vidStatus) || '🎬 HAZIRLANIYOR…') : (vidUrl ? '🎬 TEKRAR VİDEO ▾' : '🎬 VİDEO ÜRET ▾'),
+      vidLabel: vidBusy ? ((si && si.vidStatus) || '🎬 HAZIRLANIYOR…') : (vidUrl ? '🎬 TEKRAR VİDEO ▾' : '🎥 VİDEOYA DÖNÜŞTÜR ▾'),
       toggleVidMenu: () => this.openVideoModal({ kind: 'scene', key, url }),
       makeGrok: () => this.makeVideo(key, url, 'grok'),
       makeKling: () => this.makeVideo(key, url, 'kling'),
@@ -4588,7 +4638,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       { id: 'imgstudio', label: 'Görsel Stüdyo' }, { id: 'gecmis', label: 'Geçmiş Görseller' }, { id: 'yayin', label: 'Yayın Paketi' }
     ].map(t => ({
       label: t.label,
-      go: () => this.setState({ tab: t.id }),
+      // Mobilde seçili sekme görünür alana kayar (yatay carousel'de kaybolmaz)
+      go: (e) => { const el = e && e.currentTarget; this.setState({ tab: t.id }, () => { try { if (el && el.scrollIntoView) el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); } catch (err) {} }); },
       style: {
         border: s.tab === t.id ? '1px solid ' + gold : '1px solid rgba(129,135,151,.25)',
         background: s.tab === t.id ? 'rgba(193,154,82,.12)' : 'transparent',
@@ -5492,16 +5543,21 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       batchCanRetry: !!(bsc && (bsc.status === 'failed' || bsc.status === 'refunded') && !s.batchRunning),
       retryScene: () => this.retryScene(kind + i),
       no: 'SAHNE ' + (i + 1),
-      // PROMPT VARSAYILAN GİZLİ (AI Yönetmen): kullanıcı prompt yazmaz/okumaz;
-      // isteyen "Promptu Gör" ile açar. Metin kaybolmaz, yalnız ikincilleşir.
+      // PROMPT VARSAYILAN GİZLİ (AI Yönetmen): erişim ⋯ menüsünden; metin kaybolmaz.
       promptShow: !!((s.promptOpen || {})[kind + i]),
-      togglePrompt: () => this.setState(st => ({ promptOpen: { ...(st.promptOpen || {}), [kind + i]: !((st.promptOpen || {})[kind + i]) } })),
-      promptToggleLabel: ((s.promptOpen || {})[kind + i]) ? '▴ PROMPTU GİZLE' : '👁 PROMPTU GÖR',
-      edit: () => this.startEdit(kind, i, (kind === 'gp' ? 'Görsel promptu · Sahne ' : 'Video promptu · Sahne ') + (i + 1)),
-      regen: () => this.regenScene(kind, i),
-      regenLabel: busy ? '⟳ ÜRETİLİYOR…' : '↻ YENİLE · 5 KR',
+      togglePrompt: () => this.setState(st => ({ sceneMenu: '', promptOpen: { ...(st.promptOpen || {}), [kind + i]: !((st.promptOpen || {})[kind + i]) } })),
+      promptMenuLabel: ((s.promptOpen || {})[kind + i]) ? '👁 Promptu Gizle' : '👁 Promptu Gör',
+      // ⋯ MENÜSÜ: aynı anda tek menü açık (sceneMenu anahtarı)
+      menuOpen: s.sceneMenu === (kind + i),
+      toggleMenu: () => this.setState(st => ({ sceneMenu: st.sceneMenu === (kind + i) ? '' : (kind + i) })),
+      dlImg: () => { this.setState({ sceneMenu: '' }); const u = (((s.sceneImgs || {})[kind + i]) || {}).url; if (u) this.dlImage(u, s.aspect); },
+      // Görseli Sil = KARTTAN kaldır (yerel görünüm) — Storage/arşiv silinmez, Geçmiş Görseller'de durur
+      removeImg: () => { this.setState({ sceneMenu: '' }); this.setSceneImg(kind + i, { url: '', done: false, count: 0 }); },
+      edit: () => { this.setState({ sceneMenu: '' }); this.startEdit(kind, i, (kind === 'gp' ? 'Görsel promptu · Sahne ' : 'Video promptu · Sahne ') + (i + 1)); },
+      regen: () => { this.setState({ sceneMenu: '' }); this.regenScene(kind, i); },
+      regenLabel: busy ? '⟳ Prompt yenileniyor…' : '↻ Promptu Ajanla Yenile · 5 KR',
       imgCostLabel: ibusy ? '⟳ ÜRETİLİYOR…' : ('◈ GÖRSEL ÜRET · ' + cost + ' KR'),
-      imgRedoLabel: ibusy ? '⟳ ÜRETİLİYOR…' : ('↻ TEKRAR ÜRET · ' + cost + ' KR'),
+      imgRedoLabel: ibusy ? '⟳ ÜRETİLİYOR…' : ('↻ YENİDEN ÜRET · ' + cost + ' KR'),
       // Görseli SATIR İÇİNDE üret — sekme değişmez, sahnede kalırsın (kind==='gp' için)
       makeImg: () => this.makeSceneImg(kind + i, x.prompt, idx),
       img: this.sceneImgView(kind + i)
