@@ -1150,6 +1150,12 @@
                       <button onClick="{{ st.pick }}" style="{{ st.style }}">{{ st.label }}</button>
                     </sc-for>
                   </div>
+                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">SAĞLAYICI</span>
+                    <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
+                      <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
+                    </sc-for>
+                  </div>
                 </div>
                 <sc-if value="{{ hasSceneChars }}" hint-placeholder-val="{{ false }}">
                   <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12; padding: 14px 18px; display: grid; gap: 8px;">
@@ -2660,6 +2666,8 @@ class Component extends DCLogic {
       window.open(url, '_blank');   // CORS/ağ hatası → son çare yeni sekme
     }
   }
+  // Seçili görsel sağlayıcısının kısa adı (buton metinleri için). Higgs pasif → gpt varsayılır.
+  _provNm() { return { gpt: 'GPT', gemini: 'Gemini' }[this.state.imgProvider || 'gpt'] || 'GPT'; }
   // KART META (teknik şeffaflık): sunucudan gelen meta'yı kartta gösterilecek
   // etiket/değer satırlarına çevirir. Boş alanlar gizlenir.
   _imgMetaRows(m) {
@@ -4551,8 +4559,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         return {
           ...x,
           makeImg: () => this.makeSceneImg('kp' + i, x.prompt),
-          imgBtnLabel: kbusy ? '⟳ ÜRETİLİYOR…' : '◈ GÖRSEL ÜRET · 12 KR',
-          imgRedoLabel: kbusy ? '⟳ ÜRETİLİYOR…' : '↻ TEKRAR ÜRET · 12 KR',
+          imgBtnLabel: kbusy ? '⟳ ÜRETİLİYOR…' : ('◈ ' + this._provNm() + ' ile Görsel Üret · 12 KR'),
+          imgRedoLabel: kbusy ? '⟳ ÜRETİLİYOR…' : ('↻ ' + this._provNm() + ' ile Tekrar Üret · 12 KR'),
           img: this.sceneImgView('kp' + i)
         };
       }),
@@ -4643,7 +4651,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       // ── U-05: toplu sahne üretimi ──
       genAll: () => this.genAllScenes(),
       batchBusy: s.batchBusy,
-      genAllLabel: s.batchBusy ? ('⟳ ÜRETİLİYOR ' + s.batchDone + '/' + s.batchTotal) : '◈ TÜM SAHNELERİ ÜRET',
+      genAllLabel: s.batchBusy ? ('⟳ ÜRETİLİYOR ' + s.batchDone + '/' + s.batchTotal)
+        : ('◈ ' + this._provNm() + ' ile Tüm Sahneleri Üret (' + (((s.result || {}).gorsel_promptlar || []).filter((x, i) => x && x.prompt && !(((s.sceneImgs || {})['gp' + i]) || {}).done).length) + ')'),
       hasPendingScenes: !!s.result && (r.gorsel_promptlar || []).some((x, i) => x && x.prompt && !((((s.sceneImgs || {})['gp' + i]) || {}).done)),
 
       true: true
@@ -4759,8 +4768,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       edit: () => this.startEdit(kind, i, (kind === 'gp' ? 'Görsel promptu · Sahne ' : 'Video promptu · Sahne ') + (i + 1)),
       regen: () => this.regenScene(kind, i),
       regenLabel: busy ? '⟳ ÜRETİLİYOR…' : '↻ YENİLE · 5 KR',
-      imgCostLabel: ibusy ? '⟳ ÜRETİLİYOR…' : ('◈ GÖRSEL ÜRET · ' + cost + ' KR'),
-      imgRedoLabel: ibusy ? '⟳ ÜRETİLİYOR…' : ('↻ TEKRAR ÜRET · ' + cost + ' KR'),
+      imgCostLabel: ibusy ? '⟳ ÜRETİLİYOR…' : ('◈ ' + this._provNm() + ' ile Görsel Üret · ' + cost + ' KR'),
+      imgRedoLabel: ibusy ? '⟳ ÜRETİLİYOR…' : ('↻ ' + this._provNm() + ' ile Tekrar Üret · ' + cost + ' KR'),
       // Görseli SATIR İÇİNDE üret — sekme değişmez, sahnede kalırsın (kind==='gp' için)
       makeImg: () => this.makeSceneImg(kind + i, x.prompt, idx),
       img: this.sceneImgView(kind + i)
