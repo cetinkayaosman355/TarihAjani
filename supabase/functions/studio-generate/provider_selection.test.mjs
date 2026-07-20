@@ -154,18 +154,23 @@ test("index.ts: kredi reserve/refund/opId/video_jobs korunur", () => {
 });
 
 // ── (B2) GERÇEK Studio.dc.html DEĞİŞMEZLERİ ─────────────────────────────────
-test("Studio.dc.html: görsel sağlayıcı durumu + istemci imageProvider gönderimi", () => {
-  assert.ok(studioSrc.includes("imgProvider: saved.imgProvider || 'gpt'"), "imgProvider state (vars. gpt) olmalı");
-  assert.ok(studioSrc.includes("imageProvider: provider || this.state.imgProvider || 'gpt'"), "istek gövdesinde imageProvider gönderilmeli (batch'te sabit sağlayıcı)");
-  assert.ok(studioSrc.includes("imgProviders:"), "görsel sağlayıcı seçici listesi olmalı");
+test("Studio.dc.html: görsel MOTOR durumu (Otomatik vars.) + istemci imageProvider gönderimi", () => {
+  // PR-2: varsayılan 'auto' (arayüz kavramı) — sunucuya HER yolda _provResolve ile GERÇEK motor gider.
+  assert.ok(studioSrc.includes("imgProvider: saved.imgProvider || 'auto'"), "imgProvider state (vars. auto) olmalı");
+  assert.ok(studioSrc.includes("imageProvider: this._provResolve(provider || this.state.imgProvider)"), "istek gövdesinde imageProvider _provResolve'dan geçmeli ('auto' sunucuya sızmaz)");
+  assert.ok(studioSrc.includes("_provResolve(providerOverride || this.state.imgProvider)"), "makeImage sağlayıcıyı çözümlemeli");
+  assert.ok(studioSrc.includes("_provResolve(s.imgProvider)"), "genAllScenes batch sağlayıcısını çözümlemeli");
+  assert.ok(studioSrc.includes("imgProviders:"), "görsel motor seçici listesi olmalı");
+  assert.ok(studioSrc.includes("['auto', '⚡ Otomatik', false]"), "⚡ Otomatik seçenek + varsayılan olmalı");
   assert.ok(studioSrc.includes("['higgs', 'Higgs', true]"), "higgs pasif (Yakında) olmalı");
 });
-test("Studio.dc.html: görsel buton metni sağlayıcıya göre (vitrin model adı) + maliyet", () => {
-  // Dinamik: GPT → 'GPT Image 2', Gemini → 'Gemini Flash Image', Higgs → 'Higgs'
-  assert.ok(studioSrc.includes("_provModelLabel(s.imgProvider)"), "buton metni sağlayıcı vitrin modeline göre");
+test("Studio.dc.html: görsel buton metni motora göre (vitrin model adı) + maliyet", () => {
+  // Dinamik: GPT → 'GPT Image 2', Gemini → 'Gemini Flash Image'; auto → çözümlenen motor + '(Otomatik)'
+  assert.ok(studioSrc.includes("_provModelLabel(s.imgProvider)"), "buton metni motorun vitrin modeline göre");
   assert.ok(studioSrc.includes("gpt: 'GPT Image 2'"), "GPT → GPT Image 2");
-  assert.ok(studioSrc.includes("gemini: 'Gemini Flash Image'") && studioSrc.includes("higgs: 'Higgs'"), "Gemini/Higgs vitrin adları");
+  assert.ok(studioSrc.includes("gemini: 'Gemini Flash Image'"), "Gemini vitrin adı");
   assert.ok(studioSrc.includes("' ile Üret · 12 KR'"), "buton metni maliyet göstermeli (fiyat DEĞİŞMEDİ)");
+  assert.ok(studioSrc.includes("imgAutoNote"), "Otomatik/elle seçim şeffaflık notu olmalı");
 });
 test("Studio.dc.html: video modalı (sağlayıcı+süre+maliyet), veo/higgs pasif", () => {
   assert.ok(studioSrc.includes("videoModalOpen"), "video modal bayrağı olmalı");

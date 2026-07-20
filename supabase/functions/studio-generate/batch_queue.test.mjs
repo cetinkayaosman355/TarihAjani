@@ -163,13 +163,14 @@ test("Studio.dc.html: DURAKLAT / DEVAM / İPTAL ayrımı ('pause' korur, 'cancel
   assert.ok(studioSrc.includes("⏸ DURAKLAT") && studioSrc.includes("▶ DEVAM ET") && studioSrc.includes("✖ İPTAL ET"), "üç kontrol butonu");
 });
 test("Studio.dc.html: queue özeti + progress bar + aktif sahne + tahmini kalan süre", () => {
-  assert.ok(studioSrc.includes("Toplam Sahne: ") && studioSrc.includes("Tamamlanan: ") && studioSrc.includes("Sırada: ") && studioSrc.includes("Bekleyen: "), "queue özeti 4 sayaç");
+  // PR-2 terminolojisi: 'Görsel hazır' (Tamamlanan yerine) · 'Üretiliyor' (processing) · 'Sırada' (queued)
+  assert.ok(studioSrc.includes("Toplam Sahne: ") && studioSrc.includes("Görsel hazır: ") && studioSrc.includes("Üretiliyor: ") && studioSrc.includes("Sırada: "), "queue özeti 4 sayaç (Görsel hazır terminolojisi)");
   assert.ok(studioSrc.includes("batchProgStyle") && studioSrc.includes("batchPctText"), "gerçek zamanlı progress bar");
   assert.ok(studioSrc.includes("🟡 Şu anda üretiliyor:") && studioSrc.includes("Tahmini kalan süre:"), "aktif sahne paneli");
   assert.ok(studioSrc.includes("batchTick") && studioSrc.includes("_startBatchTicker"), "canlı kalan süre için 1sn re-render");
 });
 test("Studio.dc.html: emoji durum rozetleri + sahne-bazlı Tekrar Dene", () => {
-  assert.ok(studioSrc.includes("⚪ BEKLİYOR") && studioSrc.includes("🟡 ÜRETİLİYOR") && studioSrc.includes("🟢 TAMAMLANDI") && studioSrc.includes("🔴 HATA"), "emoji rozetler");
+  assert.ok(studioSrc.includes("⚪ BEKLİYOR") && studioSrc.includes("🟡 ÜRETİLİYOR") && studioSrc.includes("🟢 GÖRSEL HAZIR") && studioSrc.includes("🔴 HATA"), "emoji rozetler (PR-2: GÖRSEL HAZIR)");
   assert.ok(studioSrc.includes("retryScene(") && studioSrc.includes("TEKRAR DENE") && studioSrc.includes("batchCanRetry"), "başarısız sahnede Tekrar Dene");
 });
 test("Studio.dc.html: üretim sonu özeti + kurtarma bildirimi", () => {
