@@ -156,7 +156,7 @@ test("index.ts: kredi reserve/refund/opId/video_jobs korunur", () => {
 // ── (B2) GERÇEK Studio.dc.html DEĞİŞMEZLERİ ─────────────────────────────────
 test("Studio.dc.html: görsel sağlayıcı durumu + istemci imageProvider gönderimi", () => {
   assert.ok(studioSrc.includes("imgProvider: saved.imgProvider || 'gpt'"), "imgProvider state (vars. gpt) olmalı");
-  assert.ok(studioSrc.includes("imageProvider: this.state.imgProvider || 'gpt'"), "istek gövdesinde imageProvider gönderilmeli");
+  assert.ok(studioSrc.includes("imageProvider: provider || this.state.imgProvider || 'gpt'"), "istek gövdesinde imageProvider gönderilmeli (batch'te sabit sağlayıcı)");
   assert.ok(studioSrc.includes("imgProviders:"), "görsel sağlayıcı seçici listesi olmalı");
   assert.ok(studioSrc.includes("['higgs', 'Higgs', true]"), "higgs pasif (Yakında) olmalı");
 });

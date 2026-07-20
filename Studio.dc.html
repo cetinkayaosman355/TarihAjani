@@ -1134,11 +1134,25 @@
                     <sc-if value="{{ hasPendingScenes }}" hint-placeholder-val="{{ true }}">
                       <button onClick="{{ genAll }}" disabled="{{ batchBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
                     </sc-if>
+                    <sc-if value="{{ batchStopBtn }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ stopBatch }}" style="border: 1px solid rgba(232,169,169,.6); cursor: pointer; background: rgba(232,169,169,.1); color: #e8a9a9; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="background: rgba(232,169,169,.2);">■ DURDUR</button>
+                    </sc-if>
+                    <sc-if value="{{ batchResumeBtn }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ resumeBatch }}" style="border: 1px solid rgba(158,211,168,.6); cursor: pointer; background: rgba(158,211,168,.1); color: #9ed3a8; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="background: rgba(158,211,168,.2);">▸ DEVAM ET</button>
+                    </sc-if>
                     <sc-if value="{{ hasAnyOutput }}" hint-placeholder-val="{{ false }}">
                       <button onClick="{{ goImgStudio }}" style="border: 1px solid rgba(193,154,82,.5); cursor: pointer; background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="background: rgba(193,154,82,.12);">ÜRETİLENLER ({{ outputCount }}) →</button>
                     </sc-if>
                     </span>
                   </div>
+                  <sc-if value="{{ hasBatch }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .06em; border-top: 1px solid rgba(193,154,82,.15); padding-top: 8px;">
+                      <span style="color: #e6c478;">{{ batchMainLabel }}</span>
+                      <span style="color: #c4a7ff;">{{ batchProcLabel }}</span>
+                      <span style="color: #a4a9b5;">{{ batchQueueLabel }}</span>
+                      <sc-if value="{{ batchHasFail }}" hint-placeholder-val="{{ false }}"><span style="color: #e8a9a9;">{{ batchFailLabel }}</span></sc-if>
+                    </div>
+                  </sc-if>
                   <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                     <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">KADRAJ</span>
                     <sc-for list="{{ imgAspects }}" as="ia" hint-placeholder-count="3">
@@ -1238,6 +1252,9 @@
                     <div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;">
                       <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="border: 1px solid rgba(193,154,82,.5); color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; padding: 4px 9px; white-space: nowrap;">{{ gp.no }}</span>
+                        <sc-if value="{{ gp.hasBatchBadge }}" hint-placeholder-val="{{ false }}">
+                          <span style="{{ gp.batchBadgeStyle }}">{{ gp.batchBadgeText }}</span>
+                        </sc-if>
                         <span style="font-weight: 700; font-size: 14px;">{{ gp.sahne }}</span>
                       </div>
                       <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
@@ -1683,6 +1700,9 @@ class Component extends DCLogic {
     try { saved = JSON.parse(localStorage.getItem('ta_studio_v5') || '{}'); } catch (e) {}
     // Kaldığın yerden devam: kaydedilmiş aktif dosya varsa doğrudan onu aç (kayıp yok)
     const w = (saved.work && saved.work.result) ? saved.work : null;
+    // Toplu üretim (batch) durumu sayfa yenilemede KAYBOLMASIN — aynı dosyaya aitse geri yükle.
+    let savedBatch = null;
+    try { const bs = JSON.parse(localStorage.getItem('ta_studio_batch_v1') || 'null'); if (bs && bs.batch && bs.fileNo === ((w && w.fileNo) || '')) savedBatch = bs.batch; } catch (e) {}
     this.state = {
       screen: saved.agent ? 'studio' : 'login',
       agentDraft: '',
@@ -1699,6 +1719,8 @@ class Component extends DCLogic {
       imgAspect: null, imgZoom: '',
       imgProvider: saved.imgProvider || 'gpt',   // görsel sağlayıcısı: gpt (vars.) | gemini | higgs(pasif)
       videoModal: null,                          // video sağlayıcı/süre/maliyet modalı
+      batch: savedBatch,                         // kontrollü toplu üretim durumu (yenilemede geri yüklenir)
+      batchRunning: false,                       // motor şu an çalışıyor mu (yenilemede false → Devam Et)
       vpPlaying: '', vpBusy: '',
       step: w ? 4 : 1,
       idea: (w && w.idea) || '', ideaWarn: '',
@@ -2573,7 +2595,7 @@ class Component extends DCLogic {
   // Kademeli fiyat: ilk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR
   // (uzun videoda çok görsel üretimini ucuzlatır). idx = sahne sırası (0 tabanlı).
   IMG_COST(idx) { return (typeof idx === 'number' && idx >= 20) ? 8 : 12; }
-  async imageServer(prompt, arKey, idx, onAttempt, opId, style) {
+  async imageServer(prompt, arKey, idx, onAttempt, opId, style, provider) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect] || '16:9';
@@ -2588,7 +2610,7 @@ class Component extends DCLogic {
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: this.state.imgProvider || 'gpt', style: style || (this.state.imgStyle || this.state.style) || undefined })
+      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: provider || this.state.imgProvider || 'gpt', style: style || (this.state.imgStyle || this.state.style) || undefined })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
@@ -2729,17 +2751,21 @@ class Component extends DCLogic {
   }
   // Promise döndürür (toplu üretim kuyruğu bunun üstüne kurulu); sceneKey verilirse
   // üretilen görsel sahne kartında satır içi gösterilir.
-  makeImage(promptRaw, idx, sceneKey, arOverride) {
+  // opIdOverride: kararlı iş kimliği (toplu üretimde sahne başına sabit → idempotent
+  // rezervasyon/kurtarma; aynı sahne iki kez üretilmez). providerOverride: batch'te
+  // sabitlenen sağlayıcı. Dönüş: { ok, err } (toplu kuyruk gerçek hatayı okur).
+  makeImage(promptRaw, idx, sceneKey, arOverride, opIdOverride, providerOverride) {
     const prompt = (promptRaw || '').trim();
-    if (!prompt) return Promise.resolve(false);
+    if (!prompt) return Promise.resolve({ ok: false, err: 'boş prompt' });
     const cost = this.IMG_COST(idx);
-    if (this.state.credits < cost) { this.setState({ creditModal: true }); return Promise.resolve(false); }
+    if (this.state.credits < cost) { this.setState({ creditModal: true }); return Promise.resolve({ ok: false, err: 'YETERSIZ_KREDI' }); }
     // Dosyaya ait üretim (sahne/kapak/karakter) DOSYA oranını kullanır (arOverride);
     // yalnız serbest Görsel Stüdyo kuyruğu panel kadrajını (imgAspect) kullanır.
     const ar = arOverride || this.state.imgAspect || this.state.aspect;
     const sty = this.state.imgStyle || this.state.style;    // stil seçilmediyse sihirbazda seçilen stil
+    const prov = providerOverride || this.state.imgProvider || 'gpt';   // batch'te sabit sağlayıcı
     const sendPrompt = this.withAspect(prompt, ar);         // kadraj prompta yerleşir; STİL sunucuya anahtar olarak gider
-    const id = 'img' + Date.now() + Math.floor(Math.random() * 1000);
+    const id = opIdOverride || ('img' + Date.now() + Math.floor(Math.random() * 1000));
     // SAHNE ETİKETİ: rafta hangi kartın hangi sahne olduğu yazsın (karışmasın)
     let label = '';
     if (sceneKey === 'kapak') label = '🏷 KAPAK';
@@ -2752,48 +2778,148 @@ class Component extends DCLogic {
       }
     }
     // Basıldığı anda görünür geri bildirim: buton etiketi ÜRETİLİYOR'a döner (imgJobs sayacı)
-    this.setState(st => ({ imgJobs: (st.imgJobs || 0) + 1, imgQueue: [{ id, prompt, ar, label, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue].slice(0, 40) }));
-    const onAttempt = (n) => this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'TEKRAR DENENİYOR… (' + (n + 1) + '/3)' } : x) }));
+    // Aynı opId ile tekrar (kurtarma) rafta kart ÇOĞALTMAZ (id'ye göre filtrele).
+    this.setState(st => ({ imgJobs: (st.imgJobs || 0) + 1, imgQueue: [{ id, prompt, ar, label, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue.filter(x => x.id !== id)].slice(0, 40) }));
     const done = () => this.setState(st => ({ imgJobs: Math.max(0, (st.imgJobs || 0) - 1) }));
-    return this.imageServer(sendPrompt, ar, idx, onAttempt, id, sty).then(res => {
+    return this.imageServer(sendPrompt, ar, idx, null, id, sty, prov).then(res => {
       done();
       const url = res.url, meta = res.meta || null;   // meta: sağlayıcı/model/stil/biçim/kadraj/çözünürlük/boyut/süre/kredi
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url, meta } : x) }));
-      if (sceneKey) this.setSceneImg(sceneKey, { url });   // satır içi önizleme
+      if (sceneKey) this.setSceneImg(sceneKey, { url, meta });   // satır içi önizleme + meta
       this.saveImg({ id, prompt, ar, url, meta, ts: Date.now() });   // kalıcı arşive (Önceki Üretimler) — meta dahil
-      return true;
+      return { ok: true, meta };
     }).catch(e => {
       done();
-      const msg = e.message === 'YETERSIZ_KREDI' ? 'YETERSİZ KREDİ' : ('HATA: ' + e.message);
+      const isCredit = e.message === 'YETERSIZ_KREDI';
+      const msg = isCredit ? 'YETERSİZ KREDİ' : ('HATA: ' + e.message);   // GERÇEK hata gösterilir
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: msg } : x) }));
-      if (e.message === 'YETERSIZ_KREDI') { this.setState({ creditModal: true }); this._batchStop = true; }
-      return false;
+      if (isCredit) this.setState({ creditModal: true });
+      return { ok: false, err: isCredit ? 'YETERSIZ_KREDI' : String(e.message || 'hata') };   // hatalı sahne kredisi sunucuda iade edilir (opId)
     });
   }
 
-  // ── U-05: TÜM SAHNELERİ ÜRET — SIRALI kuyruk (Faz 3: concurrency=1), toplam maliyet onaylı ──
+  // ── KONTROLLÜ KUYRUK: TÜM SAHNELERİ ÜRET ──────────────────────────
+  // Aynı anda EN FAZLA 2 sahne; kalanlar sırada. Her sahne ayrı durum taşır
+  // (queued/processing/completed/failed/refunded/cancelled). Bir sahne çökerse
+  // diğerleri devam eder. Sahne başına kredi rezervasyonu (sunucuda, kararlı opId);
+  // başarılı finalize, başarısız iade. Sayfa yenilemesi durumları kaybetmez.
+  // ── SAF, TEST EDİLEBİLİR KUYRUK MOTORU ──
+  // worker(item) → { status:'completed'|'failed'|'refunded', err? }. isStopped() true
+  // olunca YENİ sahne BAŞLATILMAZ; çalışan (≤concurrency) biter; kalan 'queued' →
+  // 'cancelled'. Eşzamanlı aktif iş HİÇBİR ZAMAN concurrency'yi (2) geçmez.
+  async _batchRun(items, worker, opts) {
+    opts = opts || {};
+    const CONC = Math.max(1, opts.concurrency || 2);
+    const isStopped = opts.isStopped || (() => false);
+    const onStatus = opts.onStatus || (() => {});
+    const status = items.map(() => 'queued');
+    let next = 0;
+    const lane = async () => {
+      while (true) {
+        if (isStopped()) return;                       // durdur → yeni iş başlatma
+        const i = next < items.length ? next++ : -1;
+        if (i < 0) return;
+        status[i] = 'processing'; onStatus(i, 'processing');
+        let st = 'completed', err;
+        try { const r = await worker(items[i], i); st = (r && r.status) || 'completed'; err = r && r.err; }
+        catch (e) { st = 'failed'; err = String((e && e.message) || e); }
+        status[i] = st; onStatus(i, st, err);
+      }
+    };
+    const lanes = Math.max(1, Math.min(CONC, items.length));   // aktif iş ≤ 2
+    await Promise.all(Array.from({ length: lanes }, lane));
+    for (let k = 0; k < status.length; k++) if (status[k] === 'queued') { status[k] = 'cancelled'; onStatus(k, 'cancelled'); }
+    return status;
+  }
+  _persistBatch() {
+    try { localStorage.setItem('ta_studio_batch_v1', JSON.stringify({ fileNo: this.state.fileNo || '', batch: this.state.batch || null })); } catch (e) {}
+  }
+  _batchSetStatus(key, st, err) {
+    this.setState(stt => {
+      const b = stt.batch; if (!b) return {};
+      return { batch: { ...b, scenes: b.scenes.map(sc => sc.key === key ? { ...sc, status: st, err: (err !== undefined ? err : sc.err) } : sc) } };
+    }, () => this._persistBatch());
+  }
+  // Sunucu-taraflı toplam maliyet tahmini (istemci fiyatına GÜVENİLMEZ)
+  async _estimateCost(idxs) {
+    try {
+      const sb = this._sbUrlKey ? this._sbUrlKey() : { url: 'https://ddyuopqcvpzaysnfavqc.supabase.co', key: '' };
+      const token = this._token() || sb.key;
+      const r = await fetch(sb.url + '/functions/v1/studio-generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ action: 'estimate', scenes: idxs })
+      });
+      const d = await r.json().catch(() => null);
+      return (d && d.ok && typeof d.total === 'number') ? d : null;
+    } catch (e) { return null; }
+  }
+  stopBatch() {
+    this._batchStopFlag = true;                       // çalışan ≤2 iş biter, kalanlar iptal
+    this.setState(stt => ({ batch: stt.batch ? { ...stt.batch, stopped: true } : null }), () => this._persistBatch());
+  }
   async genAllScenes() {
     const s = this.state;
-    if (s.batchBusy || !s.result) return;
-    const scenes = (s.result.gorsel_promptlar || [])
+    if (!s.result) return;
+    if (this._batchActive) return;                    // ÇİFT TIKLAMA / ikinci batch koruması (idempotent)
+    const pending = (s.result.gorsel_promptlar || [])
       .map((x, i) => ({ x, i, key: 'gp' + i }))
       .filter(it => it.x && it.x.prompt && !(((s.sceneImgs || {})[it.key]) || {}).done);
-    if (!scenes.length) return;
-    const total = scenes.reduce((a, it) => a + this.IMG_COST(it.i), 0);
-    if (!window.confirm(scenes.length + ' sahne görseli üretilecek · toplam ' + total + ' KR.\nHata veren görsel için kredi düşmez. Devam?')) return;
-    if (s.credits < this.IMG_COST(scenes[0].i)) { this.setState({ creditModal: true }); return; }
-    this.setState({ batchBusy: true, batchDone: 0, batchTotal: scenes.length });
-    this._batchStop = false;
-    await this.runPool(scenes, async (it) => {
-      if (this._batchStop) return;                                        // kredi bitti → kalanları başlatma
-      if (this.state.credits < this.IMG_COST(it.i)) { this._batchStop = true; this.setState({ creditModal: true }); return; }
-      const ok = await this.makeImage(it.x.prompt, it.i, it.key, this.state.aspect);   // DOSYA oranı (dikey/yatay) — panel kadrajına düşme
-      if (ok) {
-        const si = (this.state.sceneImgs || {})[it.key] || {};
-        this.setSceneImg(it.key, { done: true, count: (si.count || 0) + 1 });
+    if (!pending.length) return;
+    const est = await this._estimateCost(pending.map(it => it.i));   // SUNUCU onaylı toplam
+    const total = est ? est.total : pending.reduce((a, it) => a + this.IMG_COST(it.i), 0);
+    if (!window.confirm(pending.length + ' sahne üretilecek · toplam ~' + total + ' KR' + (est ? ' (sunucu onaylı)' : '') + '.\nAynı anda en fazla 2 sahne üretilir. Hata veren sahnenin kredisi iade edilir; istediğin an DURDUR. Devam?')) return;
+    const batchId = ('b' + (s.fileNo || '') + Date.now().toString(36)).replace(/[^a-zA-Z0-9_-]/g, '');
+    const provider = s.imgProvider || 'gpt';
+    const batch = {
+      id: batchId, provider, aspect: s.aspect,
+      scenes: pending.map(it => ({ key: it.key, idx: it.i, prompt: it.x.prompt, status: 'queued', err: '' })),
+      stopped: false, done: false
+    };
+    this._batchActive = true; this._batchStopFlag = false;
+    this.setState({ batch, batchRunning: true }, () => this._persistBatch());
+    const worker = async (sc) => {
+      const opId = (batchId + sc.key).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 60);   // sahne başına KARARLI opId
+      const r = await this.makeImage(sc.prompt, sc.idx, sc.key, batch.aspect, opId, provider);
+      if (r && r.ok) {
+        const si = (this.state.sceneImgs || {})[sc.key] || {};
+        this.setSceneImg(sc.key, { done: true, count: (si.count || 0) + 1 });
+        return { status: 'completed' };
       }
-    }, 1, (fin) => this.setState({ batchDone: fin }));   // Faz 3: concurrency=1 (retry fırtınası/eşzamanlı rezervasyon baskısını kes)
-    this.setState({ batchBusy: false });
+      if (r && r.err === 'YETERSIZ_KREDI') return { status: 'failed', err: 'Yetersiz kredi (ücretlenmedi)' };   // hiç rezerve edilmedi
+      return { status: 'refunded', err: (r && r.err) || 'üretilemedi' };   // rezerve → sunucu opId ile İADE etti
+    };
+    await this._batchRun(batch.scenes, worker, {
+      concurrency: 2,
+      isStopped: () => this._batchStopFlag,
+      onStatus: (i, st, err) => { const sc = batch.scenes[i]; if (sc) this._batchSetStatus(sc.key, st, err); }
+    });
+    this._batchActive = false;
+    this.setState(stt => ({ batchRunning: false, batch: stt.batch ? { ...stt.batch, done: true } : null }), () => this._persistBatch());
+  }
+  // Sayfa yenilemesinden sonra yarım kalan batch'i sürdür (kararlı opId → tamamlananlar
+  // sunucudan KREDİSİZ döner; aynı sahne iki kez üretilmez).
+  async resumeBatch() {
+    const b = this.state.batch;
+    if (!b || this._batchActive) return;
+    const rest = b.scenes.filter(sc => sc.status === 'queued' || sc.status === 'processing' || sc.status === 'cancelled');
+    if (!rest.length) return;
+    this._batchActive = true; this._batchStopFlag = false;
+    this.setState(stt => ({ batchRunning: true, batch: { ...stt.batch, stopped: false, scenes: stt.batch.scenes.map(sc => (sc.status === 'processing' || sc.status === 'cancelled') ? { ...sc, status: 'queued' } : sc) } }), () => this._persistBatch());
+    const provider = b.provider || 'gpt';
+    const worker = async (sc) => {
+      const opId = (b.id + sc.key).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 60);
+      const r = await this.makeImage(sc.prompt, sc.idx, sc.key, b.aspect, opId, provider);
+      if (r && r.ok) { const si = (this.state.sceneImgs || {})[sc.key] || {}; this.setSceneImg(sc.key, { done: true, count: (si.count || 0) + 1 }); return { status: 'completed' }; }
+      if (r && r.err === 'YETERSIZ_KREDI') return { status: 'failed', err: 'Yetersiz kredi (ücretlenmedi)' };
+      return { status: 'refunded', err: (r && r.err) || 'üretilemedi' };
+    };
+    const items = rest.map(sc => sc);
+    await this._batchRun(items, worker, {
+      concurrency: 2, isStopped: () => this._batchStopFlag,
+      onStatus: (i, st, err) => { const sc = items[i]; if (sc) this._batchSetStatus(sc.key, st, err); }
+    });
+    this._batchActive = false;
+    this.setState(stt => ({ batchRunning: false, batch: stt.batch ? { ...stt.batch, done: true } : null }), () => this._persistBatch());
   }
 
   // ── Kalıcı görsel arşivi (IndexedDB) — "Önceki Üretimler" ──
@@ -2988,7 +3114,8 @@ class Component extends DCLogic {
     this.setSceneImg(key, { busy: true });              // buton anında ÜRETİLİYOR'a döner
     // "Üretildi" işareti yalnız GERÇEK başarıda konur (eskiden hata da ✓ görünüyordu)
     // Sahne/kapak/karakter = dosyaya ait → DOSYA oranını (s.aspect) zorla (panel yatay olsa bile dikey çıksın)
-    this.makeImage(prompt, idx, key, this.state.aspect).then(ok => {
+    this.makeImage(prompt, idx, key, this.state.aspect).then(r => {
+      const ok = !!(r && r.ok);
       const si = (this.state.sceneImgs || {})[key] || {};
       this.setSceneImg(key, ok ? { busy: false, done: true, count: (si.count || 0) + 1 } : { busy: false });
     });
@@ -4640,11 +4767,30 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       copyChapters: () => this.copyChapters(),
       chaptersLabel: s.copied['chp'] ? '✓ KOPYALANDI' : '⧉ ZAMAN DAMGALARINI KOPYALA',
 
-      // ── U-05: toplu sahne üretimi ──
+      // ── KONTROLLÜ TOPLU ÜRETİM (kuyruk) ──
       genAll: () => this.genAllScenes(),
-      batchBusy: s.batchBusy,
-      genAllLabel: s.batchBusy ? ('⟳ ÜRETİLİYOR ' + s.batchDone + '/' + s.batchTotal) : '◈ TÜM SAHNELERİ ÜRET',
+      stopBatch: () => this.stopBatch(),
+      resumeBatch: () => this.resumeBatch(),
+      batchBusy: !!s.batchRunning,
+      genAllLabel: s.batchRunning ? '⟳ ÜRETİLİYOR…'
+        : ('◈ ' + this._provNm() + ' ile Tüm Sahneleri Üret (' + ((r.gorsel_promptlar || []).filter((x, i) => x && x.prompt && !((((s.sceneImgs || {})['gp' + i]) || {}).done)).length) + ')'),
       hasPendingScenes: !!s.result && (r.gorsel_promptlar || []).some((x, i) => x && x.prompt && !((((s.sceneImgs || {})['gp' + i]) || {}).done)),
+      // Batch durum sayaçları (toplam/tamamlanan/üretilen/sırada/hatalı) + Durdur/Devam
+      hasBatch: !!(s.batch && s.batch.scenes && s.batch.scenes.length),
+      batchRunning: !!s.batchRunning,
+      batchStopBtn: !!s.batchRunning,
+      batchResumeBtn: !!(s.batch && !s.batchRunning && s.batch.scenes && s.batch.scenes.some(sc => sc.status === 'queued' || sc.status === 'processing' || sc.status === 'cancelled')),
+      batchCounts: (() => {
+        const b = s.batch; if (!b || !b.scenes) return null;
+        const c = { total: b.scenes.length, completed: 0, processing: 0, queued: 0, failed: 0, cancelled: 0 };
+        b.scenes.forEach(sc => { if (sc.status === 'completed') c.completed++; else if (sc.status === 'processing') c.processing++; else if (sc.status === 'queued') c.queued++; else if (sc.status === 'failed' || sc.status === 'refunded') c.failed++; else if (sc.status === 'cancelled') c.cancelled++; });
+        return c;
+      })(),
+      batchMainLabel: (() => { const b = s.batch; if (!b || !b.scenes) return ''; const done = b.scenes.filter(sc => sc.status === 'completed').length; return done + ' / ' + b.scenes.length + ' tamamlandı'; })(),
+      batchProcLabel: (() => { const b = s.batch; if (!b || !b.scenes) return ''; return b.scenes.filter(sc => sc.status === 'processing').length + ' üretiliyor'; })(),
+      batchQueueLabel: (() => { const b = s.batch; if (!b || !b.scenes) return ''; return b.scenes.filter(sc => sc.status === 'queued').length + ' sırada'; })(),
+      batchFailLabel: (() => { const b = s.batch; if (!b || !b.scenes) return ''; const f = b.scenes.filter(sc => sc.status === 'failed' || sc.status === 'refunded').length; return f ? (f + ' hatalı (iade)') : ''; })(),
+      batchHasFail: !!(s.batch && s.batch.scenes && s.batch.scenes.some(sc => sc.status === 'failed' || sc.status === 'refunded')),
 
       true: true
     };
@@ -4753,8 +4899,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const ibusy = !!((((s.sceneImgs || {})[kind + i]) || {}).busy);   // görsel üretimi sürüyor mu
     const idx = kind === 'gp' ? i : null;                 // kademeli fiyat sahne sırasına göre
     const cost = this.IMG_COST(idx);
+    // KART DURUM ROZETİ (toplu üretim): bu sahnenin batch durumu
+    const bsc = (s.batch && s.batch.scenes) ? s.batch.scenes.find(sc => sc.key === (kind + i)) : null;
+    const badgeMap = { queued: ['SIRADA', '#818797'], processing: ['ÜRETİLİYOR', '#c4a7ff'], completed: ['TAMAMLANDI', '#9ed3a8'], failed: ['HATA', '#e8a9a9'], refunded: ['İADE EDİLDİ', '#e6c478'], cancelled: ['İPTAL', '#676d7c'] };
     return {
       ...x,
+      hasBatchBadge: !!bsc,
+      batchBadgeText: bsc ? (badgeMap[bsc.status] ? badgeMap[bsc.status][0] : bsc.status) : '',
+      batchBadgeStyle: bsc ? { display: 'inline-block', fontFamily: "'Special Elite', monospace", fontSize: '9px', letterSpacing: '.1em', padding: '2px 7px', borderRadius: '3px', border: '1px solid ' + (badgeMap[bsc.status] ? badgeMap[bsc.status][1] : '#818797') + '55', color: (badgeMap[bsc.status] ? badgeMap[bsc.status][1] : '#818797') } : {},
+      batchBadgeErr: bsc && (bsc.status === 'failed' || bsc.status === 'refunded') ? (bsc.err || '') : '',
       no: 'SAHNE ' + (i + 1),
       edit: () => this.startEdit(kind, i, (kind === 'gp' ? 'Görsel promptu · Sahne ' : 'Video promptu · Sahne ') + (i + 1)),
       regen: () => this.regenScene(kind, i),
