@@ -907,23 +907,22 @@ function videoCost(sec: number, provider?: string): number {
   return Math.max(kling ? 300 : 120, s * (kling ? 60 : 24));
 }
 function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "grok").toLowerCase(); }
-// İstemci sağlayıcıyı seçebilir; geçersizse env varsayılanına düşer.
+// İstemci sağlayıcıyı AÇIKÇA seçer; geçersiz/boşsa env varsayılanına düşer.
+// STABİLİZASYON Faz 5: "veo" ARTIK fal'a EŞLENMEZ — olduğu gibi döner. submitVideo
+// doğrudan Veo entegrasyonu olmadığından bunu VEO_PROVIDER_NOT_CONFIGURED'a çevirir.
 function pickProvider(p?: string): string {
   const v = String(p || "").toLowerCase();
-  return (v === "kling" || v === "grok" || v === "fal" || v === "veo") ? (v === "veo" ? "fal" : v) : videoProvider();
+  return (v === "kling" || v === "grok" || v === "fal" || v === "veo") ? v : videoProvider();
 }
 
 async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string, provider?: string): Promise<{ id?: string; err?: string }> {
-  const haveGrok = !!Deno.env.get("XAI_API_KEY");
-  const haveKling = !!(Deno.env.get("KLING_ACCESS_KEY") && Deno.env.get("KLING_SECRET_KEY"));
-  const haveFal = !!falKey();
-  // İstenen sağlayıcının anahtarı YOKSA çalışan bir sağlayıcıya OTOMATİK düş
-  // (fal öncelikli — genelde tek anahtarla çok model). Böylece kullanıcı hangi
-  // butona basarsa bassın, eldeki anahtarla video üretilir; sessiz hata olmaz.
-  let use = pickProvider(provider);
-  if (use === "grok" && !haveGrok) use = haveFal ? "fal" : (haveKling ? "kling" : "grok");
-  else if (use === "kling" && !haveKling) use = haveFal ? "fal" : (haveGrok ? "grok" : "kling");
-  else if (use === "fal" && !haveFal) use = haveGrok ? "grok" : (haveKling ? "kling" : "fal");
+  // STABİLİZASYON Faz 5 — OTOMATİK FAL FALLBACK KALDIRILDI. Kullanıcı hangi sağlayıcıyı
+  // seçtiyse YALNIZ O çağrılır; anahtar eksikse ilgili submit fonksiyonu NET hata döndürür
+  // (sessizce başka sağlayıcıya DÜŞÜLMEZ → beklenmeyen sağlayıcı/kredi sürprizi olmaz).
+  const use = pickProvider(provider);
+  // Veo: doğrudan entegrasyon YOK (eskiden sessizce fal'a düşülüyordu). Artık AÇIK hata.
+  if (use === "veo") return { err: "VEO_PROVIDER_NOT_CONFIGURED" };
+  // Fal YALNIZ kullanıcı açıkça Fal seçtiğinde çağrılır.
   if (use === "fal") return await submitFal(prompt, imageUrl, dur, aspect);   // id zaten "fal:" ön ekli
   if (use === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
   const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id } : r;
@@ -990,32 +989,41 @@ async function pollKling(id: string): Promise<{ done: boolean; url?: string; fai
 // ── xAI Grok Imagine — image→video / text→video ──
 async function submitGrok(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
   const key = Deno.env.get("XAI_API_KEY");
-  if (!key) return { err: "XAI_API_KEY secret eksik." };
+  // STABİLİZASYON Faz 5: anahtar yoksa NET kod (Fal'a ASLA düşülmez).
+  if (!key) return { err: "GROK_KEY_MISSING" };
+  // Resmî xAI video modeli (docs.x.ai): grok-imagine-video. Secret ile override edilebilir.
+  const model = Deno.env.get("XAI_VIDEO_MODEL") || "grok-imagine-video";
   const body: Record<string, unknown> = imageUrl
-    ? { model: "grok-imagine-video-1.5", prompt: prompt || "", image: { url: imageUrl }, duration: dur }
-    : { model: "grok-imagine-video", prompt: prompt || "", duration: dur };
+    ? { model, prompt: prompt || "", image: { url: imageUrl }, duration: dur }
+    : { model, prompt: prompt || "", duration: dur };
   if (aspect) body.aspect_ratio = aspect;
   try {
+    // Resmî endpoint: POST https://api.x.ai/v1/videos/generations → { request_id }
     const r = await fetchT("https://api.x.ai/v1/videos/generations", {
       method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
     }, 60_000);
     const d = await r.json().catch(() => ({} as any));
-    if (!r.ok) return { err: (d && (d.error?.message || d.error || d.message)) || ("xAI " + r.status) };
-    const id = d.id || d.request_id || d.data?.id;
+    // xAI bakiyesi/yetkisi yoksa GERÇEK xAI HTTP hatası yüzeye çıkar (Fal'a düşülmez).
+    if (!r.ok) return { err: (d && (d.error?.message || d.error || d.message)) || ("xAI HTTP " + r.status) };
+    const id = d.request_id || d.id || d.data?.id;
     if (!id) return { err: "xAI istek kimliği alınamadı." };
     return { id: String(id) };
   } catch (e) { return { err: String(e).slice(0, 160) }; }
 }
 async function pollGrok(id: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
   const key = Deno.env.get("XAI_API_KEY");
-  if (!key) return { done: false, err: "XAI_API_KEY eksik." };
+  if (!key) return { done: false, err: "GROK_KEY_MISSING" };
   try {
+    // Resmî poll: GET https://api.x.ai/v1/videos/{request_id}
     const r = await fetchT("https://api.x.ai/v1/videos/" + encodeURIComponent(id), { headers: { Authorization: `Bearer ${key}` } }, 30_000);
     const d = await r.json().catch(() => ({} as any));
-    if (!r.ok) return { done: false, err: "xAI " + r.status };
+    if (!r.ok) return { done: false, err: "xAI HTTP " + r.status };
     const status = String(d.status || d.state || "").toLowerCase();
-    const url = d.url || d.video_url || d.output?.url || (Array.isArray(d.data) ? (d.data[0]?.url || d.data[0]?.video_url) : "") || "";
-    if (status.includes("fail") || status.includes("error") || status.includes("cancel")) return { done: false, failed: true, err: String(d.error?.message || d.error || "üretim başarısız") };
+    // Resmî yanıt: status="done" → video.url. Eski/alternatif alanlar da toleranslı okunur.
+    const url = d.video?.url || d.url || d.video_url || d.output?.url || (Array.isArray(d.data) ? (d.data[0]?.url || d.data[0]?.video_url) : "") || "";
+    if (status.includes("fail") || status.includes("error") || status.includes("cancel") || status.includes("expire")) {
+      return { done: false, failed: true, err: String(d.error?.message || d.error || "üretim başarısız veya süresi doldu") };
+    }
     if (url) return { done: true, url };
     return { done: false };
   } catch (e) { return { done: false, err: String(e).slice(0, 120) }; }
