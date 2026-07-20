@@ -137,6 +137,19 @@ test("Backend DOKUNULMADI: PR-2 yalnız frontend", () => {
   assert.ok(indexSrc.includes('|| "gpt-image-2"') && indexSrc.includes('|| "gpt-image-1.5"'), "model zinciri yerinde");
 });
 
+test("ORAN AKIŞI UÇTAN UCA: UI → payload → sunucu boyutu → kırpma hedefi → metadata", () => {
+  // İstemci: seçili anahtar → API size string'i
+  assert.ok(studioSrc.includes("{ yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect]"), "istemci arKey → size çevirisi");
+  // Sunucu: size → OpenAI'nin GERÇEKTEN desteklediği boyut
+  assert.ok(indexSrc.includes('const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024"'), "sunucu size → gerçek üretim boyutu");
+  // Sunucu: üretim sonrası KESİN orana kırpma (9:16 → portrait, 16:9 → landscape; 1:1 zaten kare)
+  assert.ok(indexSrc.includes('const target = size === "9:16" ? 9 / 16 : size === "16:9" ? 16 / 9 : 0'), "cropToAspect kesin oran hedefi");
+  assert.ok(indexSrc.includes('url = await cropToAspect(url, String(b.size || ""))'), "kırpma üretim yolunda uygulanır");
+  // Metadata: aspect = istenen; resolution = GERÇEK bayt başlığından okunan WxH (uydurma değil)
+  assert.ok(indexSrc.includes('aspect: String(b.size || "")'), "metadata aspect = istenen oran");
+  assert.ok(indexSrc.includes("function imageInfo(dataUri:"), "resolution gerçek dosya baytlarından (PNG/JPEG başlığı) okunur");
+});
+
 test("BUG FIX: ekranda seçili oran ÜRETİME gider (9:16 seçiliyken 16:9 üretme hatası)", () => {
   // Kök neden: makeSceneImg dosyanın sihirbaz oranını (s.aspect) ZORLUYORDU;
   // PLATFORM/ORAN satırının yazdığı imgAspect sahne üretiminde yok sayılıyordu.
