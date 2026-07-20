@@ -147,7 +147,7 @@ test("Studio.dc.html: kontrollü kuyruk motoru + kararlı opId + kalıcılık", 
   assert.ok(studioSrc.includes("async _batchRun("), "kontrollü kuyruk motoru");
   assert.ok(studioSrc.includes("concurrency: 2"), "eşzamanlılık 2");
   assert.ok(studioSrc.includes("Math.min(CONC, items.length)"), "aktif iş concurrency ile sınırlı");
-  assert.ok(studioSrc.includes("(b.id + sc.key)") && studioSrc.includes("makeImage(sc.prompt, sc.idx, sc.key, b.aspect, opId, provider)"), "sahne başına kararlı opId + kendi promptu/sağlayıcısı");
+  assert.ok(studioSrc.includes("(b.id + sc.key)") && studioSrc.includes("makeImage(sc.prompt, sc.idx, sc.key, (so.ar || b.aspect), opId, this._provResolve(so.prov || provider), (so.style || undefined))"), "sahne başına kararlı opId + sahne ayarı (oran/stil/motor) öncelikli");
   assert.ok(studioSrc.includes("if (this._batchActive) return;"), "çift tıklama koruması");
   assert.ok(studioSrc.includes("ta_studio_batch_v1"), "batch durumu kalıcı (yenileme)");
   for (const w of ["queued", "processing", "completed", "failed", "refunded", "cancelled"]) {

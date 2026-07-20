@@ -1277,7 +1277,7 @@
                     </div>
                     <span style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <sc-if value="{{ hasPendingScenes }}" hint-placeholder-val="{{ true }}">
-                      <button class="ta-genall" onClick="{{ genAll }}" disabled="{{ batchBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
+                      <button class="ta-genall" onClick="{{ genAll }}" disabled="{{ batchBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-weight: 800; font-size: 12.5px; letter-spacing: .04em; padding: 11px 18px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
                     </sc-if>
                     <sc-if value="{{ batchPauseBtn }}" hint-placeholder-val="{{ false }}">
                       <button onClick="{{ pauseBatch }}" style="border: 1px solid rgba(230,196,120,.6); cursor: pointer; background: rgba(230,196,120,.1); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="background: rgba(230,196,120,.2);">⏸ DURAKLAT</button>
@@ -1340,32 +1340,54 @@
                       </div>
                     </div>
                   </sc-if>
-                  <div class="ta-setrow" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                    <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">PLATFORM</span>
+                  <!-- SADE AYAR ALANI · 3 karar: Nerede? · Nasıl görünsün? · Üret -->
+                  <p style="margin: 6px 0 2px; font-family: 'Playfair Display', Georgia, serif; font-size: 17px; font-weight: 700; color: #f3eddc;">Nerede yayınlayacaksın?</p>
+                  <div class="ta-setrow" style="display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap;">
                     <sc-for list="{{ imgPlatforms }}" as="pl" hint-placeholder-count="3">
-                      <button onClick="{{ pl.pick }}" style="{{ pl.style }}">{{ pl.label }}</button>
+                      <button onClick="{{ pl.pick }}" style="{{ pl.style }}"><span style="display: block; font-weight: 600; font-size: 14px;">{{ pl.label }}</span><span style="display: block; font-size: 12px; opacity: .75; margin-top: 2px;">{{ pl.sub }}</span></button>
                     </sc-for>
                   </div>
-                  <div class="ta-setrow" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                    <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">ORAN</span>
-                    <sc-for list="{{ imgAspects }}" as="ia" hint-placeholder-count="3">
-                      <button onClick="{{ ia.pick }}" style="{{ ia.style }}">{{ ia.label }}</button>
+                  <button onClick="{{ toggleOran }}" style="border: 0; background: transparent; color: #868c99; font-size: 12.5px; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px; justify-self: start; text-align: left;">{{ oranLinkLabel }}</button>
+                  <sc-if value="{{ oranOpen }}" hint-placeholder-val="{{ false }}">
+                    <div class="ta-setrow" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                      <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">ORAN</span>
+                      <sc-for list="{{ imgAspects }}" as="ia" hint-placeholder-count="3">
+                        <button onClick="{{ ia.pick }}" style="{{ ia.style }}">{{ ia.label }}</button>
+                      </sc-for>
+                      <span style="color: #6c7280; font-size: 11.5px;">Elle seçilen oran korunur.</span>
+                    </div>
+                  </sc-if>
+
+                  <p style="margin: 12px 0 2px; font-family: 'Playfair Display', Georgia, serif; font-size: 17px; font-weight: 700; color: #f3eddc;">Nasıl görünsün?</p>
+                  <div class="ta-setrow" style="display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap;">
+                    <sc-for list="{{ styleCats }}" as="ct" hint-placeholder-count="3">
+                      <button onClick="{{ ct.pick }}" style="{{ ct.style }}"><span style="display: block; font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 15px;">{{ ct.label }}</span><span style="display: block; font-size: 12px; opacity: .8; margin-top: 2px; line-height: 1.45;">{{ ct.desc }}</span></button>
                     </sc-for>
-                    <sc-if value="{{ aspectManualBadge }}" hint-placeholder-val="{{ false }}">
-                      <span style="border: 1px solid rgba(193,154,82,.45); background: rgba(193,154,82,.08); color: #e6c478; font-size: 11px; padding: 4px 10px; border-radius: 999px;">✋ Oran elle seçildi</span>
+                  </div>
+                  <sc-if value="{{ styleSubOpen }}" hint-placeholder-val="{{ false }}">
+                    <div class="ta-setrow" style="display: flex; gap: 9px; align-items: stretch; flex-wrap: wrap;">
+                      <sc-for list="{{ styleSubs }}" as="ss" hint-placeholder-count="2">
+                        <button onClick="{{ ss.pick }}" style="{{ ss.style }}"><span style="display: block; font-weight: 600; font-size: 13.5px;">{{ ss.label }}</span><span style="display: block; font-size: 11.5px; opacity: .75; margin-top: 2px;">{{ ss.desc }}</span></button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+
+                  <div style="border: 1px solid rgba(193,154,82,.55); border-radius: 12px; background: linear-gradient(160deg, rgba(193,154,82,.1), rgba(193,154,82,.02)); padding: 14px 16px; display: grid; gap: 8px; margin-top: 10px;">
+                    <span style="font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; color: #c19a52;">SEÇİMİN</span>
+                    <span style="font-size: 15.5px; font-weight: 600; color: #e6c478;">{{ secimOzet }}</span>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #a7adba;">
+                      <span>Görsel motoru: <strong style="color: #d3d7e0;">{{ motorAd }}</strong></span>
+                      <span style="color: #868c99; font-size: 12.5px;">{{ motorSub }}</span>
+                      <button onClick="{{ toggleMotor }}" style="border: 0; background: transparent; color: #e6c478; font-size: 12.5px; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px;">{{ motorLinkLabel }}</button>
+                    </div>
+                    <sc-if value="{{ motorOpen }}" hint-placeholder-val="{{ false }}">
+                      <div class="ta-setrow" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
+                          <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
+                        </sc-for>
+                        <span style="color: #6c7280; font-size: 11.5px;">Elle seçersen sistem geri değiştirmez.</span>
+                      </div>
                     </sc-if>
-                    <span style="width: 1px; height: 20px; background: rgba(129,135,151,.3); margin: 0 4px;"></span>
-                    <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">STİL</span>
-                    <sc-for list="{{ imgStyles }}" as="st" hint-placeholder-count="3">
-                      <button onClick="{{ st.pick }}" style="{{ st.style }}">{{ st.label }}</button>
-                    </sc-for>
-                  </div>
-                  <div class="ta-setrow" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                    <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">MOTOR</span>
-                    <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
-                      <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
-                    </sc-for>
-                    <span style="color: #818797; font-size: 11.5px;">{{ imgAutoNote }}</span>
                   </div>
                 </div>
                 <sc-if value="{{ hasSceneChars }}" hint-placeholder-val="{{ false }}">
@@ -1540,6 +1562,39 @@
                       <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: #9ed3a8; font-size: 11.5px; margin-top: 2px;">
                         <span>✓ Görsel Stüdyo'da hazır</span>
                         <button onClick="{{ gp.img.goStudio }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 6px 10px; cursor: pointer;">GÖRSEL STÜDYO'YA GEÇ →</button>
+                      </div>
+                    </sc-if>
+                    <!-- SAHNE AYARLARI: bu sahneye özel oran/stil/motor; kalıtım her zaman açık yazılır -->
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid rgba(129,135,151,.14); padding-top: 8px; margin-top: 2px;">
+                      <span style="{{ gp.inheritStyle }}">{{ gp.inheritLine }}</span>
+                      <button onClick="{{ gp.toggleOvr }}" style="margin-left: auto; border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 11.5px; padding: 6px 11px; border-radius: 6px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ gp.ovrLabel }}</button>
+                    </div>
+                    <sc-if value="{{ gp.ovrOpen }}" hint-placeholder-val="{{ false }}">
+                      <div style="display: grid; gap: 11px; border: 1px solid rgba(193,154,82,.25); background: rgba(193,154,82,.04); border-radius: 8px; padding: 12px 14px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                          <span style="flex: 0 0 52px; color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">ORAN</span>
+                          <sc-for list="{{ gp.ovrAspects }}" as="c" hint-placeholder-count="4">
+                            <button onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button>
+                          </sc-for>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                          <span style="flex: 0 0 52px; color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">STİL</span>
+                          <sc-for list="{{ gp.ovrStyles }}" as="c" hint-placeholder-count="7">
+                            <button onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button>
+                          </sc-for>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                          <span style="flex: 0 0 52px; color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">MOTOR</span>
+                          <sc-for list="{{ gp.ovrProviders }}" as="c" hint-placeholder-count="3">
+                            <button onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button>
+                          </sc-for>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                          <span style="color: #818797; font-size: 11px;">Yalnız bu sahneyi etkiler; diğer sahneler genel ayarları kullanır.</span>
+                          <sc-if value="{{ gp.inheritOn }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ gp.clearOvr }}" style="margin-left: auto; border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 11.5px; padding: 6px 11px; border-radius: 6px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">↩ Genel ayarlara dön</button>
+                          </sc-if>
+                        </div>
                       </div>
                     </sc-if>
                   </div>
@@ -1968,7 +2023,7 @@ class Component extends DCLogic {
       editTarget: null, editLabel: '',
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
-      imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, imgStyle: null, savedImgs: [], srvImages: [], imgSel: {},
+      imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, sceneOpts: (w && w.sceneOpts) || {}, imgStyle: null, savedImgs: [], srvImages: [], imgSel: {},
       imgAspect: null, imgZoom: '',
       imgProvider: saved.imgProvider || 'auto',   // görsel motoru: auto (vars. — arayüz kavramı, sunucuya gerçek motor gider) | gpt | gemini | higgs(pasif)
       histTab: 'files',                          // Geçmiş Üretimler sekmesi: files | images | videos
@@ -2125,7 +2180,7 @@ class Component extends DCLogic {
     // ya da kullanıcı geri gelse bile KAYBOLMASIN. Görseller/videolar Storage URL'i
     // olduğundan (data-uri değil) blob küçük kalır, localStorage'a rahat sığar.
     const work = (s.result && s.mode === 'wizard') ? {
-      result: s.result, sceneImgs: s.sceneImgs || {}, fileNo: s.fileNo, tab: s.tab || 'senaryo',
+      result: s.result, sceneImgs: s.sceneImgs || {}, sceneOpts: s.sceneOpts || {}, fileNo: s.fileNo, tab: s.tab || 'senaryo',
       idea: s.idea, tone: s.tone, voice: s.voice, style: s.style, aspect: s.aspect,
       duration: s.duration, model: s.model, format: s.format || 'belgesel', sysAudioUrl: s.sysAudioUrl || '', ts: Date.now()
     } : null;
@@ -3059,7 +3114,7 @@ class Component extends DCLogic {
   // opIdOverride: kararlı iş kimliği (toplu üretimde sahne başına sabit → idempotent
   // rezervasyon/kurtarma; aynı sahne iki kez üretilmez). providerOverride: batch'te
   // sabitlenen sağlayıcı. Dönüş: { ok, err } (toplu kuyruk gerçek hatayı okur).
-  makeImage(promptRaw, idx, sceneKey, arOverride, opIdOverride, providerOverride) {
+  makeImage(promptRaw, idx, sceneKey, arOverride, opIdOverride, providerOverride, styleOverride) {
     const prompt = (promptRaw || '').trim();
     if (!prompt) return Promise.resolve({ ok: false, err: 'boş prompt' });
     const cost = this.IMG_COST(idx);
@@ -3067,7 +3122,7 @@ class Component extends DCLogic {
     // Dosyaya ait üretim (sahne/kapak/karakter) DOSYA oranını kullanır (arOverride);
     // yalnız serbest Görsel Stüdyo kuyruğu panel kadrajını (imgAspect) kullanır.
     const ar = arOverride || this.state.imgAspect || this.state.aspect;
-    const sty = this.state.imgStyle || this.state.style;    // stil seçilmediyse sihirbazda seçilen stil
+    const sty = styleOverride || this.state.imgStyle || this.state.style;    // sahne override > panel > sihirbaz
     const prov = this._provResolve(providerOverride || this.state.imgProvider);   // batch'te sabit; 'auto' asla sunucuya gitmez
     const sendPrompt = this.withAspect(prompt, ar);         // kadraj prompta yerleşir; STİL sunucuya anahtar olarak gider
     const id = opIdOverride || ('img' + Date.now() + Math.floor(Math.random() * 1000));
@@ -3198,7 +3253,8 @@ class Component extends DCLogic {
       const opId = (b.id + sc.key).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 60);   // KARARLI opId
       this._batchStarts[sc.key] = Date.now();
       try {
-        const r = await this.makeImage(sc.prompt, sc.idx, sc.key, b.aspect, opId, provider);
+        const so = (this.state.sceneOpts || {})[sc.key] || {};   // Sahne Ayarları toplu üretimde de geçerli
+        const r = await this.makeImage(sc.prompt, sc.idx, sc.key, (so.ar || b.aspect), opId, this._provResolve(so.prov || provider), (so.style || undefined));
         if (r && r.ok) {
           const dt = Date.now() - (this._batchStarts[sc.key] || Date.now());
           this._batchDur.push(dt); if (this._batchDur.length > 20) this._batchDur.shift();   // ort. süre penceresi
@@ -3610,10 +3666,10 @@ class Component extends DCLogic {
     this.setState({ imgPrompt: prompt });               // Görsel Stüdyo bu sahnenin hikâyesini tutsun
     this.setSceneImg(key, { busy: true });              // buton anında ÜRETİLİYOR'a döner
     // "Üretildi" işareti yalnız GERÇEK başarıda konur (eskiden hata da ✓ görünüyordu)
-    // ORAN DÜZELTMESİ: sahne üretimi EKRANDA SEÇİLİ etkin oranı kullanır
-    // (imgAspect — PLATFORM/ORAN satırından; seçilmemişse dosyanın sihirbaz oranı).
-    // Eski davranış s.aspect'i ZORLUYORDU → ekranda 9:16 seçiliyken 16:9 üretiyordu.
-    this.makeImage(prompt, idx, key, (this.state.imgAspect || this.state.aspect)).then(r => {
+    // ORAN/STİL/MOTOR ÖNCELİĞİ: Sahne Ayarları (override) > ekranda seçili genel > dosya.
+    // (9:16 seçiliyken 16:9 üretme hatasının düzeltmesi korunur.)
+    const so = (this.state.sceneOpts || {})[key] || {};
+    this.makeImage(prompt, idx, key, (so.ar || this.state.imgAspect || this.state.aspect), undefined, (so.prov || undefined), (so.style || undefined)).then(r => {
       const ok = !!(r && r.ok);
       const si = (this.state.sceneImgs || {})[key] || {};
       this.setSceneImg(key, ok ? { busy: false, done: true, count: (si.count || 0) + 1 } : { busy: false });
@@ -4977,25 +5033,94 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           editErr: x.editErr || ''
         };
       }),
-      // PLATFORM SEÇİMİ → TEK ETKİN ORAN (source of truth = imgAspect||aspect).
-      // Platform yalnız ÖNERİR: seçim etkin oranı önerilen orana getirir ve manuel bayrağı temizler.
-      // Kullanıcı oranı ELLE değiştirirse platform seçimi KORUNUR, sistem asla geri almaz (rozet çıkar).
-      // Not: IG Gönderisi 4:5 backend'e gelene dek dürüstçe 1:1 önerir (etikette belirtilir).
-      imgPlatforms: [['reels', 'REELS / STORY', 'dikey'], ['shorts', 'SHORTS', 'dikey'], ['tiktok', 'TIKTOK', 'dikey'], ['igpost', 'IG GÖNDERİSİ · 1:1 (4:5 yakında)', 'kare'], ['youtube', 'YOUTUBE', 'yatay'], ['kare11', '1:1 KARE', 'kare']].map(([id, label, sug]) => {
+      // PLATFORM + ORAN TEK KARAR: kart önerilen oranı alt metinde taşır; seçim etkin
+      // oranı yazar ve manuel bayrağı temizler. Elle oran seçimi platformu KORUR.
+      imgPlatforms: [
+        ['reels', 'Reels / Story', 'Dikey · 9:16', 'dikey'],
+        ['shorts', 'YouTube Shorts', 'Dikey · 9:16', 'dikey'],
+        ['tiktok', 'TikTok', 'Dikey · 9:16', 'dikey'],
+        ['igpost', 'Instagram Gönderisi', 'Kare · 1:1', 'kare'],
+        ['youtube', 'YouTube', 'Yatay · 16:9', 'yatay'],
+        ['kare11', 'Kare İçerik', '1:1', 'kare']
+      ].map(([id, label, sub, sug]) => {
         const cur = s.imgPlatform === id;
         return {
-          label,
-          pick: () => this.setState({ imgPlatform: id, imgAspect: sug, imgAspectManual: false }),
+          label, sub,
+          pick: () => this.setState({ imgPlatform: id, imgAspect: sug, imgAspectManual: false, imgOranOpen: false }),
           style: {
-            cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em',
-            padding: '8px 12px', border: cur ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
-            background: cur ? 'rgba(193,154,82,.14)' : 'transparent',
-            color: cur ? '#e6c478' : '#818797'
+            cursor: 'pointer', textAlign: 'left', minWidth: '150px', borderRadius: '12px',
+            padding: '12px 14px', border: cur ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.28)',
+            background: cur ? 'linear-gradient(165deg, rgba(193,154,82,.14), rgba(193,154,82,.03))' : 'rgba(4,6,12,.6)',
+            color: cur ? '#e6c478' : '#c9ced8'
           }
         };
       }),
-      // Rozet: platform seçiliyken oran elle değiştirildiyse görünür — seçim korunur.
-      aspectManualBadge: !!(s.imgPlatform && s.imgAspectManual),
+      // "Oranı değiştir" — küçük bağlantı; açılınca 3 gerçek oran
+      oranOpen: !!s.imgOranOpen,
+      toggleOran: () => this.setState(st => ({ imgOranOpen: !st.imgOranOpen })),
+      oranLinkLabel: s.imgOranOpen ? 'Oranı kapat ▴' : 'Oranı değiştir ▾',
+      // STİL: 3 yaratıcı kategori — Sinematik TEK ADIM; Gerçekçi/Sanatsal alt kart açar
+      styleCats: (() => {
+        const eff = s.imgStyle || s.style;
+        const catOf = (k) => k === 'sinematik' ? 'sinematik' : (k === 'belgeselfoto' || k === 'hollywood') ? 'gercekci' : 'sanatsal';
+        return [
+          ['sinematik', 'Sinematik', 'Karanlık, atmosferik ve film dili güçlü sahneler.'],
+          ['gercekci', 'Gerçekçi', 'Doğal belgesel veya yüksek prodüksiyon gerçekçiliği.'],
+          ['sanatsal', 'Sanatsal', 'Gravür, minyatür ve animasyon görsel dili.']
+        ].map(([id, label, desc]) => {
+          const cur = (s.imgStyleCat || catOf(eff)) === id;
+          return {
+            label, desc,
+            // Sinematik doğrudan stili seçer (alt adım yok); diğerleri alt kartları açar
+            pick: id === 'sinematik'
+              ? (() => this.setState({ imgStyle: 'sinematik', imgStyleCat: '' }))
+              : (() => this.setState({ imgStyleCat: id })),
+            style: {
+              cursor: 'pointer', textAlign: 'left', flex: '1 1 220px', maxWidth: '300px', borderRadius: '12px',
+              padding: '13px 15px', border: cur ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.28)',
+              background: cur ? 'linear-gradient(165deg, rgba(193,154,82,.14), rgba(193,154,82,.03))' : 'rgba(4,6,12,.6)',
+              color: cur ? '#e6c478' : '#c9ced8'
+            }
+          };
+        });
+      })(),
+      ...(() => {
+        const eff = s.imgStyle || s.style;
+        const catOf = (k) => k === 'sinematik' ? 'sinematik' : (k === 'belgeselfoto' || k === 'hollywood') ? 'gercekci' : 'sanatsal';
+        const open = s.imgStyleCat || (catOf(eff) !== 'sinematik' ? catOf(eff) : '');
+        const SUBS = {
+          gercekci: [['belgeselfoto', 'Belgesel', 'Doğal ışık, saha fotoğrafı'], ['hollywood', 'Hollywood Foto-gerçekçi', 'Sinema kamerası, ultra gerçekçi']],
+          sanatsal: [['gravur', 'Gravür', 'Oyma baskı, yaşlı kâğıt'], ['minyatur', 'Osmanlı Minyatürü', 'Düz perspektif, altın bezeme'], ['animasyon', 'Animasyon', 'Çizim / illüstrasyon dili']]
+        };
+        return {
+          styleSubOpen: !!(open && SUBS[open]),
+          styleSubs: (SUBS[open] || []).map(([k, label, desc]) => {
+            const cur = eff === k;
+            return {
+              label, desc,
+              pick: () => this.setState({ imgStyle: k }),
+              style: {
+                cursor: 'pointer', textAlign: 'left', minWidth: '170px', borderRadius: '11px',
+                padding: '11px 13px', border: cur ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.28)',
+                background: cur ? 'rgba(193,154,82,.12)' : 'rgba(4,6,12,.6)',
+                color: cur ? '#e6c478' : '#c9ced8'
+              }
+            };
+          })
+        };
+      })(),
+      // SEÇİMİN özeti + motor satırı (motor yalnız "Değiştir" ile açılır)
+      secimOzet: (() => {
+        const platNm = { reels: 'Reels / Story', shorts: 'YouTube Shorts', tiktok: 'TikTok', igpost: 'Instagram Gönderisi', youtube: 'YouTube', kare11: 'Kare İçerik' }[s.imgPlatform] || '';
+        const arLbl = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[s.imgAspect || s.aspect] || '';
+        const stLbl = { sinematik: 'Sinematik', belgeselfoto: 'Belgesel', hollywood: 'Hollywood Foto-gerçekçi', gravur: 'Gravür', minyatur: 'Osmanlı Minyatürü', animasyon: 'Animasyon' }[s.imgStyle || s.style] || '';
+        return [platNm, arLbl, stLbl].filter(Boolean).join(' · ');
+      })(),
+      motorAd: this._provIsAuto() ? 'Otomatik' : this._provNm(),
+      motorSub: this._provIsAuto() ? ('Bu üretim için ' + this._provModelLabel() + ' seçilecek.') : (this._provModelLabel() + ' · elle seçildi'),
+      motorOpen: !!s.imgMotorOpen,
+      toggleMotor: () => this.setState(st => ({ imgMotorOpen: !st.imgMotorOpen })),
+      motorLinkLabel: s.imgMotorOpen ? 'Kapat ▴' : 'Değiştir ▾',
       imgAspects: ['yatay', 'dikey', 'kare'].map(k => {
         const eff = s.imgAspect || s.aspect;
         return {
@@ -5545,6 +5670,45 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       batchCanRetry: !!(bsc && (bsc.status === 'failed' || bsc.status === 'refunded') && !s.batchRunning),
       retryScene: () => this.retryScene(kind + i),
       no: 'SAHNE ' + (i + 1),
+      // ── SAHNE AYARLARI (override): oran/stil/motor sahne bazında; kalıtım açıkça yazılır ──
+      ...(() => {
+        const key = kind + i;
+        const so = (s.sceneOpts || {})[key] || {};
+        const hasOvr = !!(so.ar || so.style || so.prov);
+        const arL = { yatay: '16:9', dikey: '9:16', kare: '1:1' };
+        const stL = { sinematik: 'Sinematik', belgeselfoto: 'Belgesel', hollywood: 'Hollywood Foto-gerçekçi', gravur: 'Gravür', minyatur: 'Osmanlı Minyatürü', animasyon: 'Animasyon' };
+        const setOvr = (patch) => this.setState(st => {
+          const cur = { ...(((st.sceneOpts || {})[key]) || {}), ...patch };
+          Object.keys(cur).forEach(k2 => { if (!cur[k2]) delete cur[k2]; });   // "Genel" seçimi alanı siler
+          const all = { ...(st.sceneOpts || {}) };
+          if (Object.keys(cur).length) all[key] = cur; else delete all[key];
+          return { sceneOpts: all };
+        }, () => this.persist());
+        const mkChips = (field, opts, curVal) => opts.map(([v, label]) => ({
+          label,
+          pick: () => setOvr({ [field]: v }),
+          style: {
+            cursor: 'pointer', fontSize: '12px', padding: '7px 12px', borderRadius: '999px',
+            border: (curVal || '') === v ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+            background: (curVal || '') === v ? 'rgba(193,154,82,.14)' : 'rgba(4,6,12,.6)',
+            color: (curVal || '') === v ? '#e6c478' : '#a4a9b5'
+          }
+        }));
+        return {
+          inheritLine: hasOvr
+            ? ('⚙ Bu sahneye özel: ' + [so.ar ? arL[so.ar] : '', so.style ? stL[so.style] : '', so.prov ? this._provModelLabel(so.prov) : ''].filter(Boolean).join(' · '))
+            : '⚙ Genel ayarlar kullanılıyor',
+          inheritOn: hasOvr,
+          inheritStyle: { color: hasOvr ? '#e6c478' : '#818797', fontSize: '11.5px', letterSpacing: '.02em' },
+          ovrOpen: s.sceneOptsOpen === key,
+          toggleOvr: () => this.setState(st => ({ sceneOptsOpen: st.sceneOptsOpen === key ? '' : key })),
+          clearOvr: () => this.setState(st => { const all = { ...(st.sceneOpts || {}) }; delete all[key]; return { sceneOpts: all, sceneOptsOpen: '' }; }, () => this.persist()),
+          ovrLabel: (s.sceneOptsOpen === key) ? '⚙ Sahne Ayarları · açık' : '⚙ Sahne Ayarları',
+          ovrAspects: mkChips('ar', [['', 'Genel'], ['dikey', '9:16'], ['kare', '1:1'], ['yatay', '16:9']], so.ar),
+          ovrStyles: mkChips('style', [['', 'Genel'], ['sinematik', 'Sinematik'], ['belgeselfoto', 'Belgesel'], ['hollywood', 'Hollywood'], ['gravur', 'Gravür'], ['minyatur', 'Minyatür'], ['animasyon', 'Animasyon']], so.style),
+          ovrProviders: mkChips('prov', [['', 'Genel'], ['gpt', 'GPT Image 2'], ['gemini', 'Gemini']], so.prov)
+        };
+      })(),
       // PROMPT VARSAYILAN GİZLİ (AI Yönetmen): erişim ⋯ menüsünden; metin kaybolmaz.
       promptShow: !!((s.promptOpen || {})[kind + i]),
       togglePrompt: () => this.setState(st => ({ sceneMenu: '', promptOpen: { ...(st.promptOpen || {}), [kind + i]: !((st.promptOpen || {})[kind + i]) } })),

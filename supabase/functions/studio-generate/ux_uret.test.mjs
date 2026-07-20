@@ -40,17 +40,51 @@ test("Motor: ⚡ Otomatik varsayılan; sunucuya giden HER yol _provResolve'dan g
   assert.ok(studioSrc.includes("imgAutoNote"), "Otomatik/elle şeffaflık notu");
 });
 
-test("Platform → tek etkin oran: öneri + elle-değişti rozeti + seçim korunur", () => {
+test("Platform + oran TEK karar (Sade Ayar): kart önerir, elle seçim korunur", () => {
   assert.ok(studioSrc.includes("imgPlatforms:"), "platform seçici VM");
-  for (const p of ["REELS / STORY", "SHORTS", "TIKTOK", "IG GÖNDERİSİ", "YOUTUBE", "1:1 KARE"]) {
+  for (const p of ["'Reels / Story'", "'YouTube Shorts'", "'TikTok'", "'Instagram Gönderisi'", "'YouTube'", "'Kare İçerik'"]) {
     assert.ok(studioSrc.includes(p), "platform: " + p);
   }
-  assert.ok(studioSrc.includes("imgAspect: sug, imgAspectManual: false"), "platform seçimi orana öneri yazar + manuel bayrağı temizler");
+  // Kart alt metni önerilen oranı taşır (ayrı ORAN satırı yerine tek karar)
+  for (const sub of ["'Dikey · 9:16'", "'Kare · 1:1'", "'Yatay · 16:9'"]) {
+    assert.ok(studioSrc.includes(sub), "kart alt metni: " + sub);
+  }
+  assert.ok(studioSrc.includes("imgAspect: sug, imgAspectManual: false, imgOranOpen: false"), "platform seçimi orana öneri yazar + oran alanını kapatır");
   assert.ok(studioSrc.includes("imgAspect: k, imgAspectManual: true"), "elle oran seçimi manuel bayrağı kor (platform seçimi korunur)");
-  assert.ok(studioSrc.includes("aspectManualBadge"), "✋ elle değiştirildi rozeti");
-  assert.ok(studioSrc.includes("4:5 yakında"), "IG Gönderisi dürüst etiket: 1:1 (4:5 yakında) — sahte 4:5 üretimi yok");
+  assert.ok(studioSrc.includes("Oranı değiştir ▾"), "oran ikincil bağlantı arkasında (Sade Ayar)");
+  assert.ok(studioSrc.includes("Elle seçilen oran korunur."), "kalıcılık açıklaması kullanıcı dilinde");
+  assert.ok(!studioSrc.includes("aspectManualBadge"), "eski ✋ rozet VM'i kalktı (metin karta taşındı)");
+  assert.ok(!studioSrc.includes("4:5"), "4:5 tamamen kaldırıldı — sahte oran gösterilmez");
   // 1:1 her zaman erişilebilir (Freeze kuralı): kadraj listesinde 'kare' var
   assert.ok(studioSrc.includes("'kare'") && studioSrc.includes("KARE 1:1"), "1:1 kalıcı seçenek");
+});
+
+test("Sade Ayar: stil 3 kategori — Sinematik TEK adım, alt kartlar yalnız gerektiğinde", () => {
+  assert.ok(studioSrc.includes("styleCats:"), "kategori VM");
+  for (const c of ["'Sinematik'", "'Gerçekçi'", "'Sanatsal'"]) assert.ok(studioSrc.includes(c), "kategori: " + c);
+  assert.ok(studioSrc.includes("imgStyle: 'sinematik', imgStyleCat: ''"), "Sinematik doğrudan stili seçer — ikinci adım YOK");
+  assert.ok(studioSrc.includes("['belgeselfoto', 'Belgesel'") && studioSrc.includes("['hollywood', 'Hollywood Foto-gerçekçi'"), "Gerçekçi alt kartları");
+  assert.ok(studioSrc.includes("['gravur', 'Gravür'") && studioSrc.includes("['minyatur', 'Osmanlı Minyatürü'") && studioSrc.includes("['animasyon', 'Animasyon'"), "Sanatsal alt kartları");
+  assert.ok(studioSrc.includes("styleSubOpen"), "alt kartlar sc-if arkasında");
+});
+
+test("Sade Ayar: SEÇİMİN özeti + motor 'Değiştir' arkasında, dili dürüst", () => {
+  assert.ok(studioSrc.includes("secimOzet:"), "özet VM (platform · oran · stil)");
+  assert.ok(studioSrc.includes(">SEÇİMİN</span>"), "özet kartı başlığı");
+  assert.ok(studioSrc.includes("'Bu üretim için ' + this._provModelLabel() + ' seçilecek.'"), "Otomatik alt metni: hangi model seçilecek");
+  assert.ok(studioSrc.includes("' · elle seçildi'"), "elle seçim alt metni");
+  assert.ok(studioSrc.includes("Elle seçersen sistem geri değiştirmez."), "motor kalıcılık dili");
+  assert.ok(studioSrc.includes("motorLinkLabel"), "motor yalnız Değiştir bağlantısıyla açılır");
+});
+
+test("Sahne Ayarları (override): açık kalıtım + Genel ayarlara dön + kalıcılık", () => {
+  assert.ok(studioSrc.includes("⚙ Genel ayarlar kullanılıyor"), "kalıtım AÇIKÇA yazılır (genel)");
+  assert.ok(studioSrc.includes("'⚙ Bu sahneye özel: '"), "kalıtım AÇIKÇA yazılır (özel: oran · stil · motor)");
+  assert.ok(studioSrc.includes("↩ Genel ayarlara dön"), "tek tıkla genel ayarlara dönüş");
+  assert.ok(studioSrc.includes('sc-if value="{{ gp.ovrOpen }}"'), "panel sc-if arkasında (varsayılan kapalı)");
+  assert.ok(studioSrc.includes("ovrAspects:") && studioSrc.includes("ovrStyles:") && studioSrc.includes("ovrProviders:"), "oran/stil/motor sahne bazında");
+  assert.ok(studioSrc.includes("sceneOpts: s.sceneOpts || {}") && studioSrc.includes("(w && w.sceneOpts) || {}"), "sceneOpts kalıcı (persist + geri yükleme)");
+  assert.ok(studioSrc.includes("Yalnız bu sahneyi etkiler"), "kapsam açıklaması kullanıcı dilinde");
 });
 
 test("Terminoloji: 'Görsel hazır' (Tamamlandı yerine) — kart + kuyruk tutarlı", () => {
@@ -91,7 +125,7 @@ test("Yükleniyor durumu: iskelet + 'Görsel hazırlanıyor…' (kahverengi plac
 test("UI metinleri kullanıcı dilinde: sade açıklama + ikincil kredi satırı", () => {
   assert.ok(studioSrc.includes("Seçtiğin platform, oran ve stil tüm sahnelere uygulanır. Sahne bazında istediğin zaman değiştirebilirsin."), "sade açıklama");
   assert.ok(studioSrc.includes("İlk 20 sahne görseli 12 KR, sonrası 8 KR."), "kredi kuralı ikincil satırda");
-  assert.ok(studioSrc.includes("✋ Oran elle seçildi"), "rozet kısa kullanıcı dilinde");
+  assert.ok(studioSrc.includes("Elle seçilen oran korunur."), "oran kalıcılığı kısa kullanıcı dilinde (eski ✋ rozet metni kalktı)");
 });
 
 test("Ajan aksiyonu: AJANLA DÜZENLE, ikincil ağırlık; mobil dosya işlemleri açılır alanda", () => {
@@ -153,8 +187,9 @@ test("ORAN AKIŞI UÇTAN UCA: UI → payload → sunucu boyutu → kırpma hedef
 test("BUG FIX: ekranda seçili oran ÜRETİME gider (9:16 seçiliyken 16:9 üretme hatası)", () => {
   // Kök neden: makeSceneImg dosyanın sihirbaz oranını (s.aspect) ZORLUYORDU;
   // PLATFORM/ORAN satırının yazdığı imgAspect sahne üretiminde yok sayılıyordu.
-  assert.ok(studioSrc.includes("this.makeImage(prompt, idx, key, (this.state.imgAspect || this.state.aspect))"), "tekil sahne üretimi etkin oranı kullanır");
+  assert.ok(studioSrc.includes("this.makeImage(prompt, idx, key, (so.ar || this.state.imgAspect || this.state.aspect)"), "tekil sahne üretimi etkin oranı kullanır (sahne > panel > dosya)");
   assert.ok(studioSrc.includes("aspect: (s.imgAspect || s.aspect)"), "toplu üretim (batch) etkin oranı kullanır");
+  assert.ok(studioSrc.includes("(so.ar || b.aspect)"), "batch işçisi sahne override oranına saygılı");
   assert.ok(!studioSrc.includes("this.makeImage(prompt, idx, key, this.state.aspect)"), "eski oran-zorlama çağrısı kalmadı");
 });
 
@@ -201,4 +236,47 @@ test("Ayna: 1:1 her durumda seçilebilir — hiçbir modda gizlenmez", () => {
   assert.ok(Object.values(PLATFORMS).includes("kare"), "platform yoluyla 1:1'e ulaşılır");
   const st = pickAspect({ aspect: "dikey" }, "kare");
   assert.equal(effAspect(st), "kare", "doğrudan oran seçici yoluyla da 1:1");
+});
+
+// ── (C) Saf aynalar: SAHNE AYARLARI (override) önceliği ─────────────────────
+// Kaynak sözleşme: makeSceneImg/batch işçisi → (so.ar || imgAspect || aspect),
+// (so.style || imgStyle || style), (so.prov || imgProvider). "Genel" seçimi alanı siler.
+test("Ayna: sahne override > panel > dosya (oran / stil / motor)", () => {
+  const eff = (so, st) => ({
+    ar: so.ar || st.imgAspect || st.aspect,
+    style: so.style || st.imgStyle || st.style,
+    prov: so.prov || st.imgProvider
+  });
+  const st = { aspect: "yatay", imgAspect: "dikey", style: "belgeselfoto", imgStyle: "sinematik", imgProvider: "auto" };
+  assert.deepEqual(eff({}, st), { ar: "dikey", style: "sinematik", prov: "auto" }, "override yoksa panel değerleri");
+  assert.deepEqual(eff({ ar: "kare", style: "gravur", prov: "gpt" }, st), { ar: "kare", style: "gravur", prov: "gpt" }, "tam override");
+  assert.deepEqual(eff({ ar: "kare" }, st).style, "sinematik", "kısmi override: kalan alanlar genelden miras");
+});
+
+test("Ayna: 'Genel' seçimi alanı siler; tüm alanlar boşalınca kayıt kalkar", () => {
+  const setOvr = (all, key, patch) => {
+    const cur = { ...(all[key] || {}), ...patch };
+    Object.keys(cur).forEach(k => { if (!cur[k]) delete cur[k]; });
+    const out = { ...all };
+    if (Object.keys(cur).length) out[key] = cur; else delete out[key];
+    return out;
+  };
+  let all = {};
+  all = setOvr(all, "gp0", { ar: "kare" });
+  assert.deepEqual(all, { gp0: { ar: "kare" } }, "override yazılır");
+  all = setOvr(all, "gp0", { style: "gravur" });
+  assert.deepEqual(all, { gp0: { ar: "kare", style: "gravur" } }, "alanlar birleşir");
+  all = setOvr(all, "gp0", { ar: "", style: "" });
+  assert.deepEqual(all, {}, "hepsi Genel'e dönünce kayıt tamamen kalkar (kalıtım satırı 'Genel ayarlar' der)");
+});
+
+test("Ayna: batch işçisi motoru sahne bazında da _provResolve'dan geçirir ('auto' sunucuya gitmez)", () => {
+  const provResolve = (p) => (p === "gemini" ? "gemini" : "gpt");   // kaynak _provResolve aynası
+  assert.equal(provResolve("auto"), "gpt");
+  assert.equal(provResolve(""), "gpt");
+  assert.equal(provResolve("gemini"), "gemini");
+  // sahne override boşsa batch sağlayıcısı, doluysa sahneninki — her iki yol da çözümlenir
+  const effProv = (so, batchProv) => provResolve(so.prov || batchProv);
+  assert.equal(effProv({}, "auto"), "gpt", "override yok → batch sağlayıcısı çözümlenir");
+  assert.equal(effProv({ prov: "gemini" }, "auto"), "gemini", "override → sahneninki çözümlenir");
 });
