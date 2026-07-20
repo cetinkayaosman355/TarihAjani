@@ -330,10 +330,17 @@ async function runImageChain(
 // Her iki yol da AYNI ortak orchestrator'ı (runImageChain) kullanır → Faz 3
 // değişmezleri (max 3 çağrı, geçici retry, hata sınıflandırma, opId log) korunur.
 // diag: başarısızlıkta SON gerçek sebep (model + sınıf) + sınıf kodu buraya yazılır.
-async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string }, opId?: string): Promise<string> {
+async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string }, opId?: string, providerOverride?: string): Promise<string> {
   if (!prompt.trim()) return "";
-  const provider = (Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim().toLowerCase();
-  const p = prompt.trim().slice(0, 29000) + NO_SPLIT;   // anti-split kural (kesilmeye karşı sonda, prompt kırpılmış)
+  // Sağlayıcı: istemciden doğrulanmış imageProvider (providerOverride) > env varsayılanı > openai.
+  const provider = (providerOverride || Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim().toLowerCase();
+  // DİKEY (9:16) GÜVENLİ KOMPOZİSYON: OpenAI 1024x1536 (2:3) üretir, istemci 9:16'ya kırpar
+  // (üst/alt kesilir). Ana özneyi merkez güvenli alanda tutan talimat YALNIZ dikeyde eklenir →
+  // merkezden kırpma kritik içeriği kesmez (kör kırpma yerine kompozisyon-güvenli sonuç).
+  const VERTICAL_SAFE = size === "9:16"
+    ? "\n\nVERTICAL 9:16 COMPOSITION: main subject inside central safe area, no critical subjects near top/bottom crop zones."
+    : "";
+  const p = prompt.trim().slice(0, 29000) + NO_SPLIT + VERTICAL_SAFE;   // anti-split + (dikeyde) güvenli kadraj
 
   // ── GEMINI YOLU ── (yalnız TA_IMAGE_PROVIDER=gemini). OpenAI'ye düşülmez.
   if (provider === "gemini") {
@@ -388,17 +395,17 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   const key = Deno.env.get("OPENAI_API_KEY");
   if (!key) { if (diag) { diag.d = "OPENAI_API_KEY tanımsız"; diag.cls = "AUTH_ERROR"; } return ""; }
   // gpt-image oranları: kare / yatay (3:2) / dikey (2:3). STANDART çözünürlük.
+  // OpenAI gpt-image YALNIZ şu boyutları destekler: 1024x1536 (9:16), 1536x1024 (16:9),
+  // 1024x1024 (kare). Desteklenmeyen ~4K/2K HD varsayımları KALDIRILDI → API 400 vermez.
+  // Çözünürlük yerine quality=high korunur (aşağıda).
   const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
-  const hdOn = Deno.env.get("TA_IMAGE_HD") === "1";
-  const gHd = size === "9:16" ? (Deno.env.get("TA_IMAGE_HD_9x16") || "1536x2048")
-            : size === "16:9" ? (Deno.env.get("TA_IMAGE_HD_16x9") || "2048x1536")
-            : (Deno.env.get("TA_IMAGE_HD_1x1") || "2048x2048");
   const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-1.5").trim();
   const fallback = (Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1").trim();
   const chain = (fallback && fallback !== primary) ? [primary, fallback] : [primary];
 
   const callOpenAI = async (model: string, isPrimary: boolean): Promise<ImgCall> => {
-    const gSize = (hdOn && isPrimary) ? gHd : gStd;   // HD yalnız birincil, tek çağrı
+    void isPrimary;
+    const gSize = gStd;   // yalnız OpenAI'nin desteklediği standart boyut (HD varsayımı yok)
     try {
       const r = await fetchT("https://api.openai.com/v1/images/generations", {
         method: "POST",
@@ -912,18 +919,18 @@ function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "gr
 // doğrudan Veo entegrasyonu olmadığından bunu VEO_PROVIDER_NOT_CONFIGURED'a çevirir.
 function pickProvider(p?: string): string {
   const v = String(p || "").toLowerCase();
-  return (v === "kling" || v === "grok" || v === "fal" || v === "veo") ? v : videoProvider();
+  // Seçim AYNEN korunur; "veo"/"higgs" fal'a EŞLENMEZ (submitVideo bunları açık hataya çevirir).
+  return (v === "kling" || v === "grok" || v === "fal" || v === "veo" || v === "higgs" || v === "higgsfield")
+    ? (v === "higgsfield" ? "higgs" : v) : videoProvider();
 }
 
 async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string, provider?: string): Promise<{ id?: string; err?: string }> {
-  // STABİLİZASYON Faz 5 — OTOMATİK FAL FALLBACK KALDIRILDI. Kullanıcı hangi sağlayıcıyı
-  // seçtiyse YALNIZ O çağrılır; anahtar eksikse ilgili submit fonksiyonu NET hata döndürür
-  // (sessizce başka sağlayıcıya DÜŞÜLMEZ → beklenmeyen sağlayıcı/kredi sürprizi olmaz).
+  // OTOMATİK SAĞLAYICI FALLBACK YOK: kullanıcı hangi sağlayıcıyı seçtiyse YALNIZ o çağrılır.
+  // Anahtar eksik/başarısızsa ilgili submit fonksiyonu NET hata döndürür; başka sağlayıcıya DÜŞÜLMEZ.
   const use = pickProvider(provider);
-  // Veo: doğrudan entegrasyon YOK (eskiden sessizce fal'a düşülüyordu). Artık AÇIK hata.
-  if (use === "veo") return { err: "VEO_PROVIDER_NOT_CONFIGURED" };
-  // Fal YALNIZ kullanıcı açıkça Fal seçtiğinde çağrılır.
-  if (use === "fal") return await submitFal(prompt, imageUrl, dur, aspect);   // id zaten "fal:" ön ekli
+  if (use === "veo") return { err: "VEO_PROVIDER_NOT_CONFIGURED" };     // doğrudan Veo entegrasyonu yok
+  if (use === "higgs") return { err: "HIGGS_PROVIDER_NOT_CONFIGURED" }; // Higgs backend erişimi doğrulanmadı
+  if (use === "fal") return await submitFal(prompt, imageUrl, dur, aspect);   // yalnız açıkça Fal seçilince; id zaten "fal:" ön ekli
   if (use === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
   const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id } : r;
 }
@@ -1297,6 +1304,25 @@ Deno.serve(async (req) => {
     // GÖRSEL ÜRETİMİ — metin üretiminden ayrı akış. REZERVE-first: üretimden önce
     // krediyi atomik ayır (3.3), başarısızsa iade. opId istemciden gelir (idempotency).
     if (String(b.action || "") === "image") {
+      // Sağlayıcı seçimi (istemci imageProvider): gpt→openai, gemini→gemini.
+      // higgs backend HAZIR DEĞİL → seçilse bile üretim yapılmaz, kredi ayrılmaz;
+      // OTOMATİK BAŞKA SAĞLAYICIYA DÜŞÜLMEZ (gerçek hata + iade mantığı korunur).
+      // DOĞRULANMIŞ ALLOWLIST: yalnız gpt→openai, gemini→gemini. imageProvider BOŞSA
+      // (yalnız ESKİ istemciler) env varsayılanına düşülür; DOLU ama listede yoksa
+      // SESSİZ FALLBACK YAPMA, açıkça REDDET. Böylece GPT seçilince global secret gemini
+      // olsa bile Gemini çalışmaz; seçim gerçekten backend'e ulaşır.
+      const ipRaw = String(b.imageProvider || "").trim().toLowerCase();
+      let imgProv = "";   // "" → generateImage env varsayılanını kullanır (yalnız eski istemci)
+      if (ipRaw === "gpt" || ipRaw === "openai") imgProv = "openai";
+      else if (ipRaw === "gemini") imgProv = "gemini";
+      else if (ipRaw === "higgs" || ipRaw === "higgsfield") {
+        logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "HIGGS_IMAGE_NOT_CONFIGURED" });
+        return json({ ok: false, error: "Higgsfield görsel sağlayıcısı henüz aktif değil (yakında). Kredi düşülmedi. Lütfen GPT veya Gemini seç.", errClass: "HIGGS_IMAGE_NOT_CONFIGURED" }, 501);
+      }
+      else if (ipRaw !== "") {
+        logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "INVALID_IMAGE_PROVIDER:" + ipRaw.slice(0, 20) });
+        return json({ ok: false, error: "Geçersiz görsel sağlayıcısı. Kredi düşülmedi. GPT veya Gemini seç.", errClass: "INVALID_IMAGE_PROVIDER" }, 400);
+      }
       const opId = cleanJob(b.opId) || crypto.randomUUID();
       const res = await reserveOp(admin, userId, cost, "gorsel", opId);
       if (!res.ok) return json({ ok: false, error: "Yetersiz kredi", credits: res.credits }, 402);
@@ -1308,7 +1334,7 @@ Deno.serve(async (req) => {
         return json({ ok: false, error: "Kredi sistemi şu an kullanılamıyor. Görsel üretilmedi, kredi düşülmedi. Lütfen birazdan tekrar deneyin.", errClass: "CREDIT_SYSTEM_UNAVAILABLE" }, 503);
       }
       const diag: { d: string; cls?: string } = { d: "" };
-      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), diag, opId);
+      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), diag, opId, imgProv);
       if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
       // CİHAZLAR ARASI: data: URI cihaza özeldir → Storage'a yükle, kalıcı URL ver
       if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);

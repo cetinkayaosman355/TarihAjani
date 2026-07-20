@@ -658,6 +658,12 @@
                 <button onClick="{{ st.pick }}" style="{{ st.style }}">{{ st.label }}</button>
               </sc-for>
             </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">SAĞLAYICI</span>
+              <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
+                <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
+              </sc-for>
+            </div>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
               <button onClick="{{ queueImage }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 13px 26px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ imgGoLabel }}</button>
               <span style="color: #676d7c; font-size: 12px;">Üretim: <strong style="color: #e6c478;">{{ imgSelLabel }}</strong></span>
@@ -1321,6 +1327,12 @@
                     <button onClick="{{ st.pick }}" style="{{ st.style }}">{{ st.label }}</button>
                   </sc-for>
                 </div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">SAĞLAYICI</span>
+                  <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
+                    <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
+                  </sc-for>
+                </div>
                 <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Üretim şununla yapılır: <strong style="color: #e6c478;">{{ imgSelLabel }}</strong>. Kadrajı değiştirip tekrar <strong style="color: #e6c478;">GÖRSEL ÜRET</strong>'e basarsan aynı sahne yeni kadrajla üretilir — hikâye korunur.</p>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                   <button onClick="{{ imgFromKapak }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 12px; letter-spacing: .08em; padding: 12px 18px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">KAPAK PROMPTUNU AL</button>
@@ -1590,6 +1602,32 @@
     </div>
   </sc-if>
 
+  <!-- VİDEO SAĞLAYICI / SÜRE / MALİYET MODALI -->
+  <sc-if value="{{ videoModalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ videoModalClose }}" style="position: fixed; inset: 0; z-index: 1300; display: grid; place-items: center; background: rgba(2,3,8,.9); padding: 20px;">
+      <div onClick="{{ videoModalStop }}" style="width: 100%; max-width: 440px; background: #0a0e18; border: 1px solid rgba(193,154,82,.35); box-shadow: 0 30px 90px rgba(0,0,0,.7); padding: 22px;">
+        <p style="margin: 0 0 4px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 13px; letter-spacing: .12em;">🎬 VİDEO ÜRET</p>
+        <p style="margin: 0 0 16px; color: #818797; font-size: 12px; line-height: 1.55;">Sağlayıcıyı ve süreyi seç. Maliyet sağlayıcıya göre sunucuda kesinleşir; hata olursa kredin iade edilir ve başka sağlayıcıyla deneyebilirsin.</p>
+        <p style="margin: 0 0 8px; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">SÜRE</p>
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <sc-for list="{{ videoModalDurations }}" as="vd" hint-placeholder-count="2">
+            <button onClick="{{ vd.pick }}" style="{{ vd.style }}">{{ vd.label }}</button>
+          </sc-for>
+        </div>
+        <p style="margin: 0 0 8px; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">SAĞLAYICI</p>
+        <div style="display: grid; gap: 8px;">
+          <sc-for list="{{ videoModalProviders }}" as="vpr" hint-placeholder-count="4">
+            <button onClick="{{ vpr.pick }}" disabled="{{ vpr.disabled }}" style="{{ vpr.style }}"><span>{{ vpr.label }}</span><span style="{{ vpr.tagStyle }}">{{ vpr.tag }}</span></button>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 18px;">
+          <button onClick="{{ videoModalSubmit }}" style="flex: 1; border: 0; cursor: pointer; background: linear-gradient(110deg, #6d3bd4, #9257ee 52%, #b57bff); color: #fff; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 11.5px; letter-spacing: .08em; padding: 13px;">{{ videoModalSubmitLabel }}</button>
+          <button onClick="{{ videoModalClose }}" style="border: 1px solid rgba(129,135,151,.4); cursor: pointer; background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; padding: 13px 18px;">İPTAL</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
 <!-- GÖRSEL ÜRETİLİYOR bandı: hangi sekmede olursan ol, üretim sürerken görünür -->
   <sc-if value="{{ imgJobsOn }}" hint-placeholder-val="{{ false }}">
     <div style="position: fixed; left: 50%; bottom: 86px; transform: translateX(-50%); z-index: 1280; display: inline-flex; align-items: center; gap: 10px; background: rgba(5,7,13,.96); border: 1px solid rgba(193,154,82,.55); box-shadow: 0 14px 44px rgba(0,0,0,.6), 0 0 22px rgba(201,162,90,.15); padding: 11px 18px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; color: #e6c478; animation: ta-rise .3s ease both;">
@@ -1645,6 +1683,8 @@ class Component extends DCLogic {
       shortBusy: false, suggestBusy: false,
       imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, imgStyle: null, savedImgs: [], imgSel: {},
       imgAspect: null, imgZoom: '',
+      imgProvider: saved.imgProvider || 'gpt',   // görsel sağlayıcısı: gpt (vars.) | gemini | higgs(pasif)
+      videoModal: null,                          // video sağlayıcı/süre/maliyet modalı
       vpPlaying: '', vpBusy: '',
       step: w ? 4 : 1,
       idea: (w && w.idea) || '', ideaWarn: '',
@@ -1801,7 +1841,7 @@ class Component extends DCLogic {
     if (s.fileNo && s.result) {
       hist = hist.map(h => (h.fileNo && h.fileNo === s.fileNo) ? Object.assign({}, h, { sceneImgs: s.sceneImgs || {}, audioUrl: s.sysAudioUrl || h.audioUrl || '' }) : h);
     }
-    const base = { agent: s.agentName, email: s.regEmail, credits: s.credits, tier: s.tier, elKey: s.elKey, pendingJob: s.pendingJob || null };
+    const base = { agent: s.agentName, email: s.regEmail, credits: s.credits, tier: s.tier, elKey: s.elKey, pendingJob: s.pendingJob || null, imgProvider: s.imgProvider || 'gpt' };
     try {
       localStorage.setItem('ta_studio_v5', JSON.stringify(Object.assign({}, base, { history: hist, work: work })));
     } catch (e) {
@@ -2534,7 +2574,7 @@ class Component extends DCLogic {
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined })
+      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: this.state.imgProvider || 'gpt' })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
@@ -2791,21 +2831,22 @@ class Component extends DCLogic {
   _setGalVid(id, patch) {
     this.setState(st => ({ galVid: { ...(st.galVid || {}), [id]: { ...((st.galVid || {})[id] || {}), ...patch } } }));
   }
-  makeGalVideo(x, provider) {
+  makeGalVideo(x, provider, sec) {
     const gv = (this.state.galVid || {})[x.id] || {};
     if (gv.busy || !x || !x.url) return;
     const prov = provider === 'kling' ? 'kling' : 'grok';
-    const need = prov === 'kling' ? 300 : 120;
+    const vsec = Math.round(Math.min(15, Math.max(3, sec || 5)));
+    const need = this.VID_COST(vsec, prov);
     if (this.state.credits < need) { this.setState({ creditModal: true }); return; }
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[x.ar] || x.ar || '9:16';
     const label = prov === 'kling' ? 'Kling' : 'Grok';
     this._setGalVid(x.id, { busy: true, menuOpen: false, status: '🎬 ' + label + ' GÖNDERİLİYOR…' });
-    this.videoServer(x.url, x.prompt || '', aspect, prov).then(job => {
+    this.videoServer(x.url, x.prompt || '', aspect, prov, vsec).then(job => {
       this._setGalVid(x.id, { busy: true, job, status: '🎬 ' + label + ' HAZIRLANIYOR… (1-3 dk)' });
       this.pollGalVideo(x, job, 0);
     }).catch(e => {
       const msg = (e && e.message && e.message !== 'YETERSIZ_KREDI')
-        ? ('⚠ Hata: ' + String(e.message).slice(0, 90) + ' — kredin düşmedi') : '';
+        ? ('⚠ Hata: ' + String(e.message).slice(0, 90) + ' — kredin iade edildi, başka sağlayıcıyla dene') : '';
       this._setGalVid(x.id, { busy: false, status: msg });
       if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
     });
@@ -2957,7 +2998,7 @@ class Component extends DCLogic {
       vidErrShow: !vidBusy && !!((si && si.vidStatus) || ''),
       vidMenuOpen: !!(si && si.vidMenuOpen) && !vidBusy,
       vidLabel: vidBusy ? ((si && si.vidStatus) || '🎬 HAZIRLANIYOR…') : (vidUrl ? '🎬 TEKRAR VİDEO ▾' : '🎬 VİDEO ÜRET ▾'),
-      toggleVidMenu: () => { const cur = (this.state.sceneImgs || {})[key] || {}; this.setSceneImg(key, { vidMenuOpen: !cur.vidMenuOpen }); },
+      toggleVidMenu: () => this.openVideoModal({ kind: 'scene', key, url }),
       makeGrok: () => this.makeVideo(key, url, 'grok'),
       makeKling: () => this.makeVideo(key, url, 'kling'),
       zoom: () => this.openZoom(url),
@@ -2971,11 +3012,23 @@ class Component extends DCLogic {
     return { url: 'https://ddyuopqcvpzaysnfavqc.supabase.co',
       key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc' };
   }
-  makeVideo(key, imageUrl, provider) {
+  // İstemci maliyet AYNASI (yalnız gösterim/ön kontrol; kesin ücret sunucuda videoCost ile hesaplanır)
+  VID_COST(sec, prov) { const s = Math.round(Math.min(15, Math.max(3, sec || 5))); const k = prov === 'kling'; return Math.max(k ? 300 : 120, s * (k ? 60 : 24)); }
+  openVideoModal(desc) { this.setState({ videoModal: Object.assign({ provider: 'grok', sec: 5 }, desc) }); }
+  submitVideoModal() {
+    const vm = this.state.videoModal; if (!vm) return;
+    const prov = (vm.provider === 'kling') ? 'kling' : 'grok';   // yalnız çalışan sağlayıcılar; veo/higgs modalda pasif
+    const sec = vm.sec || 5;
+    this.setState({ videoModal: null });
+    if (vm.kind === 'scene') this.makeVideo(vm.key, vm.url, prov, sec);
+    else this.makeGalVideo(vm.x, prov, sec);
+  }
+  makeVideo(key, imageUrl, provider, sec) {
     const si = (this.state.sceneImgs || {})[key] || {};
     if (si.vidBusy || !imageUrl) return;
     const prov = (provider === 'kling') ? 'kling' : 'grok';
-    const need = prov === 'kling' ? 300 : 120;
+    const vsec = Math.round(Math.min(15, Math.max(3, sec || 5)));
+    const need = this.VID_COST(vsec, prov);
     if (this.state.credits < need) { this.setState({ creditModal: true }); return; }
     // Sahne video promptunu al (video_promptlar[i]), yoksa görsel promptu
     let prompt = '';
@@ -2988,7 +3041,7 @@ class Component extends DCLogic {
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[this.state.aspect] || '9:16';
     const label = prov === 'kling' ? 'Kling' : 'Grok';
     this.setSceneImg(key, { vidBusy: true, vidMenuOpen: false, vidStatus: '🎬 ' + label + ' GÖNDERİLİYOR…' });
-    this.videoServer(imageUrl, prompt, aspect, prov).then(job => {
+    this.videoServer(imageUrl, prompt, aspect, prov, vsec).then(job => {
       // İş kimliğini KAYDET → sayfa yenilense bile arka plandaki video kaybolmaz,
       // açılışta poll kaldığı yerden devam eder (kredi zaten düşmüştü).
       this.setSceneImg(key, { vidJob: job, vidBusy: true, vidStatus: '🎬 ' + label + ' HAZIRLANIYOR… (1-3 dk)' });
@@ -2996,17 +3049,17 @@ class Component extends DCLogic {
     }).catch(e => {
       // Hata ASLA sessiz yutulmaz: kullanıcı "hiç tepki yok" sanıyordu (kritik).
       const msg = (e && e.message && e.message !== 'YETERSIZ_KREDI')
-        ? ('⚠ Hata: ' + String(e.message).slice(0, 90) + ' — kredin düşmedi, tekrar dene') : '';
+        ? ('⚠ Hata: ' + String(e.message).slice(0, 90) + ' — kredin iade edildi, başka sağlayıcıyla dene') : '';
       this.setSceneImg(key, { vidBusy: false, vidStatus: msg });
       if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
     });
   }
-  async videoServer(imageUrl, prompt, aspect, provider) {
+  async videoServer(imageUrl, prompt, aspect, provider, sec) {
     const s = this._sbUrlKey();
     const token = this._token() || s.key;
     const r = await fetch(s.url + '/functions/v1/studio-generate', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'video', image: imageUrl, prompt: prompt, size: aspect, vsec: 5, vprovider: provider || 'grok' })
+      body: JSON.stringify({ action: 'video', image: imageUrl, prompt: prompt, size: aspect, vsec: Math.round(Math.min(15, Math.max(3, sec || 5))), vprovider: provider || 'grok' })
     });
     const d = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof d.credits === 'number') this.setState({ credits: d.credits }); throw new Error('YETERSIZ_KREDI'); }
@@ -4138,7 +4191,24 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         if (kp) this.setState({ imgPrompt: kp.prompt });
       },
       queueImage: () => this.makeImage(s.imgPrompt),
-      imgGoLabel: (s.imgJobs || 0) > 0 ? '⟳ ÜRETİLİYOR… (' + s.imgJobs + ')' : '◈ GÖRSEL ÜRET · 12 KR',
+      // Görsel sağlayıcı seçimi (ses seçimindeki gibi): gpt (vars.) · gemini · higgs(pasif/Yakında)
+      imgProvider: s.imgProvider || 'gpt',
+      imgProviders: [['gpt', 'GPT', false], ['gemini', 'Gemini', false], ['higgs', 'Higgs', true]].map(([id, label, passive]) => {
+        const cur = (s.imgProvider || 'gpt') === id;
+        return {
+          label: passive ? (label + ' · Yakında') : label,
+          disabled: passive,
+          pick: passive ? (() => {}) : (() => this.setState({ imgProvider: id }, () => this.persist())),
+          style: {
+            cursor: passive ? 'not-allowed' : 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em',
+            padding: '8px 12px', opacity: passive ? '.5' : '1',
+            border: cur ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+            background: cur ? 'rgba(193,154,82,.14)' : 'transparent',
+            color: passive ? '#676d7c' : (cur ? '#e6c478' : '#818797')
+          }
+        };
+      }),
+      imgGoLabel: (s.imgJobs || 0) > 0 ? '⟳ ÜRETİLİYOR… (' + s.imgJobs + ')' : ('◈ ' + ({ gpt: 'GPT', gemini: 'Gemini' }[s.imgProvider || 'gpt'] || 'GPT') + ' ile Görsel Üret · 12 KR'),
       imgJobsOn: (s.imgJobs || 0) > 0,
       imgJobsMsg: (s.imgJobs || 0) > 1 ? (s.imgJobs + ' GÖRSEL ÜRETİLİYOR… RAFA EKLENECEK') : 'GÖRSEL ÜRETİLİYOR… RAFA EKLENECEK',
       hasImgQueue: (s.imgQueue || []).length > 0,
@@ -4154,7 +4224,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           vidStatus: gv.status || '',
           vidErrShow: !gv.busy && !!(gv.status || '') && !gv.url,
           vidBtnLabel: gv.busy ? (gv.status || '🎬 HAZIRLANIYOR…') : '🎬 VİDEO ÜRET ▾',
-          toggleVidMenu: () => this._setGalVid(x.id, { menuOpen: !gv.menuOpen }),
+          toggleVidMenu: () => this.openVideoModal({ kind: 'gal', x, url: x.url }),
           makeGrok: () => this.makeGalVideo(x, 'grok'),
           makeKling: () => this.makeGalVideo(x, 'kling'),
           thumbStyle: this.thumbBox(x.ar),
@@ -4209,6 +4279,51 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         return a + ' · ' + st;
       })(),
       goImgStudio: () => this.goImgStudio(),
+      // ── VİDEO SAĞLAYICI/SÜRE/MALİYET MODALI (Video Üret'e basınca açılır) ──
+      videoModalOpen: !!s.videoModal,
+      videoModalStop: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      videoModalClose: () => this.setState({ videoModal: null }),
+      videoModalDurations: (() => {
+        const vm = s.videoModal || {}; const cur = vm.sec || 5;
+        return [[5, '5 sn'], [10, '10 sn']].map(([sec, label]) => ({
+          label, pick: () => this.setState({ videoModal: Object.assign({}, vm, { sec }) }),
+          style: {
+            cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '11px', letterSpacing: '.06em', padding: '9px 16px',
+            border: cur === sec ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+            background: cur === sec ? 'rgba(193,154,82,.14)' : 'transparent', color: cur === sec ? '#e6c478' : '#a4a9b5'
+          }
+        }));
+      })(),
+      videoModalProviders: (() => {
+        const vm = s.videoModal || {}; const cur = vm.provider || 'grok'; const sec = vm.sec || 5;
+        const rows = [
+          { id: 'grok', label: '⚡ Grok · hızlı', tag: this.VID_COST(sec, 'grok') + ' KR', passive: false },
+          { id: 'kling', label: '👑 Kling · en iyi', tag: this.VID_COST(sec, 'kling') + ' KR', passive: false },
+          { id: 'veo', label: '🎥 Veo', tag: 'Yakında', passive: true },
+          { id: 'higgs', label: '✨ Higgsfield', tag: 'Yakında', passive: true }
+        ];
+        return rows.map(p => {
+          const sel = cur === p.id;
+          return {
+            label: p.label, tag: p.tag, disabled: p.passive,
+            pick: p.passive ? (() => {}) : (() => this.setState({ videoModal: Object.assign({}, vm, { provider: p.id }) })),
+            style: {
+              display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'center', width: '100%',
+              cursor: p.passive ? 'not-allowed' : 'pointer', fontSize: '11.5px', padding: '10px 12px', borderRadius: '6px',
+              opacity: p.passive ? '.55' : '1',
+              border: sel ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+              background: sel ? 'rgba(193,154,82,.12)' : (p.passive ? 'rgba(129,135,151,.05)' : 'transparent'),
+              color: p.passive ? '#818797' : (sel ? '#f4ead0' : '#cfd3dc')
+            },
+            tagStyle: { fontSize: '9.5px', color: p.passive ? '#676d7c' : (sel ? '#e6c478' : '#9aa0ae') }
+          };
+        });
+      })(),
+      videoModalSubmit: () => this.submitVideoModal(),
+      videoModalSubmitLabel: (() => {
+        const vm = s.videoModal || {}; const prov = vm.provider || 'grok'; const sec = vm.sec || 5;
+        return ({ grok: 'GROK', kling: 'KLING' }[prov] || prov.toUpperCase()) + ' İLE ÜRET · ' + this.VID_COST(sec, prov) + ' KR';
+      })(),
       hasZoom: !!s.imgZoom, zoomUrl: s.imgZoom,
       closeZoom: () => this.setState({ imgZoom: '' }),
       zoomDl: () => this.dlImage(s.imgZoom),
@@ -4285,7 +4400,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           vidStatus: gv.status || '',
           vidErrShow: !gv.busy && !!(gv.status || ''),
           vidBtnLabel: gv.busy ? (gv.status || '🎬 HAZIRLANIYOR…') : '🎬 VİDEO ÜRET ▾',
-          toggleVidMenu: () => this._setGalVid(x.id, { menuOpen: !gv.menuOpen }),
+          toggleVidMenu: () => this.openVideoModal({ kind: 'gal', x, url: x.url }),
           makeGrok: () => this.makeGalVideo(x, 'grok'),
           makeKling: () => this.makeGalVideo(x, 'kling')
         };
