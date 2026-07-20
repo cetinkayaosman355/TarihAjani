@@ -3236,7 +3236,7 @@ class Component extends DCLogic {
     const perMap = {};
     if (est && Array.isArray(est.per)) pending.forEach((it, k) => { perMap[it.key] = est.per[k]; });   // sahne başına sunucu maliyeti
     const batch = {
-      id: batchId, provider, aspect: s.aspect,
+      id: batchId, provider, aspect: (s.imgAspect || s.aspect),   // ekranda seçili etkin oran (9:16 seçiliyken 16:9 üretme hatasının düzeltmesi)
       scenes: pending.map(it => ({ key: it.key, idx: it.i, prompt: it.x.prompt, status: 'queued', err: '', cost: (perMap[it.key] != null ? perMap[it.key] : this.IMG_COST(it.i)) })),
       stopped: false, paused: false, done: false, startedAt: Date.now(), finishedAt: 0
     };
@@ -3610,8 +3610,10 @@ class Component extends DCLogic {
     this.setState({ imgPrompt: prompt });               // Görsel Stüdyo bu sahnenin hikâyesini tutsun
     this.setSceneImg(key, { busy: true });              // buton anında ÜRETİLİYOR'a döner
     // "Üretildi" işareti yalnız GERÇEK başarıda konur (eskiden hata da ✓ görünüyordu)
-    // Sahne/kapak/karakter = dosyaya ait → DOSYA oranını (s.aspect) zorla (panel yatay olsa bile dikey çıksın)
-    this.makeImage(prompt, idx, key, this.state.aspect).then(r => {
+    // ORAN DÜZELTMESİ: sahne üretimi EKRANDA SEÇİLİ etkin oranı kullanır
+    // (imgAspect — PLATFORM/ORAN satırından; seçilmemişse dosyanın sihirbaz oranı).
+    // Eski davranış s.aspect'i ZORLUYORDU → ekranda 9:16 seçiliyken 16:9 üretiyordu.
+    this.makeImage(prompt, idx, key, (this.state.imgAspect || this.state.aspect)).then(r => {
       const ok = !!(r && r.ok);
       const si = (this.state.sceneImgs || {})[key] || {};
       this.setSceneImg(key, ok ? { busy: false, done: true, count: (si.count || 0) + 1 } : { busy: false });

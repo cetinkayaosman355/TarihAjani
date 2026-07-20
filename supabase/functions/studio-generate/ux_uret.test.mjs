@@ -137,6 +137,27 @@ test("Backend DOKUNULMADI: PR-2 yalnız frontend", () => {
   assert.ok(indexSrc.includes('|| "gpt-image-2"') && indexSrc.includes('|| "gpt-image-1.5"'), "model zinciri yerinde");
 });
 
+test("ORAN AKIŞI UÇTAN UCA: UI → payload → sunucu boyutu → kırpma hedefi → metadata", () => {
+  // İstemci: seçili anahtar → API size string'i
+  assert.ok(studioSrc.includes("{ yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect]"), "istemci arKey → size çevirisi");
+  // Sunucu: size → OpenAI'nin GERÇEKTEN desteklediği boyut
+  assert.ok(indexSrc.includes('const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024"'), "sunucu size → gerçek üretim boyutu");
+  // Sunucu: üretim sonrası KESİN orana kırpma (9:16 → portrait, 16:9 → landscape; 1:1 zaten kare)
+  assert.ok(indexSrc.includes('const target = size === "9:16" ? 9 / 16 : size === "16:9" ? 16 / 9 : 0'), "cropToAspect kesin oran hedefi");
+  assert.ok(indexSrc.includes('url = await cropToAspect(url, String(b.size || ""))'), "kırpma üretim yolunda uygulanır");
+  // Metadata: aspect = istenen; resolution = GERÇEK bayt başlığından okunan WxH (uydurma değil)
+  assert.ok(indexSrc.includes('aspect: String(b.size || "")'), "metadata aspect = istenen oran");
+  assert.ok(indexSrc.includes("function imageInfo(dataUri:"), "resolution gerçek dosya baytlarından (PNG/JPEG başlığı) okunur");
+});
+
+test("BUG FIX: ekranda seçili oran ÜRETİME gider (9:16 seçiliyken 16:9 üretme hatası)", () => {
+  // Kök neden: makeSceneImg dosyanın sihirbaz oranını (s.aspect) ZORLUYORDU;
+  // PLATFORM/ORAN satırının yazdığı imgAspect sahne üretiminde yok sayılıyordu.
+  assert.ok(studioSrc.includes("this.makeImage(prompt, idx, key, (this.state.imgAspect || this.state.aspect))"), "tekil sahne üretimi etkin oranı kullanır");
+  assert.ok(studioSrc.includes("aspect: (s.imgAspect || s.aspect)"), "toplu üretim (batch) etkin oranı kullanır");
+  assert.ok(!studioSrc.includes("this.makeImage(prompt, idx, key, this.state.aspect)"), "eski oran-zorlama çağrısı kalmadı");
+});
+
 // ── (B) Saf aynalar ─────────────────────────────────────────────────────────
 const PLATFORMS = { reels: "dikey", shorts: "dikey", tiktok: "dikey", igpost: "kare", youtube: "yatay", kare11: "kare" };
 function pickPlatform(state, id) { return { ...state, imgPlatform: id, imgAspect: PLATFORMS[id], imgAspectManual: false }; }
@@ -161,6 +182,19 @@ test("Ayna: platform önerir, elle seçim platformu KORUR, tek etkin oran", () =
 test("Ayna: IG Gönderisi bugün dürüstçe 1:1'e maplenir (4:5 backend'e gelene dek)", () => {
   const st = pickPlatform({ aspect: "dikey" }, "igpost");
   assert.equal(effAspect(st), "kare", "igpost → kare (gerçekte üretilebilen oran)");
+});
+
+test("Ayna: üretime giden oran = ekranda vurgulanan oran (UI ↔ size parametresi tutarlı)", () => {
+  // UI vurgusu (imgAspects VM): eff = imgAspect || aspect. Üretim de artık AYNI ifadeyi kullanır.
+  const effUI = (st) => st.imgAspect || st.aspect;
+  const effProd = (st) => st.imgAspect || st.aspect;
+  const sizeOf = (k) => ({ yatay: "16:9", dikey: "9:16", kare: "1:1" }[k] || "16:9");
+  // Dosya yatay açıldı, kullanıcı ekranda DİKEY seçti → üretim 9:16 OLMALI
+  const st = { aspect: "yatay", imgAspect: "dikey" };
+  assert.equal(effUI(st), effProd(st), "ekran ve üretim aynı kaynağı okur");
+  assert.equal(sizeOf(effProd(st)), "9:16", "backend'e giden size = 9:16 (16:9 DEĞİL)");
+  // Kullanıcı hiç dokunmadıysa dosyanın oranı geçerli
+  assert.equal(sizeOf(effProd({ aspect: "yatay", imgAspect: null })), "16:9");
 });
 
 test("Ayna: 1:1 her durumda seçilebilir — hiçbir modda gizlenmez", () => {
