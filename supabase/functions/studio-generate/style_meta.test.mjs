@@ -134,7 +134,7 @@ test("Studio.dc.html: imageServer meta döner; 'Üretim Bilgisi' kartı rozet + 
   assert.ok(studioSrc.includes("{{ iq.metaStyle }}") && studioSrc.includes("{{ iq.hasMetaStyle }}"), "stil rozeti");
   assert.ok(studioSrc.includes("{{ iq.hasMeta }}") && studioSrc.includes("{{ mr.k }}") && studioSrc.includes("{{ mr.v }}"), "kart şablonu meta bloğu");
   // Kadraj (seçilen oran) ile Çözünürlük (gerçek dosya) AYRI iki alan
-  assert.ok(studioSrc.includes("'Kadraj', m.aspect") && studioSrc.includes("'Çözünürlük', m.resolution"), "Kadraj≠Çözünürlük ayrı alanlar");
+  assert.ok(studioSrc.includes("'Kadraj', dash(m.aspect)") && studioSrc.includes("'Çözünürlük', dash(m.resolution)"), "Kadraj≠Çözünürlük ayrı alanlar (eksikte '-')");
   // Kalan satır etiketleri (rozetler hariç), kullanıcının istediği sırada
   for (const lbl of ["Model", "Kadraj", "Çözünürlük", "Format", "Dosya Boyutu", "Üretim Süresi", "Harcanan Kredi"]) {
     assert.ok(studioSrc.includes("'" + lbl + "'"), "meta etiketi eksik: " + lbl);
