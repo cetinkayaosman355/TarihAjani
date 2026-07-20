@@ -2,10 +2,10 @@
 // KONTROLLÜ TOPLU ÜRETİM KUYRUĞU — STATİK + MANTIK DOĞRULAMASI
 // Çalıştır:  node supabase/functions/studio-generate/batch_queue.test.mjs
 //
-// (A) _batchRun AYNASI: eşzamanlılık ≤2, hata izolasyonu, durdur→iptal.
+// (A) _batchRun AYNASI: eşzamanlılık ≤2, hata izolasyonu, DURAKLAT vs İPTAL.
 // (B) worker durum eşlemesi (completed/failed/refunded).
 // (C) idempotent batch (çift tıklama), refresh geri-yükleme dönüşümü.
-// (D) Gerçek index.ts + Studio.dc.html değişmezleri.
+// (D) Gerçek index.ts + Studio.dc.html değişmezleri (queue UX katmanı dahil).
 // ⚠ _batchRun aynası Studio.dc.html ile senkron tutulmalı.
 // ============================================================================
 import { readFileSync } from "node:fs";
@@ -20,6 +20,8 @@ const indexSrc = readFileSync(join(HERE, "index.ts"), "utf8");
 const studioSrc = readFileSync(join(REPO, "Studio.dc.html"), "utf8");
 
 // ── (A) _batchRun aynası ────────────────────────────────────────────────────
+// isStopped() → false | 'pause' | 'cancel'. 'pause': kalan 'queued' KORUNUR
+// (devam edilebilir). 'cancel'/doğal bitiş: kalan 'queued' → 'cancelled'.
 async function batchRun(items, worker, opts) {
   opts = opts || {};
   const CONC = Math.max(1, opts.concurrency || 2);
@@ -41,7 +43,9 @@ async function batchRun(items, worker, opts) {
   };
   const lanes = Math.max(1, Math.min(CONC, items.length));
   await Promise.all(Array.from({ length: lanes }, lane));
-  for (let k = 0; k < status.length; k++) if (status[k] === "queued") { status[k] = "cancelled"; onStatus(k, "cancelled"); }
+  if (isStopped() !== "pause") {
+    for (let k = 0; k < status.length; k++) if (status[k] === "queued") { status[k] = "cancelled"; onStatus(k, "cancelled"); }
+  }
   return status;
 }
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -66,16 +70,33 @@ test("5. sahne hata verince 6–12 devam eder (batch çökmez)", async () => {
   assert.equal(st.filter(x => x === "completed").length, 11);
 });
 
-test("Durdur → başlamamış sahneler 'cancelled'; çalışan ≤2 biter", async () => {
+test("İPTAL → başlamamış sahneler 'cancelled'; çalışan ≤2 biter", async () => {
   const items = Array.from({ length: 12 }, (_v, i) => i);
-  let started = 0, stopped = false;
-  const st = await batchRun(items, async () => { started++; if (started >= 2) stopped = true; await wait(5); return { status: "completed" }; },
-    { concurrency: 2, isStopped: () => stopped });
+  let started = 0, mode = false;
+  const st = await batchRun(items, async () => { started++; if (started >= 2) mode = "cancel"; await wait(5); return { status: "completed" }; },
+    { concurrency: 2, isStopped: () => mode });
   const completed = st.filter(x => x === "completed").length;
   const cancelled = st.filter(x => x === "cancelled").length;
-  assert.ok(completed <= 2, "durdurunca en fazla 2 tamamlanır (completed=" + completed + ")");
+  assert.ok(completed <= 2, "iptalde en fazla 2 tamamlanır (completed=" + completed + ")");
   assert.ok(cancelled >= 10, "kalanlar iptal edilir (cancelled=" + cancelled + ")");
   assert.equal(completed + cancelled, 12);
+});
+
+test("DURAKLAT → başlamamış sahneler 'queued' KALIR (devam edilebilir), 'cancelled' OLMAZ", async () => {
+  const items = Array.from({ length: 12 }, (_v, i) => i);
+  let started = 0, mode = false;
+  const st = await batchRun(items, async () => { started++; if (started >= 2) mode = "pause"; await wait(5); return { status: "completed" }; },
+    { concurrency: 2, isStopped: () => mode });
+  const completed = st.filter(x => x === "completed").length;
+  const queued = st.filter(x => x === "queued").length;
+  const cancelled = st.filter(x => x === "cancelled").length;
+  assert.ok(completed <= 2, "duraklatınca en fazla 2 tamamlanır");
+  assert.equal(cancelled, 0, "duraklatmada İPTAL yok (kalanlar korunur)");
+  assert.ok(queued >= 10, "kalanlar 'queued' kalır → devam edilebilir (queued=" + queued + ")");
+  // DEVAM: kalan queued'ları tekrar çalıştır → hepsi tamamlanır
+  const rest = items.filter((_v, i) => st[i] === "queued");
+  const st2 = await batchRun(rest, async () => { await wait(1); return { status: "completed" }; }, { concurrency: 2 });
+  assert.ok(st2.every(x => x === "completed"), "devam edince kalanlar tamamlanır");
 });
 
 // ── (B) worker durum eşlemesi ───────────────────────────────────────────────
@@ -108,6 +129,12 @@ test("Refresh geri-yükleme: processing/cancelled → queued (devam edilebilir),
   const resumable = after.filter(sc => sc.status === "queued").length;
   assert.equal(resumable, 3, "devam edilecek sahne sayısı");
 });
+test("Kurtarma bildirimi koşulu: bitmemiş + işlenecek sahnesi olan batch", () => {
+  const notice = (b) => !b.done && (b.scenes || []).some(sc => sc.status === "queued" || sc.status === "processing" || sc.status === "cancelled");
+  assert.equal(notice({ done: false, scenes: [{ status: "completed" }, { status: "queued" }] }), true, "yarım kalan → bildirim");
+  assert.equal(notice({ done: true, scenes: [{ status: "completed" }] }), false, "bitmiş → bildirim yok");
+  assert.equal(notice({ done: false, scenes: [{ status: "completed" }, { status: "failed" }] }), false, "işlenecek sahne yok → bildirim yok");
+});
 
 // ── (D) GERÇEK kaynak değişmezleri ──────────────────────────────────────────
 test("index.ts: sunucu-taraflı estimate + image recovery-by-opId + save-on-success", () => {
@@ -116,17 +143,37 @@ test("index.ts: sunucu-taraflı estimate + image recovery-by-opId + save-on-succ
   assert.ok(indexSrc.includes("loadJobResult(admin, userId, opId)") && indexSrc.includes("recovered: true"), "opId ile kurtarma (çift üretim yok)");
   assert.ok(indexSrc.includes("saveJobResult(admin, userId, opId, { url, meta })"), "sonuç job-cache'e yazılmalı");
 });
-test("Studio.dc.html: _batchRun concurrency 2 + kararlı opId + sayaçlar + durdur + kalıcılık", () => {
+test("Studio.dc.html: kontrollü kuyruk motoru + kararlı opId + kalıcılık", () => {
   assert.ok(studioSrc.includes("async _batchRun("), "kontrollü kuyruk motoru");
   assert.ok(studioSrc.includes("concurrency: 2"), "eşzamanlılık 2");
   assert.ok(studioSrc.includes("Math.min(CONC, items.length)"), "aktif iş concurrency ile sınırlı");
-  assert.ok(studioSrc.includes("(batchId + sc.key)") && studioSrc.includes("makeImage(sc.prompt, sc.idx, sc.key, batch.aspect, opId, provider)"), "sahne başına kararlı opId + kendi promptu/sağlayıcısı");
+  assert.ok(studioSrc.includes("(b.id + sc.key)") && studioSrc.includes("makeImage(sc.prompt, sc.idx, sc.key, b.aspect, opId, provider)"), "sahne başına kararlı opId + kendi promptu/sağlayıcısı");
   assert.ok(studioSrc.includes("if (this._batchActive) return;"), "çift tıklama koruması");
-  assert.ok(studioSrc.includes("stopBatch()") && studioSrc.includes("_batchStopFlag = true"), "Durdur");
   assert.ok(studioSrc.includes("ta_studio_batch_v1"), "batch durumu kalıcı (yenileme)");
   for (const w of ["queued", "processing", "completed", "failed", "refunded", "cancelled"]) {
     assert.ok(studioSrc.includes(w), "durum eksik: " + w);
   }
-  assert.ok(studioSrc.includes("tamamlandı") && studioSrc.includes("üretiliyor") && studioSrc.includes("sırada"), "sayaç etiketleri");
   assert.ok(studioSrc.includes("action: 'estimate'"), "toplam tahmin sunucudan alınır");
+});
+test("Studio.dc.html: DURAKLAT / DEVAM / İPTAL ayrımı ('pause' korur, 'cancel' iptal eder)", () => {
+  assert.ok(studioSrc.includes("pauseBatch()") && studioSrc.includes("_batchStopMode = 'pause'"), "Duraklat");
+  assert.ok(studioSrc.includes("cancelBatch()") && studioSrc.includes("_batchStopMode = 'cancel'"), "İptal");
+  assert.ok(studioSrc.includes("async resumeBatch()"), "Devam Et");
+  assert.ok(studioSrc.includes("isStopped() !== 'pause'"), "duraklatta kalan 'queued' KORUNUR");
+  assert.ok(studioSrc.includes("⏸ DURAKLAT") && studioSrc.includes("▶ DEVAM ET") && studioSrc.includes("✖ İPTAL ET"), "üç kontrol butonu");
+});
+test("Studio.dc.html: queue özeti + progress bar + aktif sahne + tahmini kalan süre", () => {
+  assert.ok(studioSrc.includes("Toplam Sahne: ") && studioSrc.includes("Tamamlanan: ") && studioSrc.includes("Sırada: ") && studioSrc.includes("Bekleyen: "), "queue özeti 4 sayaç");
+  assert.ok(studioSrc.includes("batchProgStyle") && studioSrc.includes("batchPctText"), "gerçek zamanlı progress bar");
+  assert.ok(studioSrc.includes("🟡 Şu anda üretiliyor:") && studioSrc.includes("Tahmini kalan süre:"), "aktif sahne paneli");
+  assert.ok(studioSrc.includes("batchTick") && studioSrc.includes("_startBatchTicker"), "canlı kalan süre için 1sn re-render");
+});
+test("Studio.dc.html: emoji durum rozetleri + sahne-bazlı Tekrar Dene", () => {
+  assert.ok(studioSrc.includes("⚪ BEKLİYOR") && studioSrc.includes("🟡 ÜRETİLİYOR") && studioSrc.includes("🟢 TAMAMLANDI") && studioSrc.includes("🔴 HATA"), "emoji rozetler");
+  assert.ok(studioSrc.includes("retryScene(") && studioSrc.includes("TEKRAR DENE") && studioSrc.includes("batchCanRetry"), "başarısız sahnede Tekrar Dene");
+});
+test("Studio.dc.html: üretim sonu özeti + kurtarma bildirimi", () => {
+  assert.ok(studioSrc.includes("✅ Üretim Tamamlandı"), "tamamlanma başlığı");
+  assert.ok(studioSrc.includes("Toplam Süre:") && studioSrc.includes("Harcanan Kredi:") && studioSrc.includes("Başarılı:") && studioSrc.includes("Başarısız:"), "özet alanları");
+  assert.ok(studioSrc.includes("Devam eden üretiminiz bulundu"), "yenileme kurtarma bildirimi");
 });
