@@ -2773,6 +2773,7 @@ class Component extends DCLogic {
   _modelLabel(id) {
     const key = String(id || '').trim().toLowerCase();
     return ({
+      'gpt-image-2': 'GPT Image 2',
       'gpt-image-1': 'GPT Image 1',
       'gpt-image-1.5': 'GPT Image 1.5',
       'gemini-2.5-flash-image': 'Gemini 2.5 Flash Image',
@@ -4928,7 +4929,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const failedN = sc.filter(x => x.status === 'failed' || x.status === 'refunded').length;
         const pending = sc.some(x => x.status === 'queued' || x.status === 'processing' || x.status === 'cancelled');
         const pct = total ? Math.round(completed / total * 100) : 0;
-        const modelNm = b.provider === 'gemini' ? 'Gemini 2.5 Flash Image' : 'GPT Image 1';
+        const modelNm = b.provider === 'gemini' ? 'Gemini 2.5 Flash Image' : 'GPT Image 2';   // birincil OpenAI modeli
         const dur = this._batchDur || [];
         const avgMs = dur.length ? Math.round(dur.reduce((a, c) => a + c, 0) / dur.length) : 12000;
         const now = Date.now();
