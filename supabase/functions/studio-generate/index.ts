@@ -1467,6 +1467,26 @@ Deno.serve(async (req) => {
       };
       // KURTARMA: sonucu opId ile job-cache'e yaz → yenileme/tekrar aynı sonucu kredisiz getirir.
       if (b.opId && admin && userId) { try { await saveJobResult(admin, userId, opId, { url, meta }); } catch (_e) { /* kurtarma opsiyonel */ } }
+      // KALICI ARŞİV: görseli HESABA bağla (metadata + Storage URL; binary DB'de değil).
+      // Idempotent (user_id, op_id) → kurtarma/tekrar iki satır açmaz. İstemci her cihazda
+      // bu tablodan (RLS ile kendi satırları) listeler. Persistans hatası ÜRETİMİ BOZMAZ.
+      if (admin && userId && url && url.indexOf("data:") !== 0) {
+        try {
+          const skRaw = String(b.sceneKey || "").slice(0, 40);
+          const kind = (b.kind === "scene" || b.kind === "cover" || b.kind === "standalone")
+            ? b.kind : (skRaw === "cover" ? "cover" : (skRaw ? "scene" : "standalone"));
+          await admin.from("studio_images").upsert({
+            user_id: userId, op_id: opId,
+            file_id: b.fileId ? String(b.fileId).slice(0, 80) : null,
+            scene_key: skRaw || null, kind,
+            provider: meta.provider, model: meta.model, style: meta.style,
+            aspect: meta.aspect, resolution: meta.resolution,
+            storage_url: url, bytes: meta.bytes, spent_credits: cost,
+            prompt: String(b.prompt || "").slice(0, 2000),
+            story_title: b.storyTitle ? String(b.storyTitle).slice(0, 200) : null,
+          }, { onConflict: "user_id,op_id" });
+        } catch (_e) { /* arşiv best-effort — üretimi bozma */ }
+      }
       if (cost > 0 && admin && userId) {
         // Buraya geldiysek res.reserved KESİN true (aksi halde yukarıda 503 döndük) →
         // rezervasyonu finalize et; eski spendSafe'e sessiz düşüş YOK.
