@@ -124,13 +124,21 @@ test("Studio.dc.html: stil ANAHTARI sunucuya gider; istemci prompt'a stil BAKMAZ
   assert.ok(!studioSrc.includes("imgStylePhrase(id)"), "istemci stil şablonu tanımı kaldırılmalı");
   assert.ok(studioSrc.includes("withAspect(p, arKey) {"), "withAspect artık styleKey almamalı");
 });
-test("Studio.dc.html: imageServer meta döner; kart meta satırları gösterir", () => {
+test("Studio.dc.html: imageServer meta döner; 'Üretim Bilgisi' kartı rozet + satır gösterir", () => {
   assert.ok(studioSrc.includes("return { url: data.url, meta: data.meta || null };"), "imageServer {url, meta} dönmeli");
-  assert.ok(studioSrc.includes("_imgMetaRows(m)"), "meta satır formatlayıcı olmalı");
-  assert.ok(studioSrc.includes("hasMeta: metaRows.length > 0"), "kart VM meta bayrağı");
+  assert.ok(studioSrc.includes("_imgMetaCard(m)"), "meta kart formatlayıcı olmalı");
+  assert.ok(studioSrc.includes("hasMeta: mc.has"), "kart VM meta bayrağı");
+  // Başlık + rozetler (Sağlayıcı + Stil) premium sunum
+  assert.ok(studioSrc.includes("ÜRETİM BİLGİSİ"), "kart başlığı");
+  assert.ok(studioSrc.includes("{{ iq.metaProv }}") && studioSrc.includes("{{ iq.hasMetaProv }}"), "sağlayıcı rozeti");
+  assert.ok(studioSrc.includes("{{ iq.metaStyle }}") && studioSrc.includes("{{ iq.hasMetaStyle }}"), "stil rozeti");
   assert.ok(studioSrc.includes("{{ iq.hasMeta }}") && studioSrc.includes("{{ mr.k }}") && studioSrc.includes("{{ mr.v }}"), "kart şablonu meta bloğu");
-  // 9 alan etiketleri formatlayıcıda
-  for (const lbl of ["Sağlayıcı", "Model", "Stil", "Biçim", "Kadraj", "Çözünürlük", "Boyut", "Süre", "Kredi"]) {
+  // Kadraj (seçilen oran) ile Çözünürlük (gerçek dosya) AYRI iki alan
+  assert.ok(studioSrc.includes("'Kadraj', m.aspect") && studioSrc.includes("'Çözünürlük', m.resolution"), "Kadraj≠Çözünürlük ayrı alanlar");
+  // Kalan satır etiketleri (rozetler hariç), kullanıcının istediği sırada
+  for (const lbl of ["Model", "Kadraj", "Çözünürlük", "Format", "Dosya Boyutu", "Üretim Süresi", "Harcanan Kredi"]) {
     assert.ok(studioSrc.includes("'" + lbl + "'"), "meta etiketi eksik: " + lbl);
   }
+  // Kullanıcı-dostu MODEL etiketi (teknik id gösterme)
+  assert.ok(studioSrc.includes("_modelLabel(") && studioSrc.includes("'GPT Image 1'") && studioSrc.includes("'Gemini 2.5 Flash Image'"), "kullanıcı-dostu model adı");
 });
