@@ -1192,8 +1192,19 @@ Deno.serve(async (req) => {
     // action + prompt eskiden ücretsiz metin üretimine (gen) düşüp endpoint'i genel
     // amaçlı AI servisi gibi kullandırabiliyordu. "" = uygulama içi ücretsiz metin
     // yardımcıları (sohbet, konu önerisi, Shorts, bölüm metni) — izinli kalır.
-    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result"]);
+    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate"]);
     if (!ALLOWED_ACTIONS.has(act)) return json({ ok: false, error: "Geçersiz işlem." }, 400);
+    // TOPLU MALİYET TAHMİNİ — SUNUCU-TARAFLI (istemci fiyatına güvenilmez). Kredi düşmez,
+    // rezervasyon yok. scenes: 0-tabanlı imgIndex dizisi VEYA count. "Tüm sahneleri üret"
+    // öncesi toplam tahmini kredi bu uçtan alınır.
+    if (act === "estimate") {
+      const idxs: number[] = Array.isArray(b.scenes)
+        ? b.scenes.slice(0, 200).map((n: any) => Math.max(0, Number(n) || 0))
+        : Array.from({ length: Math.max(0, Math.min(200, Number(b.count) || 0)) }, (_v, i) => i);
+      const per = idxs.map((i) => costFor("image", "", i));
+      const total = per.reduce((a, c) => a + c, 0);
+      return json({ ok: true, total, count: idxs.length, per });
+    }
     // Hız limiti: kimliksiz/ücretsiz istekler dakikada 30, tümü 90 (IP başına)
     const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
     if (rateLimited("all:" + ip, 90)) return json({ ok: false, error: "Çok fazla istek — bir dakika sonra tekrar dene." }, 429);
@@ -1401,6 +1412,15 @@ Deno.serve(async (req) => {
         return json({ ok: false, error: "Geçersiz görsel sağlayıcısı. Kredi düşülmedi. GPT veya Gemini seç.", errClass: "INVALID_IMAGE_PROVIDER" }, 400);
       }
       const opId = cleanJob(b.opId) || crypto.randomUUID();
+      // KURTARMA (sayfa yenileme / toplu üretim tekrarı): aynı opId için önceki sonuç
+      // Storage job-cache'inde varsa YENİDEN ÜRETME/ÜCRETLENDİRME yok → aynı sahne iki
+      // kez üretilmez, çift kredi harcanmaz (idempotent). Mevcut job sistemi üzerinden.
+      if (b.opId && admin && userId) {
+        const prev = await loadJobResult(admin, userId, opId);
+        if (prev && prev.url) {
+          return json({ ok: true, url: prev.url, charged: false, recovered: true, meta: prev.meta || undefined });
+        }
+      }
       const res = await reserveOp(admin, userId, cost, "gorsel", opId);
       if (!res.ok) return json({ ok: false, error: "Yetersiz kredi", credits: res.credits }, 402);
       // STABİLİZASYON Faz 3: ücretli görselde rezervasyon altyapısı YOKSA (RPC eksik)
@@ -1439,6 +1459,8 @@ Deno.serve(async (req) => {
         ms: genMs,
         cost,
       };
+      // KURTARMA: sonucu opId ile job-cache'e yaz → yenileme/tekrar aynı sonucu kredisiz getirir.
+      if (b.opId && admin && userId) { try { await saveJobResult(admin, userId, opId, { url, meta }); } catch (_e) { /* kurtarma opsiyonel */ } }
       if (cost > 0 && admin && userId) {
         // Buraya geldiysek res.reserved KESİN true (aksi halde yukarıda 503 döndük) →
         // rezervasyonu finalize et; eski spendSafe'e sessiz düşüş YOK.

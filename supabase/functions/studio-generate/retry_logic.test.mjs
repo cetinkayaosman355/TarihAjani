@@ -237,9 +237,12 @@ test("index.ts: ortak orchestrator + Faz 3 değişmezleri korunur", () => {
   assert.ok(indexSrc.includes('runImageChain(chain, "openai"'), "OpenAI yolu da ortak orchestrator'ı kullanmalı");
 });
 
-test("Studio.dc.html: toplu sahne üretimi concurrency=1", () => {
-  assert.ok(studioSrc.includes("}, 1, (fin) => this.setState({ batchDone: fin }));"),
-    "genAllScenes runPool concurrency 1 olmalı");
+test("Studio.dc.html: toplu sahne üretimi KONTROLLÜ KUYRUK (concurrency 2)", () => {
+  // Faz 3'teki concurrency=1 runPool, kontrollü kuyruğa (aynı anda en fazla 2) yükseltildi.
+  // Retry fırtınası artık SUNUCUDA sınırlı (tek istek, mutlak 3 çağrı) → istemci 2 şerit güvenli.
+  assert.ok(studioSrc.includes("async _batchRun(") && studioSrc.includes("concurrency: 2"),
+    "genAllScenes kontrollü kuyruk (concurrency 2) kullanmalı");
+  assert.ok(studioSrc.includes("Math.min(CONC, items.length)"), "aktif iş concurrency ile sınırlı olmalı");
 });
 
 test("Studio.dc.html: imageServer istemci-tarafı retry döngüsü KALDIRILDI", () => {
