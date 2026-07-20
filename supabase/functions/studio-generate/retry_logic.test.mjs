@@ -47,7 +47,6 @@ function runChain(chain, script) {
   let calls = 0;
   const doCall = () => script[calls - 1] || { status: 500, body: "script-exhausted" };
   for (let mi = 0; mi < chain.length; mi++) {
-    const isPrimary = mi === 0;
     let transientTries = 0;
     while (calls < MAX_CALLS) {
       calls++;
@@ -55,7 +54,7 @@ function runChain(chain, script) {
       if (res.url) return { url: res.url, calls };
       const ci = classifyImgErr(res.status || 0, !!res.timeout, res.body || "");
       if (ci.transient && transientTries < 1 && calls < MAX_CALLS) { transientTries++; continue; }
-      const goFallback = isPrimary && (mi + 1 < chain.length) && (ci.modelMissing || ci.transient);
+      const goFallback = (mi + 1 < chain.length) && (ci.modelMissing || ci.transient);   // kademeden kademeye
       if (goFallback) break;
       return { url: "", calls };
     }
@@ -64,7 +63,7 @@ function runChain(chain, script) {
   return { url: "", calls };
 }
 
-const CHAIN = ["gpt-image-1.5", "gpt-image-1"];   // [birincil, yedek]
+const CHAIN = ["gpt-image-2", "gpt-image-1.5", "gpt-image-1"];   // [birincil, yedek, son yedek]
 
 test("Kalıcı 400 (geçersiz istek) → toplam 1 çağrı, üretim yok, yedeğe geçilmez", () => {
   const r = runChain(CHAIN, [{ status: 400, body: "invalid size param" }]);
@@ -85,9 +84,31 @@ test("429 ardından başarı → 2 çağrı (aynı model bir kez daha)", () => {
 });
 
 test("Birincil model YOK + yedek başarı → 2 çağrı", () => {
-  const r = runChain(CHAIN, [{ status: 404, body: "the model gpt-image-1.5 does not exist" }, { url: "data:image/jpeg;base64,BBBB" }]);
+  const r = runChain(CHAIN, [{ status: 404, body: "the model gpt-image-2 does not exist" }, { url: "data:image/jpeg;base64,BBBB" }]);
   assert.equal(r.calls, 2);
   assert.ok(r.url);
+});
+
+test("3 KADEME: birincil YOK → yedek YOK → son yedek başarı → 3 çağrı", () => {
+  const r = runChain(CHAIN, [
+    { status: 404, body: "the model gpt-image-2 does not exist" },
+    { status: 404, body: "the model gpt-image-1.5 does not exist" },
+    { url: "data:image/png;base64,EEEE" },
+  ]);
+  assert.equal(r.calls, 3);
+  assert.ok(r.url, "son yedek gpt-image-1 devreye girer");
+});
+
+test("SESSİZ FALLBACK YOK: birincil 401 (yetki) → yedeğe GEÇMEZ, 1 çağrı", () => {
+  const r = runChain(CHAIN, [{ status: 401, body: "invalid api key" }, { url: "data:image/png;base64,XXXX" }]);
+  assert.equal(r.calls, 1, "auth hatasında modele sessizce geçilmez");
+  assert.equal(r.url, "");
+});
+
+test("SESSİZ FALLBACK YOK: birincil moderasyon (400) → yedeğe GEÇMEZ, 1 çağrı", () => {
+  const r = runChain(CHAIN, [{ status: 400, body: "blocked by content_policy" }, { url: "data:image/png;base64,YYYY" }]);
+  assert.equal(r.calls, 1, "moderasyonda modele sessizce geçilmez");
+  assert.equal(r.url, "");
 });
 
 test("Birincil geçici İKİ deneme + yedek başarı → 3 çağrı", () => {
@@ -180,14 +201,17 @@ test("Başarısızlıkta iade korunur (reserved=true & url yok → refund)", () 
 const indexSrc = readFileSync(join(HERE, "index.ts"), "utf8");
 const studioSrc = readFileSync(join(REPO, "Studio.dc.html"), "utf8");
 
-test("index.ts: birincil model varsayılanı gpt-image-1.5, yedek gpt-image-1", () => {
-  assert.ok(indexSrc.includes('Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-1.5"'));
-  assert.ok(indexSrc.includes('Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1"'));
+test("index.ts: 3 kademeli varsayılan zincir gpt-image-2 → gpt-image-1.5 → gpt-image-1", () => {
+  assert.ok(indexSrc.includes('Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-2"'), "birincil gpt-image-2");
+  assert.ok(indexSrc.includes('Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1.5"'), "yedek gpt-image-1.5");
+  assert.ok(indexSrc.includes('Deno.env.get("TA_IMAGE_LAST_MODEL") || "gpt-image-1"'), "son yedek gpt-image-1");
+  assert.ok(indexSrc.includes("[primary, fallback, last].filter"), "zincir sırayla + boş/tekrar elenmiş");
 });
 
-test("index.ts: gpt-image-2 varsayılan zincirden ÇIKARILDI, dall-e-3 KALDIRILDI", () => {
-  assert.ok(!indexSrc.includes('"gpt-image-2,gpt-image-1.5,gpt-image-1"'), "eski TA_IMAGE_MODELS zinciri kalmamalı");
-  assert.ok(!indexSrc.includes('model: "dall-e-3"') && !indexSrc.includes('"dall-e-3"'), "dall-e-3 API yedeği kaldırılmalı");
+test("index.ts: fallback YALNIZ model-yok/geçici; sessiz geçiş yok; dall-e-3 yok", () => {
+  assert.ok(indexSrc.includes("(mi + 1 < chain.length) && (ci.modelMissing || ci.transient)"), "fallback koşulu model-yok/geçici");
+  assert.ok(!indexSrc.includes('"gpt-image-2,gpt-image-1.5,gpt-image-1"'), "eski virgüllü TA_IMAGE_MODELS zinciri kullanılmamalı");
+  assert.ok(!indexSrc.includes('model: "dall-e-3"') && !indexSrc.includes('"dall-e-3"'), "dall-e-3 API yedeği kaldırılmış kalmalı");
 });
 
 test("index.ts: MUTLAK çağrı tavanı 3 + CREDIT_SYSTEM_UNAVAILABLE 503 + hata sınıfları", () => {

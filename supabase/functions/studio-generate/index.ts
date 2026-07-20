@@ -372,10 +372,12 @@ async function runImageChain(
         await new Promise((r) => setTimeout(r, 1200 + Math.floor(Math.random() * 800)));
         continue;
       }
-      // Kalıcı VEYA geçici tavan. Yedek modele YALNIZ model düzeyi sorunda (model yok)
-      // ya da geçici tükendiğinde geç. Moderasyon/geçersiz istek/yetki hatasında GEÇME.
-      const goFallback = isPrimary && (mi + 1 < chain.length) && (ci.modelMissing || ci.transient);
-      if (goFallback) break;    // dıştaki for → yedek model
+      // Kalıcı VEYA geçici tavan. Sıradaki kademeye YALNIZ model düzeyi sorunda (model yok)
+      // ya da geçici tükendiğinde geç (3 kademeli zincir: birincilden de, yedekten de).
+      // Moderasyon/geçersiz istek/yetki/rate-limit tavanında GEÇME → gerçek hata + iade.
+      // Toplam çağrı yine MAX_CALLS(3) ile mutlak sınırlı.
+      const goFallback = (mi + 1 < chain.length) && (ci.modelMissing || ci.transient);
+      if (goFallback) break;    // dıştaki for → sıradaki model
       return "";                // yedek yok / uygun değil → başarısız
     }
     if (totalCalls >= MAX_CALLS) break;
@@ -468,9 +470,13 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   // 1024x1024 (kare). Desteklenmeyen ~4K/2K HD varsayımları KALDIRILDI → API 400 vermez.
   // Çözünürlük yerine quality=high korunur (aşağıda).
   const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
-  const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-1.5").trim();
-  const fallback = (Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1").trim();
-  const chain = (fallback && fallback !== primary) ? [primary, fallback] : [primary];
+  // 3 KADEMELİ ZİNCİR: birincil gpt-image-2 → yedek gpt-image-1.5 → son yedek gpt-image-1.
+  // Yedeğe YALNIZ model-yok / geçici sağlayıcı hatasında geçilir (runImageChain).
+  // rate-limit(429 tavan)/auth/moderation/geçersiz istekte SESSİZ geçiş YOK → gerçek hata + iade.
+  const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-2").trim();
+  const fallback = (Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1.5").trim();
+  const last = (Deno.env.get("TA_IMAGE_LAST_MODEL") || "gpt-image-1").trim();
+  const chain = [primary, fallback, last].filter((m, i, a) => m && a.indexOf(m) === i);   // sırayı koru, boş/tekrarı at
 
   // ChatGPT KALİTE PARİTESİ: gpt-image çıktısı VARSAYILAN PNG (KAYIPSIZ) — ChatGPT'nin
   // döndürdüğü kalitenin aynısı. Eski JPEG (kayıplı, chroma subsampling) netliği düşürüyordu.

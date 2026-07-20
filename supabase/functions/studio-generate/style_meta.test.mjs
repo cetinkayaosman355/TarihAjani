@@ -140,5 +140,5 @@ test("Studio.dc.html: imageServer meta döner; 'Üretim Bilgisi' kartı rozet + 
     assert.ok(studioSrc.includes("'" + lbl + "'"), "meta etiketi eksik: " + lbl);
   }
   // Kullanıcı-dostu MODEL etiketi (teknik id gösterme)
-  assert.ok(studioSrc.includes("_modelLabel(") && studioSrc.includes("'GPT Image 1'") && studioSrc.includes("'Gemini 2.5 Flash Image'"), "kullanıcı-dostu model adı");
+  assert.ok(studioSrc.includes("_modelLabel(") && studioSrc.includes("'GPT Image 2'") && studioSrc.includes("'GPT Image 1'") && studioSrc.includes("'Gemini 2.5 Flash Image'"), "kullanıcı-dostu model adı (GPT Image 2 dahil)");
 });
