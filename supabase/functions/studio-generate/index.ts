@@ -340,7 +340,15 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   const VERTICAL_SAFE = size === "9:16"
     ? "\n\nVERTICAL 9:16 COMPOSITION: main subject inside central safe area, no critical subjects near top/bottom crop zones."
     : "";
-  const p = prompt.trim().slice(0, 29000) + NO_SPLIT + VERTICAL_SAFE;   // anti-split + (dikeyde) güvenli kadraj
+  // KOMPOZİSYON PARİTESİ (sağlayıcıya göre): Gemini varsayılanda FAZLA "zoom-out"
+  // üretiyordu → GPT ile AYNI ölçek/kadraj hissi için ana özneleri kadraja oturtan yönerge.
+  // Her iki sağlayıcıya da uygulanır (ölçek eşitlensin). YALNIZ kompozisyonu etkiler;
+  // çözünürlük/kalite/format/boyut parametrelerine DOKUNMAZ.
+  // Aynı yönerge HER İKİ sağlayıcıya (GPT + Gemini) uygulanır → ölçek/kadraj eşitlenir.
+  const COMPOSITION = "\n\nCOMPOSITION: primary subjects occupy approximately 60-75% of the frame; " +
+    "medium shot by default; avoid excessive headroom; avoid large empty space above the subjects; " +
+    "cinematic close-medium framing unless the prompt explicitly requests a wide establishing shot.";
+  const p = prompt.trim().slice(0, 29000) + NO_SPLIT + VERTICAL_SAFE + COMPOSITION;   // anti-split + (dikeyde) güvenli kadraj + kompozisyon paritesi
 
   // ── GEMINI YOLU ── (yalnız TA_IMAGE_PROVIDER=gemini). OpenAI'ye düşülmez.
   if (provider === "gemini") {
