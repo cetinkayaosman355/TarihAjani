@@ -301,13 +301,23 @@ function imageInfo(dataUri: string): { w: number; h: number; bytes: number; fmt:
 type ImgErrClass = "RATE_LIMIT" | "AUTH_ERROR" | "INVALID_REQUEST" | "MODERATION" | "PROVIDER_ERROR" | "TIMEOUT";
 function classifyImgErr(status: number, timeout: boolean, body: string): { cls: ImgErrClass; transient: boolean; modelMissing: boolean } {
   const b = (body || "").toLowerCase();
-  const modelMissing = status === 404 || b.includes("model_not_found") || b.includes("does not exist")
-    || b.includes("no such model") || b.includes("unknown model") || b.includes("invalid model");
+  // "MODEL bu hesap için yok / erişilemez" → YEDEĞE geçilebilir (modelMissing). gpt-image-2 gibi
+  // yeni modeller bazı hesaplarda 404 yerine 403/400 + "does not have access / must be verified /
+  // model_not_found" döndürebilir; bu, GERÇEK anahtar hatası DEĞİL, o modelin o hesapta olmamasıdır.
+  const modelMissing = status === 404
+    || b.includes("model_not_found") || b.includes("model_not_available") || b.includes("does not exist")
+    || b.includes("no such model") || b.includes("unknown model") || b.includes("invalid model") || b.includes("unsupported_model")
+    || b.includes("does not have access") || b.includes("do not have access") || b.includes("not have access to")
+    || b.includes("must be verified") || b.includes("verify organization") || b.includes("verify your organization")
+    || b.includes("not available in your")
+    || (status === 403 && b.includes("model"));   // 403 gövdesi MODELDEN bahsediyorsa erişim reddi (saf anahtar hatası 'model' içermez)
   if (timeout) return { cls: "TIMEOUT", transient: true, modelMissing: false };
   if (status === 429) return { cls: "RATE_LIMIT", transient: true, modelMissing: false };
   if (status >= 500) return { cls: "PROVIDER_ERROR", transient: true, modelMissing: false };
-  if (status === 401 || status === 403) return { cls: "AUTH_ERROR", transient: false, modelMissing: false };
+  // ÖNCE model erişim/varlık sorununu ele al → 403 olsa BİLE yedeğe düş (o modelin bu hesapta
+  // olmaması). Aşağıdaki 401/403 yalnız GERÇEK yetki (anahtar/izin) hatasıdır; ona düşülmez.
   if (modelMissing) return { cls: "INVALID_REQUEST", transient: false, modelMissing: true };
+  if (status === 401 || status === 403) return { cls: "AUTH_ERROR", transient: false, modelMissing: false };
   if (status === 400) {
     if (b.includes("moderation") || b.includes("safety") || b.includes("content_policy")
         || b.includes("content policy") || b.includes("rejected") || b.includes("blocked")) {

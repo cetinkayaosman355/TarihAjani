@@ -160,9 +160,12 @@ test("Studio.dc.html: görsel sağlayıcı durumu + istemci imageProvider gönde
   assert.ok(studioSrc.includes("imgProviders:"), "görsel sağlayıcı seçici listesi olmalı");
   assert.ok(studioSrc.includes("['higgs', 'Higgs', true]"), "higgs pasif (Yakında) olmalı");
 });
-test("Studio.dc.html: görsel buton metni sağlayıcıya göre + maliyet", () => {
-  assert.ok(studioSrc.includes("{ gpt: 'GPT', gemini: 'Gemini' }[s.imgProvider || 'gpt']"), "buton metni sağlayıcıya göre");
-  assert.ok(studioSrc.includes("' ile Görsel Üret · 12 KR'"), "buton metni maliyet göstermeli");
+test("Studio.dc.html: görsel buton metni sağlayıcıya göre (vitrin model adı) + maliyet", () => {
+  // Dinamik: GPT → 'GPT Image 2', Gemini → 'Gemini Flash Image', Higgs → 'Higgs'
+  assert.ok(studioSrc.includes("_provModelLabel(s.imgProvider)"), "buton metni sağlayıcı vitrin modeline göre");
+  assert.ok(studioSrc.includes("gpt: 'GPT Image 2'"), "GPT → GPT Image 2");
+  assert.ok(studioSrc.includes("gemini: 'Gemini Flash Image'") && studioSrc.includes("higgs: 'Higgs'"), "Gemini/Higgs vitrin adları");
+  assert.ok(studioSrc.includes("' ile Üret · 12 KR'"), "buton metni maliyet göstermeli (fiyat DEĞİŞMEDİ)");
 });
 test("Studio.dc.html: video modalı (sağlayıcı+süre+maliyet), veo/higgs pasif", () => {
   assert.ok(studioSrc.includes("videoModalOpen"), "video modal bayrağı olmalı");
