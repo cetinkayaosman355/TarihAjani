@@ -635,6 +635,16 @@
                 </div>
               </sc-for>
             </div>
+            <sc-if value="{{ hasStandalone }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top: 28px; border-top: 1px solid rgba(129,135,151,.2); padding-top: 20px;">
+                <p style="margin: 0 0 12px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">BAĞIMSIZ GÖRSELLER <span style="color: #676d7c; letter-spacing: 0;">· hikâyeye bağlı olmayan tek üretimler</span></p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;">
+                  <sc-for list="{{ standaloneImages }}" as="si" hint-placeholder-count="4">
+                    <img src="{{ si.url }}" alt="{{ si.prompt }}" title="{{ si.prompt }}" data-zoomable onClick="{{ si.zoom }}" style="{{ si.thumbStyle }}">
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
           </div>
         </sc-if>
 
@@ -644,7 +654,7 @@
             <div>
               <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">DOĞRUDAN ÜRETİM</p>
               <h2 style="margin: 8px 0 6px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700;">Görsel Stüdyo</h2>
-              <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 60ch;">Hikâye yazmadan, doğrudan görsel üret. Prompt yaz, kadraj ve stili seç, üret. Ürettiklerin aşağıda birikir; hepsi <strong style="color:#e6c478;">Geçmiş</strong>'te bu cihazda kalıcı saklanır.</p>
+              <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 60ch;">Hikâye yazmadan, doğrudan görsel üret. Prompt yaz, kadraj ve stili seç, üret. Ürettiklerin aşağıda birikir; hepsi <strong style="color:#e6c478;">Geçmiş</strong>'te hesabınıza kalıcı bağlı (cihazlar arası).</p>
             </div>
             <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
@@ -736,7 +746,7 @@
               </div>
             </sc-if>
             <div style="border-top: 1px solid rgba(193,154,82,.18); padding-top: 16px; display: grid; gap: 12px; margin-top: 4px;">
-              <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">GEÇMİŞ GÖRSELLER · {{ savedImgCount }} <span style="color: #676d7c; letter-spacing: 0; font-size: 11px;">(bu cihazda kalıcı saklanır)</span></p>
+              <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">GEÇMİŞ GÖRSELLER · {{ savedImgCount }} <span style="color: #676d7c; letter-spacing: 0; font-size: 11px;">(hesabınıza kalıcı bağlı · cihazlar arası)</span></p>
               <sc-if value="{{ hasSavedImgs }}" hint-placeholder-val="{{ true }}">
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
                   <sc-for list="{{ savedImgList }}" as="sv" hint-placeholder-count="6">
@@ -1393,7 +1403,7 @@
             <!-- GÖRSEL STÜDYO -->
             <sc-if value="{{ tabImgStudio }}" hint-placeholder-val="{{ false }}">
               <div style="display: grid; gap: 16px; max-width: 760px;">
-                <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 56ch;">Prompt yaz ya da kapak promptunu al; kadraj ve stili seç, görsel üret. Bu hikâyede ürettiklerin aşağıdaki rafta çıkar. Tüm eski üretimlerin <strong style="color:#e6c478;">Geçmiş Görseller</strong> sekmesinde bu cihazda kalıcı saklanır.</p>
+                <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 56ch;">Prompt yaz ya da kapak promptunu al; kadraj ve stili seç, görsel üret. Bu hikâyede ürettiklerin aşağıdaki rafta çıkar. Tüm eski üretimlerin <strong style="color:#e6c478;">Geçmiş Görseller</strong> sekmesinde hesabınıza kalıcı bağlı (cihazlar arası).</p>
                 <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                   <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">KADRAJ</span>
@@ -1501,7 +1511,7 @@
                       </div>
                     </sc-for>
                   </div>
-                  <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Görseller OpenAI ile gerçek olarak üretilir; her görsel kredi düşer. Eski üretimlerin tümü <strong style="color: #e6c478;">Geçmiş Görseller</strong> sekmesinde bu cihazda kalıcı saklanır.</p>
+                  <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Görseller OpenAI ile gerçek olarak üretilir; her görsel kredi düşer. Eski üretimlerin tümü <strong style="color: #e6c478;">Geçmiş Görseller</strong> sekmesinde hesabınıza kalıcı bağlı (cihazlar arası).</p>
                 </sc-if>
               </div>
             </sc-if>
@@ -1510,7 +1520,7 @@
             <sc-if value="{{ tabGecmis }}" hint-placeholder-val="{{ false }}">
               <div style="display: grid; gap: 14px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-                  <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">GEÇMİŞ GÖRSELLER · {{ savedImgCount }} <span style="color: #676d7c; letter-spacing: 0; font-size: 11px;">(bu cihazda kalıcı saklanır)</span></p>
+                  <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .16em;">GEÇMİŞ GÖRSELLER · {{ savedImgCount }} <span style="color: #676d7c; letter-spacing: 0; font-size: 11px;">(hesabınıza kalıcı bağlı · cihazlar arası)</span></p>
                   <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                     <sc-if value="{{ vidImportMsg }}" hint-placeholder-val="{{ false }}"><span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .06em;">{{ vidImportMsg }}</span></sc-if>
                     <button onClick="{{ importVideos }}" disabled="{{ vidImportBusy }}" title="Sunucudaki tamamlanmış videolarını getirip galeriye ekler" style="border: 1px solid rgba(146,87,238,.5); background: rgba(146,87,238,.12); color: #d9c8ff; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; padding: 8px 13px; cursor: pointer;" style-hover="background: rgba(146,87,238,.24);">{{ vidImportLabel }}</button>
@@ -1789,7 +1799,7 @@ class Component extends DCLogic {
       editTarget: null, editLabel: '',
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
-      imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, imgStyle: null, savedImgs: [], imgSel: {},
+      imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, imgStyle: null, savedImgs: [], srvImages: [], imgSel: {},
       imgAspect: null, imgZoom: '',
       imgProvider: saved.imgProvider || 'gpt',   // görsel sağlayıcısı: gpt (vars.) | gemini | higgs(pasif)
       videoModal: null,                          // video sağlayıcı/süre/maliyet modalı
@@ -1892,6 +1902,7 @@ class Component extends DCLogic {
       this.setState({ screen: 'studio', agentName: name, regEmail: u.email || this.state.regEmail }, () => this.persist());
       this.loadBalance();
       this._loadHistoryFromServer();   // cihazlar arası: mobil+web geçmişini birleştir
+      this.loadServerImages();         // cihazlar arası: hesaba bağlı görsel arşivi (studio_images)
     } else {
       // Gerçek oturum yok → eski localStorage kimliğiyle girilmiş olabilir, giriş kapısına düş
       this.setState({ screen: 'login' });
@@ -2671,7 +2682,7 @@ class Component extends DCLogic {
   // Kademeli fiyat: ilk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR
   // (uzun videoda çok görsel üretimini ucuzlatır). idx = sahne sırası (0 tabanlı).
   IMG_COST(idx) { return (typeof idx === 'number' && idx >= 20) ? 8 : 12; }
-  async imageServer(prompt, arKey, idx, onAttempt, opId, style, provider) {
+  async imageServer(prompt, arKey, idx, onAttempt, opId, style, provider, sceneKey, kind) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect] || '16:9';
@@ -2686,7 +2697,10 @@ class Component extends DCLogic {
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: provider || this.state.imgProvider || 'gpt', style: style || (this.state.imgStyle || this.state.style) || undefined })
+      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: provider || this.state.imgProvider || 'gpt', style: style || (this.state.imgStyle || this.state.style) || undefined,
+        // KALICI ARŞİV bağları: görseli hikâye/sahneye ve hesaba bağlar (sunucu studio_images'e yazar)
+        fileId: (kind && kind !== 'standalone') ? (this.state.fileNo || undefined) : undefined, sceneKey: sceneKey || undefined, kind: kind || undefined,
+        storyTitle: (kind && kind !== 'standalone') ? (((this.state.result || {}).baslik) || undefined) : undefined })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
@@ -2869,6 +2883,8 @@ class Component extends DCLogic {
     const prov = providerOverride || this.state.imgProvider || 'gpt';   // batch'te sabit sağlayıcı
     const sendPrompt = this.withAspect(prompt, ar);         // kadraj prompta yerleşir; STİL sunucuya anahtar olarak gider
     const id = opIdOverride || ('img' + Date.now() + Math.floor(Math.random() * 1000));
+    // ARŞİV TÜRÜ: kapak → cover, sahne (gp3 gibi) → scene, serbest görsel → standalone (Bağımsız)
+    const kind = sceneKey === 'kapak' ? 'cover' : (/^[a-z]+\d+$/.test(sceneKey || '') ? 'scene' : 'standalone');
     // SAHNE ETİKETİ: rafta hangi kartın hangi sahne olduğu yazsın (karışmasın)
     let label = '';
     if (sceneKey === 'kapak') label = '🏷 KAPAK';
@@ -2884,12 +2900,14 @@ class Component extends DCLogic {
     // Aynı opId ile tekrar (kurtarma) rafta kart ÇOĞALTMAZ (id'ye göre filtrele).
     this.setState(st => ({ imgJobs: (st.imgJobs || 0) + 1, imgQueue: [{ id, prompt, ar, label, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue.filter(x => x.id !== id)].slice(0, 40) }));
     const done = () => this.setState(st => ({ imgJobs: Math.max(0, (st.imgJobs || 0) - 1) }));
-    return this.imageServer(sendPrompt, ar, idx, null, id, sty, prov).then(res => {
+    return this.imageServer(sendPrompt, ar, idx, null, id, sty, prov, sceneKey, kind).then(res => {
       done();
       const url = res.url, meta = res.meta || null;   // meta: sağlayıcı/model/stil/biçim/kadraj/çözünürlük/boyut/süre/kredi
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url, meta } : x) }));
       if (sceneKey) this.setSceneImg(sceneKey, { url, meta });   // satır içi önizleme + meta
-      this.saveImg({ id, prompt, ar, url, meta, ts: Date.now() });   // kalıcı arşive (Önceki Üretimler) — meta dahil
+      // kalıcı arşiv: yerel (IndexedDB) + hesap bağları (fileId/kind/sceneKey) — sunucu studio_images'e de yazar
+      this.saveImg({ id, prompt, ar, url, meta, ts: Date.now(), fileId: (kind !== 'standalone' ? (this.state.fileNo || '') : ''), kind, sceneKey: sceneKey || '' });
+      this._scheduleSrvRefresh();   // sunucu arşivini (grup/geçmiş) kısa süre sonra tazele (batch'i spam'lemez)
       return { ok: true, meta };
     }).catch(e => {
       done();
@@ -3091,6 +3109,73 @@ class Component extends DCLogic {
       all.sort((a, b) => (b.ts || 0) - (a.ts || 0));
       this.setState({ savedImgs: all.slice(0, 120) });
     } catch (e) {}
+  }
+  // ── HESABA BAĞLI kalıcı arşiv (studio_images) — cihazlar arası ──
+  // Sunucudaki (RLS ile KENDİ) görselleri çeker; galeri/geçmiş bunlarla beslenir.
+  // Yerel IndexedDB hızlı önbellek olarak kalır; kaynak-doğru = sunucu.
+  async loadServerImages() {
+    try {
+      if (!this.sb || !this.hasSession()) return;
+      const uid = this._session.user.id;
+      const { data, error } = await this.sb.from('studio_images')
+        .select('op_id,file_id,scene_key,kind,provider,model,style,aspect,resolution,storage_url,bytes,spent_credits,prompt,story_title,created_at')
+        .eq('user_id', uid).order('created_at', { ascending: false }).limit(400);
+      if (error || !Array.isArray(data)) return;   // tablo yoksa/erişilemezse sessiz — ekran çökmez
+      const srv = data.map(r => this._srvRowToRec(r)).filter(Boolean);
+      this.setState({ srvImages: srv });
+    } catch (e) { /* sunucu arşivi opsiyonel — yerel galeri yine çalışır */ }
+  }
+  // Sunucu satırını galeri kaydına çevir. EKSİK metadata ekranı çökertmez (güvenli varsayılan).
+  _srvRowToRec(r) {
+    if (!r || !r.storage_url) return null;
+    const ar = r.aspect === '16:9' ? 'yatay' : r.aspect === '1:1' ? 'kare' : (r.aspect === '9:16' ? 'dikey' : (this.state.aspect || 'dikey'));
+    const meta = {
+      provider: r.provider || '', model: r.model || '', style: r.style || '',
+      aspect: r.aspect || '', resolution: r.resolution || '', bytes: (typeof r.bytes === 'number' ? r.bytes : 0),
+      cost: (typeof r.spent_credits === 'number' ? r.spent_credits : undefined)
+    };
+    return {
+      id: 'srv_' + (r.op_id || (String(r.created_at) + Math.random())),
+      url: r.storage_url, prompt: r.prompt || '', ar, meta,
+      ts: r.created_at ? Date.parse(r.created_at) : Date.now(),
+      fileId: r.file_id || '', kind: r.kind || 'standalone', sceneKey: r.scene_key || '', story: r.story_title || ''
+    };
+  }
+  // Hikâye açılışında sahne görsellerini SUNUCU arşivinden doldur (cihazlar arası):
+  // başka cihazda üretilmiş sahne/kapak görselleri de kartlarda görünsün. Var olan
+  // yerel URL'i EZMEZ. Eksik metadata güvenli (ekran çökmez).
+  _hydrateSceneImgs(fileNo, base) {
+    const out = Object.assign({}, base || {});
+    if (!fileNo) return out;
+    for (const rec of (this.state.srvImages || [])) {
+      if (rec && rec.fileId === fileNo && rec.sceneKey) {
+        const cur = out[rec.sceneKey] || {};
+        if (!cur.url) out[rec.sceneKey] = Object.assign({}, cur, { url: rec.url, meta: rec.meta || cur.meta, done: true });
+      }
+    }
+    return out;
+  }
+  _rehydrateCurrentStory() {
+    const fileNo = this.state.fileNo;
+    if (!fileNo) return;
+    this.setState(st => ({ sceneImgs: this._hydrateSceneImgs(fileNo, st.sceneImgs) }));
+  }
+  // Üretimden sonra sunucu arşivini tazele — batch'te çok çağrıyı TEK tazelemede topla.
+  _scheduleSrvRefresh() {
+    if (this._srvRefreshT) return;
+    this._srvRefreshT = setTimeout(() => { this._srvRefreshT = null; this.loadServerImages(); }, 1500);
+  }
+  // "Geçmiş Görseller" galerisi = yerel (IndexedDB) + sunucu (studio_images), URL'e göre TEKİL.
+  // Yerel kayıt önce gelir (vidUrl gibi ek alanları korumak için).
+  _galleryItems() {
+    const s = this.state;
+    const seen = new Set(); const out = [];
+    for (const rec of [...(s.savedImgs || []), ...(s.srvImages || [])]) {
+      if (!rec || !rec.url || seen.has(rec.url)) continue;
+      seen.add(rec.url); out.push(rec);
+    }
+    out.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    return out;
   }
   // VIDEO KURTARMA: sunucudaki tamamlanmış videoları (video_jobs) çekip kalıcı
   // "Geçmiş Görseller" galerisine ekler — yerelde iz kaybolduysa (cihaz/yenileme)
@@ -4435,28 +4520,37 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         no: a.no, era: a.era, teaser: a.teaser, title: this.dispTitle((a.result && a.result.baslik) || a.baslik || a.teaser),
         openFile: () => (a.bloklar || a.sayfalar) ? this.setState({ mode: 'arsiv', doc: a, docPage: 0 }) : this.setState({
           mode: 'wizard', step: 4, tab: 'senaryo',
-          result: a.result, fileNo: a.fileNo, idea: a.result.baslik, sceneImgs: a.sceneImgs || {},
+          result: a.result, fileNo: a.fileNo, idea: a.result.baslik, sceneImgs: this._hydrateSceneImgs(a.fileNo, a.sceneImgs || {}),
           audioUrl: '', ttsError: '', genError: '', sysAudioUrl: '', sysTtsError: ''
-        }, () => this.persist()),
+        }, () => { this.persist(); this.loadServerImages().then(() => this._rehydrateCurrentStory()); }),
         uret: () => this.uretFromArsiv(a)    // "Studio'da üret" — hazır dosyayı sonuçta aç
       })),
       historyEmpty: (s.history || []).length === 0,
-      savedList: (s.history || []).map((h, i) => ({
+      // Bağımsız (hikâyeye bağlı olmayan) görseller — Timur–Bayezid gibi tek-prompt üretimleri
+      hasStandalone: (s.srvImages || []).some(x => x && x.kind === 'standalone' && x.url),
+      standaloneImages: (s.srvImages || []).filter(x => x && x.kind === 'standalone' && x.url).slice(0, 60).map(x => ({
+        url: x.url, thumbStyle: this.thumbBox(x.ar), zoom: () => this.openZoom(x.url), prompt: (x.prompt || '').slice(0, 70)
+      })),
+      savedList: (s.history || []).map((h, i) => {
+        const imgs = (s.srvImages || []).filter(x => x && x.fileId === (h.fileNo || '__none__'));
+        const lastProv = imgs.length ? (imgs[0].meta && imgs[0].meta.provider) || '' : '';
+        return {
         title: h.title,
-        meta: (h.fileNo ? h.fileNo + ' · ' : '') + h.date,
+        meta: (h.fileNo ? h.fileNo + ' · ' : '') + h.date + (imgs.length ? ' · ' + imgs.length + ' görsel' : '') + (lastProv ? ' · ' + lastProv : ''),
         canOpen: !!h.result,
         openFile: () => this.setState({
           mode: 'wizard', step: 4, tab: 'senaryo',
           result: h.result, fileNo: h.fileNo || '', idea: h.idea || '',
-          // Bu dosyanın kayıtlı görselleri/videoları da geri gelsin (varsa)
-          sceneImgs: h.sceneImgs || {},
+          // Bu dosyanın kayıtlı görselleri/videoları da geri gelsin (yerel + SUNUCU arşivi → cihazlar arası)
+          sceneImgs: this._hydrateSceneImgs(h.fileNo || '', h.sceneImgs || {}),
           // K-04: eski dosyanın sesi/uyarısı yeni dosyaya taşınmaz; bu dosyanın kayıtlı sesi geri gelir
           sysAudioUrl: h.audioUrl || '', audioUrl: '', ttsError: '', sysTtsError: '', genWarn: '',
           ...(h.picks || {})
-        }, () => this.persist()),
+        }, () => { this.persist(); this.loadServerImages().then(() => this._rehydrateCurrentStory()); }),
         isPartial: !!h.partial,
         del: () => { if (window.confirm('Bu üretimi geçmişten silmek istediğine emin misin?')) this.deleteHistory(i); }
-      })),
+        };
+      }),
       toggleChat: () => this.setState(st => ({ chatOpen: !st.chatOpen })),
       chatPanelStyle: {
         position: 'fixed', zIndex: 56, top: 0, right: 0, bottom: 0,
@@ -4677,10 +4771,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       chatBusy: s.chatBusy,
       hasSavedImgs: (s.savedImgs || []).length > 0,
       noSavedImgs: (s.savedImgs || []).length === 0,
-      savedImgCount: (s.savedImgs || []).length,
-      hasAnyOutput: ((s.imgQueue || []).length > 0) || ((s.savedImgs || []).length > 0),
-      outputCount: Math.max((s.imgQueue || []).filter(x => x.url).length, (s.savedImgs || []).length),
-      savedImgList: (s.savedImgs || []).map(x => {
+      savedImgCount: this._galleryItems().length,
+      hasAnyOutput: ((s.imgQueue || []).length > 0) || (this._galleryItems().length > 0),
+      outputCount: Math.max((s.imgQueue || []).filter(x => x.url).length, this._galleryItems().length),
+      savedImgList: this._galleryItems().map(x => {
         const hasVid = !!x.vidUrl;
         const gv = (s.galVid || {})[x.id] || {};
         return {
