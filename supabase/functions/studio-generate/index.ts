@@ -403,25 +403,33 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   const fallback = (Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1").trim();
   const chain = (fallback && fallback !== primary) ? [primary, fallback] : [primary];
 
+  // ChatGPT KALİTE PARİTESİ: gpt-image çıktısı VARSAYILAN PNG (KAYIPSIZ) — ChatGPT'nin
+  // döndürdüğü kalitenin aynısı. Eski JPEG (kayıplı, chroma subsampling) netliği düşürüyordu.
+  // Yalnız secret TA_IMAGE_FORMAT=jpeg ile kayıplıya düşülür (o zaman compression 100).
+  // quality=high her hâlükârda korunur. Sonradan küçültme/yeniden-encode YOK: b64 aynen saklanır.
+  const fmt = ((Deno.env.get("TA_IMAGE_FORMAT") || "png").trim().toLowerCase() === "jpeg") ? "jpeg" : "png";
+  const fmtMime = fmt === "jpeg" ? "image/jpeg" : "image/png";
+
   const callOpenAI = async (model: string, isPrimary: boolean): Promise<ImgCall> => {
     void isPrimary;
     const gSize = gStd;   // yalnız OpenAI'nin desteklediği standart boyut (HD varsayımı yok)
     try {
+      const reqBody: Record<string, unknown> = {
+        model, prompt: p, n: 1, size: gSize,
+        quality: "high",              // ChatGPT ile aynı kalite kademesi
+        output_format: fmt,           // VARSAYILAN png (kayıpsız) — ChatGPT paritesi
+        moderation: "low",            // tarihî sahne (savaş/ölüm) yanlış engelini azalt
+      };
+      if (fmt === "jpeg") reqBody.output_compression = 100;   // yalnız jpeg override'ında anlamlı
       const r = await fetchT("https://api.openai.com/v1/images/generations", {
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model, prompt: p, n: 1, size: gSize,
-          quality: "high",              // kalite > maliyet (ChatGPT ile aynı kademe)
-          output_format: "jpeg",        // Storage'a yüklenir → boyut sorun değil, netlik önce
-          output_compression: 100,      // near-lossless
-          moderation: "low",            // tarihî sahne (savaş/ölüm) yanlış engelini azalt
-        }),
+        body: JSON.stringify(reqBody),
       }, 120_000);
       if (r.ok) {
         const d = await r.json();
         const b64 = d.data?.[0]?.b64_json;
-        if (b64) return { url: "data:image/jpeg;base64," + b64, status: 200, timeout: false, body: "" };
+        if (b64) return { url: "data:" + fmtMime + ";base64," + b64, status: 200, timeout: false, body: "" };   // ham b64 aynen, yeniden-encode yok
         const u = d.data?.[0]?.url;
         if (u) return { url: u, status: 200, timeout: false, body: "" };
         return { url: "", status: 200, timeout: false, body: "empty-response" };
@@ -715,10 +723,10 @@ async function cropToAspect(dataUri: string, size: string): Promise<string> {
     if (cur > target) { w = Math.round(img.height * target); x = Math.floor((img.width - w) / 2); }
     else { h = Math.round(img.width / target); y = Math.floor((img.height - h) / 2); }
     const out = img.crop(x, y, w, h);
-    const jpg = await out.encodeJPEG(90);
+    const png = await out.encode();   // KAYIPSIZ PNG (eski JPEG 90 ikinci kayıp veriyordu). Not: loadImage şu an null → bu yol pasif.
     let bin = "";
-    for (let i = 0; i < jpg.length; i += 32768) bin += String.fromCharCode(...jpg.subarray(i, i + 32768));
-    return "data:image/jpeg;base64," + btoa(bin);
+    for (let i = 0; i < png.length; i += 32768) bin += String.fromCharCode(...png.subarray(i, i + 32768));
+    return "data:image/png;base64," + btoa(bin);
   } catch (e) {
     console.error("cropToAspect: " + String(e).slice(0, 150));
     return dataUri;

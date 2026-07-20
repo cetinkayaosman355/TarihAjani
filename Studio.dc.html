@@ -2601,12 +2601,16 @@ class Component extends DCLogic {
           // "yatay"a döndüğünde 16:9 KESİLİYORDU (kritik hata). Artık imkânsız.
           const target = { yatay: 16 / 9, dikey: 9 / 16, kare: 1 }[arKey]
             || (srcAr > 1.05 ? 16 / 9 : (srcAr < 0.95 ? 9 / 16 : 1));
+          // ChatGPT PARİTESİ: görsel ZATEN hedef orandaysa DOKUNMA → null dön; çağıran
+          // orijinali kayıpsız indirir (canvas yeniden-encode YOK). Gerçek kırpma
+          // gerekince de KAYIPSIZ PNG (eski JPEG 0.96 gereksiz ikinci kayıp veriyordu).
+          if (Math.abs(srcAr - target) < 0.02) return resolve(null);
           let cw = sw, ch = sh;
           if (srcAr > target) cw = Math.round(sh * target); else ch = Math.round(sw / target);
           const sx = Math.round((sw - cw) / 2), sy = Math.round((sh - ch) / 2);
           const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
           cv.getContext('2d').drawImage(img, sx, sy, cw, ch, 0, 0, cw, ch);
-          cv.toBlob(b => b ? resolve(b) : reject(new Error('blob')), 'image/jpeg', 0.96);
+          cv.toBlob(b => b ? resolve(b) : reject(new Error('blob')), 'image/png');
         } catch (e) { reject(e); }
       };
       img.onerror = () => reject(new Error('img-load'));
@@ -2618,19 +2622,26 @@ class Component extends DCLogic {
     // Oran, GÖRSELİN kendi kaydından gelir (arKey); yoksa _cropAspectBlob görselin
     // en-boyundan kendisi anlar. EKRANDAKİ seçime asla bakılmaz (yanlış kesme hatası).
     const ar = arKey || '';
-    const name = 'tarih-ajani-gorsel-' + Date.now() + '.jpg';
-    const save = (href) => { const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+    const base = 'tarih-ajani-gorsel-' + Date.now();
+    const save = (href, ext) => { const a = document.createElement('a'); a.href = href; a.download = base + '.' + (ext || 'png'); document.body.appendChild(a); a.click(); a.remove(); };
+    // Uzantı gerçek biçime göre (indirilen dosya yanlış uzantı almasın)
+    const guessExt = (u, blob) => {
+      if (blob && blob.type) return blob.type.indexOf('png') >= 0 ? 'png' : (blob.type.indexOf('webp') >= 0 ? 'webp' : 'jpg');
+      if (/\.png(\?|$)/i.test(u) || u.indexOf('data:image/png') === 0) return 'png';
+      if (/\.webp(\?|$)/i.test(u)) return 'webp';
+      return 'jpg';
+    };
     try {
-      let srcUrl = url;
+      let srcUrl = url, origBlob = null;
       if (url.indexOf('data:') !== 0) {
-        const r = await fetch(url); const blob = await r.blob(); srcUrl = URL.createObjectURL(blob);
+        const r = await fetch(url); origBlob = await r.blob(); srcUrl = URL.createObjectURL(origBlob);
       }
       const cropped = await this._cropAspectBlob(srcUrl, ar).catch(() => null);
       if (srcUrl.indexOf('blob:') === 0) setTimeout(() => { try { URL.revokeObjectURL(srcUrl); } catch (e) {} }, 6000);
-      if (cropped) {
-        const bu = URL.createObjectURL(cropped); save(bu); setTimeout(() => { try { URL.revokeObjectURL(bu); } catch (e) {} }, 6000); return;
+      if (cropped) {   // yalnız gerçekten kırpıldıysa: kayıpsız PNG blob
+        const bu = URL.createObjectURL(cropped); save(bu, 'png'); setTimeout(() => { try { URL.revokeObjectURL(bu); } catch (e) {} }, 6000); return;
       }
-      save(srcUrl);   // kırpma olmadıysa orijinali indir
+      save(srcUrl, guessExt(url, origBlob));   // kırpma yok → ORİJİNALİ kayıpsız indir (yeniden-encode YOK)
     } catch (e) {
       window.open(url, '_blank');   // CORS/ağ hatası → son çare yeni sekme
     }
