@@ -2779,6 +2779,13 @@ class Component extends DCLogic {
     const k = String(p || (this.state && this.state.imgProvider) || 'gpt').toLowerCase();
     return ({ gpt: 'GPT', gemini: 'Gemini', higgs: 'Higgs' })[k] || 'GPT';
   }
+  // Buton başlığı için sağlayıcının VİTRİN model adı (GPT → GPT Image 2 vb.).
+  // Not: gerçek üretimde model erişilemezse sunucu yedeğe düşebilir; KART her zaman
+  // GERÇEK kullanılan modeli gösterir. Bu yalnız buton etiketidir.
+  _provModelLabel(p) {
+    const k = String(p || (this.state && this.state.imgProvider) || 'gpt').toLowerCase();
+    return ({ gpt: 'GPT Image 2', gemini: 'Gemini Flash Image', higgs: 'Higgs' })[k] || 'GPT Image 2';
+  }
   // KART META (teknik şeffaflık): sunucudan gelen meta'yı kartta gösterilecek
   // etiket/değer satırlarına çevirir. Boş alanlar gizlenir.
   // MODEL adını kullanıcı-dostu göster (teknik id/provider string gösterme):
@@ -4596,7 +4603,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           }
         };
       }),
-      imgGoLabel: (s.imgJobs || 0) > 0 ? '⟳ ÜRETİLİYOR… (' + s.imgJobs + ')' : ('◈ ' + ({ gpt: 'GPT', gemini: 'Gemini' }[s.imgProvider || 'gpt'] || 'GPT') + ' ile Görsel Üret · 12 KR'),
+      imgGoLabel: (s.imgJobs || 0) > 0 ? '⟳ ÜRETİLİYOR… (' + s.imgJobs + ')' : ('◈ ' + this._provModelLabel(s.imgProvider) + ' ile Üret · 12 KR'),
       imgJobsOn: (s.imgJobs || 0) > 0,
       imgJobsMsg: (s.imgJobs || 0) > 1 ? (s.imgJobs + ' GÖRSEL ÜRETİLİYOR… RAFA EKLENECEK') : 'GÖRSEL ÜRETİLİYOR… RAFA EKLENECEK',
       hasImgQueue: (s.imgQueue || []).length > 0,

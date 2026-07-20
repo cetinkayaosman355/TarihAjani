@@ -24,13 +24,18 @@ const REPO = join(HERE, "..", "..", "..");
 // ── (A) index.ts orchestrator AYNASI ────────────────────────────────────────
 function classifyImgErr(status, timeout, body) {
   const b = (body || "").toLowerCase();
-  const modelMissing = status === 404 || b.includes("model_not_found") || b.includes("does not exist")
-    || b.includes("no such model") || b.includes("unknown model") || b.includes("invalid model");
+  const modelMissing = status === 404
+    || b.includes("model_not_found") || b.includes("model_not_available") || b.includes("does not exist")
+    || b.includes("no such model") || b.includes("unknown model") || b.includes("invalid model") || b.includes("unsupported_model")
+    || b.includes("does not have access") || b.includes("do not have access") || b.includes("not have access to")
+    || b.includes("must be verified") || b.includes("verify organization") || b.includes("verify your organization")
+    || b.includes("not available in your")
+    || (status === 403 && b.includes("model"));
   if (timeout) return { cls: "TIMEOUT", transient: true, modelMissing: false };
   if (status === 429) return { cls: "RATE_LIMIT", transient: true, modelMissing: false };
   if (status >= 500) return { cls: "PROVIDER_ERROR", transient: true, modelMissing: false };
-  if (status === 401 || status === 403) return { cls: "AUTH_ERROR", transient: false, modelMissing: false };
   if (modelMissing) return { cls: "INVALID_REQUEST", transient: false, modelMissing: true };
+  if (status === 401 || status === 403) return { cls: "AUTH_ERROR", transient: false, modelMissing: false };
   if (status === 400) {
     if (b.includes("moderation") || b.includes("safety") || b.includes("content_policy")
         || b.includes("content policy") || b.includes("rejected") || b.includes("blocked")) {
@@ -154,6 +159,32 @@ test("Gemini tek model: sürekli geçici hata → MUTLAK EN FAZLA 2 çağrı (te
   const r = runChain(GEMINI, [{ status: 500 }, { status: 500 }, { status: 500 }]);
   assert.equal(r.calls, 2);
   assert.equal(r.url, "");
+});
+
+// ── P0 FIX: gpt-image-2 hesapta yoksa/erişilemezse → YEDEĞE düş (servis geri gelir) ──
+test("gpt-image-2 erişim reddi (403 'does not have access to model') → modelMissing → yedek", () => {
+  const c = classifyImgErr(403, false, "Project does not have access to model gpt-image-2");
+  assert.equal(c.modelMissing, true, "model erişim reddi yedeğe uygun");
+  // 3 kademeli zincirde birincil erişilemez → gpt-image-1.5 başarı (2 çağrı)
+  const r = runChain(CHAIN, [{ status: 403, body: "does not have access to model gpt-image-2" }, { url: "data:image/png;base64,ZZZZ" }]);
+  assert.equal(r.calls, 2);
+  assert.ok(r.url, "gpt-image-1.5 devreye girer → GPT çalışır");
+});
+test("gpt-image-2 doğrulama gerektiriyor (400 'must be verified') → modelMissing → yedek", () => {
+  assert.equal(classifyImgErr(400, false, "Your organization must be verified to use gpt-image-2").modelMissing, true);
+});
+test("GERÇEK anahtar hatası (401 'Incorrect API key') → AUTH, yedeğe DÜŞMEZ (1 çağrı)", () => {
+  const c = classifyImgErr(401, false, "Incorrect API key provided");
+  assert.equal(c.cls, "AUTH_ERROR");
+  assert.equal(c.modelMissing, false, "gerçek anahtar hatası model-yok DEĞİL");
+  const r = runChain(CHAIN, [{ status: 401, body: "Incorrect API key provided" }, { url: "x" }]);
+  assert.equal(r.calls, 1, "anahtar hatasında sessiz model geçişi yok");
+  assert.equal(r.url, "");
+});
+test("403 ama gövde MODELDEN bahsetmiyor (kota/izin) → AUTH, yedek YOK", () => {
+  const c = classifyImgErr(403, false, "You exceeded your current quota");
+  assert.equal(c.cls, "AUTH_ERROR");
+  assert.equal(c.modelMissing, false);
 });
 
 test("Gemini güvenlik engeli (200 ama görsel yok → 400 blocked) → MODERATION, 1 çağrı", () => {
