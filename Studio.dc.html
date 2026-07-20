@@ -212,6 +212,11 @@
       transition: border-color .2s, box-shadow .2s; }
     .ta-card:hover { border-color: rgba(193,154,82,.38);
       box-shadow: 0 26px 60px -38px rgba(0,0,0,.9), 0 0 42px -22px rgba(201,162,90,.22); }
+    /* PR-2 mobil (≤480px): ana CTA taşamaz (tam genişlik, sarılabilir), dokunma hedefleri ≥44px */
+    @media (max-width: 480px) {
+      .ta-genall { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; white-space: normal !important; line-height: 1.35; }
+      .ta-card button { min-height: 44px; }
+    }
 
     /* ── U-02: dosya sekmeleri — mobilde tek satır kaydırmalı ── */
     @media (max-width: 600px) {
@@ -761,7 +766,7 @@
               </sc-for>
             </div>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-              <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">SAĞLAYICI</span>
+              <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">MOTOR</span>
               <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
                 <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
               </sc-for>
@@ -1245,7 +1250,7 @@
                     <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.5; max-width: 62ch;">Aşağıda seçtiğin <strong style="color:#e6c478;">KADRAJ</strong> ve <strong style="color:#e6c478;">STİL</strong> her sahnenin <strong style="color:#e6c478;">GÖRSEL ÜRET</strong>'ine uygulanır (sihirbazda seçtiğin ayar hazır gelir). Üretilenler <strong style="color:#e6c478;">Görsel Stüdyo (Üretilenler)</strong> rafına eklenir; sekme değişmez, hepsini sırayla üretebilirsin. <strong style="color:#e6c478;">İlk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR.</strong></p>
                     <span style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <sc-if value="{{ hasPendingScenes }}" hint-placeholder-val="{{ true }}">
-                      <button onClick="{{ genAll }}" disabled="{{ batchBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
+                      <button class="ta-genall" onClick="{{ genAll }}" disabled="{{ batchBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
                     </sc-if>
                     <sc-if value="{{ batchPauseBtn }}" hint-placeholder-val="{{ false }}">
                       <button onClick="{{ pauseBatch }}" style="border: 1px solid rgba(230,196,120,.6); cursor: pointer; background: rgba(230,196,120,.1); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="background: rgba(230,196,120,.2);">⏸ DURAKLAT</button>
@@ -1309,15 +1314,31 @@
                     </div>
                   </sc-if>
                   <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">PLATFORM</span>
+                    <sc-for list="{{ imgPlatforms }}" as="pl" hint-placeholder-count="3">
+                      <button onClick="{{ pl.pick }}" style="{{ pl.style }}">{{ pl.label }}</button>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                     <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">KADRAJ</span>
                     <sc-for list="{{ imgAspects }}" as="ia" hint-placeholder-count="3">
                       <button onClick="{{ ia.pick }}" style="{{ ia.style }}">{{ ia.label }}</button>
                     </sc-for>
+                    <sc-if value="{{ aspectManualBadge }}" hint-placeholder-val="{{ false }}">
+                      <span style="border: 1px solid rgba(193,154,82,.45); background: rgba(193,154,82,.08); color: #e6c478; font-size: 11px; padding: 4px 10px; border-radius: 999px;">✋ Oran elle değiştirildi — platform seçimin korunur</span>
+                    </sc-if>
                     <span style="width: 1px; height: 20px; background: rgba(129,135,151,.3); margin: 0 4px;"></span>
                     <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">STİL</span>
                     <sc-for list="{{ imgStyles }}" as="st" hint-placeholder-count="3">
                       <button onClick="{{ st.pick }}" style="{{ st.style }}">{{ st.label }}</button>
                     </sc-for>
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">MOTOR</span>
+                    <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
+                      <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
+                    </sc-for>
+                    <span style="color: #818797; font-size: 11.5px;">{{ imgAutoNote }}</span>
                   </div>
                 </div>
                 <sc-if value="{{ hasSceneChars }}" hint-placeholder-val="{{ false }}">
@@ -1359,7 +1380,7 @@
                               <button onClick="{{ kp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ kp.imgBtnLabel }}</button>
                             </sc-if>
                             <sc-if value="{{ kp.img.done }}" hint-placeholder-val="{{ false }}">
-                              <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ ÜRETİLDİ · {{ kp.img.count }}</span>
+                              <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ GÖRSEL HAZIR · {{ kp.img.count }}</span>
                               <button onClick="{{ kp.makeImg }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ kp.imgRedoLabel }}</button>
                             </sc-if>
                             <button onClick="{{ kp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ kp.copyLabel }}</button>
@@ -1420,10 +1441,11 @@
                           <button onClick="{{ gp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ gp.imgCostLabel }}</button>
                         </sc-if>
                         <sc-if value="{{ gp.img.done }}" hint-placeholder-val="{{ false }}">
-                          <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ ÜRETİLDİ · {{ gp.img.count }}</span>
+                          <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ GÖRSEL HAZIR · {{ gp.img.count }}</span>
                           <button onClick="{{ gp.makeImg }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.imgRedoLabel }}</button>
                         </sc-if>
                         <button onClick="{{ gp.regen }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ gp.regenLabel }}</button>
+                        <button onClick="{{ gp.togglePrompt }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ gp.promptToggleLabel }}</button>
                         <button onClick="{{ gp.edit }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">✎ DÜZENLE</button>
                         <button onClick="{{ gp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ gp.copyLabel }}</button>
                       </div>
@@ -1431,7 +1453,10 @@
                     <sc-if value="{{ gp.anlatim }}" hint-placeholder-val="{{ false }}">
                       <div style="color: #e8dcc0; font-size: 12.5px; line-height: 1.6; font-style: italic; border-left: 2px solid rgba(193,154,82,.55); padding: 2px 0 2px 11px;">🎙 “{{ gp.anlatim }}”</div>
                     </sc-if>
-                    <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px; padding: 12px 14px;">{{ gp.prompt }}</code>
+                    <!-- AI Yönetmen: prompt VARSAYILAN GİZLİ — "Promptu Gör" ile açılır (metin kaybolmaz, ikincilleşir) -->
+                    <sc-if value="{{ gp.promptShow }}" hint-placeholder-val="{{ false }}">
+                      <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px; padding: 12px 14px;">{{ gp.prompt }}</code>
+                    </sc-if>
                     <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
                       <img loading="lazy" data-zoomable="1" src="{{ gp.img.url }}" alt="Sahne görseli" onClick="{{ gp.img.zoom }}" title="Büyütmek için tıkla" style="{{ gp.img.thumbStyle }}">
                     </sc-if>
@@ -1510,7 +1535,7 @@
                   </sc-for>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">SAĞLAYICI</span>
+                  <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">MOTOR</span>
                   <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
                     <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
                   </sc-for>
@@ -1893,7 +1918,7 @@ class Component extends DCLogic {
       shortBusy: false, suggestBusy: false,
       imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, imgStyle: null, savedImgs: [], srvImages: [], imgSel: {},
       imgAspect: null, imgZoom: '',
-      imgProvider: saved.imgProvider || 'gpt',   // görsel sağlayıcısı: gpt (vars.) | gemini | higgs(pasif)
+      imgProvider: saved.imgProvider || 'auto',   // görsel motoru: auto (vars. — arayüz kavramı, sunucuya gerçek motor gider) | gpt | gemini | higgs(pasif)
       histTab: 'files',                          // Geçmiş Üretimler sekmesi: files | images | videos
       imgFilter: 'all',                          // Görseller sekmesi filtresi: all | story | standalone
       videoModal: null,                          // video sağlayıcı/süre/maliyet modalı
@@ -2058,7 +2083,7 @@ class Component extends DCLogic {
     if (s.fileNo && s.result) {
       hist = hist.map(h => (h.fileNo && h.fileNo === s.fileNo) ? Object.assign({}, h, { sceneImgs: s.sceneImgs || {}, audioUrl: s.sysAudioUrl || h.audioUrl || '' }) : h);
     }
-    const base = { agent: s.agentName, email: s.regEmail, credits: s.credits, tier: s.tier, elKey: s.elKey, pendingJob: s.pendingJob || null, imgProvider: s.imgProvider || 'gpt' };
+    const base = { agent: s.agentName, email: s.regEmail, credits: s.credits, tier: s.tier, elKey: s.elKey, pendingJob: s.pendingJob || null, imgProvider: s.imgProvider || 'auto' };
     try {
       localStorage.setItem('ta_studio_v5', JSON.stringify(Object.assign({}, base, { history: hist, work: work })));
     } catch (e) {
@@ -2791,7 +2816,7 @@ class Component extends DCLogic {
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: provider || this.state.imgProvider || 'gpt', style: style || (this.state.imgStyle || this.state.style) || undefined,
+      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: this._provResolve(provider || this.state.imgProvider), style: style || (this.state.imgStyle || this.state.style) || undefined,
         // KALICI ARŞİV bağları: görseli hikâye/sahneye ve hesaba bağlar (sunucu studio_images'e yazar)
         fileId: (kind && kind !== 'standalone') ? (this.state.fileNo || undefined) : undefined, sceneKey: sceneKey || undefined, kind: kind || undefined,
         storyTitle: (kind && kind !== 'standalone') ? (((this.state.result || {}).baslik) || undefined) : undefined })
@@ -2866,19 +2891,29 @@ class Component extends DCLogic {
       window.open(url, '_blank');   // CORS/ağ hatası → son çare yeni sekme
     }
   }
+  // MOTOR 'Otomatik' ÇÖZÜMLEMESİ: 'auto' yalnız arayüz kavramıdır — sunucu allowlist'i
+  // yalnız gpt/gemini kabul eder, 'auto' giderse istek REDDEDİLİR. Bu yüzden sunucuya
+  // giden HER yol buradan geçer ve daima gerçek bir sağlayıcı döner.
+  _provResolve(p) {
+    const k = String(p || (this.state && this.state.imgProvider) || '').toLowerCase();
+    if (k === 'gemini') return 'gemini';
+    if (k === 'gpt') return 'gpt';
+    return 'gpt';   // '', 'auto', bilinmeyen → varsayılan motor (stile göre kural: PR-3)
+  }
+  _provIsAuto() { return String((this.state && this.state.imgProvider) || 'auto').toLowerCase() === 'auto'; }
   // SAĞLAYICI kısa görünen adı (buton etiketleri vb.). Argüman verilmezse mevcut
   // seçili sağlayıcıya bakar. Bilinmeyen değerde güvenli varsayılan 'GPT' döner —
   // ASLA undefined/throw olmaz (renderVals bu yüzden çökmemeli).
   _provNm(p) {
-    const k = String(p || (this.state && this.state.imgProvider) || 'gpt').toLowerCase();
-    return ({ gpt: 'GPT', gemini: 'Gemini', higgs: 'Higgs' })[k] || 'GPT';
+    const k = this._provResolve(p);
+    return ({ gpt: 'GPT', gemini: 'Gemini' })[k] || 'GPT';
   }
   // Buton başlığı için sağlayıcının VİTRİN model adı (GPT → GPT Image 2 vb.).
   // Not: gerçek üretimde model erişilemezse sunucu yedeğe düşebilir; KART her zaman
   // GERÇEK kullanılan modeli gösterir. Bu yalnız buton etiketidir.
   _provModelLabel(p) {
-    const k = String(p || (this.state && this.state.imgProvider) || 'gpt').toLowerCase();
-    return ({ gpt: 'GPT Image 2', gemini: 'Gemini Flash Image', higgs: 'Higgs' })[k] || 'GPT Image 2';
+    const k = this._provResolve(p);
+    return ({ gpt: 'GPT Image 2', gemini: 'Gemini Flash Image' })[k] || 'GPT Image 2';
   }
   // KART META (teknik şeffaflık): sunucudan gelen meta'yı kartta gösterilecek
   // etiket/değer satırlarına çevirir. Boş alanlar gizlenir.
@@ -2981,7 +3016,7 @@ class Component extends DCLogic {
     // yalnız serbest Görsel Stüdyo kuyruğu panel kadrajını (imgAspect) kullanır.
     const ar = arOverride || this.state.imgAspect || this.state.aspect;
     const sty = this.state.imgStyle || this.state.style;    // stil seçilmediyse sihirbazda seçilen stil
-    const prov = providerOverride || this.state.imgProvider || 'gpt';   // batch'te sabit sağlayıcı
+    const prov = this._provResolve(providerOverride || this.state.imgProvider);   // batch'te sabit; 'auto' asla sunucuya gitmez
     const sendPrompt = this.withAspect(prompt, ar);         // kadraj prompta yerleşir; STİL sunucuya anahtar olarak gider
     const id = opIdOverride || ('img' + Date.now() + Math.floor(Math.random() * 1000));
     // ARŞİV TÜRÜ: kapak → cover, sahne (gp3 gibi) → scene, serbest görsel → standalone (Bağımsız)
@@ -3145,7 +3180,7 @@ class Component extends DCLogic {
     const total = est ? est.total : pending.reduce((a, it) => a + this.IMG_COST(it.i), 0);
     if (!window.confirm(pending.length + ' sahne üretilecek · toplam ~' + total + ' KR' + (est ? ' (sunucu onaylı)' : '') + '.\nAynı anda en fazla 2 sahne üretilir. Hata veren sahnenin kredisi iade edilir; istediğin an DURAKLAT/İPTAL. Devam?')) return;
     const batchId = ('b' + (s.fileNo || '') + Date.now().toString(36)).replace(/[^a-zA-Z0-9_-]/g, '');
-    const provider = s.imgProvider || 'gpt';
+    const provider = this._provResolve(s.imgProvider);
     const perMap = {};
     if (est && Array.isArray(est.per)) pending.forEach((it, k) => { perMap[it.key] = est.per[k]; });   // sahne başına sunucu maliyeti
     const batch = {
@@ -4819,10 +4854,12 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         if (kp) this.setState({ imgPrompt: kp.prompt });
       },
       queueImage: () => this.makeImage(s.imgPrompt),
-      // Görsel sağlayıcı seçimi (ses seçimindeki gibi): gpt (vars.) · gemini · higgs(pasif/Yakında)
-      imgProvider: s.imgProvider || 'gpt',
-      imgProviders: [['gpt', 'GPT', false], ['gemini', 'Gemini', false], ['higgs', 'Higgs', true]].map(([id, label, passive]) => {
-        const cur = (s.imgProvider || 'gpt') === id;
+      // GÖRSEL MOTORU seçimi: ⚡ Otomatik (vars.) · GPT Image 2 · Gemini · Higgs(pasif/Yakında).
+      // 'auto' yalnız arayüz kavramı — sunucuya daima _provResolve ile gerçek motor gider.
+      // Manuel seçim kullanıcınındır; sistem asla geri almaz.
+      imgProvider: s.imgProvider || 'auto',
+      imgProviders: [['auto', '⚡ Otomatik', false], ['gpt', 'GPT Image 2', false], ['gemini', 'Gemini', false], ['higgs', 'Higgs', true]].map(([id, label, passive]) => {
+        const cur = (s.imgProvider || 'auto') === id;
         return {
           label: passive ? (label + ' · Yakında') : label,
           disabled: passive,
@@ -4836,7 +4873,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           }
         };
       }),
-      imgGoLabel: (s.imgJobs || 0) > 0 ? '⟳ ÜRETİLİYOR… (' + s.imgJobs + ')' : ('◈ ' + this._provModelLabel(s.imgProvider) + ' ile Üret · 12 KR'),
+      // Şeffaflık: Otomatik moddayken gerçekte hangi motorun kullanılacağı açıkça yazılır.
+      imgAutoNote: this._provIsAuto() ? ('⚡ Otomatik: ' + this._provModelLabel() + ' seçildi') : ('✋ Motor elle seçildi: ' + this._provModelLabel()),
+      imgGoLabel: (s.imgJobs || 0) > 0 ? '⟳ ÜRETİLİYOR… (' + s.imgJobs + ')' : ('◈ ' + this._provModelLabel(s.imgProvider) + (this._provIsAuto() ? ' (Otomatik)' : '') + ' ile Üret · 12 KR'),
       imgJobsOn: (s.imgJobs || 0) > 0,
       imgJobsMsg: (s.imgJobs || 0) > 1 ? (s.imgJobs + ' GÖRSEL ÜRETİLİYOR… RAFA EKLENECEK') : 'GÖRSEL ÜRETİLİYOR… RAFA EKLENECEK',
       hasImgQueue: (s.imgQueue || []).length > 0,
@@ -4880,11 +4919,30 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           editErr: x.editErr || ''
         };
       }),
+      // PLATFORM SEÇİMİ → TEK ETKİN ORAN (source of truth = imgAspect||aspect).
+      // Platform yalnız ÖNERİR: seçim etkin oranı önerilen orana getirir ve manuel bayrağı temizler.
+      // Kullanıcı oranı ELLE değiştirirse platform seçimi KORUNUR, sistem asla geri almaz (rozet çıkar).
+      // Not: IG Gönderisi 4:5 backend'e gelene dek dürüstçe 1:1 önerir (etikette belirtilir).
+      imgPlatforms: [['reels', 'REELS / STORY', 'dikey'], ['shorts', 'SHORTS', 'dikey'], ['tiktok', 'TIKTOK', 'dikey'], ['igpost', 'IG GÖNDERİSİ · 1:1 (4:5 yakında)', 'kare'], ['youtube', 'YOUTUBE', 'yatay'], ['kare11', '1:1 KARE', 'kare']].map(([id, label, sug]) => {
+        const cur = s.imgPlatform === id;
+        return {
+          label,
+          pick: () => this.setState({ imgPlatform: id, imgAspect: sug, imgAspectManual: false }),
+          style: {
+            cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em',
+            padding: '8px 12px', border: cur ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+            background: cur ? 'rgba(193,154,82,.14)' : 'transparent',
+            color: cur ? '#e6c478' : '#818797'
+          }
+        };
+      }),
+      // Rozet: platform seçiliyken oran elle değiştirildiyse görünür — seçim korunur.
+      aspectManualBadge: !!(s.imgPlatform && s.imgAspectManual),
       imgAspects: ['yatay', 'dikey', 'kare'].map(k => {
         const eff = s.imgAspect || s.aspect;
         return {
           label: { yatay: 'YATAY 16:9', dikey: 'DİKEY 9:16', kare: 'KARE 1:1' }[k],
-          pick: () => this.setState({ imgAspect: k }),
+          pick: () => this.setState({ imgAspect: k, imgAspectManual: true }),
           style: {
             cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em',
             padding: '8px 12px', border: eff === k ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
@@ -4893,7 +4951,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           }
         };
       }),
-      imgStyles: [['hollywood', 'GERÇEKÇİ'], ['sinematik', 'SİNEMATİK'], ['belgeselfoto', 'BELGESEL'], ['gravur', 'GRAVÜR'], ['minyatur', 'MİNYATÜR'], ['animasyon', 'ANİMASYON']].map(([k, label]) => {
+      // KESİN STİL LİSTESİ (Design Freeze v1): 6 stil, sıra ve ad sabit.
+      // 'hollywood' anahtarının vitrin adı HOLLYWOOD FOTO-GERÇEKÇİ (Sinematik ile birleştirilmez).
+      imgStyles: [['sinematik', 'SİNEMATİK'], ['belgeselfoto', 'BELGESEL'], ['hollywood', 'HOLLYWOOD FOTO-GERÇEKÇİ'], ['gravur', 'GRAVÜR'], ['minyatur', 'OSMANLI MİNYATÜRÜ'], ['animasyon', 'ANİMASYON']].map(([k, label]) => {
         const effS = s.imgStyle || s.style;   // stil seçilmediyse sihirbazda seçilen stil görünür
         return {
           label,
@@ -4908,7 +4968,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       }),
       imgSelLabel: (() => {
         const a = { yatay: 'YATAY 16:9', dikey: 'DİKEY 9:16', kare: 'KARE 1:1' }[s.imgAspect || s.aspect] || '';
-        const st = { hollywood: 'GERÇEKÇİ', sinematik: 'SİNEMATİK', gravur: 'GRAVÜR' }[s.imgStyle || s.style] || '';
+        const st = { sinematik: 'SİNEMATİK', belgeselfoto: 'BELGESEL', hollywood: 'HOLLYWOOD FOTO-GERÇEKÇİ', gravur: 'GRAVÜR', minyatur: 'OSMANLI MİNYATÜRÜ', animasyon: 'ANİMASYON' }[s.imgStyle || s.style] || '';
         return a + ' · ' + st;
       })(),
       goImgStudio: () => this.goImgStudio(),
@@ -5279,9 +5339,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         return {
           hasBatch: true,
           batchTotalLabel: 'Toplam Sahne: ' + total,
-          batchDoneLabel: 'Tamamlanan: ' + completed,
-          batchProcCountLabel: 'Sırada: ' + processing,
-          batchWaitLabel: 'Bekleyen: ' + queued,
+          batchDoneLabel: 'Görsel hazır: ' + completed,
+          batchProcCountLabel: 'Üretiliyor: ' + processing,
+          batchWaitLabel: 'Sırada: ' + queued,
           batchPctText: '%' + pct,
           batchProgStyle: { width: pct + '%', height: '100%', background: 'linear-gradient(90deg,#a77d35,#e6c478)', borderRadius: '999px', transition: 'width .4s ease' },
           batchActiveList: active, batchHasActive: active.length > 0,
@@ -5410,7 +5470,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const cost = this.IMG_COST(idx);
     // KART DURUM ROZETİ (toplu üretim): bu sahnenin batch durumu
     const bsc = (s.batch && s.batch.scenes) ? s.batch.scenes.find(sc => sc.key === (kind + i)) : null;
-    const badgeMap = { queued: ['⚪ BEKLİYOR', '#818797'], processing: ['🟡 ÜRETİLİYOR', '#c4a7ff'], completed: ['🟢 TAMAMLANDI', '#9ed3a8'], failed: ['🔴 HATA', '#e8a9a9'], refunded: ['🔴 İADE EDİLDİ', '#e6c478'], cancelled: ['⚪ İPTAL', '#676d7c'] };
+    const badgeMap = { queued: ['⚪ BEKLİYOR', '#818797'], processing: ['🟡 ÜRETİLİYOR', '#c4a7ff'], completed: ['🟢 GÖRSEL HAZIR', '#9ed3a8'], failed: ['🔴 HATA', '#e8a9a9'], refunded: ['🔴 İADE EDİLDİ', '#e6c478'], cancelled: ['⚪ İPTAL', '#676d7c'] };
     return {
       ...x,
       hasBatchBadge: !!bsc,
@@ -5421,6 +5481,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       batchCanRetry: !!(bsc && (bsc.status === 'failed' || bsc.status === 'refunded') && !s.batchRunning),
       retryScene: () => this.retryScene(kind + i),
       no: 'SAHNE ' + (i + 1),
+      // PROMPT VARSAYILAN GİZLİ (AI Yönetmen): kullanıcı prompt yazmaz/okumaz;
+      // isteyen "Promptu Gör" ile açar. Metin kaybolmaz, yalnız ikincilleşir.
+      promptShow: !!((s.promptOpen || {})[kind + i]),
+      togglePrompt: () => this.setState(st => ({ promptOpen: { ...(st.promptOpen || {}), [kind + i]: !((st.promptOpen || {})[kind + i]) } })),
+      promptToggleLabel: ((s.promptOpen || {})[kind + i]) ? '▴ PROMPTU GİZLE' : '👁 PROMPTU GÖR',
       edit: () => this.startEdit(kind, i, (kind === 'gp' ? 'Görsel promptu · Sahne ' : 'Video promptu · Sahne ') + (i + 1)),
       regen: () => this.regenScene(kind, i),
       regenLabel: busy ? '⟳ ÜRETİLİYOR…' : '↻ YENİLE · 5 KR',

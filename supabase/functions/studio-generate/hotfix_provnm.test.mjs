@@ -28,15 +28,28 @@ test("Studio.dc.html: metadata helper'ları tanımlı (kayıp yok)", () => {
   assert.ok(!studioSrc.includes("this._imgMetaRows("), "kaldırılmış _imgMetaRows çağrısı kalmamalı");
 });
 
-// ── _provNm aynası: ASLA throw etmez, her girişte string döner ───────────────
-function provNm(p, state) {
-  const k = String(p || (state && state.imgProvider) || "gpt").toLowerCase();
-  return ({ gpt: "GPT", gemini: "Gemini", higgs: "Higgs" })[k] || "GPT";
+// ── _provResolve + _provNm aynası (PR-2): 'auto' arayüz kavramı, sunucuya GERÇEK
+// motor gider; ad yalnız gerçek motorlar için — ASLA throw etmez, string döner ──
+function provResolve(p, state) {
+  const k = String(p || (state && state.imgProvider) || "").toLowerCase();
+  if (k === "gemini") return "gemini";
+  if (k === "gpt") return "gpt";
+  return "gpt";   // '', 'auto', 'higgs', bilinmeyen → varsayılan gerçek motor
 }
-test("_provNm: bilinen sağlayıcılar + güvenli varsayılan (throw yok)", () => {
+function provNm(p, state) {
+  return ({ gpt: "GPT", gemini: "Gemini" })[provResolve(p, state)] || "GPT";
+}
+test("_provResolve: 'auto' sunucuya sızmaz — her girişte gerçek motor", () => {
+  assert.equal(provResolve("auto"), "gpt", "auto → gpt (varsayılan gerçek motor)");
+  assert.equal(provResolve(""), "gpt");
+  assert.equal(provResolve("gemini"), "gemini");
+  assert.equal(provResolve(null, { imgProvider: "auto" }), "gpt", "state'te auto olsa da gerçek motor");
+  assert.equal(provResolve("higgs"), "gpt", "pasif/bilinmeyen sağlayıcı istekte gpt'ye çözülür");
+});
+test("_provNm: bilinen motorlar + güvenli varsayılan (throw yok)", () => {
   assert.equal(provNm("gpt"), "GPT");
   assert.equal(provNm("gemini"), "Gemini");
-  assert.equal(provNm("higgs"), "Higgs");
+  assert.equal(provNm("auto"), "GPT", "Otomatik → çözümlenen motor adı");
   assert.equal(provNm(undefined, {}), "GPT", "state.imgProvider yoksa GPT");
   assert.equal(provNm(null, { imgProvider: "gemini" }), "Gemini", "state'ten okur");
   assert.equal(provNm("bilinmeyen"), "GPT", "bilinmeyen → güvenli GPT (throw yok)");
