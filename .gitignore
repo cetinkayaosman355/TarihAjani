@@ -1,0 +1,30 @@
+# Ortam değişkenleri / secret'lar — ASLA commit edilmez
+.env
+.env.*
+!.env.example
+
+# Bağımlılıklar & derleme çıktıları
+node_modules/
+dist/
+build/
+.cache/
+*.tsbuildinfo
+
+# Anahtar / kimlik dosyaları
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+
+# Supabase yerel
+.supabase/
+supabase/.temp/
+
+# Editör / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
