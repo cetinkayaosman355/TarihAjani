@@ -150,6 +150,10 @@
       font-family: inherit; font-size: 14.5px; font-weight: 500; cursor: pointer; border-radius: 10px;
       transition: background .18s, color .18s, box-shadow .18s, border-color .18s; }
     .ta-side .ta-navbtn:hover { color: #f2ecd9; background: rgba(193,154,82,.09); box-shadow: inset 2px 0 0 rgba(230,196,120,.5); }
+    /* "Yakında" pasif menü öğeleri: erişilebilir disabled — tıklanır görünmez, hover affordance yok */
+    .ta-side .ta-navbtn:disabled { opacity: .45; cursor: not-allowed; }
+    .ta-side .ta-navbtn:disabled:hover { color: inherit; background: transparent; box-shadow: none; }
+    .ta-side .ta-navbtn:disabled .ic { background: rgba(193,154,82,.05); color: #7c6a3e; }
     .ta-side .ta-navbtn .ic { font-size: 14px; width: 30px; height: 30px; flex-shrink: 0;
       display: grid; place-items: center; border-radius: 8px; color: #c19a52;
       background: rgba(193,154,82,.08); border: 1px solid rgba(193,154,82,.16); transition: all .18s; }
@@ -554,7 +558,7 @@
         <button onClick="{{ modeWizard }}" style="{{ tbWiz }}"><span class="tb-ic">◈</span><span class="tb-lb">SİHİRBAZ</span></button>
         <button onClick="{{ modeGorsel }}" style="{{ tbGor }}"><span class="tb-ic">✦</span><span class="tb-lb">GÖRSEL</span></button>
         <button onClick="{{ modeArsiv }}" style="{{ tbArs }}"><span class="tb-ic">🗂</span><span class="tb-lb">ARŞİV</span></button>
-        <button onClick="{{ modeHistory }}" style="{{ tbGec }}"><span class="tb-ic">↺</span><span class="tb-lb">GEÇMİŞ</span></button>
+        <button onClick="{{ modeHistory }}" style="{{ tbGec }}"><span class="tb-ic">↺</span><span class="tb-lb">ÇALIŞMAM</span></button>
         <button onClick="{{ openCredits }}" style="{{ tbKre }}"><span class="tb-ic">◉</span><span class="tb-lb">{{ credits }} KR</span></button>
       </div>
 
@@ -573,8 +577,8 @@
           <div class="ta-side-head" style="margin-top: 4px;">ÜRET</div>
           <button class="ta-navbtn" onClick="{{ modeWizard }}" style="{{ sideWizActive }}"><span class="ic">◈</span> Hikâye</button>
           <button class="ta-navbtn" onClick="{{ modeGorsel }}" style="{{ sideGorActive }}"><span class="ic">✦</span> Görsel</button>
-          <button class="ta-navbtn" onClick="{{ uretYakinda }}" style="{{ navSoonStyle }}"><span class="ic">🎬</span> Video <span style="{{ soonTag }}">Yakında</span></button>
-          <button class="ta-navbtn" onClick="{{ uretYakinda }}" style="{{ navSoonStyle }}"><span class="ic">🎙</span> Ses <span style="{{ soonTag }}">Yakında</span></button>
+          <button class="ta-navbtn" disabled="{{ soonDisabled }}" aria-disabled="{{ soonDisabled }}" title="Video stüdyosu yakında" style="{{ navSoonStyle }}"><span class="ic">🎬</span> Video <span style="{{ soonTag }}">Yakında</span></button>
+          <button class="ta-navbtn" disabled="{{ soonDisabled }}" aria-disabled="{{ soonDisabled }}" title="Ses stüdyosu yakında" style="{{ navSoonStyle }}"><span class="ic">🎙</span> Ses <span style="{{ soonTag }}">Yakında</span></button>
           <div class="ta-side-head">ÇALIŞMALARIM</div>
           <button class="ta-navbtn" onClick="{{ goHistFiles }}" style="{{ sideDosyalarActive }}"><span class="ic">🗂</span> Dosyalarım</button>
           <button class="ta-navbtn" onClick="{{ goHistImages }}" style="{{ sideGorsellerActive }}"><span class="ic">✦</span> Görsellerim</button>
@@ -4660,8 +4664,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       // GELECEK GENİŞLEME NOKTALARI (ayrı PR): Video Studio ve Ses Studio; ayrıca üretim
       // girişleri — Referans Görsel, Başlangıç Görseli, (ops.) Bitiş Görseli, Karakter/
       // Stil/Mekân Referansı. Bu PR yalnız bilgi mimarisi + metin; backend/route yok.
-      uretYakinda: () => { try { this._toast ? this._toast('Bu stüdyo yakında.') : null; } catch (e) {} },
-      navSoonStyle: { opacity: .5, cursor: 'default' },
+      soonDisabled: true,   // Video/Ses stüdyoları yakında → erişilebilir disabled (tıklanmaz)
+      navSoonStyle: { cursor: 'not-allowed' },
       soonTag: { marginLeft: 'auto', border: '1px solid rgba(193,154,82,.4)', color: '#c19a52', fontFamily: "'Special Elite', monospace", fontSize: '8.5px', letterSpacing: '.1em', padding: '2px 7px', borderRadius: '999px' },
       sideDosyalarActive: (s.mode === 'history' && (s.histTab || 'files') === 'files') ? SIDE_ON : {},
       sideGorsellerActive: (s.mode === 'history' && s.histTab === 'images') ? SIDE_ON : {},

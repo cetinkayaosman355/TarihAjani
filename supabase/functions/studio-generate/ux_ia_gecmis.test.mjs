@@ -23,9 +23,22 @@ test("Sol menü: ÜRET / ÇALIŞMALARIM / KEŞFET bilgi mimarisi", () => {
   for (const item of ["Hikâye", "Görsel", "Dosyalarım", "Görsellerim", "Videolarım", "Seslerim", "Hazır Hikâye Arşivi"]) {
     assert.ok(studioSrc.includes(item), "menü öğesi: " + item);
   }
-  // ÜRET: Video/Ses "Yakında" pasif; Hazır Hikâye Arşivi KEŞFET'e taşındı (Çalışmalarım'da değil)
-  assert.ok(studioSrc.includes("uretYakinda") && studioSrc.includes("Yakında"), "Video/Ses Yakında pasif");
+  // ÜRET: Video/Ses "Yakında" ERİŞİLEBİLİR DISABLED (tıklanır görünmez); Hazır Hikâye Arşivi KEŞFET'te
+  assert.ok(studioSrc.includes("soonDisabled: true") && studioSrc.includes('disabled="{{ soonDisabled }}"') && studioSrc.includes('aria-disabled="{{ soonDisabled }}"'), "Video/Ses erişilebilir disabled (Yakında)");
+  assert.ok(studioSrc.includes(".ta-navbtn:disabled") && studioSrc.includes(".ta-navbtn:disabled:hover"), "disabled hover affordance kaldırıldı");
+  assert.ok(!studioSrc.includes("uretYakinda"), "pasif öğede tıklama handler'ı yok");
   assert.ok(studioSrc.includes("goHistFiles") && studioSrc.includes("goHistImages") && studioSrc.includes("goHistVideos") && studioSrc.includes("goHistSounds"), "çalışmalarım sekmelerine gidiş");
+});
+test("Senkron: sol menü aktif-durumu ve in-page sekme AYNI state'ten (histTab)", () => {
+  // sideGorsellerActive ve histTabImagesStyle ikisi de s.histTab === 'images'e bağlı → daima senkron
+  assert.ok(studioSrc.includes("sideGorsellerActive: (s.mode === 'history' && s.histTab === 'images')"), "sol menü aktif = histTab");
+  assert.ok(studioSrc.includes("histTabImagesStyle: this._tabStyle(s.histTab === 'images')"), "in-page sekme = histTab");
+  assert.ok(studioSrc.includes("sideSeslerimActive: (s.mode === 'history' && s.histTab === 'sounds')"), "Seslerim aktif = histTab");
+});
+test("Mobil erişim: sol menü gizliyken alt bardan Çalışmalarım'a ulaşılır + in-page sekmeler render", () => {
+  assert.ok(studioSrc.includes('onClick="{{ modeHistory }}"') && studioSrc.includes("ÇALIŞMAM"), "mobil alt bar Çalışmalarım'a gider");
+  // in-page sekmeler <main> içinde (mobilde de görünür) + yatay kaydırma
+  assert.ok(studioSrc.includes("overflow-x: auto"), "sekmeler mobilde yatay kaydırılır (erişim kaybolmaz)");
 });
 test("Çalışmalarım: 4 sekme (Dosyalarım/Görsellerim/Videolarım/Seslerim) + varsayılan Dosyalarım + sayaç", () => {
   assert.ok(studioSrc.includes("histTab: 'files'"), "varsayılan sekme Dosyalarım");
