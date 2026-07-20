@@ -55,7 +55,7 @@ test("Studio.dc.html: bağlar gönderilir + sunucudan RLS ile okunur + galeri bi
   assert.ok(studioSrc.includes("from('studio_images')") && studioSrc.includes("async loadServerImages("), "sunucudan görsel listeler (RLS)");
   assert.ok(studioSrc.includes("_galleryItems()"), "yerel + sunucu galeri birleşimi");
   assert.ok(studioSrc.includes("_hydrateSceneImgs("), "hikâye açılışında sahne görselleri sunucudan doldurulur");
-  assert.ok(studioSrc.includes("hasStandalone") && studioSrc.includes("standaloneImages") && studioSrc.includes("BAĞIMSIZ GÖRSELLER"), "Bağımsız Görseller grubu");
+  assert.ok(studioSrc.includes("imgFilterStandalone") && studioSrc.includes("Bağımsız Görseller") && studioSrc.includes("_histImageCards"), "Bağımsız Görseller filtresi (Görseller sekmesi)");
   assert.ok(!studioSrc.includes("bu cihazda kalıcı saklanır"), "yanıltıcı 'bu cihazda' metni kaldırıldı");
 });
 
