@@ -40,11 +40,13 @@ test("Backend: yedeğe düşülünce meta.fellBack=true + reqModel döner (şeff
   assert.ok(indexSrc.includes("fellBack: !!(diag.provider !== \"gemini\" && diag.model && diag.reqModel && diag.model !== diag.reqModel)"), "gerçek model istenenden farklıysa fellBack=true");
 });
 
-test("Frontend: kart fellBack'te NET mesaj + 'GPT Image 2 ile tekrar dene' gösterir", () => {
+test("Frontend: kart fellBack'te NET mesaj + 'tekrar dene' gösterir (model adları DİNAMİK)", () => {
   assert.ok(studioSrc.includes("fellBack: !!(((si && si.meta) || {}).fellBack)"), "sceneImgView fellBack okur");
-  assert.ok(studioSrc.includes("GPT Image 2 zaman aşımına uğradı. Görseliniz GPT Image 1 ile oluşturuldu."), "kullanıcıya net mesaj");
+  // Mesaj artık gerçek modelden türetilir (GPT Image 2 hardcode DEĞİL): reqModel → model
+  assert.ok(studioSrc.includes("zaman aşımına uğradı. Görseliniz ") && studioSrc.includes(".reqModel) + ' zaman aşımına uğradı"), "mesaj gerçek modeli yazar (dinamik)");
+  assert.ok(studioSrc.includes("this._modelLabel(((si && si.meta) || {}).model)"), "üretilen model adı gerçek");
   assert.ok(studioSrc.includes('value="{{ gp.img.fellBack }}"'), "kartta koşullu bildirim");
-  assert.ok(studioSrc.includes("GPT Image 2 ile tekrar dene"), "tekrar dene butonu");
+  assert.ok(studioSrc.includes("retryLabel:") && studioSrc.includes("ile tekrar dene · ücretsiz"), "tekrar dene butonu (dinamik etiket)");
   assert.ok(studioSrc.includes("retryGpt2: () => this.retrySceneWithGpt2"), "buton retrySceneWithGpt2 çağırır");
 });
 
