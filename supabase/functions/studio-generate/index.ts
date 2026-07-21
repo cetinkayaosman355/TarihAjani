@@ -19,7 +19,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   POST {action:"version"} → { ok, build, primaryModel, prices }
 // Deploy drift'in (dashboard'a eski/yarım kod yapıştırma) tek panzehiri budur.
 // HER kod değişikliğinde bu damga da güncellenir (test bunu zorlar).
-const BUILD = "sg-2026-07-21-r6";
+const BUILD = "sg-2026-07-21-r7";
 
 // NOT: imagescript'in WASM kodeği Supabase Deno edge arch'ında yüklenmiyor
 // (unsupported arch/platform) → kırpma zaten HİÇ çalışmıyor, sadece her üretimde
@@ -270,10 +270,11 @@ const STYLE_TEMPLATES: Record<string, string> = {
   gravur: "vintage engraving illustration, copperplate etching texture, fine cross-hatching, period line-art style, aged parchment tones, full-bleed composition, no decorative frame, no border",
   minyatur: "traditional Ottoman-Persian miniature illustration, flat stylized perspective, gold-leaf accents, vivid tempera colors, full-bleed composition, no decorative border, no frame",
   animasyon: "high-quality 3D animated feature film still, Pixar-DreamWorks style stylized characters with expressive faces, soft global illumination, warm vibrant colors, cinematic composition, charming family-animation look",
+  cizgi: "classic 2D hand-drawn cartoon illustration, flat bold clean outlines, cel-shaded flat colors, vibrant saturated palette, expressive cartoon characters, animated TV series / comic style, simple stylized shapes, no photorealism",
 };
 const STYLE_LABELS: Record<string, string> = {
   sinematik: "Sinematik", hollywood: "Hollywood Foto-gerçekçi", belgeselfoto: "Belgesel",
-  gravur: "Gravür", minyatur: "Osmanlı Minyatürü", animasyon: "Animasyon",
+  gravur: "Gravür", minyatur: "Osmanlı Minyatürü", animasyon: "Animasyon", cizgi: "Çizgi Film",
 };
 function styleKeyOf(id: unknown): string { return String(id || "").trim().toLowerCase(); }
 function styleTemplate(id: unknown): string {
