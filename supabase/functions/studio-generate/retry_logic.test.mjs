@@ -232,8 +232,8 @@ test("Başarısızlıkta iade korunur (reserved=true & url yok → refund)", () 
 const indexSrc = readFileSync(join(HERE, "index.ts"), "utf8");
 const studioSrc = readFileSync(join(REPO, "Studio.dc.html"), "utf8");
 
-test("index.ts: 3 kademeli varsayılan zincir gpt-image-2 → gpt-image-1.5 → gpt-image-1", () => {
-  assert.ok(indexSrc.includes('Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-2"'), "birincil gpt-image-2");
+test("index.ts: varsayılan zincir gpt-image-1.5 → gpt-image-1 (birincil 1.5, gpt-image-2 devre dışı)", () => {
+  assert.ok(indexSrc.includes('Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-1.5"'), "birincil gpt-image-1.5 (varsayılan)");
   assert.ok(indexSrc.includes('Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1.5"'), "yedek gpt-image-1.5");
   assert.ok(indexSrc.includes('Deno.env.get("TA_IMAGE_LAST_MODEL") || "gpt-image-1"'), "son yedek gpt-image-1");
   assert.ok(indexSrc.includes("[primary, fallback, last].filter"), "zincir sırayla + boş/tekrar elenmiş");

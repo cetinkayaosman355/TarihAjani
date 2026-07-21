@@ -1369,7 +1369,7 @@
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div style="display: grid; gap: 4px; max-width: 62ch;">
                       <p style="margin: 0; color: #cfc8b4; font-size: 13px; line-height: 1.55;">Seçtiğin platform, oran ve stil tüm sahnelere uygulanır. Sahne bazında istediğin zaman değiştirebilirsin.</p>
-                      <p style="margin: 0; color: #676d7c; font-size: 11.5px; line-height: 1.5;">Görsel kredisi motora göre: GPT Image 2 · 20 KR, GPT Image 1 · 8 KR, Gemini · 12 KR. GPT Image 2 zaman aşımında yedeğe düşerse yalnız üretilen modelin fiyatı alınır. Üretilenler Görsel Stüdyo rafına eklenir.</p>
+                      <p style="margin: 0; color: #676d7c; font-size: 11.5px; line-height: 1.5;">Görsel kredisi motora göre: GPT Image 1.5 · 12 KR, GPT Image 1 · 8 KR, Gemini · 12 KR. Yedeğe düşülürse yalnız üretilen modelin fiyatı alınır. Üretilenler Görsel Stüdyo rafına eklenir.</p>
                       <sc-if value="{{ imgGenBlocked }}" hint-placeholder-val="{{ false }}">
                         <p style="margin: 2px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">⚠ {{ imgValMsg }} Üretim bunu seçmeden başlamaz; kredi harcanmaz.</p>
                       </sc-if>
@@ -1637,7 +1637,7 @@
                     <sc-if value="{{ gp.img.fellBack }}" hint-placeholder-val="{{ false }}">
                       <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; border: 1px solid rgba(230,196,120,.35); background: rgba(230,196,120,.07); border-radius: 6px; padding: 9px 12px;">
                         <span style="color: #e0c98a; font-size: 12px; line-height: 1.5;">ℹ {{ gp.img.fellBackNote }}</span>
-                        <button onClick="{{ gp.retryGpt2 }}" disabled="{{ gp.img.busy }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.12); color: #e6c478; padding: 6px 12px; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; cursor: pointer; white-space: nowrap; border-radius: 6px;" style-hover="background: rgba(193,154,82,.24);">↻ GPT Image 2 ile tekrar dene · ücretsiz</button>
+                        <button onClick="{{ gp.retryGpt2 }}" disabled="{{ gp.img.busy }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.12); color: #e6c478; padding: 6px 12px; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; cursor: pointer; white-space: nowrap; border-radius: 6px;" style-hover="background: rgba(193,154,82,.24);">↻ {{ gp.img.retryLabel }}</button>
                       </div>
                     </sc-if>
                     <!-- Prompt varsayılan gizli — ⋯ menüsünden "Promptu Gör" ile açılır; kapatma alanın kendi içinde -->
@@ -2551,8 +2551,8 @@ class Component extends DCLogic {
       ],
       motor: [
         { id: 'auto', name: '⚡ Otomatik', desc: 'Sistem bu üretim için en uygun motoru seçer' },
-        { id: 'gpt', name: 'GPT Image 2', desc: 'En yüksek kalite — zaman aşımında GPT Image 1 yedeği devreye girer' },
-        { id: 'gpt1', name: 'GPT Image 1', desc: 'Daha hızlı ve güvenilir — kalite biraz daha düşük' },
+        { id: 'gpt', name: 'GPT Image 1.5', desc: 'En yüksek kalite — 12 KR' },
+        { id: 'gpt1', name: 'GPT Image 1', desc: 'Daha hızlı — 8 KR' },
         { id: 'gemini', name: 'Gemini', desc: 'Google görsel motoru — elle seçim korunur' }
       ]
     };
@@ -3112,7 +3112,7 @@ class Component extends DCLogic {
   // Kademeli fiyat: ilk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR
   // (uzun videoda çok görsel üretimini ucuzlatır). idx = sahne sırası (0 tabanlı).
   // MODEL BAZLI FİYAT (sunucu ile aynı): GPT Image 2=20 · GPT Image 1.5=12 · GPT Image 1=8 · Gemini=12
-  IMG_PRICE(prov) { const k = this._provResolve(prov || (this.state && this.state.imgProvider)); return ({ gpt: 20, gpt1: 8, gemini: 12 })[k] || 20; }
+  IMG_PRICE(prov) { const k = this._provResolve(prov || (this.state && this.state.imgProvider)); return ({ gpt: 12, gpt1: 8, gemini: 12 })[k] || 12; }
   // idx artık fiyatı ETKİLEMEZ (kademeli sayı indirimi kaldırıldı; fiyat modele göre).
   // prov verilirse o motorun (sahne override) fiyatı; yoksa panel motoru.
   IMG_COST(idx, prov) { return this.IMG_PRICE(prov); }
@@ -3175,7 +3175,7 @@ class Component extends DCLogic {
       // build ise 'Geçersiz sağlayıcı' döner. Anlamsız hata yerine NET sebep söylenir.
       // (Sessiz motor değişimi YOK — seçilen = çıktı kuralı korunur.)
       if (data.errClass === 'INVALID_IMAGE_PROVIDER' && provider === 'gpt1') {
-        const eV = new Error('Sunucudaki görsel sistemi henüz güncellenmedi (GPT Image 1 seçeneği yeni sürüm ister). Studio-generate güncellemesi yüklenene dek GPT Image 2 veya Gemini seç.');
+        const eV = new Error('Sunucudaki görsel sistemi henüz güncellenmedi (GPT Image 1 seçeneği yeni sürüm ister). Studio-generate güncellemesi yüklenene dek GPT Image 1.5 veya Gemini seç.');
         eV.code = 'IMG-SURUM'; throw eV;
       }
       const eE = new Error(data.error || 'Görsel üretilemedi'); eE.code = this._imgErrCode(data.errClass); throw eE;
@@ -3270,7 +3270,7 @@ class Component extends DCLogic {
   // GERÇEK kullanılan modeli gösterir. Bu yalnız buton etiketidir.
   _provModelLabel(p) {
     const k = this._provResolve(p);
-    return ({ gpt: 'GPT Image 2', gpt1: 'GPT Image 1', gemini: 'Gemini Flash Image' })[k] || 'GPT Image 2';
+    return ({ gpt: 'GPT Image 1.5', gpt1: 'GPT Image 1', gemini: 'Gemini Flash Image' })[k] || 'GPT Image 1.5';
   }
 
   // ── TEK KAYNAK: GÖRSEL ÜRETİM AYARI ÇÖZÜMLEYİCİSİ ─────────────────
@@ -4160,9 +4160,10 @@ class Component extends DCLogic {
       done, notDone: !done,
       busy: !!(si && si.busy),
       count: (si && si.count) || 0,
-      // ŞEFFAF YEDEK: GPT Image 2 zaman aşımına uğrayıp GPT Image 1'e düşüldüyse kartta bildir
+      // ŞEFFAF YEDEK: istenen model zaman aşımına uğrayıp yedeğe düşüldüyse kartta bildir (model adları gerçek)
       fellBack: !!(((si && si.meta) || {}).fellBack),
-      fellBackNote: (((si && si.meta) || {}).fellBack) ? 'GPT Image 2 zaman aşımına uğradı. Görseliniz GPT Image 1 ile oluşturuldu.' : '',
+      fellBackNote: (((si && si.meta) || {}).fellBack) ? (this._modelLabel(((si && si.meta) || {}).reqModel) + ' zaman aşımına uğradı. Görseliniz ' + this._modelLabel(((si && si.meta) || {}).model) + ' ile oluşturuldu.') : '',
+      retryLabel: this._modelLabel(((si && si.meta) || {}).reqModel) + ' ile tekrar dene · ücretsiz',
       url, hasUrl: !!url,
       vidUrl, hasVid: !!vidUrl, vidBusy,
       canVideo: !!url && !vidBusy,
@@ -5730,7 +5731,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       // 'auto' yalnız arayüz kavramı — sunucuya daima _provResolve ile gerçek motor gider.
       // Manuel seçim kullanıcınındır; sistem asla geri almaz.
       imgProvider: s.imgProvider || 'auto',
-      imgProviders: [['auto', '⚡ Otomatik', false], ['gpt', 'GPT Image 2', false], ['gpt1', 'GPT Image 1', false], ['gemini', 'Gemini', false], ['higgs', 'Higgs', true]].map(([id, label, passive]) => {
+      imgProviders: [['auto', '⚡ Otomatik', false], ['gpt', 'GPT Image 1.5', false], ['gpt1', 'GPT Image 1', false], ['gemini', 'Gemini', false], ['higgs', 'Higgs', true]].map(([id, label, passive]) => {
         const cur = (s.imgProvider || 'auto') === id;
         return {
           label: passive ? (label + ' · Yakında') : label,
@@ -6336,7 +6337,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const failedN = sc.filter(x => x.status === 'failed' || x.status === 'refunded').length;
         const pending = sc.some(x => x.status === 'queued' || x.status === 'processing' || x.status === 'cancelled');
         const pct = total ? Math.round(completed / total * 100) : 0;
-        const modelNm = b.provider === 'gemini' ? 'Gemini 2.5 Flash Image' : 'GPT Image 2';   // birincil OpenAI modeli
+        const modelNm = b.provider === 'gemini' ? 'Gemini 2.5 Flash Image' : 'GPT Image 1.5';   // birincil OpenAI modeli
         const dur = this._batchDur || [];
         const avgMs = dur.length ? Math.round(dur.reduce((a, c) => a + c, 0) / dur.length) : 12000;
         const now = Date.now();
@@ -6427,8 +6428,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           '• Kredi YALNIZCA işlem BAŞARILI olduğunda düşer. Görsel/seslendirme hata verirse kredi DÜŞMEZ; tekrar denenebilir.\n' +
           '• Görsel üretimi hata verirse sistem otomatik 3 kez dener; yine olmazsa kredi iade/hiç düşülmez — kullanıcı tekrar deneyebilir.\n' +
           '• Dosya üretim maliyeti süreye göre: ~60 sn 35 kredi, 4 dk 80, 8 dk 140, 10 dk 170 kredi (formül: max(30, yuvarla((20+saniye/4)/5)*5)).\n' +
-          '• Görsel kredisi MOTORA göre: GPT Image 2 = 20 kredi, GPT Image 1 = 8 kredi, Gemini = 12 kredi. GPT Image 2 zaman aşımında yedeğe (GPT Image 1) düşerse YALNIZ üretilen modelin fiyatı (8) alınır, farkı iade edilir. Seslendirme: her 1000 karakter ~5 kredi (taban 10). Sahne yenileme: 5 kredi.\n' +
-          '• GPT Image 2 yavaşsa/başarısızsa sistem otomatik GPT Image 1 yedeğine düşer (görsel yine gelir) ve kart "GPT Image 2 ile tekrar dene · ücretsiz" sunar. Kullanıcı sorun yaşarsa her görselde "Sorun Bildir" var — bildirim ekibe e-posta olarak düşer, referans kodu (TA-XXXX) verilir.\n' +
+          '• Görsel kredisi MOTORA göre: GPT Image 1.5 = 12 kredi, GPT Image 1 = 8 kredi, Gemini = 12 kredi. Birincil model zaman aşımına uğrayıp yedeğe düşerse YALNIZ üretilen modelin fiyatı alınır, farkı iade edilir. Seslendirme: her 1000 karakter ~5 kredi (taban 10). Sahne yenileme: 5 kredi.\n' +
+          '• Birincil model (GPT Image 1.5) yavaşsa/başarısızsa sistem otomatik GPT Image 1 yedeğine düşer (görsel yine gelir) ve kart "tekrar dene · ücretsiz" sunar. Kullanıcı sorun yaşarsa her görselde "Sorun Bildir" var — bildirim ekibe e-posta olarak düşer, referans kodu (TA-XXXX) verilir.\n' +
           '• Geçmiş (üretilen dosyalar) artık hesaba bağlıdır ve cihazlar arası senkronlanır: aynı hesapla giriş yapıldığında mobilde ve webde üretilenler birlikte görünür. Görünmüyorsa: aynı hesapla giriş yapıldığından ve internetin bağlı olduğundan emin ol, sayfayı yenile.\n' +
           '• "KREDİ GEÇMİŞİ" listesindeki eski kayıtlar bir süre sabit "-100" etiketi gösteriyordu; bu yalnızca ETİKET hatasıydı, gerçekte düşülen tutar yukarıdaki fiyatlardır. Güncellendi.\n' +
           '• Yeni üyelere 30 kredi tanımlanır; AJAN10 kodu ile ilk alışverişte %10 indirim (tek sefer).\n' +
@@ -6547,7 +6548,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           ovrLabel: (s.sceneOptsOpen === key) ? '⚙ Sahne Ayarları · açık' : '⚙ Sahne Ayarları',
           ovrAspects: mkChips('ar', [['', 'Genel'], ['dikey', '9:16'], ['kare', '1:1'], ['yatay', '16:9']], so.ar),
           ovrStyles: mkChips('style', [['', 'Genel'], ['sinematik', 'Sinematik'], ['belgeselfoto', 'Belgesel'], ['hollywood', 'Hollywood'], ['gravur', 'Gravür'], ['minyatur', 'Minyatür'], ['animasyon', 'Animasyon']], so.style),
-          ovrProviders: mkChips('prov', [['', 'Genel'], ['gpt', 'GPT Image 2'], ['gemini', 'Gemini']], so.prov)
+          ovrProviders: mkChips('prov', [['', 'Genel'], ['gpt', 'GPT Image 1.5'], ['gemini', 'Gemini']], so.prov)
         };
       })(),
       // ── PROMPT GEÇMİŞİ (kullanıcı dilinde sürümler; Git benzeri terim yok) ──

@@ -11,7 +11,7 @@ fetch('https://ddyuopqcvpzaysnfavqc.supabase.co/functions/v1/studio-generate', {
 }).then(r => r.json()).then(console.log)
 ```
 
-- `{ ok: true, build: "sg-2026-07-21-r2", ... }` → **güncel sürüm canlıda** ✅
+- `{ ok: true, build: "sg-2026-07-21-r3", ... }` → **güncel sürüm canlıda** ✅
 - `{ ok: false, error: "Geçersiz işlem." }` → **canlıda ESKİ sürüm var** ❌ → aşağıdaki deploy'u yap
 - Yanıt gelmiyor → fonksiyon çökmüş/ağ sorunu → Supabase Logs'a bak
 

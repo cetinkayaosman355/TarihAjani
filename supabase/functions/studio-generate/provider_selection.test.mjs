@@ -167,7 +167,7 @@ test("Studio.dc.html: görsel MOTOR durumu (Otomatik vars.) + istemci imageProvi
 test("Studio.dc.html: görsel buton metni motora göre (vitrin model adı) + maliyet", () => {
   // Dinamik: GPT → 'GPT Image 2', Gemini → 'Gemini Flash Image'; auto → çözümlenen motor + '(Otomatik)'
   assert.ok(studioSrc.includes("_provModelLabel(s.imgProvider)"), "buton metni motorun vitrin modeline göre");
-  assert.ok(studioSrc.includes("gpt: 'GPT Image 2'"), "GPT → GPT Image 2");
+  assert.ok(studioSrc.includes("gpt: 'GPT Image 1.5'"), "GPT → GPT Image 1.5 (birincil)");
   assert.ok(studioSrc.includes("gemini: 'Gemini Flash Image'"), "Gemini vitrin adı");
   assert.ok(studioSrc.includes("' ile Üret · 12 KR'"), "buton metni maliyet göstermeli (fiyat DEĞİŞMEDİ)");
   assert.ok(studioSrc.includes("imgAutoNote"), "Otomatik/elle seçim şeffaflık notu olmalı");

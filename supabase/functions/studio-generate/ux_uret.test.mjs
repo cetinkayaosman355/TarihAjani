@@ -126,7 +126,7 @@ test("Yükleniyor durumu: iskelet + 'Görsel hazırlanıyor…' (kahverengi plac
 
 test("UI metinleri kullanıcı dilinde: sade açıklama + ikincil kredi satırı", () => {
   assert.ok(studioSrc.includes("Seçtiğin platform, oran ve stil tüm sahnelere uygulanır. Sahne bazında istediğin zaman değiştirebilirsin."), "sade açıklama");
-  assert.ok(studioSrc.includes("GPT Image 2 · 20 KR, GPT Image 1 · 8 KR, Gemini · 12 KR"), "kredi kuralı MODEL bazlı ikincil satırda");
+  assert.ok(studioSrc.includes("GPT Image 1.5 · 12 KR, GPT Image 1 · 8 KR, Gemini · 12 KR"), "kredi kuralı MODEL bazlı ikincil satırda");
   assert.ok(studioSrc.includes("Elle seçilen oran korunur."), "oran kalıcılığı kısa kullanıcı dilinde (eski ✋ rozet metni kalktı)");
 });
 
@@ -170,7 +170,7 @@ test("Mobil: ana CTA taşamaz (ta-genall) + 44px dokunma hedefleri", () => {
 test("Backend DOKUNULMADI: PR-2 yalnız frontend", () => {
   // studio-generate iş mantığı değişmezleri aynen durur (madde 18 / dokunma listesi)
   assert.ok(indexSrc.includes("reserve_credits") && indexSrc.includes('admin.from("studio_images").upsert('), "kredi + arşiv mantığı yerinde");
-  assert.ok(indexSrc.includes('|| "gpt-image-2"') && indexSrc.includes('|| "gpt-image-1.5"'), "model zinciri yerinde");
+  assert.ok(indexSrc.includes('|| "gpt-image-1.5"') && indexSrc.includes('|| "gpt-image-1"'), "model zinciri yerinde (birincil 1.5)");
 });
 
 test("ORAN AKIŞI UÇTAN UCA: UI → payload → sunucu boyutu → doğrulama → metadata", () => {

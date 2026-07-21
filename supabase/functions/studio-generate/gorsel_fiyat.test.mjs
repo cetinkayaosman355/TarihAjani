@@ -44,10 +44,10 @@ test("Migration: settle_reservation kısmi iade + idempotent + yalnız service_r
 
 test("Frontend: IMG_COST model bazlı (panel/sahne motoru)", () => {
   assert.ok(studioSrc.includes("IMG_PRICE(prov)"), "model fiyat çözücü");
-  assert.ok(studioSrc.includes("{ gpt: 20, gpt1: 8, gemini: 12 }"), "istemci fiyat tablosu sunucuyla aynı");
+  assert.ok(studioSrc.includes("{ gpt: 12, gpt1: 8, gemini: 12 }"), "istemci fiyat tablosu (birincil GPT Image 1.5 = 12)");
   assert.ok(studioSrc.includes("IMG_COST(idx, prov)"), "IMG_COST motoru dikkate alır");
   assert.ok(studioSrc.includes("(this.resolveImageGenerationSettings(kind + i) || {}).resolvedProvider"), "sahne kartı kendi motorunun fiyatını gösterir");
-  assert.ok(studioSrc.includes("GPT Image 2 · 20 KR, GPT Image 1 · 8 KR"), "kullanıcı diliyle fiyat açıklaması");
+  assert.ok(studioSrc.includes("GPT Image 1.5 · 12 KR, GPT Image 1 · 8 KR"), "kullanıcı diliyle fiyat açıklaması");
 });
 
 // ── (B) SAF AYNALAR ─────────────────────────────────────────────────────────

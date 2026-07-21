@@ -19,7 +19,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   POST {action:"version"} → { ok, build, primaryModel, prices }
 // Deploy drift'in (dashboard'a eski/yarım kod yapıştırma) tek panzehiri budur.
 // HER kod değişikliğinde bu damga da güncellenir (test bunu zorlar).
-const BUILD = "sg-2026-07-21-r2";
+const BUILD = "sg-2026-07-21-r3";
 
 // NOT: imagescript'in WASM kodeği Supabase Deno edge arch'ında yüklenmiyor
 // (unsupported arch/platform) → kırpma zaten HİÇ çalışmıyor, sadece her üretimde
@@ -220,7 +220,7 @@ function imgRequestPrice(b: { imageProvider?: unknown }): number {
   if (ip === "gemini") return IMAGE_COST;
   if (ip === "gpt1" || ip === "gpt-image-1") return imgModelPrice("gpt-image-1");
   // gpt / openai / boş → birincil model (env, vars. gpt-image-2)
-  return imgModelPrice((Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-2").trim());
+  return imgModelPrice((Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-1.5").trim());
 }
 function secsOf(duration: string): number {
   const m = /^s(\d+)$/.exec(duration || "");
@@ -578,7 +578,7 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   // 3 KADEMELİ ZİNCİR: birincil gpt-image-2 → yedek gpt-image-1.5 → son yedek gpt-image-1.
   // Yedeğe YALNIZ model-yok / geçici sağlayıcı hatasında geçilir (runImageChain).
   // rate-limit(429 tavan)/auth/moderation/geçersiz istekte SESSİZ geçiş YOK → gerçek hata + iade.
-  const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-2").trim();
+  const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-1.5").trim();
   const fallback = (Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1.5").trim();
   const last = (Deno.env.get("TA_IMAGE_LAST_MODEL") || "gpt-image-1").trim();
   const chain = [primary, fallback, last].filter((m, i, a) => m && a.indexOf(m) === i);   // sırayı koru, boş/tekrarı at
@@ -1328,7 +1328,7 @@ Deno.serve(async (req) => {
     // SÜRÜM KONTROLÜ (kimliksiz, ücretsiz): canlıdaki build + aktif model + fiyatlar.
     // Eski build'de bu action yoktur → "Geçersiz işlem." döner = ESKİ SÜRÜM CANLIDA.
     if (act === "version") {
-      const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-2").trim();
+      const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-1.5").trim();
       return json({ ok: true, build: BUILD, primaryModel: primary, provider: (Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim(), prices: { "gpt-image-2": 20, "gpt-image-1.5": 12, "gpt-image-1": 8, gemini: 12 } });
     }
     if (act === "estimate") {
