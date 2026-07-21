@@ -263,6 +263,16 @@ function styleTemplate(id: unknown): string {
 const SUPPORTED_ASPECTS = new Set(["9:16", "16:9", "1:1"]);
 const OPENAI_SIZE: Record<string, string> = { "9:16": "1024x1536", "16:9": "1536x1024", "1:1": "1024x1024" };
 const GEMINI_ASPECT: Record<string, string> = { "9:16": "9:16", "16:9": "16:9", "1:1": "1:1" };
+// ── GÖRSEL ZAMAN BÜTÇESİ (merkezi config) ───────────────────────────
+// KÖK NEDEN (canlı log: img_fail status=0 class=TIMEOUT ms=120002 → 12 KR kayıp):
+// deneme başına 120 sn sabitti ve zincir (2 deneme + yedek model) toplamda
+// ~360+ sn'ye uzayabiliyordu. Platform, fonksiyonu duvar saatinde öldürünce
+// refund satırına HİÇ ulaşılamıyordu → rezervasyon asılı kalıyordu.
+// Çözüm: zincirin TAMAMI toplam bütçeye sığar; kontrol her durumda fonksiyona
+// döner ve iade kodu çalışır. Değerler env ile sağlayıcıdan bağımsız ayarlanır;
+// OpenAI/Gemini senkron beklemesi hiçbir durumda ~135-140 sn'yi aşmaz.
+const IMG_ATTEMPT_MS = Math.min(120_000, Math.max(30_000, Number(Deno.env.get("TA_IMG_ATTEMPT_TIMEOUT_MS")) || 100_000));
+const IMG_BUDGET_MS = Math.min(140_000, Math.max(60_000, Number(Deno.env.get("TA_IMG_BUDGET_MS")) || 135_000));
 // GERÇEK ÇIKTI DOĞRULAMASI: sağlayıcı 200 döndü diye başarı sayılmaz — gerçek
 // piksel oranı istenenle uyuşmalı. OpenAI doğal boyutları (2:3 / 3:2) ilgili
 // yönün kabul edilen çıktısıdır (OPENAI_SIZE sözleşmesi); Gemini tam oran döner.
@@ -374,19 +384,29 @@ async function runImageChain(
   provider: string,
   opId: string | undefined,
   diag: { d: string; cls?: string; model?: string; provider?: string } | undefined,
-  callOnce: (model: string, isPrimary: boolean) => Promise<ImgCall>,
+  callOnce: (model: string, isPrimary: boolean, timeoutMs: number) => Promise<ImgCall>,
 ): Promise<string> {
   const MAX_CALLS = 3;
   let totalCalls = 0;
+  // TOPLAM BÜTÇE: zincirin tamamı (denemeler + yedekler) IMG_BUDGET_MS'e sığar.
+  // Kalan süre yetmeyecekse YENİ deneme başlatılmaz → kontrol fonksiyona döner,
+  // rezervasyon iade edilir (platform kill'inden ÖNCE). Sessiz bekleme yok.
+  const chainT0 = Date.now();
+  const remaining = () => IMG_BUDGET_MS - (Date.now() - chainT0);
   for (let mi = 0; mi < chain.length; mi++) {
     const model = chain[mi];
     const isPrimary = mi === 0;
     let transientTries = 0;
     while (totalCalls < MAX_CALLS) {
+      if (remaining() < 20_000) {
+        console.error(`img_budget_stop op=${opId || "-"} provider=${provider} model=${model} calls=${totalCalls} leftMs=${remaining()}`);
+        if (diag && !diag.cls) { diag.d = model + ": üretim zaman bütçesi doldu"; diag.cls = "TIMEOUT"; }
+        return "";
+      }
       const attemptNo = transientTries + 1;
       const t0 = Date.now();
       totalCalls++;
-      const res = await callOnce(model, isPrimary);
+      const res = await callOnce(model, isPrimary, Math.min(IMG_ATTEMPT_MS, remaining() - 8_000));
       const ms = Date.now() - t0;
       if (res.url) {
         console.log(`img_ok op=${opId || "-"} provider=${provider} model=${model} attempt=${attemptNo} calls=${totalCalls} ms=${ms}`);
@@ -397,7 +417,8 @@ async function runImageChain(
       console.error(`img_fail op=${opId || "-"} provider=${provider} model=${model} attempt=${attemptNo} calls=${totalCalls} status=${res.status} class=${ci.cls} ms=${ms} :: ${(res.body || "").slice(0, 200)}`);
       if (diag) { diag.d = imgErrMsg(model, ci.cls, res.status); diag.cls = ci.cls; }
       // Geçici hata → AYNI modeli EN FAZLA bir kez daha dene (1200–2000ms bekleme).
-      if (ci.transient && transientTries < 1 && totalCalls < MAX_CALLS) {
+      // Bütçede anlamlı süre kalmadıysa tekrar denenmez (kontrol fonksiyona döner).
+      if (ci.transient && transientTries < 1 && totalCalls < MAX_CALLS && remaining() > 25_000) {
         transientTries++;
         await new Promise((r) => setTimeout(r, 1200 + Math.floor(Math.random() * 800)));
         continue;
@@ -464,13 +485,13 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
     const genCfg: Record<string, unknown> = { responseModalities: mods };
     if (!aspOff && aspRatio) genCfg.imageConfig = { aspectRatio: aspRatio };
 
-    const callGemini = async (model: string): Promise<ImgCall> => {
+    const callGemini = async (model: string, _isPrimary: boolean, timeoutMs: number): Promise<ImgCall> => {
       try {
         const r = await fetchT(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-goog-api-key": gkey },
           body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: p }] }], generationConfig: genCfg }),
-        }, 120_000);
+        }, timeoutMs);
         if (r.ok) {
           const d = await r.json();
           const parts = d?.candidates?.[0]?.content?.parts || [];
@@ -519,7 +540,7 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   const fmt = ((Deno.env.get("TA_IMAGE_FORMAT") || "png").trim().toLowerCase() === "jpeg") ? "jpeg" : "png";
   const fmtMime = fmt === "jpeg" ? "image/jpeg" : "image/png";
 
-  const callOpenAI = async (model: string, isPrimary: boolean): Promise<ImgCall> => {
+  const callOpenAI = async (model: string, isPrimary: boolean, timeoutMs: number): Promise<ImgCall> => {
     void isPrimary;
     const gSize = gStd;   // yalnız OpenAI'nin desteklediği standart boyut (HD varsayımı yok)
     try {
@@ -534,7 +555,7 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
         body: JSON.stringify(reqBody),
-      }, 120_000);
+      }, timeoutMs);
       if (r.ok) {
         const d = await r.json();
         const b64 = d.data?.[0]?.b64_json;
@@ -1234,7 +1255,7 @@ Deno.serve(async (req) => {
     // action + prompt eskiden ücretsiz metin üretimine (gen) düşüp endpoint'i genel
     // amaçlı AI servisi gibi kullandırabiliyordu. "" = uygulama içi ücretsiz metin
     // yardımcıları (sohbet, konu önerisi, Shorts, bölüm metni) — izinli kalır.
-    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate"]);
+    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate", "imgreclaim"]);
     if (!ALLOWED_ACTIONS.has(act)) return json({ ok: false, error: "Geçersiz işlem." }, 400);
     // TOPLU MALİYET TAHMİNİ — SUNUCU-TARAFLI (istemci fiyatına güvenilmez). Kredi düşmez,
     // rezervasyon yok. scenes: 0-tabanlı imgIndex dizisi VEYA count. "Tüm sahneleri üret"
@@ -1390,7 +1411,7 @@ Deno.serve(async (req) => {
     // üretimin (prevJob) bir defalık bedava hakkıyla yeniden üretir.
     let freeRegen = false;
     let regenPrevJob = "";
-    if (cost > 0 || isEdit) {
+    if (cost > 0 || isEdit || act === "imgreclaim") {
       const SB_URL = Deno.env.get("SUPABASE_URL");
       const SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       if (!SB_URL || !SVC) return json({ ok: false, error: "Sunucu yapılandırması eksik (service role)." }, 500);
@@ -1429,6 +1450,24 @@ Deno.serve(async (req) => {
       const row = Array.isArray(prof) ? prof[0] : prof;
       const bal = row && typeof row.credits === "number" ? row.credits : 0;
       if (bal < cost) return json({ ok: false, error: "Yetersiz kredi", credits: bal }, 402);
+    }
+
+    // ── KURTAR / İADE ET (imgreclaim) ── İstemci yanıt alamadıysa (ağ koptu,
+    // fonksiyon platform tarafından öldürüldü, istemci zaman aşımı) tek çağrıyla
+    // durumu KAPATIR: sonuç job-cache'te varsa görseli döndürür (kredi zaten
+    // finalize edilmiştir, tekrar ücret yok); yoksa rezervasyonu İADE eder.
+    // refund_reservation İDEMPOTENTTİR (yalnız 'reserved' durumunu iade eder) →
+    // ikinci reclaim / sweeper yarışı bakiyeyi asla iki kez artırmaz.
+    if (act === "imgreclaim") {
+      const rOp = cleanJob(b.opId);
+      if (!rOp || !admin || !userId) return json({ ok: false, error: "Geçersiz istek." }, 400);
+      const prev = await loadJobResult(admin, userId, rOp);
+      if (prev && prev.url) {
+        return json({ ok: true, url: prev.url, charged: false, recovered: true, meta: prev.meta || undefined });
+      }
+      const credits = await refundOp(admin, userId, rOp);
+      logRun({ action: "imgreclaim", ok: true, ms: Date.now() - t0, user_id: userId, err: "RECLAIM:" + rOp.slice(0, 40) });
+      return json({ ok: false, reclaimed: true, credits, error: "Üretim zaman aşımına uğradı; kredi iade edildi. Tekrar dene.", errClass: "TIMEOUT_RECLAIMED" }, 200);
     }
 
     // GÖRSEL ÜRETİMİ — metin üretiminden ayrı akış. REZERVE-first: üretimden önce
@@ -1487,6 +1526,10 @@ Deno.serve(async (req) => {
         logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId, err: "CREDIT_SYSTEM_UNAVAILABLE" });
         return json({ ok: false, error: "Kredi sistemi şu an kullanılamıyor. Görsel üretilmedi, kredi düşülmedi. Lütfen birazdan tekrar deneyin.", errClass: "CREDIT_SYSTEM_UNAVAILABLE" }, 503);
       }
+      // GARANTİLİ İADE: rezervasyondan sonra oluşabilecek HER beklenmeyen hata
+      // (parse/storage/DB/exception) global catch'e düşer ve doRefund iadeyi yapar.
+      // (Kök neden düzeltmesi: görsel yolu bu ağa bağlı DEĞİLDİ.)
+      if (res.reserved) pendingRefund = { admin, user: userId, job: opId };
       const diag: { d: string; cls?: string; model?: string; provider?: string } = { d: "" };
       const tGen = Date.now();
       let url = await generateImage(String(b.prompt || ""), sizeReq, diag, opId, imgProv, styleKey);
@@ -1503,7 +1546,7 @@ Deno.serve(async (req) => {
         console.error(`img_ratio_mismatch op=${opId} provider=${diag.provider || imgProv} model=${diag.model || "-"} size=${sizeReq} real=${info.w}x${info.h}`);
         logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "RATIO_MISMATCH:" + sizeReq + ":" + info.w + "x" + info.h });
         let credits: number | undefined;
-        if (res.reserved) credits = await refundOp(admin, userId, opId);
+        if (res.reserved) { credits = await refundOp(admin, userId, opId); pendingRefund = null; }
         return json({ ok: false, error: "Üretilen görsel seçilen orana (" + sizeReq + ") uymadı — üretim başarısız sayıldı, kredi iade edildi. Tekrar dene.", errClass: "RATIO_MISMATCH", credits }, 502);
       }
       if (url && url.startsWith("data:")) url = await cropToAspect(url, sizeReq);
@@ -1512,9 +1555,12 @@ Deno.serve(async (req) => {
       logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : (diag.cls ? diag.cls + ":" : "") + (diag.d || "uretilemedi").slice(0, 80) });
       if (!url) {
         let credits: number | undefined;
-        if (res.reserved) credits = await refundOp(admin, userId, opId);   // hata → rezervasyon iade
-        // Sebep + hata sınıfı GÖRÜNÜR: kullanıcı/destek loglara bakmadan neyin patladığını bilir
-        return json({ ok: false, error: "Görsel üretilemedi" + (diag.d ? " — sebep: " + diag.d : "") + ". Kredi düşülmedi, tekrar dene.", errClass: diag.cls, credits }, 502);
+        if (res.reserved) { credits = await refundOp(admin, userId, opId); pendingRefund = null; }   // hata → rezervasyon iade
+        // Zaman aşımı ayrı ve NET söylenir; diğerlerinde sebep + hata sınıfı görünür.
+        const msg = diag.cls === "TIMEOUT"
+          ? "Üretim zaman aşımına uğradı" + (res.reserved ? " — kredi iade edildi" : "") + ". Tekrar dene."
+          : "Görsel üretilemedi" + (diag.d ? " — sebep: " + diag.d : "") + ". Kredi düşülmedi, tekrar dene.";
+        return json({ ok: false, error: msg, errClass: diag.cls, credits }, 502);
       }
       // KART META (teknik şeffaflık): sağlayıcı, model, stil, biçim, kadraj, çözünürlük, boyut, süre, kredi
       const meta = {
@@ -1557,8 +1603,10 @@ Deno.serve(async (req) => {
         // Buraya geldiysek res.reserved KESİN true (aksi halde yukarıda 503 döndük) →
         // rezervasyonu finalize et; eski spendSafe'e sessiz düşüş YOK.
         await finalizeOp(admin, opId);
+        pendingRefund = null;   // başarı → beklenmeyen-hata iadesi devre dışı
         return json({ ok: true, url, charged: true, credits: res.credits, meta });
       }
+      pendingRefund = null;
       return json({ ok: true, url, charged: false, meta });
     }
 
