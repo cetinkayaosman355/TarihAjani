@@ -1052,11 +1052,9 @@ Deno.serve(async (req) => {
         : act === "video"
           ? videoCost(Number(b.vsec) || 5, String(b.vprovider || ""))
           : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
-    // Görsel kalitesi müşteri seçimi: nano (Gemini, ucuz) / standart / yüksek.
-    if (act === "image") {
-      if (b.quality === "yuksek" || b.quality === "high") cost = IMAGE_COST_HIGH;
-      else if (b.quality === "nano") cost = IMAGE_COST_NANO;
-    }
+    // Görsel kalitesi müşteri seçimi (tek motor GPT Image 1.5): standart / yüksek.
+    // Geriye dönük uyum: eski "nano" isteği standart fiyata düşer.
+    if (act === "image" && (b.quality === "yuksek" || b.quality === "high")) cost = IMAGE_COST_HIGH;
 
     let authedUser = false;
     try {
@@ -1104,11 +1102,11 @@ Deno.serve(async (req) => {
 
     if (String(b.action || "") === "image") {
       const q = String(b.quality || "");
-      let url = (q === "nano")
-        ? await generateImageGemini(String(b.prompt || ""), String(b.size || ""))
-        : await generateImage(String(b.prompt || ""), String(b.size || ""), q);
-      // Nano Banana başarısızsa gpt-image'e düş (kullanıcı takılmaz).
-      if (q === "nano" && !url) url = await generateImage(String(b.prompt || ""), String(b.size || ""), "");
+      // Tek motor: OpenAI GPT Image 1.5 (gpt-image-1.5 → gpt-image-1 → dall-e-3).
+      // Kalite yalnızca gpt-image quality kademesini seçer (standart=medium, yüksek=high).
+      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), q);
+      // Son çare: OpenAI tamamen başarısızsa Gemini görselle kullanıcı takılmasın.
+      if (!url) url = await generateImageGemini(String(b.prompt || ""), String(b.size || ""));
       if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
       if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
       logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : "uretilemedi" });
