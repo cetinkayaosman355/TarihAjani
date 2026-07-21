@@ -695,7 +695,7 @@
                 <sc-for list="{{ histImages }}" as="im" hint-placeholder-count="4">
                   <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; overflow: hidden; display: flex; flex-direction: column;" style-hover="border-color: rgba(193,154,82,.5);">
                     <span style="position: relative; display: block;">
-                      <img src="{{ im.url }}" alt="{{ im.title }}" data-zoomable onClick="{{ im.zoom }}" style="{{ im.thumbStyle }}">
+                      <img loading="lazy" decoding="async" src="{{ im.dispUrl }}" data-full="{{ im.url }}" alt="{{ im.title }}" data-zoomable onClick="{{ im.zoom }}" style="{{ im.thumbStyle }}">
                       <button onClick="{{ im.favToggle }}" title="{{ im.favTitle }}" aria-label="{{ im.favTitle }}" style="{{ im.favBtnStyle }}">{{ im.favIcon }}</button>
                       <sc-if value="{{ im.archTag }}" hint-placeholder-val="{{ false }}">
                         <span style="position: absolute; left: 7px; top: 7px; color: #d3d7e0; background: rgba(5,7,13,.78); border: 1px solid rgba(129,135,151,.4); border-radius: 999px; font-family: 'Special Elite', monospace; font-size: 8.5px; letter-spacing: .08em; padding: 2px 8px;">{{ im.archTag }}</span>
@@ -819,7 +819,7 @@
                   <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12;">
                     <sc-if value="{{ iq.hasUrl }}" hint-placeholder-val="{{ false }}">
                       <label style="display: flex; align-items: center; gap: 7px; padding: 8px 10px 2px; color: #a4a9b5; font-size: 11px; cursor: pointer;"><input type="checkbox" checked="{{ iq.sel }}" onChange="{{ iq.onSel }}" style="accent-color: #c19a52; width: 15px; height: 15px; cursor: pointer;">İndirmek için seç</label>
-                      <img loading="lazy" data-zoomable="1" src="{{ iq.url }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
+                      <img loading="lazy" decoding="async" data-zoomable="1" data-full="{{ iq.url }}" src="{{ iq.dispUrl }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
                     </sc-if>
                     <sc-if value="{{ iq.pending }}" hint-placeholder-val="{{ true }}">
                       <div style="{{ iq.pendStyle }}">
@@ -878,7 +878,7 @@
                   <sc-for list="{{ savedImgList }}" as="sv" hint-placeholder-count="6">
                     <div style="border: 1px solid rgba(129,135,151,.22); background: #070a12;">
                       <sc-if value="{{ sv.showImg }}" hint-placeholder-val="{{ true }}">
-                        <img loading="lazy" data-zoomable="1" src="{{ sv.url }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
+                        <img loading="lazy" decoding="async" data-zoomable="1" data-full="{{ sv.url }}" src="{{ sv.dispUrl }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
                       </sc-if>
                       <sc-if value="{{ sv.hasVid }}" hint-placeholder-val="{{ false }}">
                         <video src="{{ sv.vidUrl }}" controls playsinline loop style="{{ sv.thumbStyle }}"></video>
@@ -1712,7 +1712,7 @@
                       </div>
                     </sc-if>
                     <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
-                      <img loading="lazy" data-zoomable="1" src="{{ gp.img.url }}" alt="Sahne görseli" onClick="{{ gp.img.zoom }}" title="Büyütmek için tıkla" style="{{ gp.img.thumbStyle }}">
+                      <img loading="lazy" decoding="async" data-zoomable="1" data-full="{{ gp.img.url }}" src="{{ gp.img.dispUrl }}" alt="Sahne görseli" onClick="{{ gp.img.zoom }}" title="Büyütmek için tıkla" style="{{ gp.img.thumbStyle }}">
                     </sc-if>
                     <!-- ÜRETİM GEÇMİŞİ: yeni üretim eskisini SİLMEZ; tıklanan versiyon seçili olur -->
                     <sc-if value="{{ gp.img.hasVers }}" hint-placeholder-val="{{ false }}">
@@ -1954,7 +1954,7 @@
                         </sc-if>
                         <sc-if value="{{ iq.hasUrl }}" hint-placeholder-val="{{ false }}">
                           <label style="display: flex; align-items: center; gap: 7px; padding: 8px 10px 2px; color: #a4a9b5; font-size: 11px; cursor: pointer;"><input type="checkbox" checked="{{ iq.sel }}" onChange="{{ iq.onSel }}" style="accent-color: #c19a52; width: 15px; height: 15px; cursor: pointer;">İndirmek için seç</label>
-                          <img loading="lazy" data-zoomable="1" src="{{ iq.url }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
+                          <img loading="lazy" decoding="async" data-zoomable="1" data-full="{{ iq.url }}" src="{{ iq.dispUrl }}" alt="Üretilen görsel" onClick="{{ iq.zoom }}" title="Büyütmek için tıkla" style="{{ iq.thumbStyle }}">
                         </sc-if>
                         <sc-if value="{{ iq.hasVid }}" hint-placeholder-val="{{ false }}">
                           <video src="{{ iq.vidUrl }}" controls playsinline loop style="width: 100%; border-radius: 7px; border: 1px solid rgba(193,154,82,.3); margin-top: 2px;"></video>
@@ -2039,7 +2039,7 @@
                     <sc-for list="{{ savedImgList }}" as="sv" hint-placeholder-count="6">
                       <div style="border: 1px solid rgba(129,135,151,.22); background: #070a12;">
                         <sc-if value="{{ sv.showImg }}" hint-placeholder-val="{{ true }}">
-                          <img loading="lazy" data-zoomable="1" src="{{ sv.url }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
+                          <img loading="lazy" decoding="async" data-zoomable="1" data-full="{{ sv.url }}" src="{{ sv.dispUrl }}" alt="Geçmiş üretim" onClick="{{ sv.zoom }}" title="Büyütmek için tıkla" style="{{ sv.thumbStyle }}">
                         </sc-if>
                         <sc-if value="{{ sv.hasVid }}" hint-placeholder-val="{{ false }}">
                           <video src="{{ sv.vidUrl }}" controls playsinline loop style="{{ sv.thumbStyle }}"></video>
@@ -3549,6 +3549,30 @@ class Component extends DCLogic {
   }
   // Tüm sahne/kapak/üretilen küçük görsellerini tek, dengeli bir "kutu" içinde
   // tut — web'de dev açılmasını ve kutuya oturmamasını önler (mobil bozulmaz).
+  // GÖRSEL AÇILMA HIZI: 2.8 MB PNG'ler yavaş açılıyordu. Ekranda küçük WebP önizleme
+  // (Supabase görsel dönüşümü), büyütme/indirmede tam çözünürlük. Dönüşüm açık mı diye
+  // BİR KEZ test edilir; kapalıysa orijinale döner (hiç kırılmaz). w = hedef genişlik.
+  _dispSrc(url, w) {
+    if (!url || url.indexOf('data:') === 0) return url || '';
+    const seg = '/storage/v1/object/public/';
+    const i = url.indexOf(seg);
+    if (i < 0) return url;   // yalnız kendi public storage görselleri dönüştürülür
+    if (this._imgXformOk === undefined) { this._imgXformOk = null; this._probeImgXform(url); }
+    if (!this._imgXformOk) return url;
+    const x = url.slice(0, i) + '/storage/v1/render/image/public/' + url.slice(i + seg.length);
+    return x + (x.indexOf('?') >= 0 ? '&' : '?') + 'width=' + (w || 512) + '&quality=72';
+  }
+  _probeImgXform(sampleUrl) {
+    try {
+      const seg = '/storage/v1/object/public/'; const i = sampleUrl.indexOf(seg);
+      if (i < 0) { this._imgXformOk = false; return; }
+      const test = sampleUrl.slice(0, i) + '/storage/v1/render/image/public/' + sampleUrl.slice(i + seg.length) + '?width=24&quality=50';
+      const im = new Image();
+      im.onload = () => { this._imgXformOk = true; try { this.setState({}); } catch (e) {} };   // yeniden çiz → hızlı thumb'lar
+      im.onerror = () => { this._imgXformOk = false; };   // dönüşüm kapalı → orijinal kalır
+      im.src = test;
+    } catch (e) { this._imgXformOk = false; }
+  }
   thumbBox(ar) {
     const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[ar] || '16/9';
     // Daha kompakt + premium: dev 9:16 görseller artık ekranı kaplamıyor; ilki düzenli
@@ -3563,7 +3587,7 @@ class Component extends DCLogic {
     let list = [];
     try {
       list = Array.from(document.querySelectorAll('img[data-zoomable]'))
-        .map(el => el.getAttribute('src')).filter(Boolean);
+        .map(el => el.getAttribute('data-full') || el.getAttribute('src')).filter(Boolean);
     } catch (e) {}
     if (list.indexOf(url) < 0) list = [url];
     this.setState({ imgZoom: url, imgZoomList: list, imgZoomIdx: Math.max(0, list.indexOf(url)) });
@@ -4039,7 +4063,7 @@ class Component extends DCLogic {
       const mn = x.sceneKey && /\d+/.test(x.sceneKey) ? (parseInt((x.sceneKey.match(/\d+/) || ['0'])[0], 10) + 1) : null;
       const sceneLbl = x.kind === 'cover' ? 'Kapak' : (mn ? ('Sahne ' + mn) : (x.kind === 'standalone' ? 'Bağımsız' : '-'));
       return {
-        url: x.url, thumbStyle: this.thumbBox(x.ar),
+        url: x.url, dispUrl: this._dispSrc(x.url, 480), thumbStyle: this.thumbBox(x.ar),
         title: x.story || (x.kind === 'standalone' || !x.fileId ? 'Bağımsız Görsel' : '-'),
         sceneLabel: sceneLbl, provider: dash(m.provider),
         model: (m.model ? this._modelLabel(m.model) : '-'), style: dash(m.style), aspect: dash(m.aspect),
@@ -4059,7 +4083,7 @@ class Component extends DCLogic {
   // VİDEOLAR sekmesi — üretilmiş videolar (galeri kayıtlarında vidUrl). Yeni backend yok.
   _histVideoCards() {
     return this._galleryItems().filter(x => x && x.vidUrl).slice(0, 120).map(x => ({
-      vidUrl: x.vidUrl, thumbStyle: this.thumbBox(x.ar), poster: x.url || '',
+      vidUrl: x.vidUrl, thumbStyle: this.thumbBox(x.ar), poster: this._dispSrc(x.url || '', 400),
       title: x.story || (x.prompt ? String(x.prompt).slice(0, 44) : 'Video'),
       metaLabel: this._vidMetaLabel(x.vidMeta), hasMeta: !!this._vidMetaLabel(x.vidMeta),
       date: this._fmtDate(x.ts), dl: () => this.dlVideo(x.vidUrl),
@@ -4373,7 +4397,7 @@ class Component extends DCLogic {
       fellBack: !!(((si && si.meta) || {}).fellBack),
       fellBackNote: (((si && si.meta) || {}).fellBack) ? (this._modelLabel(((si && si.meta) || {}).reqModel) + ' zaman aşımına uğradı. Görseliniz ' + this._modelLabel(((si && si.meta) || {}).model) + ' ile oluşturuldu.') : '',
       retryLabel: this._modelLabel(((si && si.meta) || {}).reqModel) + ' ile tekrar dene · ücretsiz',
-      url, hasUrl: !!url,
+      url, hasUrl: !!url, dispUrl: this._dispSrc(url, 600),
       vidUrl, hasVid: !!vidUrl, vidBusy,
       vidMetaLabel: this._vidMetaLabel({ prov: si && si.vidProv, sec: si && si.vidSec, audio: si && si.vidAudio }),
       canVideo: !!url && !vidBusy,
@@ -6220,7 +6244,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           toggleVidMenu: () => this.openVideoModal({ kind: 'gal', x, url: x.url }),
           makeGrok: () => this.makeGalVideo(x, 'grok'),
           makeKling: () => this.makeGalVideo(x, 'kling'),
-          thumbStyle: this.thumbBox(x.ar),
+          thumbStyle: this.thumbBox(x.ar), dispUrl: this._dispSrc(x.url, 480),
           pendStyle: { width: '100%', aspectRatio: arCss, maxHeight: '56vh', display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px)', backgroundSize: '34px 34px', animation: 'ta-scan .9s linear infinite' },
           zoom: () => this.openZoom(x.url),
           dl: () => gv.url ? this.dlVideo(gv.url) : this.dlImage(x.url, x.ar),
@@ -6522,7 +6546,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           hasVid,
           showImg: !hasVid,
           vidUrl: x.vidUrl || '',
-          thumbStyle: this.thumbBox(x.ar),
+          thumbStyle: this.thumbBox(x.ar), dispUrl: this._dispSrc(x.url, 480),
           zoom: () => this.openZoom(x.url),
           dl: () => hasVid ? this.dlVideo(x.vidUrl) : this.dlImage(x.url, x.ar),
           del: () => this.delSavedImg(x.id),
