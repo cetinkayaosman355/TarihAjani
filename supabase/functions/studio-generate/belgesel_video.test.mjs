@@ -21,6 +21,18 @@ test("Motor: sahne toplama + montaj + tetikleyici mevcut", () => {
   assert.ok(src.includes("_recorderMime()"), "MediaRecorder mime seçimi (mp4→webm yedek)");
 });
 
+test("Montaj ücreti: süreye göre reserve→finalize/refund (backend belgesel action)", () => {
+  const index = readFileSync(join(HERE, "index.ts"), "utf8");
+  assert.ok(index.includes('act === "belgesel"'), "belgesel action");
+  assert.ok(index.includes('"belgesel"') && index.includes("ALLOWED_ACTIONS"), "belgesel izinli action");
+  assert.ok(index.includes("TA_BELGESEL_KR_PER_MIN"), "dakika başı KR (env ile ayarlanır)");
+  assert.ok(index.includes('Math.ceil(secs / 60)') && index.includes("reserveOp(admin, userId, belCost"), "süreye göre rezerve");
+  assert.ok(index.includes('mode === "finalize"') && index.includes('mode === "refund"'), "finalize + iade");
+  // frontend: render öncesi rezerve, başarıda finalize, hatada iade
+  assert.ok(src.includes("_belgeselCharge('reserve'") && src.includes("_belgeselCharge('finalize'") && src.includes("_belgeselCharge('refund'"), "istemci reserve/finalize/refund akışı");
+  assert.ok(src.includes("_docEstSeconds()"), "süre tahmini (metinden)");
+});
+
 test("Az kredi: yalnız görsel + seslendirme kullanılır, AI-video (Kling/Grok) çağrılmaz", () => {
   // Sahne görseli sceneImgs'ten, metin gorsel_promptlar[].anlatim'dan gelir
   assert.ok(src.includes("gp[i].anlatim || gp[i].sahne"), "altyazı/ses metni anlatımdan");

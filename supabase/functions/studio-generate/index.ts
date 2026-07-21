@@ -19,7 +19,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   POST {action:"version"} → { ok, build, primaryModel, prices }
 // Deploy drift'in (dashboard'a eski/yarım kod yapıştırma) tek panzehiri budur.
 // HER kod değişikliğinde bu damga da güncellenir (test bunu zorlar).
-const BUILD = "sg-2026-07-21-r8";
+const BUILD = "sg-2026-07-21-r9";
 
 // NOT: imagescript'in WASM kodeği Supabase Deno edge arch'ında yüklenmiyor
 // (unsupported arch/platform) → kırpma zaten HİÇ çalışmıyor, sadece her üretimde
@@ -1436,7 +1436,7 @@ Deno.serve(async (req) => {
     // action + prompt eskiden ücretsiz metin üretimine (gen) düşüp endpoint'i genel
     // amaçlı AI servisi gibi kullandırabiliyordu. "" = uygulama içi ücretsiz metin
     // yardımcıları (sohbet, konu önerisi, Shorts, bölüm metni) — izinli kalır.
-    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate", "imgreclaim", "support", "version"]);
+    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate", "imgreclaim", "support", "version", "belgesel"]);
     if (!ALLOWED_ACTIONS.has(act)) return json({ ok: false, error: "Geçersiz işlem." }, 400);
     // TOPLU MALİYET TAHMİNİ — SUNUCU-TARAFLI (istemci fiyatına güvenilmez). Kredi düşmez,
     // rezervasyon yok. scenes: 0-tabanlı imgIndex dizisi VEYA count. "Tüm sahneleri üret"
@@ -1622,7 +1622,7 @@ Deno.serve(async (req) => {
     // üretimin (prevJob) bir defalık bedava hakkıyla yeniden üretir.
     let freeRegen = false;
     let regenPrevJob = "";
-    if (cost > 0 || isEdit || act === "imgreclaim" || act === "support") {
+    if (cost > 0 || isEdit || act === "imgreclaim" || act === "support" || act === "belgesel") {
       const SB_URL = Deno.env.get("SUPABASE_URL");
       const SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       if (!SB_URL || !SVC) return json({ ok: false, error: "Sunucu yapılandırması eksik (service role)." }, 500);
@@ -1631,6 +1631,31 @@ Deno.serve(async (req) => {
       const { data: ud } = await admin.auth.getUser(jwt);
       if (!ud?.user) return json({ ok: false, error: "Üretim için giriş yap." }, 401);
       userId = ud.user.id;
+      // ── BELGESEL VİDEO (Ken Burns) MONTAJ ÜCRETİ — süreye göre (dakika başı KR) ──
+      // Montaj kullanıcının tarayıcısında; ücret süreye göre reserve→finalize/refund.
+      // reserve: render ÖNCESİ süre tahminiyle rezerve. finalize: başarı. refund: hata.
+      if (act === "belgesel") {
+        const perMin = Math.max(1, Number(Deno.env.get("TA_BELGESEL_KR_PER_MIN") || "10") || 10);
+        const mode = String(b.mode || "reserve");
+        if (mode === "reserve") {
+          const secs = Math.max(1, Math.min(3600, Math.round(Number(b.seconds) || 0)));
+          const dakika = Math.max(1, Math.ceil(secs / 60));
+          const belCost = dakika * perMin;
+          const opId = crypto.randomUUID();
+          const r = await reserveOp(admin, userId, belCost, "belgesel", opId);
+          if (!r.ok) return json({ ok: false, error: "Yetersiz kredi", credits: r.credits }, 402);
+          return json({ ok: true, cost: belCost, minutes: dakika, perMin, credits: r.credits, job: opId, reserved: r.reserved });
+        }
+        if (mode === "finalize") {
+          const job = cleanJob(b.job); if (job) await finalizeOp(admin, job);
+          return json({ ok: true });
+        }
+        if (mode === "refund") {
+          const job = cleanJob(b.job); const credits = job ? await refundOp(admin, userId, job) : undefined;
+          return json({ ok: true, credits });
+        }
+        return json({ ok: false, error: "Geçersiz belgesel modu." }, 400);
+      }
       // Düzenlemede günlük ücretsiz hak (3/gün) SUNUCUDA sayılır — istemci beyanı geçmez
       if (isEdit) {
         try {
