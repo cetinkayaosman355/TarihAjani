@@ -2979,14 +2979,38 @@ class Component extends DCLogic {
     // (kör "tekrar deneniyor" döngüsü ve çift rezervasyon riski biter). opId sabit
     // kalır → sunucuda tek rezervasyon (idempotent), çift düşüm/asılı rezervasyon olmaz.
     if (onAttempt) { /* geriye dönük uyum: istemci tarafı tekrar yok, çağrılmaz */ }
-    const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: this._provResolve(provider || this.state.imgProvider), style: style || (this.state.imgStyle || this.state.style) || undefined,
-        // KALICI ARŞİV bağları: görseli hikâye/sahneye ve hesaba bağlar (sunucu studio_images'e yazar)
-        fileId: (kind && kind !== 'standalone') ? (this.state.fileNo || undefined) : undefined, sceneKey: sceneKey || undefined, kind: kind || undefined,
-        storyTitle: (kind && kind !== 'standalone') ? (((this.state.result || {}).baslik) || undefined) : undefined })
-    });
+    // İSTEMCİ ZAMAN SINIRI: sunucu zinciri ~135 sn bütçelidir; 150 sn'de istemci bırakır.
+    // Yanıt HİÇ gelmezse (ağ koptu / fonksiyon öldürüldü) tek seferlik 'imgreclaim' ile
+    // durum kapatılır: sonuç varsa görsel döner, yoksa kredi İADE edilir (idempotent).
+    const ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const tKill = ac ? setTimeout(() => { try { ac.abort(); } catch (e) {} }, 150000) : null;
+    let r;
+    try {
+      r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        signal: ac ? ac.signal : undefined,
+        body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: this._provResolve(provider || this.state.imgProvider), style: style || (this.state.imgStyle || this.state.style) || undefined,
+          // KALICI ARŞİV bağları: görseli hikâye/sahneye ve hesaba bağlar (sunucu studio_images'e yazar)
+          fileId: (kind && kind !== 'standalone') ? (this.state.fileNo || undefined) : undefined, sceneKey: sceneKey || undefined, kind: kind || undefined,
+          storyTitle: (kind && kind !== 'standalone') ? (((this.state.result || {}).baslik) || undefined) : undefined })
+      });
+    } catch (netErr) {
+      // Yanıt alınamadı → sunucudaki gerçek durumu öğren: kurtar ya da iade et.
+      if (opId) {
+        const d2 = await fetch(SB_URL + '/functions/v1/studio-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ action: 'imgreclaim', opId })
+        }).then(x => x.json()).catch(() => null);
+        if (d2 && d2.ok && d2.url) return { url: d2.url, meta: d2.meta || null };   // üretim aslında bitmişti
+        if (d2 && typeof d2.credits === 'number') this.setState({ credits: d2.credits }, () => this.persist());
+        throw new Error((d2 && d2.error) || 'Üretim zaman aşımına uğradı; kredi iade edildi. Tekrar dene.');
+      }
+      throw netErr;
+    } finally {
+      if (tKill) clearTimeout(tKill);
+    }
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
     if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Görsel üretilemedi');
