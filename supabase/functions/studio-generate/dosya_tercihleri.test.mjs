@@ -25,7 +25,7 @@ test("Dosya oluşturma: seçenekler dosya kaydına KALICI yazılır (picks + sta
   assert.ok(studioSrc.includes("o.sug ? { aspect: o.sug } : {}"), "platform seçimi oranı yalnız önerir");
   assert.ok(studioSrc.includes("genCreatedPreset: this.state.format || '', genUpdatedAt: genTs"), "picks: hazır mod + güncelleme zamanı");
   // yeni dosya açılırken state de aynı değerlerle başlar; önceki dosyanın seçimleri taşınmaz
-  assert.ok(studioSrc.includes("imgPlatform: this.state.imgPlatform || '', sceneOpts: {}, imgValErr: '',"), "yeni dosya: panel + sahne ayarları sıfırdan");
+  assert.ok(studioSrc.includes("imgPlatform: this.state.imgPlatform || '', sceneOpts: {}, promptHist: {}, imgValErr: '',"), "yeni dosya: panel + sahne ayarları sıfırdan");
 });
 
 test("Geçmişten açma: dosyanın KENDİ tercihleri döner; önceki dosyanınki taşınmaz", () => {
@@ -34,10 +34,10 @@ test("Geçmişten açma: dosyanın KENDİ tercihleri döner; önceki dosyanınki
   assert.ok(studioSrc.includes("imgAspect: (h.picks && h.picks.imgAspect) || null"), "oran dosya kaydından");
   assert.ok(studioSrc.includes("genUpdatedAt: (h.picks && h.picks.genUpdatedAt) || 0"), "güncelleme zamanı dosya kaydından");
   // persist: aktif dosyanın geçmiş kaydı görseller + sahne ayarları + tercihlerle tazelenir
-  assert.ok(studioSrc.includes("sceneImgs: s.sceneImgs || {}, sceneOpts: s.sceneOpts || {}, audioUrl:"), "persist geçmiş kaydına sceneOpts yazar");
+  assert.ok(studioSrc.includes("sceneImgs: s.sceneImgs || {}, sceneOpts: s.sceneOpts || {}, promptHist: s.promptHist || {}, audioUrl:"), "persist geçmiş kaydına sceneOpts + prompt geçmişi yazar");
   assert.ok(studioSrc.includes("picks: Object.assign({}, h.picks || {}, {"), "persist geçmiş kaydındaki tercihleri tazeler");
   // arşiv dosyası açarken de önceki panel/sahne seçimi sızmaz
-  assert.ok(studioSrc.includes("sceneOpts: {}, imgStyle: null, imgStyleCat: '', imgAspect: null, imgAspectManual: false, imgPlatform: ''"), "arşiv açılışında sıfırlama");
+  assert.ok(studioSrc.includes("sceneOpts: {}, promptHist: {}, imgStyle: null, imgStyleCat: '', imgAspect: null, imgAspectManual: false, imgPlatform: ''"), "arşiv açılışında sıfırlama");
 });
 
 test("Normalize tercih görünümü: fileGenSettings tek kaynaktan türetilir (paralel alan yok)", () => {

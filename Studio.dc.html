@@ -1540,6 +1540,9 @@
                               <button onClick="{{ gp.togglePrompt }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">{{ gp.promptMenuLabel }}</button>
                               <button onClick="{{ gp.edit }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">✎ Promptu Düzenle</button>
                               <button onClick="{{ gp.copy }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">⧉ Promptu Kopyala</button>
+                              <sc-if value="{{ gp.hasPromptHist }}" hint-placeholder-val="{{ false }}">
+                                <button onClick="{{ gp.togglePromptHist }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">🕘 Prompt Geçmişi</button>
+                              </sc-if>
                               <button onClick="{{ gp.regen }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">{{ gp.regenLabel }}</button>
                               <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
                                 <button onClick="{{ gp.removeImg }}" style="text-align: left; border: 0; border-top: 1px solid rgba(129,135,151,.2); background: transparent; color: #a4a9b5; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12); color: #e08a80;">🗑 Görseli Sil</button>
@@ -1562,6 +1565,31 @@
                         <code style="display: block; color: #c8cfdd; font-size: 12.5px; line-height: 1.7; font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; white-space: pre-wrap; padding: 8px 14px 12px;">{{ gp.prompt }}</code>
                       </div>
                     </sc-if>
+                    <!-- PROMPT GEÇMİŞİ: sürümler kullanıcı dilinde; eskiyi geri almak da yeni sürüm oluşturur -->
+                    <sc-if value="{{ gp.promptHistShow }}" hint-placeholder-val="{{ false }}">
+                      <div style="background: rgba(255,255,255,.025); border: 1px solid rgba(129,135,151,.14); border-radius: 5px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 14px 0;">
+                          <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">PROMPT GEÇMİŞİ</span>
+                          <button onClick="{{ gp.togglePromptHist }}" aria-label="Geçmişi kapat" style="border: 0; background: transparent; color: #818797; font-size: 14px; line-height: 1; cursor: pointer; padding: 2px 4px;" style-hover="color: #e6c478;">✕</button>
+                        </div>
+                        <div style="display: grid; gap: 8px; padding: 8px 14px 12px;">
+                          <sc-for list="{{ gp.promptVers }}" as="pvv" hint-placeholder-count="2">
+                            <div style="border-top: 1px dashed rgba(129,135,151,.18); padding-top: 8px; display: grid; gap: 5px;">
+                              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <span style="color: #e6c478; font-size: 12px; font-weight: 600;">{{ pvv.label }}</span>
+                                <sc-if value="{{ pvv.activeTag }}" hint-placeholder-val="{{ false }}">
+                                  <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .1em;">{{ pvv.activeTag }}</span>
+                                </sc-if>
+                                <sc-if value="{{ pvv.canUse }}" hint-placeholder-val="{{ false }}">
+                                  <button onClick="{{ pvv.use }}" style="margin-left: auto; border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">Bu promptu kullan</button>
+                                </sc-if>
+                              </div>
+                              <code style="display: block; color: #a9b0bf; font-size: 11.5px; line-height: 1.6; font-family: ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; max-height: 90px; overflow: auto;">{{ pvv.prompt }}</code>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </sc-if>
                     <!-- Üretim sürerken: yumuşak iskelet + durum -->
                     <sc-if value="{{ gp.img.busy }}" hint-placeholder-val="{{ false }}">
                       <div style="width: 100%; max-width: 300px; aspect-ratio: 9/16; max-height: 46vh; display: grid; place-items: center; background: repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px); background-size: 34px 34px; animation: ta-scan .9s linear infinite; border: 1px solid rgba(129,135,151,.2); border-radius: 6px;">
@@ -1570,6 +1598,19 @@
                     </sc-if>
                     <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
                       <img loading="lazy" data-zoomable="1" src="{{ gp.img.url }}" alt="Sahne görseli" onClick="{{ gp.img.zoom }}" title="Büyütmek için tıkla" style="{{ gp.img.thumbStyle }}">
+                    </sc-if>
+                    <!-- ÜRETİM GEÇMİŞİ: yeni üretim eskisini SİLMEZ; tıklanan versiyon seçili olur -->
+                    <sc-if value="{{ gp.img.hasVers }}" hint-placeholder-val="{{ false }}">
+                      <div class="ta-setrow" style="display: flex; gap: 7px; align-items: center; overflow-x: auto; padding: 2px 0;">
+                        <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .12em; flex: 0 0 auto;">ÜRETİMLER</span>
+                        <sc-for list="{{ gp.img.vers }}" as="vv" hint-placeholder-count="3">
+                          <button onClick="{{ vv.pick }}" title="{{ vv.title }}" style="{{ vv.style }}">
+                            <img loading="lazy" src="{{ vv.url }}" alt="{{ vv.title }}" style="width: 46px; height: 62px; object-fit: cover; display: block;">
+                            <span style="position: absolute; left: 3px; bottom: 3px; color: #f3eddc; background: rgba(5,7,13,.78); border-radius: 4px; font-size: 8.5px; padding: 1px 4px; font-family: 'Special Elite', monospace;">V{{ vv.no }}</span>
+                          </button>
+                        </sc-for>
+                        <span style="color: #6c7280; font-size: 11px; flex: 0 0 auto;">Tıkla → sahnenin seçili görseli olur; eskiler silinmez.</span>
+                      </div>
                     </sc-if>
                     <sc-if value="{{ gp.img.hasVid }}" hint-placeholder-val="{{ false }}">
                       <video src="{{ gp.img.vidUrl }}" controls playsinline loop style="width: 100%; max-width: 420px; border-radius: 7px; border: 1px solid rgba(193,154,82,.3); box-shadow: 0 10px 34px rgba(0,0,0,.5); margin-top: 2px;"></video>
@@ -2060,7 +2101,7 @@ class Component extends DCLogic {
       editTarget: null, editLabel: '',
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
-      imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, sceneOpts: (w && w.sceneOpts) || {}, savedImgs: [], srvImages: [], imgSel: {},
+      imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, sceneOpts: (w && w.sceneOpts) || {}, promptHist: (w && w.promptHist) || {}, savedImgs: [], srvImages: [], imgSel: {},
       // Panel seçimleri dosyayla geri yüklenir (UI seçimi yenilemede kaybolmaz/geri dönmez)
       imgStyle: (w && w.imgStyle) || null, imgStyleCat: (w && w.imgStyleCat) || '', imgPlatform: (w && w.imgPlatform) || '',
       imgAspect: (w && w.imgAspect) || null, imgAspectManual: !!(w && w.imgAspectManual), imgValErr: '', imgZoom: '',
@@ -2220,7 +2261,7 @@ class Component extends DCLogic {
     // ya da kullanıcı geri gelse bile KAYBOLMASIN. Görseller/videolar Storage URL'i
     // olduğundan (data-uri değil) blob küçük kalır, localStorage'a rahat sığar.
     const work = (s.result && s.mode === 'wizard') ? {
-      result: s.result, sceneImgs: s.sceneImgs || {}, sceneOpts: s.sceneOpts || {}, fileNo: s.fileNo, tab: s.tab || 'senaryo',
+      result: s.result, sceneImgs: s.sceneImgs || {}, sceneOpts: s.sceneOpts || {}, promptHist: s.promptHist || {}, fileNo: s.fileNo, tab: s.tab || 'senaryo',
       idea: s.idea, tone: s.tone, voice: s.voice, style: s.style, aspect: s.aspect,
       // Panel seçimleri de dosyayla yaşar: yenilemede oran/stil/kategori/platform seçimi
       // sessizce sihirbaz değerine GERİ DÖNMEZ (UI seçimi = üretim değeri kalıcı).
@@ -2236,7 +2277,7 @@ class Component extends DCLogic {
       // Aktif dosyanın görselleri + sahne ayarları + üretim tercihleri kendi geçmiş
       // kaydına da işlenir → dosya geçmişten tekrar açılınca AYNI değerler döner.
       hist = hist.map(h => (h.fileNo && h.fileNo === s.fileNo) ? Object.assign({}, h, {
-        sceneImgs: s.sceneImgs || {}, sceneOpts: s.sceneOpts || {}, audioUrl: s.sysAudioUrl || h.audioUrl || '',
+        sceneImgs: s.sceneImgs || {}, sceneOpts: s.sceneOpts || {}, promptHist: s.promptHist || {}, audioUrl: s.sysAudioUrl || h.audioUrl || '',
         picks: Object.assign({}, h.picks || {}, {
           tone: s.tone, voice: s.voice, style: s.style, duration: s.duration, model: s.model,
           aspect: s.aspect, format: s.format,
@@ -3330,7 +3371,7 @@ class Component extends DCLogic {
       done();
       const url = res.url, meta = res.meta || null;   // meta: sağlayıcı/model/stil/biçim/kadraj/çözünürlük/boyut/süre/kredi
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url, meta } : x) }));
-      if (sceneKey) this.setSceneImg(sceneKey, { url, meta });   // satır içi önizleme + meta
+      if (sceneKey) this._pushSceneVersion(sceneKey, id, url, meta);   // versiyon ekle + seçili yap (eskiler korunur)
       // kalıcı arşiv: yerel (IndexedDB) + hesap bağları (fileId/kind/sceneKey) — sunucu studio_images'e de yazar
       this.saveImg({ id, prompt, ar, url, meta, ts: Date.now(), fileId: (kind !== 'standalone' ? (this.state.fileNo || '') : ''), kind, sceneKey: sceneKey || '' });
       this._scheduleSrvRefresh();   // sunucu arşivini (grup/geçmiş) kısa süre sonra tazele (batch'i spam'lemez)
@@ -3837,6 +3878,50 @@ class Component extends DCLogic {
 
   // ── SATIR İÇİ görsel üretimi ── (Görsel Promptları sekmesinde, sekme değiştirmeden;
   // her prompt kendi görselini yanında tutar — kaybolmaz, tek sayfada üretilir)
+  // ── GÖRSEL VERSİYONLARI ── yeni üretim eskisinin ÜZERİNE YAZMAZ: her başarılı
+  // üretim sahnenin versiyon listesine eklenir (aynı opId tekrar → duplicate yok),
+  // en yeni otomatik "seçili" olur; eskiler korunur ve tek tıkla geri seçilir.
+  _pushSceneVersion(key, id, url, meta) {
+    this.setState(st => {
+      const si = (st.sceneImgs || {})[key] || {};
+      const vers = (si.vers || []).filter(v => v && v.id !== id);
+      vers.push({ id, url, meta: meta || null, ts: Date.now(), pv: (((st.promptHist || {})[key]) || []).length || 1 });
+      return { sceneImgs: { ...st.sceneImgs, [key]: { ...si, url, meta: meta || si.meta || null, vers } } };
+    }, () => this.persist());
+  }
+  // "Bu görseli kullan": yalnız seçimi değiştirir — hiçbir versiyon silinmez;
+  // video/dışa aktarma akışları sahnenin seçili görselini (url/meta) kullanır.
+  _selectSceneVersion(key, id) {
+    this.setState(st => {
+      const si = (st.sceneImgs || {})[key] || {};
+      const v = (si.vers || []).find(x => x && x.id === id);
+      if (!v) return {};
+      return { sceneImgs: { ...st.sceneImgs, [key]: { ...si, url: v.url, meta: v.meta || null } } };
+    }, () => this.persist());
+  }
+  // ── PROMPT GEÇMİŞİ ── düzenleme/yenileme mevcut promptu OVERWRITE ETMEZ:
+  // ilk kayıt tembel oluşturulur ('İlk Prompt'), her değişiklik yeni versiyon olur.
+  // Eski promptu geri almak da YENİ versiyon oluşturur (geçmiş asla ezilmez).
+  pushPromptV(key, newPrompt, action) {
+    const np = String(newPrompt || '').trim();
+    if (!np) return;
+    this.setState(st => {
+      const r0 = st.result; if (!r0) return {};
+      const m = /^(gp|vp)(\d+)$/.exec(key); if (!m) return {};
+      const kind = m[1], i = +m[2];
+      const arr = kind === 'gp' ? (r0.gorsel_promptlar || []) : (r0.video_promptlar || []);
+      if (!arr[i]) return {};
+      const cur = arr[i].prompt || '';
+      const hist = { ...(st.promptHist || {}) };
+      const list = (hist[key] || []).slice();
+      if (!list.length && cur) list.push({ v: 1, prompt: cur, ts: Date.now(), action: 'initial' });
+      list.push({ v: list.length + 1, prompt: np, ts: Date.now(), action: action || 'manual_edit' });
+      hist[key] = list;
+      const r2 = JSON.parse(JSON.stringify(r0));
+      (kind === 'gp' ? r2.gorsel_promptlar : r2.video_promptlar)[i].prompt = np;
+      return { result: r2, promptHist: hist };
+    }, () => this.persist());
+  }
   setSceneImg(key, patch) {
     this.setState(st => ({ sceneImgs: { ...st.sceneImgs, [key]: { ...(st.sceneImgs[key] || {}), ...patch } } }),
       // Kalıcı alanlar (görsel/video URL'i, iş kimliği, üretildi işareti) değiştiyse
@@ -3904,6 +3989,19 @@ class Component extends DCLogic {
       makeGrok: () => this.makeVideo(key, url, 'grok'),
       makeKling: () => this.makeVideo(key, url, 'kling'),
       zoom: () => this.openZoom(url),
+      // VERSİYON ŞERİDİ: her başarılı üretim ayrı küçük kart; tıklanan SEÇİLİ olur.
+      hasVers: !!(si && (si.vers || []).length > 1),
+      vers: ((si && si.vers) || []).map((v, ix) => {
+        const sel = v.url === url;
+        const mm = v.meta || {};
+        return {
+          no: ix + 1, url: v.url,
+          title: 'V' + (ix + 1) + [mm.provider, mm.style, mm.aspect].filter(Boolean).map(x => ' · ' + x).join('') + (v.ts ? ' · ' + new Date(v.ts).toLocaleDateString('tr-TR') : ''),
+          pick: () => this._selectSceneVersion(key, v.id),
+          style: { flex: '0 0 auto', padding: 0, overflow: 'hidden', borderRadius: '7px', cursor: 'pointer', position: 'relative',
+            border: sel ? '2px solid #e6c478' : '1px solid rgba(129,135,151,.35)', background: 'transparent' }
+        };
+      }),
       // Küçük görünüm kutusu GÖRSELİN KENDİ oranında çizilir (dosya sihirbazının
       // oranında değil) — 9:16 üretilmiş sahne 16:9 kutuda yamuk görünmesin.
       thumbStyle: { ...this.thumbBox(
@@ -4661,7 +4759,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         // Yeni dosyanın görsel tercihleri sihirbaz seçimlerinden başlar (kalıcı);
         // önceki dosyadan sahne ayarı/panel seçimi TAŞINMAZ.
         imgStyle: this.state.style, imgStyleCat: '', imgAspect: this.state.aspect, imgAspectManual: false,
-        imgPlatform: this.state.imgPlatform || '', sceneOpts: {}, imgValErr: '',
+        imgPlatform: this.state.imgPlatform || '', sceneOpts: {}, promptHist: {}, imgValErr: '',
         genCreatedPreset: this.state.format || '', genUpdatedAt: genTs,
         genWarn: partial
           ? 'Dosyan hazır ve kaydedildi — ama sahne promptları tamamlanamadı. Görsel Promptları sekmesinden “Sahne promptlarını üret” ile ek kredi olmadan tamamlayabilirsin.'
@@ -5171,7 +5269,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           mode: 'wizard', step: 4, tab: 'senaryo',
           result: a.result, fileNo: a.fileNo, idea: a.result.baslik, sceneImgs: this._hydrateSceneImgs(a.fileNo, a.sceneImgs || {}),
           // Önceki dosyanın panel/sahne seçimleri arşiv dosyasına TAŞINMAZ
-          sceneOpts: {}, imgStyle: null, imgStyleCat: '', imgAspect: null, imgAspectManual: false, imgPlatform: '', imgValErr: '', imgSetOpen: false, imgSetNotice: false,
+          sceneOpts: {}, promptHist: {}, imgStyle: null, imgStyleCat: '', imgAspect: null, imgAspectManual: false, imgPlatform: '', imgValErr: '', imgSetOpen: false, imgSetNotice: false,
           audioUrl: '', ttsError: '', genError: '', sysAudioUrl: '', sysTtsError: ''
         }, () => { this.persist(); this.loadServerImages().then(() => this._rehydrateCurrentStory()); }),
         uret: () => this.uretFromArsiv(a)    // "Studio'da üret" — hazır dosyayı sonuçta aç
@@ -5199,7 +5297,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           sceneImgs: this._hydrateSceneImgs(h.fileNo || '', h.sceneImgs || {}),
           // DOSYA TERCİHLERİ: bu dosyanın kayıtlı değerleri gelir; önceki dosyanın
           // panel/sahne seçimleri TAŞINMAZ (kayıt yoksa sihirbaz değerlerine döner).
-          sceneOpts: (h.sceneOpts) || {},
+          sceneOpts: (h.sceneOpts) || {}, promptHist: (h.promptHist) || {},
           imgStyle: (h.picks && h.picks.imgStyle) || null, imgStyleCat: (h.picks && h.picks.imgStyleCat) || '',
           imgAspect: (h.picks && h.picks.imgAspect) || null, imgAspectManual: !!(h.picks && h.picks.imgAspectManual),
           imgPlatform: (h.picks && h.picks.imgPlatform) || '', imgValErr: '', imgSetOpen: false, imgSetNotice: false,
@@ -5932,11 +6030,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     if (!last || !s.editTarget || !s.result) return;
     const r = JSON.parse(JSON.stringify(s.result));
     const t = s.editTarget;
+    if (t.type === 'gp' || t.type === 'vp') {
+      // Prompt düzenlemesi geçmişi EZMEZ → yeni prompt versiyonu
+      this.pushPromptV(t.type + t.i, last.content, 'manual_edit');
+      this.setState({ editTarget: null, editLabel: '', chatOpen: false });
+      return;
+    }
     if (t.type === 'yt' && r.youtube) r.youtube.aciklama = last.content;
     else if (t.type === 'ig' && r.instagram) r.instagram.aciklama = last.content;
     else if (t.type === 'sec' && r.senaryo && r.senaryo[t.i]) r.senaryo[t.i].metin = last.content;
-    else if (t.type === 'gp' && r.gorsel_promptlar && r.gorsel_promptlar[t.i]) r.gorsel_promptlar[t.i].prompt = last.content;
-    else if (t.type === 'vp' && r.video_promptlar && r.video_promptlar[t.i]) r.video_promptlar[t.i].prompt = last.content;
     this.setState({ result: r, editTarget: null, editLabel: '', chatOpen: false });
   }
 
@@ -6002,6 +6104,28 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           ovrProviders: mkChips('prov', [['', 'Genel'], ['gpt', 'GPT Image 2'], ['gemini', 'Gemini']], so.prov)
         };
       })(),
+      // ── PROMPT GEÇMİŞİ (kullanıcı dilinde sürümler; Git benzeri terim yok) ──
+      ...(() => {
+        const key = kind + i;
+        const list = ((s.promptHist || {})[key]) || [];
+        const LBL = { initial: 'İlk Prompt', manual_edit: 'Düzenleme', regenerate: 'Ajan Yenilemesi', revert: 'Geri Dönüş' };
+        return {
+          hasPromptHist: list.length > 0,
+          promptHistShow: !!((s.promptHistOpen || {})[key]),
+          togglePromptHist: () => this.setState(st => ({ sceneMenu: '', promptHistOpen: { ...(st.promptHistOpen || {}), [key]: !((st.promptHistOpen || {})[key]) } })),
+          promptVers: list.map((pv, ix) => {
+            const isLast = ix === list.length - 1;
+            const dt = pv.ts ? new Date(pv.ts).toLocaleDateString('tr-TR') : '';
+            return {
+              label: (LBL[pv.action] || 'Düzenleme') + (pv.action !== 'initial' ? ' ' + ix : '') + (dt ? ' · ' + dt : ''),
+              prompt: pv.prompt || '',
+              activeTag: isLast ? '● KULLANIMDA' : '',
+              canUse: !isLast,
+              use: () => this.pushPromptV(key, pv.prompt, 'revert')   // geri almak da YENİ sürüm oluşturur
+            };
+          }).reverse()   // en yeni üstte
+        };
+      })(),
       // PROMPT VARSAYILAN GİZLİ (AI Yönetmen): erişim ⋯ menüsünden; metin kaybolmaz.
       promptShow: !!((s.promptOpen || {})[kind + i]),
       togglePrompt: () => this.setState(st => ({ sceneMenu: '', promptOpen: { ...(st.promptOpen || {}), [kind + i]: !((st.promptOpen || {})[kind + i]) } })),
@@ -6043,11 +6167,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       const tail = kind === 'vp' ? 'Stable face and anatomy, no warping, no morphing, no flicker.' : anti;
       const what = kind === 'gp' ? 'image-generation prompt' : 'video-generation prompt describing ONE camera move/action, 5-8 seconds';
       const reply = await this.askAI('Rewrite the following ' + what + ' for the scene "' + (item.sahne || '') + '" of a Turkish history-mystery YouTube video. Produce a NEW, improved variation (different composition or angle), in English. It MUST start with this exact style core: "' + stilStr + '", must include "' + oran + '", and must END with this exact line: "' + tail + '". Return ONLY the prompt text, no quotes or explanation.\n\nCurrent prompt:\n' + (item.prompt || ''), 600, 'regen');
-      const r = JSON.parse(JSON.stringify(this.state.result));
-      const tgt = kind === 'gp' ? r.gorsel_promptlar : r.video_promptlar;
-      if (tgt && tgt[i]) tgt[i].prompt = reply.trim().replace(/^["']|["']$/g, '');
+      // Yenileme mevcut promptu ezmez → yeni prompt versiyonu (geçmiş korunur)
+      this.pushPromptV(kind + i, reply.trim().replace(/^["']|["']$/g, ''), 'regenerate');
       const entry = { title: 'Sahne yenileme — ' + (item.sahne || 'Sahne ' + (i + 1)), date: new Date().toLocaleDateString('tr-TR'), ts: Date.now(), cost: 5 };
-      this.setState(st => ({ result: r, regenKey: null, history: [entry, ...st.history].slice(0, 12) }), () => this.persist());
+      this.setState(st => ({ regenKey: null, history: [entry, ...st.history].slice(0, 12) }), () => this.persist());
       // Kredi: sunucu düştüyse dönen bakiye; değilse eski yöntem
       if (this._lastGen && this._lastGen.charged && typeof this._lastGen.credits === 'number') {
         this.setState({ credits: this._lastGen.credits }, () => this.persist());
