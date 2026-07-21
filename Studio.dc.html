@@ -5095,7 +5095,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           this.setState({ genMsg: 'SAHNE PROMPTLARI ÜRETİLİYOR…', genPct: 88 });
           result = await this.genScenePrompts(result);
           if (!go2.gorsel) result.gorsel_promptlar = [];
-          if (!go2.video) result.video_promptlar = [];
+          // VİDEO PROMPTLARI HER ZAMAN KORUNUR: genScenePrompts bunları görsel promptlarıyla
+          // AYNI çağrıda (ek maliyet YOK) üretir. Eskiden video çıktısı seçili değilse
+          // atılıyordu → "yeni hikâyede video promptları hiç gelmiyor" karışıklığı. Artık
+          // görsel üretilen her hikâyede video promptları hazır (video üretimi bunları kullanır).
         } else {
           result.gorsel_promptlar = []; result.video_promptlar = [];
         }
