@@ -1827,7 +1827,10 @@
                       <p style="margin: 0; color: #e0a58a; font-size: 12px;">⚠ {{ docErr }}</p>
                     </sc-if>
                     <sc-if value="{{ docIdle }}" hint-placeholder-val="{{ true }}">
-                      <button onClick="{{ startDocVideo }}" disabled="{{ docNotReady }}" style="{{ docBtnStyle }}">🎞 BELGESEL VİDEOYU OLUŞTUR</button>
+                      <div style="display: grid; gap: 6px; justify-items: start;">
+                        <button onClick="{{ startDocVideo }}" disabled="{{ docNotReady }}" style="{{ docBtnStyle }}">🎞 BELGESEL VİDEOYU OLUŞTUR</button>
+                        <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .04em;">{{ docCostHint }}</span>
+                      </div>
                     </sc-if>
                   </div>
                 </sc-if>
@@ -1878,7 +1881,10 @@
                   <p style="margin: 0; color: #e0a58a; font-size: 12.5px; line-height: 1.5;">⚠ {{ docErr }}</p>
                 </sc-if>
                 <sc-if value="{{ docIdle }}" hint-placeholder-val="{{ true }}">
-                  <button onClick="{{ startDocVideo }}" disabled="{{ docNotReady }}" style="{{ docBtnStyle }}">🎞 BELGESEL VİDEOYU OLUŞTUR</button>
+                  <div style="display: grid; gap: 6px; justify-items: start;">
+                    <button onClick="{{ startDocVideo }}" disabled="{{ docNotReady }}" style="{{ docBtnStyle }}">🎞 BELGESEL VİDEOYU OLUŞTUR</button>
+                    <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .04em;">{{ docCostHint }}</span>
+                  </div>
                 </sc-if>
               </div>
               <div style="display: grid; gap: 10px;">
@@ -4689,19 +4695,54 @@ class Component extends DCLogic {
       requestAnimationFrame(draw);
     });
   }
-  // UI tetikleyici: durum yönetimi + kaydet/indir
-  startDocVideo() {
+  // Belgesel süresini metinden TAHMİN et (montaj ücreti render öncesi rezerve edilir).
+  // Türkçe ≈ 14 karakter/sn okunur + sahne başı ~0.5 sn nefes.
+  _docEstSeconds() {
+    const sc = this._docScenes();
+    const chars = sc.reduce((a, s) => a + ((s.text || '').length), 0);
+    return Math.max(sc.length * 2.5, Math.round(chars / 14) + sc.length * 0.5);
+  }
+  // Montaj ücreti sunucu çağrısı: mode reserve/finalize/refund (süreye göre KR).
+  async _belgeselCharge(mode, extra) {
+    const s = this._sbUrlKey();
+    const token = this._token() || s.key;
+    const r = await fetch(s.url + '/functions/v1/studio-generate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(Object.assign({ action: 'belgesel', mode }, extra || {}))
+    });
+    const d = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
+    if (r.status === 402) { if (typeof d.credits === 'number') this.setState({ credits: d.credits }); return { ok: false, error: 'YETERSIZ_KREDI', credits: d.credits }; }
+    return d;
+  }
+  // UI tetikleyici: süreye göre montaj ücreti REZERVE → render → başarıda finalize, hatada iade.
+  async startDocVideo() {
     if (this.state.docBusy) return;
     if (!this._docReady()) { this.setState({ docErr: 'En az 2 sahne görseli gerekli — önce görselleri üret.' }); return; }
+    this.setState({ docBusy: true, docErr: '', docPct: 0, docMsg: 'Montaj ücreti ayrılıyor…', docUrl: '' });
+    // 1) Montaj ücretini süreye göre rezerve et (render ÖNCESİ)
+    let job = '';
+    try {
+      const rz = await this._belgeselCharge('reserve', { seconds: this._docEstSeconds() });
+      if (!rz || !rz.ok) throw new Error(rz && rz.error === 'YETERSIZ_KREDI' ? 'YETERSIZ_KREDI' : ((rz && rz.error) || 'ücret ayrılamadı'));
+      job = rz.job || '';
+      if (typeof rz.credits === 'number') this.setState({ credits: rz.credits }, () => this.persist());
+    } catch (e) {
+      this.setState({ docBusy: false, docMsg: '', docErr: (e.message === 'YETERSIZ_KREDI') ? 'Belgesel montajı için yeterli kredi yok.' : ('Ücret ayrılamadı: ' + e.message) });
+      if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
+      return;
+    }
+    // 2) Tarayıcıda montaj
     const opts = { subStyle: this.state.docSubStyle || 'minimal', music: !!this.state.docMusic };
-    this.setState({ docBusy: true, docErr: '', docPct: 0, docMsg: 'Başlıyor…', docUrl: '' });
     this.buildDocVideo(opts, (pct, msg) => this.setState({ docPct: pct, docMsg: msg }))
-      .then(blob => {
+      .then(async blob => {
+        if (job) { try { await this._belgeselCharge('finalize', { job }); } catch (er) {} }   // ücret kesinleşir
         const url = URL.createObjectURL(blob);
         this.setState({ docBusy: false, docPct: 100, docMsg: '', docUrl: url });
       })
-      .catch(e => {
-        const msg = (e && e.message === 'YETERSIZ_KREDI') ? 'Seslendirme için yeterli kredi yok.' : ('Belgesel video üretilemedi: ' + (e && e.message ? e.message : 'bilinmeyen hata'));
+      .catch(async e => {
+        // Render başarısız → montaj ücretini İADE et (seslendirme ayrı düşer)
+        if (job) { try { const rf = await this._belgeselCharge('refund', { job }); if (rf && typeof rf.credits === 'number') this.setState({ credits: rf.credits }, () => this.persist()); } catch (er) {} }
+        const msg = (e && e.message === 'YETERSIZ_KREDI') ? 'Seslendirme için yeterli kredi yok — montaj ücreti iade edildi.' : ('Belgesel video üretilemedi (montaj ücreti iade edildi): ' + (e && e.message ? e.message : 'bilinmeyen hata'));
         this.setState({ docBusy: false, docMsg: '', docErr: msg });
         if (e && e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
       });
@@ -6647,6 +6688,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         }));
       })(),
       docSceneInfo: (() => { const n = this._docScenes().length; return n ? (n + ' sahne görseli hazır') : 'sahne görseli yok'; })(),
+      // Montaj ücreti tahmini (dakika başı 10 KR) — seslendirme ayrı düşer
+      docCostHint: (() => { const est = this._docEstSeconds(); const dk = Math.max(1, Math.ceil(est / 60)); return '≈ ' + (dk * 10) + ' KR montaj (' + dk + ' dk · dakikaya göre) + seslendirme'; })(),
       docBarStyle: { height: '100%', width: (s.docPct || 0) + '%', background: 'linear-gradient(90deg,#7c50d8,#b79bff)', transition: 'width .3s' },
       docBtnStyle: { border: 0, cursor: this._docReady() ? 'pointer' : 'not-allowed', color: '#fff', borderRadius: '8px', padding: '13px 22px', fontFamily: "'Special Elite', monospace", fontSize: '11.5px', letterSpacing: '.1em', opacity: this._docReady() ? '1' : '.5', background: 'linear-gradient(115deg,#5b32b8,#7c50d8 55%,#9a72ee)', boxShadow: '0 8px 22px rgba(110,70,210,.32)', justifySelf: 'start' },
       startDocVideo: () => this.startDocVideo(),
