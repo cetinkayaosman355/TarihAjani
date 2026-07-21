@@ -15,6 +15,12 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+// ── SÜRÜM DAMGASI ── canlıda HANGİ build'in koştuğu tek istekle doğrulanır:
+//   POST {action:"version"} → { ok, build, primaryModel, prices }
+// Deploy drift'in (dashboard'a eski/yarım kod yapıştırma) tek panzehiri budur.
+// HER kod değişikliğinde bu damga da güncellenir (test bunu zorlar).
+const BUILD = "sg-2026-07-21-r2";
+
 // NOT: imagescript'in WASM kodeği Supabase Deno edge arch'ında yüklenmiyor
 // (unsupported arch/platform) → kırpma zaten HİÇ çalışmıyor, sadece her üretimde
 // hata logu basıyordu. Görseller gpt-image native oranında geliyor (dikey 2:3,
@@ -1314,11 +1320,17 @@ Deno.serve(async (req) => {
     // action + prompt eskiden ücretsiz metin üretimine (gen) düşüp endpoint'i genel
     // amaçlı AI servisi gibi kullandırabiliyordu. "" = uygulama içi ücretsiz metin
     // yardımcıları (sohbet, konu önerisi, Shorts, bölüm metni) — izinli kalır.
-    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate", "imgreclaim", "support"]);
+    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate", "imgreclaim", "support", "version"]);
     if (!ALLOWED_ACTIONS.has(act)) return json({ ok: false, error: "Geçersiz işlem." }, 400);
     // TOPLU MALİYET TAHMİNİ — SUNUCU-TARAFLI (istemci fiyatına güvenilmez). Kredi düşmez,
     // rezervasyon yok. scenes: 0-tabanlı imgIndex dizisi VEYA count. "Tüm sahneleri üret"
     // öncesi toplam tahmini kredi bu uçtan alınır.
+    // SÜRÜM KONTROLÜ (kimliksiz, ücretsiz): canlıdaki build + aktif model + fiyatlar.
+    // Eski build'de bu action yoktur → "Geçersiz işlem." döner = ESKİ SÜRÜM CANLIDA.
+    if (act === "version") {
+      const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-2").trim();
+      return json({ ok: true, build: BUILD, primaryModel: primary, provider: (Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim(), prices: { "gpt-image-2": 20, "gpt-image-1.5": 12, "gpt-image-1": 8, gemini: 12 } });
+    }
     if (act === "estimate") {
       const idxs: number[] = Array.isArray(b.scenes)
         ? b.scenes.slice(0, 200).map((n: any) => Math.max(0, Number(n) || 0))
@@ -1326,7 +1338,7 @@ Deno.serve(async (req) => {
       const unit = imgRequestPrice(b);   // MODEL bazlı: seçilen motorun birim fiyatı
       const per = idxs.map(() => unit);
       const total = per.reduce((a, c) => a + c, 0);
-      return json({ ok: true, total, count: idxs.length, per });
+      return json({ ok: true, total, count: idxs.length, per, build: BUILD });
     }
     // Hız limiti: kimliksiz/ücretsiz istekler dakikada 30, tümü 90 (IP başına)
     const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
@@ -1709,6 +1721,7 @@ Deno.serve(async (req) => {
         bytes: info.bytes,
         ms: genMs,
         cost: actualCost,   // kartta GERÇEKTEN düşen kredi
+        build: BUILD,       // izlenebilirlik: bu görseli üreten sunucu sürümü
       };
       // KURTARMA: sonucu opId ile job-cache'e yaz → yenileme/tekrar aynı sonucu kredisiz getirir.
       if (b.opId && admin && userId) { try { await saveJobResult(admin, userId, opId, { url, meta }); } catch (_e) { /* kurtarma opsiyonel */ } }
