@@ -993,10 +993,11 @@
             <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ADIM 1 / 4 · VAKA TALEBİ</p>
             <h2 style="margin: 12px 0 8px; font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 700; line-height: 1.08;">Hangi tarih sırrını çözelim?</h2>
             <p style="margin: 0 0 18px; color: #a4a9b5; line-height: 1.65; font-size: 15px;">Bir olay, kişi, dönem ya da soru yaz — gerisini Ajan devralsın. Araştırılmış senaryo, gerçek Türkçe seslendirme, sinematik sahneler ve yayına hazır paket dakikalar içinde elinde.</p>
-            <!-- İKİ MOD: Sen Öner / Benim Fikrim Var -->
+            <!-- MOD: tek bağlamsal geçiş (eski çalışmayan öneri-modu düğmesi kaldırıldı —
+                 varsayılan zaten öneri modu olduğundan tıklayınca hiçbir şey olmuyor gibiydi).
+                 Bu düğme daima anlamlı: öneri modundayken "kendi fikrim", kendi fikir modunda "ajan önersin". -->
             <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
-              <button onClick="{{ setModeSuggest }}" style="{{ modeSuggestStyle }}">◈ Sen Öner</button>
-              <button onClick="{{ setModeOwn }}" style="{{ modeOwnStyle }}">✎ Benim Fikrim Var</button>
+              <button onClick="{{ toggleIdeaMode }}" style="{{ modeToggleStyle }}">{{ modeToggleLabel }}</button>
             </div>
             <sc-if value="{{ isOwnMode }}" hint-placeholder-val="{{ false }}">
               <p style="margin: 0 0 8px; color: #818797; font-size: 12.5px; line-height: 1.5;">Fikrini ya da kısa hikâyeni serbestçe yaz. "Taslağı Hazırla" ile ajan onu <strong style="color:#a7adba;">değiştirmeden</strong> netleştirip yapılandırır — tam üretim yapmaz.</p>
@@ -5749,8 +5750,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       isSuggestMode: (s.ideaMode || 'suggest') !== 'own',
       setModeSuggest: () => this.setState({ ideaMode: 'suggest', draftErr: '' }),
       setModeOwn: () => this.setState({ ideaMode: 'own', draftErr: '' }),
-      modeSuggestStyle: (() => { const on = (s.ideaMode || 'suggest') !== 'own'; return { cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '9px 16px', borderRadius: '8px', border: on ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)', background: on ? 'rgba(193,154,82,.14)' : 'rgba(4,6,12,.6)', color: on ? '#e6c478' : '#a4a9b5' }; })(),
-      modeOwnStyle: (() => { const on = (s.ideaMode || 'suggest') === 'own'; return { cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '9px 16px', borderRadius: '8px', border: on ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)', background: on ? 'rgba(193,154,82,.14)' : 'rgba(4,6,12,.6)', color: on ? '#e6c478' : '#a4a9b5' }; })(),
+      // Tek bağlamsal geçiş: mevcut modun TERSİNE götürür (hep bir işe yarar).
+      toggleIdeaMode: () => this.setState({ ideaMode: (s.ideaMode || 'suggest') === 'own' ? 'suggest' : 'own', draftErr: '' }),
+      modeToggleLabel: (s.ideaMode || 'suggest') === 'own' ? '◈ Ajan önersin' : '✎ Kendi fikrimi yazacağım',
+      modeToggleStyle: { cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '9px 16px', borderRadius: '8px', border: '1px solid rgba(129,135,151,.3)', background: 'rgba(4,6,12,.6)', color: '#a4a9b5' },
       noDraft: !s.draft,
       draftView: !!s.draft,
       draftBusy: !!s.draftBusy,

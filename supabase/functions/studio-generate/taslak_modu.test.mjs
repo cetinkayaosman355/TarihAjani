@@ -15,12 +15,13 @@ const studioSrc = readFileSync(join(REPO, "Studio.dc.html"), "utf8");
 const indexSrc = readFileSync(join(HERE, "index.ts"), "utf8");
 
 // ── (A) KAYNAK DEĞİŞMEZLERİ ─────────────────────────────────────────────────
-test("İki mod seçici: Sen Öner + Benim Fikrim Var, varsayılan 'suggest'", () => {
-  assert.ok(studioSrc.includes("◈ Sen Öner"), "Sen Öner butonu");
-  assert.ok(studioSrc.includes("✎ Benim Fikrim Var"), "Benim Fikrim Var butonu");
+test("Mod geçişi: tek bağlamsal düğme (eski çalışmayan '◈ Sen Öner' kaldırıldı), varsayılan 'suggest'", () => {
+  // Eski redundant "◈ Sen Öner" düğmesi kaldırıldı (varsayılan zaten öneri modu olduğundan
+  // tıklayınca hiçbir şey olmuyordu). Yerine daima anlamlı TEK bağlamsal geçiş.
+  assert.ok(!studioSrc.includes("◈ Sen Öner"), "çalışmayan Sen Öner düğmesi kaldırıldı");
+  assert.ok(studioSrc.includes("toggleIdeaMode:"), "tek bağlamsal geçiş VM");
+  assert.ok(studioSrc.includes("◈ Ajan önersin") && studioSrc.includes("✎ Kendi fikrimi yazacağım"), "bağlamsal etiket iki yön");
   assert.ok(studioSrc.includes("ideaMode: 'suggest'"), "varsayılan mod suggest");
-  assert.ok(studioSrc.includes("setModeSuggest:"), "suggest'e geçiş VM");
-  assert.ok(studioSrc.includes("setModeOwn:"), "own'a geçiş VM");
   assert.ok(studioSrc.includes("isOwnMode: (s.ideaMode || 'suggest') === 'own'"), "isOwnMode türetimi");
   assert.ok(studioSrc.includes("isSuggestMode: (s.ideaMode || 'suggest') !== 'own'"), "isSuggestMode türetimi");
 });
