@@ -733,6 +733,9 @@
                       <video src="{{ vd.vidUrl }}" poster="{{ vd.poster }}" controls playsinline preload="metadata" style="{{ vd.thumbStyle }}"></video>
                       <div style="padding: 13px 15px; display: grid; gap: 5px;">
                         <strong style="color: #f2ecd9; font-size: 13.5px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ vd.title }}</strong>
+                        <sc-if value="{{ vd.hasMeta }}" hint-placeholder-val="{{ false }}">
+                          <span style="color: #a77dff; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .05em;">🎬 {{ vd.metaLabel }}</span>
+                        </sc-if>
                         <p style="margin: 0; color: #818797; font-size: 11.5px;">{{ vd.date }}</p>
                         <div style="display: flex; gap: 8px; margin-top: 4px;">
                           <button onClick="{{ vd.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR (MP4)</button>
@@ -1702,7 +1705,10 @@
                       </div>
                     </sc-if>
                     <sc-if value="{{ gp.img.hasVid }}" hint-placeholder-val="{{ false }}">
-                      <video src="{{ gp.img.vidUrl }}" controls playsinline loop style="width: 100%; max-width: 420px; border-radius: 7px; border: 1px solid rgba(193,154,82,.3); box-shadow: 0 10px 34px rgba(0,0,0,.5); margin-top: 2px;"></video>
+                      <div style="display: grid; gap: 4px; margin-top: 2px;">
+                        <video src="{{ gp.img.vidUrl }}" controls playsinline loop style="width: 100%; max-width: 420px; border-radius: 7px; border: 1px solid rgba(193,154,82,.3); box-shadow: 0 10px 34px rgba(0,0,0,.5);"></video>
+                        <span style="color: #a77dff; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em;">🎬 {{ gp.img.vidMetaLabel }}</span>
+                      </div>
                     </sc-if>
                     <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
                       <div style="display: grid; gap: 8px;">
@@ -2542,7 +2548,8 @@ class Component extends DCLogic {
         { id: 'belgeselfoto', name: 'Belgesel Foto', desc: 'Doğal ışık, temiz gerçekçilik, editoryal' },
         { id: 'gravur', name: 'Tarihî Gravür', desc: 'Bakır baskı dokusu, dönem illüstrasyonu' },
         { id: 'minyatur', name: 'Osmanlı Minyatürü', desc: 'Altın yaldız, geleneksel el sanatı (tam kare)' },
-        { id: 'animasyon', name: 'Animasyon', desc: 'Pixar tarzı 3D çizgi film karakterleri' }
+        { id: 'animasyon', name: 'Animasyon', desc: 'Pixar tarzı 3D çizgi film karakterleri' },
+        { id: 'cizgi', name: 'Çizgi Film', desc: '2D klasik cartoon: net dış çizgi, düz renk (çizgi film yapımı)' }
       ],
       aspect: [
         { id: 'yatay', name: 'Yatay · 16:9', desc: 'YouTube ana video kadrajı' },
@@ -3056,7 +3063,8 @@ class Component extends DCLogic {
         belgeselfoto: 'clean realistic documentary photography, natural daylight, rich true-to-life colors, tack-sharp crisp focus with fine detail, deep contrast and high dynamic range, editorial history-magazine look, minimal stylization, believable and grounded',
         // Video üretiminde sahne TAM KARE olmalı: süslü kenarlık kaldırıldı
         minyatur: 'traditional Ottoman-Persian miniature illustration, flat stylized perspective, gold-leaf accents, vivid tempera colors, medieval manuscript art, full-bleed composition filling the entire frame edge to edge, no decorative border, no frame',
-        animasyon: 'high-quality 3D animated feature film still, Pixar-DreamWorks style stylized characters with expressive appealing faces, soft global illumination, warm vibrant color palette, detailed cloth and hair shading, cinematic composition and depth of field, charming family-animation look, 8K render'
+        animasyon: 'high-quality 3D animated feature film still, Pixar-DreamWorks style stylized characters with expressive appealing faces, soft global illumination, warm vibrant color palette, detailed cloth and hair shading, cinematic composition and depth of field, charming family-animation look, 8K render',
+        cizgi: 'classic 2D hand-drawn cartoon illustration, bold clean flat outlines, cel-shaded flat colors, bright saturated palette, expressive cartoon characters, animated TV series and comic-book style, simple stylized shapes, no photorealism, no 3D render'
       }
     };
   }
@@ -3312,9 +3320,9 @@ class Component extends DCLogic {
   // Bilinmeyen oran/stil sessizce varsayılana DÜŞMEZ — valid:false döner ve üretim
   // hiç başlamaz (istek gönderilmez, kredi düşmez).
   AR_MAP() { return { yatay: '16:9', dikey: '9:16', kare: '1:1' }; }
-  STYLE_KEYS() { return ['sinematik', 'belgeselfoto', 'hollywood', 'gravur', 'minyatur', 'animasyon']; }
+  STYLE_KEYS() { return ['sinematik', 'belgeselfoto', 'hollywood', 'gravur', 'minyatur', 'animasyon', 'cizgi']; }
   STYLE_CAT_OF(k) { return k === 'sinematik' ? 'sinematik' : (k === 'belgeselfoto' || k === 'hollywood') ? 'gercekci' : (k ? 'sanatsal' : ''); }
-  CAT_STYLES(cat) { return ({ sinematik: ['sinematik'], gercekci: ['belgeselfoto', 'hollywood'], sanatsal: ['gravur', 'minyatur', 'animasyon'] })[cat] || []; }
+  CAT_STYLES(cat) { return ({ sinematik: ['sinematik'], gercekci: ['belgeselfoto', 'hollywood'], sanatsal: ['gravur', 'minyatur', 'animasyon', 'cizgi'] })[cat] || []; }
   // Onaylı gerçek örnek görseller (aynı tarihî sahnenin 6 stil versiyonu; daha önce
   // üretildi — yeniden kredi harcanmaz). Kartlarda ve büyütmede kullanılır.
   STYLE_IMG(k) {
@@ -3325,7 +3333,10 @@ class Component extends DCLogic {
       hollywood: B + 'hf_20260720_192406_e623da24-1f5a-435d-9509-5a8c41782bb1_min.webp',
       gravur: B + 'hf_20260720_191628_ca6bf8a9-0799-4411-8bb4-1b85b739aa88_min.webp',
       minyatur: B + 'hf_20260720_191632_f8c6dfc9-53b0-4c45-9902-d051f5d24c1b_min.webp',
-      animasyon: B + 'hf_20260720_192416_72238365-81df-4bf3-8e3a-8fbb7aad248f_min.webp'
+      animasyon: B + 'hf_20260720_192416_72238365-81df-4bf3-8e3a-8fbb7aad248f_min.webp',
+      // Çizgi Film: gerçek örnek görsel henüz yok → düz cartoon hissi veren inline SVG
+      // (kırık resim görünmesin; kredi harcamadan). Sonra gerçek örnekle değişebilir.
+      cizgi: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="300" viewBox="0 0 240 300"><rect width="240" height="300" fill="%23f4c542"/><rect x="0" y="200" width="240" height="100" fill="%237ec8e3"/><circle cx="120" cy="140" r="62" fill="%23ffe08a" stroke="%23241a12" stroke-width="7"/><circle cx="98" cy="128" r="9" fill="%23241a12"/><circle cx="142" cy="128" r="9" fill="%23241a12"/><path d="M96 162 q24 26 48 0" fill="none" stroke="%23241a12" stroke-width="7" stroke-linecap="round"/><rect x="0" y="0" width="240" height="300" fill="none" stroke="%23241a12" stroke-width="10"/></svg>')
     })[k] || '';
   }
   // DOSYANIN NORMALİZE ÜRETİM TERCİHLERİ — tek görünüm; ayrı paralel alan tutulmaz,
@@ -3392,6 +3403,18 @@ class Component extends DCLogic {
       'gpt-image-1.5': 'GPT Image 1.5',
       'gemini-2.5-flash-image': 'Gemini 2.5 Flash Image',
     })[key] || String(id || '');
+  }
+  // VİDEO meta rozeti: "Kling · 5 sn · Sessiz" — kullanıcı hangi motorla/sesle ürettiğini
+  // kartta görür (isteği: sağlayıcı bilgilendirmede yoktu). meta {prov,sec,audio}.
+  _vidMetaLabel(meta) {
+    const m = meta || {};
+    const prov = ({ kling: 'Kling', grok: 'Grok', fal: 'Fal' })[String(m.prov || '').toLowerCase()] || (m.prov ? String(m.prov) : '');
+    const aud = ({ silent: 'Sessiz', ambient: 'Ortam sesi', speech: 'Konuşmalı' })[String(m.audio || '').toLowerCase()] || '';
+    const parts = [];
+    if (prov) parts.push(prov);
+    if (m.sec) parts.push(m.sec + ' sn');
+    if (aud) parts.push(aud);
+    return parts.join(' · ');
   }
   // KART "Üretim Bilgisi" (premium sunum): Sağlayıcı + Stil ROZET olarak üstte;
   // kalan teknik alanlar (Model/Kadraj/Çözünürlük/Format/Dosya Boyutu/Üretim Süresi/
@@ -3888,6 +3911,7 @@ class Component extends DCLogic {
     return this._galleryItems().filter(x => x && x.vidUrl).slice(0, 120).map(x => ({
       vidUrl: x.vidUrl, thumbStyle: this.thumbBox(x.ar), poster: x.url || '',
       title: x.story || (x.prompt ? String(x.prompt).slice(0, 44) : 'Video'),
+      metaLabel: this._vidMetaLabel(x.vidMeta), hasMeta: !!this._vidMetaLabel(x.vidMeta),
       date: this._fmtDate(x.ts), dl: () => this.dlVideo(x.vidUrl),
       openTab: () => window.open(x.vidUrl, '_blank')
     }));
@@ -3940,7 +3964,7 @@ class Component extends DCLogic {
     if (this.state.credits < need) { this.setState({ creditModal: true }); return; }
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[x.ar] || x.ar || '9:16';
     const label = prov === 'kling' ? 'Kling' : 'Grok';
-    this._setGalVid(x.id, { busy: true, menuOpen: false, status: '🎬 ' + label + ' GÖNDERİLİYOR…' });
+    this._setGalVid(x.id, { busy: true, menuOpen: false, status: '🎬 ' + label + ' GÖNDERİLİYOR…', prov, sec: vsec, audio: audio || 'silent' });
     this.videoServer(x.url, x.prompt || '', aspect, prov, vsec, audio || 'silent').then(job => {
       this._setGalVid(x.id, { busy: true, job, status: '🎬 ' + label + ' HAZIRLANIYOR… (1-3 dk)' });
       this.pollGalVideo(x, job, 0);
@@ -3962,8 +3986,9 @@ class Component extends DCLogic {
       }).then(r => r.json()).then(d => {
         if (d && d.ok && d.done && d.url) {
           // url'i galVid'e de yaz → raf/kart videoyu ANINDA oynatıcıyla gösterir
+          const gv0 = (this.state.galVid || {})[x.id] || {};
           this._setGalVid(x.id, { busy: false, job: '', status: '', url: d.url });
-          this.saveImg({ id: x.id, prompt: x.prompt || '🎬 Video', ar: x.ar || '', url: x.url, vidUrl: d.url, ts: Date.now() });
+          this.saveImg({ id: x.id, prompt: x.prompt || '🎬 Video', ar: x.ar || '', url: x.url, vidUrl: d.url, vidMeta: { prov: gv0.prov || '', sec: gv0.sec || 0, audio: gv0.audio || '' }, ts: Date.now() });
           return;
         }
         if (d && d.ok && !d.done) { this._setGalVid(x.id, { status: '🎬 HAZIRLANIYOR… (' + (tries + 1) + ')' }); this.pollGalVideo(x, job, tries + 1); return; }
@@ -4200,6 +4225,7 @@ class Component extends DCLogic {
       retryLabel: this._modelLabel(((si && si.meta) || {}).reqModel) + ' ile tekrar dene · ücretsiz',
       url, hasUrl: !!url,
       vidUrl, hasVid: !!vidUrl, vidBusy,
+      vidMetaLabel: this._vidMetaLabel({ prov: si && si.vidProv, sec: si && si.vidSec, audio: si && si.vidAudio }),
       canVideo: !!url && !vidBusy,
       vidStatus: (si && si.vidStatus) || '',
       // Hata/uyarı görünürlüğü: eski şablon durumu YALNIZ vidBusy iken gösteriyordu →
@@ -4279,7 +4305,8 @@ class Component extends DCLogic {
       ? recAr
       : (this.AR_MAP()[this.resolveImageGenerationSettings(key).arKey] || '9:16');
     const label = prov === 'kling' ? 'Kling' : 'Grok';
-    this.setSceneImg(key, { vidBusy: true, vidMenuOpen: false, vidStatus: '🎬 ' + label + ' GÖNDERİLİYOR…' });
+    // Video meta'sı (sağlayıcı·süre·ses) SAKLANIR → kartta "hangi motorla üretildi" gösterilir.
+    this.setSceneImg(key, { vidBusy: true, vidMenuOpen: false, vidStatus: '🎬 ' + label + ' GÖNDERİLİYOR…', vidProv: prov, vidSec: vsec, vidAudio: audio || 'silent' });
     this.videoServer(imageUrl, prompt, aspect, prov, vsec, audio).then(job => {
       // İş kimliğini KAYDET → sayfa yenilense bile arka plandaki video kaybolmaz,
       // açılışta poll kaldığı yerden devam eder (kredi zaten düşmüştü).
@@ -4322,7 +4349,8 @@ class Component extends DCLogic {
           this.setSceneImg(key, { vidBusy: false, vidUrl: d.url, vidJob: '', vidStatus: '' });
           // Videoyu KALICI "Geçmiş Görseller" galerisine de ekle → sahneden çıksan da
           // kaybolmaz, her cihazda bulunur (poster = sahne görseli, oynatılan = video).
-          if (si0.url) this.saveImg({ id: 'v_' + key, prompt: '🎬 Sahne videosu', ar: si0.ar || this.state.aspect || '', url: si0.url, vidUrl: d.url, ts: Date.now() });
+          const vmeta = { prov: si0.vidProv || '', sec: si0.vidSec || 0, audio: si0.vidAudio || '' };
+          if (si0.url) this.saveImg({ id: 'v_' + key, prompt: '🎬 Sahne videosu', ar: si0.ar || this.state.aspect || '', url: si0.url, vidUrl: d.url, vidMeta: vmeta, ts: Date.now() });
           return;
         }
         if (d && d.ok && !d.done) { this.setSceneImg(key, { vidStatus: '🎬 HAZIRLANIYOR… (' + (tries + 1) + ')' }); this.pollVideo(key, job, tries + 1); return; }
@@ -5922,13 +5950,13 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const gen0 = this.resolveImageGenerationSettings('');
         const platNm = { reels: 'Reels / Story', shorts: 'YouTube Shorts', tiktok: 'TikTok', igpost: 'Instagram Gönderisi', youtube: 'YouTube', kare11: 'Kare İçerik' }[s.imgPlatform] || '';
         const arWord = { '16:9': 'Yatay 16:9', '9:16': 'Dikey 9:16', '1:1': 'Kare 1:1' }[gen0.aspectRatio] || '';
-        const stLbl = { sinematik: 'Karanlık Sinematik', belgeselfoto: 'Belgesel Foto', hollywood: 'Hollywood Foto-gerçekçi', gravur: 'Tarihî Gravür', minyatur: 'Osmanlı Minyatürü', animasyon: 'Animasyon' }[gen0.styleId] || '⚠ stil seçilmedi';
+        const stLbl = { sinematik: 'Karanlık Sinematik', belgeselfoto: 'Belgesel Foto', hollywood: 'Hollywood Foto-gerçekçi', gravur: 'Tarihî Gravür', minyatur: 'Osmanlı Minyatürü', animasyon: 'Animasyon', cizgi: 'Çizgi Film' }[gen0.styleId] || '⚠ stil seçilmedi';
         return [stLbl, arWord, platNm].filter(Boolean).join(' · ');
       })(),
       // KOMPAKT TEK SATIR (motor | oran | stil) — "GPT Image 2 | 9:16 | Hollywood"
       secimKompakt: (() => {
         const gen0 = this.resolveImageGenerationSettings('');
-        const stShort = { sinematik: 'Sinematik', belgeselfoto: 'Belgesel', hollywood: 'Hollywood', gravur: 'Gravür', minyatur: 'Minyatür', animasyon: 'Animasyon' }[gen0.styleId] || '⚠ stil yok';
+        const stShort = { sinematik: 'Sinematik', belgeselfoto: 'Belgesel', hollywood: 'Hollywood', gravur: 'Gravür', minyatur: 'Minyatür', animasyon: 'Animasyon', cizgi: 'Çizgi Film' }[gen0.styleId] || '⚠ stil yok';
         return [this._provModelLabel(), gen0.aspectRatio || '⚠ oran yok', stShort].join('  |  ');
       })(),
       // ÜRETİM KAPISI görünürlüğü: geçersiz ayar varsa CTA/butonlar kilitli + tek net mesaj
@@ -5976,7 +6004,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       }),
       imgSelLabel: (() => {
         const a = { yatay: 'YATAY 16:9', dikey: 'DİKEY 9:16', kare: 'KARE 1:1' }[s.imgAspect || s.aspect] || '';
-        const st = { sinematik: 'SİNEMATİK', belgeselfoto: 'BELGESEL', hollywood: 'HOLLYWOOD FOTO-GERÇEKÇİ', gravur: 'GRAVÜR', minyatur: 'OSMANLI MİNYATÜRÜ', animasyon: 'ANİMASYON' }[s.imgStyle || s.style] || '';
+        const st = { sinematik: 'SİNEMATİK', belgeselfoto: 'BELGESEL', hollywood: 'HOLLYWOOD FOTO-GERÇEKÇİ', gravur: 'GRAVÜR', minyatur: 'OSMANLI MİNYATÜRÜ', animasyon: 'ANİMASYON', cizgi: 'ÇİZGİ FİLM' }[s.imgStyle || s.style] || '';
         return a + ' · ' + st;
       })(),
       goImgStudio: () => this.goImgStudio(),
@@ -6580,7 +6608,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const so = (s.sceneOpts || {})[key] || {};
         const hasOvr = !!(so.ar || so.style || so.prov);
         const arL = { yatay: '16:9', dikey: '9:16', kare: '1:1' };
-        const stL = { sinematik: 'Sinematik', belgeselfoto: 'Belgesel', hollywood: 'Hollywood Foto-gerçekçi', gravur: 'Gravür', minyatur: 'Osmanlı Minyatürü', animasyon: 'Animasyon' };
+        const stL = { sinematik: 'Sinematik', belgeselfoto: 'Belgesel', hollywood: 'Hollywood Foto-gerçekçi', gravur: 'Gravür', minyatur: 'Osmanlı Minyatürü', animasyon: 'Animasyon', cizgi: 'Çizgi Film' };
         const setOvr = (patch) => this.setState(st => {
           const cur = { ...(((st.sceneOpts || {})[key]) || {}), ...patch };
           Object.keys(cur).forEach(k2 => { if (!cur[k2]) delete cur[k2]; });   // "Genel" seçimi alanı siler
