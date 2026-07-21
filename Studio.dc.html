@@ -1777,6 +1777,44 @@
 
             <!-- VİDEO PROMPTLARI -->
             <sc-if value="{{ tabVideo }}" hint-placeholder-val="{{ false }}">
+              <!-- ═══ BELGESEL VİDEO (Ken Burns) · tarayıcıda montaj, az kredi ═══ -->
+              <div class="ta-card" style="padding: 18px 20px; margin-bottom: 16px; border: 1px solid rgba(146,87,238,.3); background: linear-gradient(180deg, rgba(109,59,212,.08), rgba(10,14,24,.4)); display: grid; gap: 13px;">
+                <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+                  <span style="font-family: 'Playfair Display', serif; font-size: 19px; color: #f2ecd9;">🎞 Belgesel Video</span>
+                  <span style="font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em; color: #b79bff; border: 1px solid rgba(183,155,255,.35); border-radius: 20px; padding: 3px 9px;">KEN BURNS · AZ KREDİ</span>
+                </div>
+                <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Sahne görsellerin + Türkçe seslendirme + altyazı, tek uzun videoda birleşir. Yavaş zoom/kaydırma (Ken Burns) efektiyle. Montaj <strong style="color:#c4b3ff;">senin tarayıcında</strong> yapılır — pahalı AI video kredisi harcanmaz, yalnız seslendirme ücreti düşer.</p>
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cfd3dc; font-size: 12.5px;"><input type="checkbox" checked="{{ docSubs }}" onChange="{{ toggleDocSubs }}"> Altyazı</label>
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cfd3dc; font-size: 12.5px;"><input type="checkbox" checked="{{ docMusic }}" onChange="{{ toggleDocMusic }}"> Fon müziği</label>
+                  <span style="color: #676d7c; font-size: 11.5px;">{{ docSceneInfo }}</span>
+                </div>
+                <sc-if value="{{ docNotReady }}" hint-placeholder-val="{{ false }}">
+                  <p style="margin: 0; color: #e0a58a; font-size: 12px;">⚠ En az 2 sahne görseli gerekli — önce Görsel sekmesinden sahneleri üret.</p>
+                </sc-if>
+                <sc-if value="{{ docBusy }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: grid; gap: 7px;">
+                    <div style="height: 6px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden;"><div style="{{ docBarStyle }}"></div></div>
+                    <p style="margin: 0; color: #c4b3ff; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .06em;">{{ docMsg }}</p>
+                    <p style="margin: 0; color: #676d7c; font-size: 11px;">Video gerçek zamanlı kaydediliyor — sekmeyi kapatma. Süre videonun uzunluğu kadardır.</p>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ docHasUrl }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: grid; gap: 9px;">
+                    <video src="{{ docUrl }}" controls playsinline style="width: 100%; max-width: 360px; border-radius: 8px; border: 1px solid rgba(146,87,238,.35); box-shadow: 0 12px 34px rgba(0,0,0,.5);"></video>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                      <button onClick="{{ docDownload }}" style="border: 0; cursor: pointer; color: #fff; border-radius: 7px; padding: 10px 18px; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; background: linear-gradient(115deg, #5b32b8, #7c50d8 55%, #9a72ee);">⬇ BELGESELİ İNDİR</button>
+                      <button onClick="{{ startDocVideo }}" style="border: 1px solid rgba(129,135,151,.4); background: transparent; color: #a4a9b5; border-radius: 7px; padding: 10px 16px; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;">↻ TEKRAR OLUŞTUR</button>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ docErr }}" hint-placeholder-val="{{ false }}">
+                  <p style="margin: 0; color: #e0a58a; font-size: 12.5px; line-height: 1.5;">⚠ {{ docErr }}</p>
+                </sc-if>
+                <sc-if value="{{ docIdle }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ startDocVideo }}" disabled="{{ docNotReady }}" style="{{ docBtnStyle }}">🎞 BELGESEL VİDEOYU OLUŞTUR</button>
+                </sc-if>
+              </div>
               <div style="display: grid; gap: 10px;">
                 <sc-for list="{{ resVideo }}" as="vp" hint-placeholder-count="3">
                   <div class="ta-card" style="padding: 13px 16px; display: grid; gap: 7px;">
@@ -4372,6 +4410,184 @@ class Component extends DCLogic {
     });
   }
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // BELGESEL VİDEO (Ken Burns) — TARAYICIDA montaj. Sahne görselleri + Türkçe
+  // seslendirme + altyazı → tek uzun video. Sunucu/AI-video kredisi YOK: yalnız
+  // görsel (zaten üretildi) + seslendirme (ElevenLabs, sahne cümlesi) ücreti.
+  // Her sahne kendi seslendirmesi süresince yavaş zoom/pan (Ken Burns) yapar,
+  // sahne başı/sonu yumuşak geçer, altyazı bindirilir; hepsi tek MediaRecorder
+  // akışına gerçek zamanlı kaydedilir.
+  // ═══════════════════════════════════════════════════════════════════════
+  _docScenes() {
+    const r = this.state.result || {};
+    const gp = r.gorsel_promptlar || [];
+    const si = this.state.sceneImgs || {};
+    const out = [];
+    for (let i = 0; i < gp.length; i++) {
+      const img = ((si['gp' + i] || {}).url) || '';
+      const text = (gp[i] && (gp[i].anlatim || gp[i].sahne)) || '';
+      if (img) out.push({ img, text: String(text || '') });
+    }
+    return out;
+  }
+  _docReady() { return this._docScenes().length >= 2; }
+  _loadImg(url) {
+    return new Promise((res, rej) => {
+      const im = new Image(); im.crossOrigin = 'anonymous';
+      im.onload = () => res(im); im.onerror = () => rej(new Error('görsel yüklenemedi'));
+      im.src = url;
+    });
+  }
+  async _loadAudioBuf(ctx, url) {
+    const r = await fetch(url); const ab = await r.arrayBuffer();
+    return await ctx.decodeAudioData(ab);
+  }
+  _recorderMime() {
+    const cands = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+    for (let i = 0; i < cands.length; i++) { try { if (window.MediaRecorder && MediaRecorder.isTypeSupported(cands[i])) return cands[i]; } catch (e) {} }
+    return '';
+  }
+  // Altyazıyı tuval genişliğine göre satırlara böl
+  _wrapLines(g, text, maxW) {
+    const words = String(text || '').split(/\s+/); const lines = []; let cur = '';
+    for (let i = 0; i < words.length; i++) {
+      const t = cur ? cur + ' ' + words[i] : words[i];
+      if (g.measureText(t).width > maxW && cur) { lines.push(cur); cur = words[i]; } else cur = t;
+    }
+    if (cur) lines.push(cur);
+    return lines.slice(0, 3);
+  }
+  // Ana montaj — Promise<Blob>. onProg(pct, msg) ilerleme bildirir.
+  async buildDocVideo(opts, onProg) {
+    opts = opts || {};
+    const withSubs = opts.subtitles !== false;
+    const withMusic = !!opts.music;
+    const scenes = this._docScenes();
+    if (scenes.length < 2) throw new Error('En az 2 sahne görseli gerekli — önce görselleri üret.');
+    if (!window.MediaRecorder) throw new Error('Tarayıcın video kaydını desteklemiyor (MediaRecorder yok).');
+    const prog = (p, m) => { try { onProg && onProg(Math.max(0, Math.min(100, Math.round(p))), m || ''); } catch (e) {} };
+
+    const ar = this.state.aspect || '9:16';
+    const dims = ar === '16:9' ? [1280, 720] : (ar === '1:1' ? [960, 960] : [720, 1280]);
+    const W = dims[0], H = dims[1];
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) throw new Error('Tarayıcı ses motoru (AudioContext) yok.');
+    const ctx = new AC();
+    if (ctx.state === 'suspended') { try { await ctx.resume(); } catch (e) {} }
+
+    // 1) Her sahne: seslendirme (süre için) + görsel yükle
+    prog(2, 'Seslendirme hazırlanıyor…');
+    const prep = [];
+    for (let i = 0; i < scenes.length; i++) {
+      let buf = null;
+      try { const tts = await this.ttsServer(scenes[i].text || ' '); buf = await this._loadAudioBuf(ctx, tts.url); }
+      catch (e) { if (e && e.message === 'YETERSIZ_KREDI') { try { ctx.close(); } catch (_e) {} throw e; } /* ses yoksa sabit süre */ }
+      let img = null; try { img = await this._loadImg(scenes[i].img); } catch (e) { /* görsel atlanır */ }
+      if (!img) continue;
+      const dur = (buf ? buf.duration : 4) + 0.5;   // küçük nefes payı
+      prep.push({ img, text: scenes[i].text, buf, dur: Math.max(2.2, dur) });
+      prog(2 + ((i + 1) / scenes.length) * 44, 'Sahne ' + (i + 1) + '/' + scenes.length + ' hazır');
+    }
+    if (prep.length < 2) { try { ctx.close(); } catch (e) {} throw new Error('Yeterli sahne görseli yüklenemedi.'); }
+    const total = prep.reduce((a, p) => a + p.dur, 0);
+
+    // 2) Tuval + akışlar
+    const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
+    const g = canvas.getContext('2d');
+    g.fillStyle = '#05060a'; g.fillRect(0, 0, W, H);
+    const vStream = canvas.captureStream(30);
+    const dest = ctx.createMediaStreamDestination();
+
+    // 3) Ses zamanlaması: her klip sırayla; opsiyonel hafif ambient
+    const t0 = ctx.currentTime + 0.2; let acc = t0;
+    prep.forEach(p => { if (p.buf) { const s = ctx.createBufferSource(); s.buffer = p.buf; s.connect(dest); s.start(acc); } acc += p.dur; });
+    if (withMusic) {
+      const gain = ctx.createGain(); gain.gain.value = 0.045; gain.connect(dest);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; lp.connect(gain);
+      [110, 164.81].forEach(f => { const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f; o.connect(lp); o.start(t0); try { o.stop(t0 + total + 0.3); } catch (e) {} });
+    }
+
+    // 4) Kayıt
+    const mime = this._recorderMime();
+    const stream = new MediaStream([].concat(vStream.getVideoTracks(), dest.stream.getAudioTracks()));
+    const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 4500000 } : undefined);
+    const chunks = [];
+    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+
+    return await new Promise((resolve, reject) => {
+      let done = false;
+      const finish = () => { if (done) return; done = true; try { vStream.getTracks().forEach(t => t.stop()); } catch (e) {} try { ctx.close(); } catch (e) {} const type = (mime || 'video/webm').split(';')[0]; resolve(new Blob(chunks, { type })); };
+      rec.onstop = finish;
+      rec.onerror = () => { if (!done) { done = true; try { ctx.close(); } catch (e) {} reject(new Error('kayıt hatası (tarayıcı)')); } };
+      try { rec.start(250); } catch (e) { try { ctx.close(); } catch (_e) {} reject(new Error('kayıt başlatılamadı: ' + e.message)); return; }
+      const wall0 = performance.now();
+      const draw = () => {
+        const el = (performance.now() - wall0) / 1000;
+        if (el >= total) { try { rec.stop(); } catch (e) {} return; }
+        // geçerli sahne + yerel ilerleme
+        let a = 0, idx = 0; for (let i = 0; i < prep.length; i++) { if (el < a + prep[i].dur) { idx = i; break; } a += prep[i].dur; }
+        const p = prep[idx], le = el - a, d = p.dur, lp = d ? le / d : 0;
+        // fade in/out (0.45 sn)
+        const fd = 0.45; let alpha = Math.min(le / fd, (d - le) / fd, 1); if (alpha < 0) alpha = 0;
+        g.fillStyle = '#05060a'; g.fillRect(0, 0, W, H);
+        // Ken Burns: cover-fit + yavaş zoom + hafif pan (yön sahneye göre değişir)
+        const iw = p.img.naturalWidth || p.img.width, ih = p.img.naturalHeight || p.img.height;
+        const cover = Math.max(W / iw, H / ih);
+        const scale = cover * (1.05 + 0.10 * lp);
+        const dw = iw * scale, dh = ih * scale;
+        const dir = (idx % 2 === 0) ? 1 : -1;
+        const dx = (W - dw) / 2 + dir * (dw - W) * 0.10 * (lp - 0.5);
+        const dy = (H - dh) / 2 - (dh - H) * 0.06 * (lp - 0.5);
+        g.globalAlpha = alpha;
+        try { g.drawImage(p.img, dx, dy, dw, dh); } catch (e) {}
+        // Altyazı
+        if (withSubs && p.text) {
+          const fs = Math.round(H * 0.030);
+          g.font = '600 ' + fs + 'px -apple-system, BlinkMacSystemFont, sans-serif';
+          g.textAlign = 'center'; g.textBaseline = 'bottom';
+          const lines = this._wrapLines(g, p.text, W * 0.86);
+          const lh = fs * 1.32, padY = fs * 0.7;
+          const blockH = lines.length * lh + padY * 2;
+          const yBase = H - Math.round(H * 0.06);
+          g.globalAlpha = alpha * 0.5;
+          g.fillStyle = '#03040800'; // şeffaf başlar
+          const grad = g.createLinearGradient(0, yBase - blockH, 0, H);
+          grad.addColorStop(0, 'rgba(3,4,8,0)'); grad.addColorStop(1, 'rgba(3,4,8,0.82)');
+          g.fillStyle = grad; g.fillRect(0, yBase - blockH, W, blockH + Math.round(H * 0.06));
+          g.globalAlpha = alpha;
+          for (let li = 0; li < lines.length; li++) {
+            const y = yBase - (lines.length - 1 - li) * lh;
+            g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillText(lines[li], W / 2 + 1.5, y + 1.5);
+            g.fillStyle = '#f4eeddff'; g.fillText(lines[li], W / 2, y);
+          }
+          g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+        }
+        g.globalAlpha = 1;
+        prog(48 + (el / total) * 50, 'Video oluşuyor · %' + Math.round(el / total * 100) + ' (' + (idx + 1) + '/' + prep.length + ')');
+        requestAnimationFrame(draw);
+      };
+      requestAnimationFrame(draw);
+    });
+  }
+  // UI tetikleyici: durum yönetimi + kaydet/indir
+  startDocVideo() {
+    if (this.state.docBusy) return;
+    if (!this._docReady()) { this.setState({ docErr: 'En az 2 sahne görseli gerekli — önce görselleri üret.' }); return; }
+    const opts = { subtitles: this.state.docSubs !== false, music: !!this.state.docMusic };
+    this.setState({ docBusy: true, docErr: '', docPct: 0, docMsg: 'Başlıyor…', docUrl: '' });
+    this.buildDocVideo(opts, (pct, msg) => this.setState({ docPct: pct, docMsg: msg }))
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        this.setState({ docBusy: false, docPct: 100, docMsg: '', docUrl: url });
+      })
+      .catch(e => {
+        const msg = (e && e.message === 'YETERSIZ_KREDI') ? 'Seslendirme için yeterli kredi yok.' : ('Belgesel video üretilemedi: ' + (e && e.message ? e.message : 'bilinmeyen hata'));
+        this.setState({ docBusy: false, docMsg: '', docErr: msg });
+        if (e && e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
+      });
+  }
+
+
   // Gerçek seslendirme — ElevenLabs (karakter başı ücretli). 1000 karakter = 15 KR
   // (taban 15) — sunucudaki ttsCostOf ile AYNI formül olmalı.
   ttsCost() {
@@ -6286,6 +6502,23 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       genAudio: () => this.genAudio(),
       ttsBusy: s.ttsBusy,
       ttsLabel: s.ttsBusy ? 'ÜRETİLİYOR…' : '🎙 SESİ ÜRET',
+      // ── BELGESEL VİDEO (Ken Burns) paneli ──
+      docBusy: !!s.docBusy,
+      docUrl: s.docUrl || '',
+      docHasUrl: !!s.docUrl && !s.docBusy,
+      docErr: s.docErr || '',
+      docMsg: s.docMsg || 'Hazırlanıyor…',
+      docIdle: !s.docBusy && !s.docUrl,
+      docNotReady: !this._docReady(),
+      docSubs: s.docSubs !== false,
+      docMusic: !!s.docMusic,
+      toggleDocSubs: () => this.setState({ docSubs: !(s.docSubs !== false) }),
+      toggleDocMusic: () => this.setState({ docMusic: !s.docMusic }),
+      docSceneInfo: (() => { const n = this._docScenes().length; return n ? (n + ' sahne görseli hazır') : 'sahne görseli yok'; })(),
+      docBarStyle: { height: '100%', width: (s.docPct || 0) + '%', background: 'linear-gradient(90deg,#7c50d8,#b79bff)', transition: 'width .3s' },
+      docBtnStyle: { border: 0, cursor: this._docReady() ? 'pointer' : 'not-allowed', color: '#fff', borderRadius: '8px', padding: '13px 22px', fontFamily: "'Special Elite', monospace", fontSize: '11.5px', letterSpacing: '.1em', opacity: this._docReady() ? '1' : '.5', background: 'linear-gradient(115deg,#5b32b8,#7c50d8 55%,#9a72ee)', boxShadow: '0 8px 22px rgba(110,70,210,.32)', justifySelf: 'start' },
+      startDocVideo: () => this.startDocVideo(),
+      docDownload: () => this.dlVideo(s.docUrl),
       ttsError: s.ttsError,
       hasAudio: !!s.audioUrl, audioUrl: s.audioUrl,
 
