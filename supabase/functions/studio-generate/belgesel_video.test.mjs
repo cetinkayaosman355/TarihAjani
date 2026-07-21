@@ -39,10 +39,20 @@ test("Tarayıcı montajı: Canvas captureStream + WebAudio + MediaRecorder", () 
   assert.ok(src.includes("1.05 + 0.10 * lp"), "Ken Burns yavaş zoom");
 });
 
-test("UI: Belgesel Video paneli + altyazı/müzik seçenekleri + ilerleme", () => {
+test("UI: Belgesel Video paneli + altyazı stilleri/müzik + ilerleme", () => {
   assert.ok(src.includes("🎞 Belgesel Video"), "panel başlığı");
-  assert.ok(src.includes("toggleDocSubs") && src.includes("toggleDocMusic"), "altyazı + müzik seçeneği");
+  assert.ok(src.includes("docSubStyles") && src.includes("toggleDocMusic"), "altyazı stili + müzik seçeneği");
   assert.ok(src.includes("BELGESEL VİDEOYU OLUŞTUR"), "oluştur düğmesi");
   assert.ok(src.includes("docBarStyle"), "ilerleme çubuğu");
   assert.ok(src.includes("docDownload: () => this.dlVideo(s.docUrl)"), "indirme doğru .mp4/.webm");
+});
+
+test("Altyazı stilleri: minimal/serit/vurgu/none + GÜVENLİ konum (alt UI'ye girmez)", () => {
+  // Stil seçenekleri
+  assert.ok(src.includes("['minimal', 'Minimal'], ['serit', 'Şerit'], ['vurgu', 'Vurgu'], ['none', 'Yok']"), "4 altyazı stili");
+  // Küçük boyut + güvenli konum (dikey videoda alt ~%20 UI'ye girmez → yPos 0.77-0.80)
+  assert.ok(src.includes("yPos: 0.80") && src.includes("yPos: 0.77"), "güvenli dikey konum");
+  assert.ok(src.includes("fs: 0.0225") || src.includes("minimal:") , "minimal küçük boyut");
+  // startDocVideo stili geçirir
+  assert.ok(src.includes("subStyle: this.state.docSubStyle || 'minimal'"), "seçilen altyazı stili montaja geçer");
 });
