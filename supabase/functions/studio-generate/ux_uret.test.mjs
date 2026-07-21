@@ -70,7 +70,7 @@ test("Sade Ayar: stil 3 kategori — Sinematik TEK adım, alt kartlar yalnız ge
 
 test("Genel Görsel Ayarları: kompakt özet kartı + tüm seçim alanları 'Değiştir' arkasında", () => {
   assert.ok(studioSrc.includes("secimOzet:"), "özet VM (stil · oran · platform)");
-  assert.ok(studioSrc.includes(">GENEL GÖRSEL AYARLARI</span>"), "kompakt kart başlığı kullanıcı dilinde");
+  assert.ok(studioSrc.includes("secimKompakt:"), "kompakt tek satır ayar özeti");
   assert.ok(studioSrc.includes("imgSetLinkLabel"), "kart üzerinde Değiştir/Kapat");
   assert.ok(studioSrc.includes('sc-if value="{{ imgSetOpen }}"'), "platform/oran/stil/motor alanları panel arkasında (sürekli görünmez)");
   assert.ok(studioSrc.includes(" kullanılacak.'") || studioSrc.includes(" kullanılacak.\""), "Otomatik alt metni: hangi model kullanılacak");

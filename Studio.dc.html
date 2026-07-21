@@ -1141,7 +1141,23 @@
               </div>
               </sc-if>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+            <!-- ÜRETİM MODU + ÇIKTI SEÇİMİ (üret butonunun hemen üstünde) -->
+            <div style="margin-top: 26px; border: 1px solid rgba(129,135,151,.22); border-radius: 12px; background: rgba(7,10,18,.5); padding: 14px 16px; display: grid; gap: 12px;">
+              <button onClick="{{ toggleOwnStory }}" style="{{ ownStoryStyle }}" style-hover="border-color: rgba(193,154,82,.6);">
+                <span style="display: flex; align-items: center; gap: 9px;"><span style="font-size: 15px;">{{ ownStoryCheck }}</span><span style="font-weight: 700; font-size: 14px; color: #e9dfc8;">Ben Hikayemi Yazacağım</span></span>
+                <span style="color: #818797; font-size: 11.5px; line-height: 1.4; text-align: left;">Konu kutusuna yazdığın metin hikâye sayılır; ajan onu <strong style="color:#a7adba;">değiştirmez</strong>, yalnız sahnelere böler, başlık ve görsel prompt üretir. Seslendirme metnini yeniden yazmaz.</span>
+              </button>
+              <div>
+                <p style="margin: 0 0 8px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">NELER ÜRETİLSİN?</p>
+                <div class="ta-setrow" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <sc-for list="{{ genOutputOpts }}" as="go" hint-placeholder-count="5">
+                    <button onClick="{{ go.toggle }}" disabled="{{ go.locked }}" style="{{ go.style }}">{{ go.icon }} {{ go.label }}</button>
+                  </sc-for>
+                </div>
+                <p style="margin: 8px 0 0; color: #676d7c; font-size: 11.5px;">Yalnız seçtiklerin üretilir. Seslendirme sesi burada üretilmez — dosya açıldıktan sonra "Seslendirmeyi Üret" ile sen başlatırsın.</p>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 18px;">
               <button onClick="{{ toStep1 }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 14px 22px; font-size: 13px; letter-spacing: .1em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">← FİKRE DÖN</button>
               <button onClick="{{ startGenerate }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 14px 26px; font-weight: 800; font-size: 13px; letter-spacing: .12em; cursor: pointer;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">{{ genCostLabel }}</button>
             </div>
@@ -1374,20 +1390,13 @@
                       </div>
                     </div>
                   </sc-if>
-                  <!-- GENEL GÖRSEL AYARLARI · kompakt özet kartı — dosyada kayıtlı tercihler.
+                  <!-- GENEL GÖRSEL AYARLARI · KOMPAKT TEK SATIR: "GPT Image 2 | 9:16 | Hollywood | Değiştir".
                        Büyük seçim alanları yalnız "Değiştir" ile açılır; ekran üretim odaklı kalır. -->
-                  <div style="border: 1px solid rgba(193,154,82,.55); border-radius: 12px; background: linear-gradient(160deg, rgba(193,154,82,.1), rgba(193,154,82,.02)); padding: 14px 16px; display: grid; gap: 7px;">
-                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                      <span style="font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; color: #c19a52;">GENEL GÖRSEL AYARLARI</span>
-                      <button onClick="{{ toggleImgSet }}" style="margin-left: auto; border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-size: 12.5px; padding: 7px 14px; border-radius: 8px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ imgSetLinkLabel }}</button>
-                    </div>
-                    <span style="font-size: 15.5px; font-weight: 600; color: #e6c478;">{{ secimOzet }}</span>
-                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #a7adba;">
-                      <span>Görsel motoru: <strong style="color: #d3d7e0;">{{ motorAd }}</strong></span>
-                      <span style="color: #868c99; font-size: 12.5px;">{{ motorSub }}</span>
-                    </div>
+                  <div style="border: 1px solid rgba(193,154,82,.4); border-radius: 10px; background: rgba(193,154,82,.06); padding: 9px 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <span style="font-size: 13.5px; font-weight: 600; color: #e6c478; letter-spacing: .01em;">{{ secimKompakt }}</span>
+                    <button onClick="{{ toggleImgSet }}" style="margin-left: auto; border: 0; background: transparent; color: #e6c478; font-size: 13px; padding: 4px 2px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;">{{ imgSetLinkLabel }}</button>
                     <sc-if value="{{ imgSetNotice }}" hint-placeholder-val="{{ false }}">
-                      <span style="color: #9ed3a8; font-size: 12.5px;">✓ Genel görsel ayarları güncellendi. Yeni üretimler bu ayarları kullanacak; hazır görseller değişmez.</span>
+                      <span style="flex: 0 0 100%; color: #9ed3a8; font-size: 12px;">✓ Genel görsel ayarları güncellendi. Yeni üretimler bu ayarları kullanacak; hazır görseller değişmez.</span>
                     </sc-if>
                   </div>
                   <sc-if value="{{ imgSetOpen }}" hint-placeholder-val="{{ false }}">
@@ -2126,6 +2135,9 @@ class Component extends DCLogic {
       genCreatedPreset: (w && w.genCreatedPreset) || '', genUpdatedAt: (w && w.genUpdatedAt) || 0, imgSetOpen: false, imgSetNotice: false,
       imgProvider: saved.imgProvider || 'auto',   // görsel motoru: auto (vars. — arayüz kavramı, sunucuya gerçek motor gider) | gpt | gemini | higgs(pasif)
       histTab: 'files',                          // Geçmiş Üretimler sekmesi: files | images | videos
+      // ÜRETİM ÇIKTI SEÇİMİ + 'Ben Hikayemi Yazacağım' modu (Hikaye zorunlu taban)
+      genOutputs: { gorsel: true, ses: false, video: false, thumb: false },
+      ownStory: false,
       imgFilter: 'all',                          // Görseller sekmesi filtresi: all | story | standalone
       videoModal: null,                          // video sağlayıcı/süre/maliyet modalı
       batch: savedBatch,                         // kontrollü toplu üretim durumu (yenilemede geri yüklenir)
@@ -4339,6 +4351,8 @@ class Component extends DCLogic {
 
   buildPrompt(outlineOnly) {
     const s = this.state;
+    const go = s.genOutputs || {};
+    const own = !!s.ownStory;
     const m = this.promptMaps();
     const tonStr = m.ton[s.tone] || m.ton.merak;
     const sesStr = m.ses[s.voice] || m.ses.erkek;
@@ -4431,7 +4445,13 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     // bozuluyor) ya da edge zaman aşımına düşüyordu → görseller boş kalıyordu.
     const deferScenes = '\n\nÜRETİM KURALI (SAHNE PROMPTLARI AYRI AŞAMADA ÜRETİLİR): Bu yanıtta gorsel_promptlar ve video_promptlar dizilerini BOŞ dizi [] olarak bırak — sahne promptları ayrı, güvenli bir aşamada bölüm bölüm üretilecek. baslik, logline, senaryo, seslendirme_notu, youtube, instagram, kapak, uretim_notu alanlarını EKSİKSİZ ver. SON KONTROL\'daki gorsel_promptlar/video_promptlar sahne SAYISI kuralını bu yanıtta UYGULAMA (bu iki dizi boş kalacak).';
     const summarize = '\n\nEK KURAL (İKİ AŞAMALI — uzun videoda hız/zaman aşımını önler): senaryo bölümlerinin "metin" alanına şimdilik yalnızca 2-3 cümlelik YOĞUN bölüm özeti yaz; tam metinler 2. aşamada bölüm bölüm yazılacak.';
-    return p + deferScenes + (outlineOnly ? summarize : '');
+    // ── ÇIKTI SEÇİMİ + MOD ── seçilmeyen artefaktlar boş bırakılır; 'Ben Hikayemi
+    // Yazacağım' modunda ajan metni YENİDEN YAZMAZ (yalnız yapılandırır).
+    let modeRules = '';
+    if (own) modeRules += '\n\n⭐ ÖZEL MOD — "BEN HİKAYEMİ YAZDIM" (EN YÜKSEK ÖNCELİK): Yukarıdaki KONU alanı bir konu başlığı DEĞİL, kullanıcının KENDİ yazdığı TAM hikâye metnidir. Bu metni YENİDEN YAZMA, süsleme, kısaltma, uzatma ya da üslubunu değiştirme. senaryo[].metin alanlarına kullanıcının cümlelerini OLDUĞU GİBİ yerleştir (yalnızca doğal bölümlere/sahnelere ayırabilirsin). Görevlerin YALNIZCA: (1) metni anlamlı bölümlere/sahnelere ayır, (2) çarpıcı bir başlık üret, (3) görsel promptları üret. SÜRE/KELİME kilidini UYGULAMA — kullanıcının metni ne kadarsa odur; kelime ekleyip çıkarma.';
+    if (!go.thumb) modeRules += '\n\nÇIKTI SINIRI: kapak dizisini BOŞ [] bırak (thumbnail istenmedi).';
+    if (!go.ses) modeRules += '\n\nÇIKTI SINIRI: seslendirme_notu alanını boş string "" bırak (ayrı seslendirme yönergesi istenmedi; seslendirme metni senaryoda zaten var).';
+    return p + deferScenes + (outlineOnly ? summarize : '') + modeRules;
   }
 
   // Görsel/video stil çekirdeği + anti-artifact satırları (tek yerden) —
@@ -4754,7 +4774,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       // 2 dk ve üstü çok-aşamalı: taslak (sahne promptları BOŞ) → bölüm metinleri
       // → sahne promptları ayrı çağrı. Böylece hiçbir tek çağrı devasa olmaz,
       // edge zaman aşımı (504/546) yaşanmaz.
-      const twoStage = sec >= 120;
+      const twoStage = sec >= 120 && !s.ownStory;   // kendi hikâyende AI genişletmesi (expandActs) YOK
       const wpb = Math.round(sec * 2.3 / Math.max(2, Math.round(sec / 70)));
       const wordsHint = Math.round(wpb * 0.85) + '-' + Math.round(wpb * 1.15);
       // Taslak çağrısı hafif (twoStage'de sahne promptu yok) → düşük tavan, hızlı biter
@@ -4798,8 +4818,17 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         }
         // Sahne promptları HER süre için ayrı, dayanıklı aşamada (bölüm bölüm,
         // yeniden deneme + geri dönüş) → görsel/video promptları asla boş kalmaz.
-        this.setState({ genMsg: 'SAHNE PROMPTLARI ÜRETİLİYOR…', genPct: 88 });
-        result = await this.genScenePrompts(result);
+        // ÇIKTI SEÇİMİ: yalnız görsel/video prompt istendiyse sahne aşaması çalışır.
+        const go2 = s.genOutputs || {};
+        if (go2.gorsel || go2.video) {
+          this.setState({ genMsg: 'SAHNE PROMPTLARI ÜRETİLİYOR…', genPct: 88 });
+          result = await this.genScenePrompts(result);
+          if (!go2.gorsel) result.gorsel_promptlar = [];
+          if (!go2.video) result.video_promptlar = [];
+        } else {
+          result.gorsel_promptlar = []; result.video_promptlar = [];
+        }
+        if (!go2.thumb) result.kapak = [];   // thumbnail istenmediyse kapak boş
       } catch (stageErr) {
         partial = true;   // taslak var; ek aşama tamamlanamadı — dosya yine de teslim edilir
       }
@@ -5575,6 +5604,12 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const stLbl = { sinematik: 'Karanlık Sinematik', belgeselfoto: 'Belgesel Foto', hollywood: 'Hollywood Foto-gerçekçi', gravur: 'Tarihî Gravür', minyatur: 'Osmanlı Minyatürü', animasyon: 'Animasyon' }[gen0.styleId] || '⚠ stil seçilmedi';
         return [stLbl, arWord, platNm].filter(Boolean).join(' · ');
       })(),
+      // KOMPAKT TEK SATIR (motor | oran | stil) — "GPT Image 2 | 9:16 | Hollywood"
+      secimKompakt: (() => {
+        const gen0 = this.resolveImageGenerationSettings('');
+        const stShort = { sinematik: 'Sinematik', belgeselfoto: 'Belgesel', hollywood: 'Hollywood', gravur: 'Gravür', minyatur: 'Minyatür', animasyon: 'Animasyon' }[gen0.styleId] || '⚠ stil yok';
+        return [this._provModelLabel(), gen0.aspectRatio || '⚠ oran yok', stShort].join('  |  ');
+      })(),
       // ÜRETİM KAPISI görünürlüğü: geçersiz ayar varsa CTA/butonlar kilitli + tek net mesaj
       imgGenBlocked: !this.resolveImageGenerationSettings('').valid,
       imgValMsg: s.imgValErr || this.resolveImageGenerationSettings('').err || '',
@@ -5790,6 +5825,40 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       optionGroups: groups,
       startGenerate: () => this.startGenerate(),
       genCostLabel: 'DOSYAYI OLUŞTUR · ' + this.costOf() + ' KREDİ →',
+      // "BEN HİKAYEMİ YAZACAĞIM" modu — konu kutusundaki metni hikâye sayar
+      ownStoryCheck: s.ownStory ? '☑' : '☐',
+      toggleOwnStory: () => this.setState(st => {
+        const on = !st.ownStory;
+        // Mod açılınca: ajan hikâye yazmayacağı için "Seslendirme yönergesi" kapanır,
+        // görsel prompt açık kalır (sahneleri görselleştirir). Kapanınca dokunma.
+        return on ? { ownStory: true, genOutputs: { ...st.genOutputs, ses: false } } : { ownStory: false };
+      }),
+      ownStoryStyle: {
+        display: 'grid', gap: '5px', textAlign: 'left', cursor: 'pointer', padding: '12px 14px', borderRadius: '10px',
+        border: s.ownStory ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.28)',
+        background: s.ownStory ? 'rgba(193,154,82,.1)' : 'rgba(4,6,12,.6)'
+      },
+      // ÇIKTI SEÇİMİ — Hikaye zorunlu taban (kilitli ✓); diğerleri serbest.
+      genOutputOpts: (() => {
+        const go = s.genOutputs || {};
+        const items = [
+          ['hikaye', 'Hikaye', true, true],
+          ['gorsel', 'Görsel Prompt', !!go.gorsel, false],
+          ['ses', 'Seslendirme', !!go.ses, false],
+          ['video', 'Video Prompt', !!go.video, false],
+          ['thumb', 'Thumbnail', !!go.thumb, false]
+        ];
+        return items.map(([id, label, on, locked]) => ({
+          label, icon: on ? '☑' : '☐', locked,
+          toggle: locked ? (() => {}) : (() => this.setState(st => ({ genOutputs: { ...st.genOutputs, [id]: !st.genOutputs[id] } }))),
+          style: {
+            cursor: locked ? 'default' : 'pointer', fontSize: '12.5px', padding: '8px 14px', borderRadius: '999px',
+            border: on ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+            background: on ? 'rgba(193,154,82,.14)' : 'rgba(4,6,12,.6)',
+            color: on ? '#e6c478' : '#a4a9b5', opacity: locked ? '.85' : '1'
+          }
+        }));
+      })(),
       prodModes: this.prodModes().map(m => {
         const on = this.prodModeActive(m);
         return {
