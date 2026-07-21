@@ -183,5 +183,65 @@ Deno.serve(async (req) => {
     return json({ ok: true, sent, skipped, scanned: (rows || []).length });
   }
 
+  /* ── SORUN BİLDİRİMİ ── kalıcı kayıt + iletisim@tarihajani.com'a e-posta ──
+     Kullanıcı "Sorun Bildir"e basınca istemci tanılama toplar (kod, opId, üretildi
+     mi, kredi düştü mü, istenen/gerçek model). Burada: problem_reports'a yaz +
+     destek adresine e-posta. Kullanıcı oturumluysa user_id/e-posta JWT'den doğrulanır. */
+  if (action === "report") {
+    const str = (v: unknown, n = 400) => String(v ?? "").slice(0, n);
+    const ref = "TA-" + Date.now().toString(36).toUpperCase() + "-" + Math.floor(Math.random() * 900 + 100);
+    // Oturum varsa kullanıcıyı JWT'den doğrula (istemci beyanına güvenme)
+    let uid: string | null = null;
+    let uemail = str(body.email, 160).trim().toLowerCase();
+    try {
+      const jwt = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+      if (jwt) { const { data } = await db.auth.getUser(jwt); if (data?.user) { uid = data.user.id; uemail = (data.user.email || uemail).toLowerCase(); } }
+    } catch { /* anon bildirim de kabul */ }
+    const row = {
+      ref,
+      user_id: uid,
+      email: uemail || null,
+      area: str(body.area, 20) || "gorsel",
+      op_id: str(body.opId, 80),
+      scene_key: str(body.sceneKey, 40),
+      error_code: str(body.errorCode, 40),
+      model_req: str(body.modelReq, 40),
+      model_used: str(body.modelUsed, 40),
+      produced: body.produced === true,
+      credit_deducted: body.creditDeducted === true,
+      story_title: str(body.storyTitle, 200),
+      message: str(body.message, 2000),
+      ua: str(req.headers.get("user-agent"), 300),
+    };
+    // KALICI KAYIT (servis rolü RLS'i aşar) — hata olsa bile e-posta denenir
+    try { await db.from("problem_reports").insert(row); } catch (_e) { /* tablo yoksa yine mail at */ }
+    const supportTo = Deno.env.get("SUPPORT_EMAIL") || "iletisim@tarihajani.com";
+    const yn = (b: boolean) => b ? "EVET" : "HAYIR";
+    const rowHtml = (k: string, v: string) => `<tr><td style="padding:4px 10px;color:#818797;font-family:Courier,monospace;font-size:12px;">${k}</td><td style="padding:4px 10px;color:#e9dfc8;font-size:13px;">${v || "—"}</td></tr>`;
+    const html = shell(
+      "SORUN BİLDİRİMİ",
+      "Yeni sorun bildirimi · " + ref,
+      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="text-align:left;border:1px solid rgba(193,154,82,.25);">
+        ${rowHtml("Referans", ref)}
+        ${rowHtml("Alan", row.area)}
+        ${rowHtml("Hata kodu", row.error_code)}
+        ${rowHtml("Üretildi mi", yn(row.produced))}
+        ${rowHtml("Kredi düştü mü", yn(row.credit_deducted))}
+        ${rowHtml("İstenen model", row.model_req)}
+        ${rowHtml("Gerçek model", row.model_used)}
+        ${rowHtml("İş kimliği (opId)", row.op_id)}
+        ${rowHtml("Sahne", row.scene_key)}
+        ${rowHtml("Dosya", row.story_title)}
+        ${rowHtml("Kullanıcı", (uemail || "anonim") + (uid ? " · " + uid : ""))}
+      </table>
+      <p style="margin:16px 0 4px;color:#c19a52;font-family:Courier,monospace;font-size:11px;letter-spacing:2px;">KULLANICI NOTU</p>
+      <p style="color:#cfc8b4;font-size:14px;line-height:1.6;white-space:pre-wrap;">${(row.message || "(not yazılmadı)").replace(/</g, "&lt;")}</p>`,
+      "ADMİN'DE AÇ →",
+      "https://tarihajani.com/admin",
+    );
+    const mailed = await sendMail(supportTo, `⚠ Sorun ${ref} · ${row.error_code || row.area}` + (row.credit_deducted ? " · KREDİ DÜŞTÜ" : ""), html);
+    return json({ ok: true, ref, mailed });
+  }
+
   return json({ ok: false, error: "Bilinmeyen eylem: " + action }, 400);
 });

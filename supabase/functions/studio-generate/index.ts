@@ -196,8 +196,26 @@ async function callClaude(prompt: string, maxTokens?: number, jsonMode?: boolean
 // Üretim maliyeti süre kademesine göre; sahne yenileme sabit.
 // Süre kaydırmalı: client "s<saniye>" gönderir (30-600); eski anahtarlar geriye dönük.
 // Kredi ve sahne CLIENT ile AYNI formül — ama değer sunucuda hesaplanır (anti-hile).
-const IMAGE_COST = 12;        // ilk 20 sahne görseli
-const IMAGE_COST_BULK = 8;    // 21. sahneden itibaren (kademeli indirim)
+const IMAGE_COST = 12;        // varsayılan / Gemini
+const IMAGE_COST_BULK = 8;    // (eski kademe — görselde artık MODEL bazlı fiyat kullanılır)
+// MODEL BAZLI GÖRSEL FİYATI: GPT Image 2=20 · 1.5=12 · 1=8 · diğer(Gemini)=12.
+// Kullanıcı GPT Image 2 ister ama yedeğe (gpt-image-1) düşülürse settle ile YALNIZ
+// gerçekten üretilen modelin fiyatı alınır (fark iade). "gerçek maliyet" kuralı.
+function imgModelPrice(model: string): number {
+  const m = (model || "").trim();
+  if (m === "gpt-image-2") return 20;
+  if (m === "gpt-image-1.5") return 12;
+  if (m === "gpt-image-1") return 8;
+  return IMAGE_COST;   // gemini / bilinmeyen
+}
+// İstenen (rezerve edilecek) fiyat: istemci imageProvider → birincil model fiyatı.
+function imgRequestPrice(b: { imageProvider?: unknown }): number {
+  const ip = String(b.imageProvider || "").trim().toLowerCase();
+  if (ip === "gemini") return IMAGE_COST;
+  if (ip === "gpt1" || ip === "gpt-image-1") return imgModelPrice("gpt-image-1");
+  // gpt / openai / boş → birincil model (env, vars. gpt-image-2)
+  return imgModelPrice((Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-2").trim());
+}
 function secsOf(duration: string): number {
   const m = /^s(\d+)$/.exec(duration || "");
   if (m) return Math.min(600, Math.max(30, parseInt(m[1], 10)));
@@ -394,7 +412,7 @@ async function runImageChain(
   chain: string[],
   provider: string,
   opId: string | undefined,
-  diag: { d: string; cls?: string; model?: string; provider?: string } | undefined,
+  diag: { d: string; cls?: string; model?: string; provider?: string; reqModel?: string } | undefined,
   callOnce: (model: string, isPrimary: boolean, timeoutMs: number) => Promise<ImgCall>,
 ): Promise<string> {
   const MAX_CALLS = 3;
@@ -469,7 +487,7 @@ async function runImageChain(
 // Her iki yol da AYNI ortak orchestrator'ı (runImageChain) kullanır → Faz 3
 // değişmezleri (max 3 çağrı, geçici retry, hata sınıflandırma, opId log) korunur.
 // diag: başarısızlıkta SON gerçek sebep (model + sınıf) + sınıf kodu buraya yazılır.
-async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string; model?: string; provider?: string }, opId?: string, providerOverride?: string, style?: string): Promise<string> {
+async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string; model?: string; provider?: string; reqModel?: string }, opId?: string, providerOverride?: string, style?: string, modelOverride?: string): Promise<string> {
   if (!prompt.trim()) return "";
   // Sağlayıcı: istemciden doğrulanmış imageProvider (providerOverride) > env varsayılanı > openai.
   const provider = (providerOverride || Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim().toLowerCase();
@@ -558,6 +576,14 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   const fallback = (Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1.5").trim();
   const last = (Deno.env.get("TA_IMAGE_LAST_MODEL") || "gpt-image-1").trim();
   const chain = [primary, fallback, last].filter((m, i, a) => m && a.indexOf(m) === i);   // sırayı koru, boş/tekrarı at
+  // KULLANICI AÇIKÇA TEK MODEL SEÇTİYSE (ör. "GPT Image 1") yalnız onu kullan — sessiz
+  // yükseltme/düşürme YOK (seçilen = çıktı). Aksi hâlde 3 kademeli kalite zinciri işler.
+  const OPENAI_IMG_MODELS = new Set([primary, fallback, last, "gpt-image-1", "gpt-image-1.5", "gpt-image-2"]);
+  const forcedModel = (modelOverride || "").trim();
+  const useChain = (forcedModel && OPENAI_IMG_MODELS.has(forcedModel)) ? [forcedModel] : chain;
+  // İSTENEN birincil model (kart şeffaflığı): gerçek üretilen model bundan farklıysa
+  // (zaman aşımı → yedeğe düşüldü) kartta "GPT Image 1 ile oluşturuldu" gösterilir.
+  if (diag) diag.reqModel = useChain[0];
 
   // ChatGPT KALİTE PARİTESİ: gpt-image çıktısı VARSAYILAN PNG (KAYIPSIZ) — ChatGPT'nin
   // döndürdüğü kalitenin aynısı. Eski JPEG (kayıplı, chroma subsampling) netliği düşürüyordu.
@@ -596,7 +622,7 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
       return { url: "", status: 0, timeout: true, body: String(e).slice(0, 200) };
     }
   };
-  return await runImageChain(chain, "openai", opId, diag, callOpenAI);
+  return await runImageChain(useChain, "openai", opId, diag, callOpenAI);
 }
 
 // Gerçek seslendirme — OpenAI gpt-4o-mini-tts (mp3). Uzun metin ≤3800
@@ -1043,6 +1069,13 @@ async function reserveOp(admin: any, userId: string, cost: number, reason: strin
 async function finalizeOp(admin: any, opId: string): Promise<void> {
   try { await admin.rpc("finalize_reservation", { p_job: opId }); } catch (_e) { /* yut */ }
 }
+// KISMİ KESİNLEŞTİR: rezervasyonu YALNIZ gerçek maliyete (finalCost) düşürür; fazla
+// ayrılanı iade eder (GPT Image 2 → yedeğe düşünce farkı geri ver). settle RPC yoksa
+// (eski şema) düz finalize'a düşer → davranış bozulmaz.
+async function settleOp(admin: any, userId: string, opId: string, finalCost: number): Promise<number | undefined> {
+  try { const { data } = await admin.rpc("settle_reservation", { p_user: userId, p_job: opId, p_final: Math.max(0, Math.floor(finalCost)) }); return typeof data === "number" ? data : undefined; }
+  catch (_e) { try { await admin.rpc("finalize_reservation", { p_job: opId }); } catch (_e2) { /* yut */ } return undefined; }
+}
 async function refundOp(admin: any, userId: string, opId: string): Promise<number | undefined> {
   try { const { data } = await admin.rpc("refund_reservation", { p_user: userId, p_job: opId }); return typeof data === "number" ? data : undefined; }
   catch (_e) { return undefined; }
@@ -1281,7 +1314,7 @@ Deno.serve(async (req) => {
     // action + prompt eskiden ücretsiz metin üretimine (gen) düşüp endpoint'i genel
     // amaçlı AI servisi gibi kullandırabiliyordu. "" = uygulama içi ücretsiz metin
     // yardımcıları (sohbet, konu önerisi, Shorts, bölüm metni) — izinli kalır.
-    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate", "imgreclaim"]);
+    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate", "imgreclaim", "support"]);
     if (!ALLOWED_ACTIONS.has(act)) return json({ ok: false, error: "Geçersiz işlem." }, 400);
     // TOPLU MALİYET TAHMİNİ — SUNUCU-TARAFLI (istemci fiyatına güvenilmez). Kredi düşmez,
     // rezervasyon yok. scenes: 0-tabanlı imgIndex dizisi VEYA count. "Tüm sahneleri üret"
@@ -1290,7 +1323,8 @@ Deno.serve(async (req) => {
       const idxs: number[] = Array.isArray(b.scenes)
         ? b.scenes.slice(0, 200).map((n: any) => Math.max(0, Number(n) || 0))
         : Array.from({ length: Math.max(0, Math.min(200, Number(b.count) || 0)) }, (_v, i) => i);
-      const per = idxs.map((i) => costFor("image", "", i));
+      const unit = imgRequestPrice(b);   // MODEL bazlı: seçilen motorun birim fiyatı
+      const per = idxs.map(() => unit);
       const total = per.reduce((a, c) => a + c, 0);
       return json({ ok: true, total, count: idxs.length, per });
     }
@@ -1418,7 +1452,9 @@ Deno.serve(async (req) => {
         ? EDIT_COST
         : act === "video"
           ? videoCost(Number(b.vsec) || 5, String(b.vprovider || ""))
-          : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
+          : act === "image"
+            ? imgRequestPrice(b)   // MODEL bazlı: istenen motorun birincil model fiyatı (rezerve)
+            : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
 
     // G-01: ücretsiz AI uçları sınırlı — bot/istismar faturamızı şişiremesin.
     // GİRİŞLİ kullanıcıya 90/dk: uzun üretimde bölüm metinleri + sahne promptları
@@ -1440,7 +1476,7 @@ Deno.serve(async (req) => {
     // üretimin (prevJob) bir defalık bedava hakkıyla yeniden üretir.
     let freeRegen = false;
     let regenPrevJob = "";
-    if (cost > 0 || isEdit || act === "imgreclaim") {
+    if (cost > 0 || isEdit || act === "imgreclaim" || act === "support") {
       const SB_URL = Deno.env.get("SUPABASE_URL");
       const SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       if (!SB_URL || !SVC) return json({ ok: false, error: "Sunucu yapılandırması eksik (service role)." }, 500);
@@ -1461,7 +1497,9 @@ Deno.serve(async (req) => {
       }
       // YENİDEN ÜRET: yalnız GERÇEK, ücretli, hakkı henüz kullanılmamış önceki
       // job'a bağlıysa ücretsiz — böylece sonsuz bedava üretim mümkün olmaz.
-      regenPrevJob = (String(b.action || "") === "generate" && b.regen === true) ? cleanJob(b.prevJob) : "";
+      // ÜCRETSİZ TEKRAR: senaryo (generate) + görsel (image). Görselde "şeffaf yedek"
+      // sonrası "GPT Image 2 ile tekrar dene" bir kez bedava (prevJob = yedeğe düşen op).
+      regenPrevJob = ((String(b.action || "") === "generate" || String(b.action || "") === "image") && b.regen === true) ? cleanJob(b.prevJob) : "";
       if (regenPrevJob) {
         try {
           const pj = await loadJobResult(admin, userId, regenPrevJob);
@@ -1499,6 +1537,59 @@ Deno.serve(async (req) => {
       return json({ ok: false, reclaimed: true, credits, error: "Üretim zaman aşımına uğradı; kredi iade edildi. Tekrar dene.", errClass: "TIMEOUT_RECLAIMED" }, 200);
     }
 
+    // ── OTONOM DESTEK AJANI ── Ajanın gerçek yetkileri (kullanıcı adına, opId'ye bakarak):
+    //   mode 'lookup'   → SALT OKUNUR tanılama: üretildi mi? kredi düştü mü? iade edilebilir mi?
+    //   mode 'goodwill' → kind 'retry' (ücretsiz tekrar; istemci regen+prevJob ile yapar, para YOK)
+    //                     kind 'refund': önce ASILI rezervasyon iadesi (güvenli, tavansız — kendi ödemesi);
+    //                       kesinleşmiş ücrette JEST KREDİSİ (goodwill_grant, GÜNLÜK TAVAN 2 işlem/40 kredi,
+    //                       op başına idempotent). Tavan dolarsa → escalate (ekip/e-posta). Suistimal kapalı.
+    if (act === "support") {
+      if (!admin || !userId) return json({ ok: false, error: "Bunun için giriş yap." }, 401);
+      const mode = String(b.mode || "lookup");
+      const sOp = cleanJob(b.opId);
+      let resv: { status?: string; amount?: number } | null = null;
+      if (sOp) {
+        try {
+          const { data } = await admin.from("credit_reservations").select("status, amount").eq("job", sOp).eq("user_id", userId).maybeSingle();
+          resv = data || null;
+        } catch (_e) { /* tablo/satır yok */ }
+      }
+      const produced = sOp ? !!((await loadJobResult(admin, userId, sOp)) || {}).url : false;
+      const charged = resv?.status === "finalized";
+      const refundableReservation = resv?.status === "reserved";
+      let bal: number | undefined;
+      try { const { data } = await admin.rpc("refresh_profile_credits", { p_user: userId }); const r = Array.isArray(data) ? data[0] : data; bal = r && typeof r.credits === "number" ? r.credits : undefined; } catch (_e) { /* yut */ }
+
+      if (mode === "lookup") {
+        return json({ ok: true, found: !!resv || produced, produced, charged, refundableReservation, amount: resv?.amount ?? null, credits: bal });
+      }
+      if (mode === "goodwill") {
+        const kind = String(b.kind || "refund");
+        if (kind === "retry") return json({ ok: true, action: "retry", opId: sOp });   // ücretsiz tekrar → istemci regen yapar
+        if (kind !== "refund") return json({ ok: false, error: "Geçersiz jest türü." }, 400);
+        if (!sOp) return json({ ok: true, action: "escalate", reason: "no_op", credits: bal });   // belirli op yoksa insana devret
+        // 1) Asılı rezervasyon → güvenli iade (tavansız; kullanıcının kendi ayrılmış kredisi)
+        if (refundableReservation) {
+          const credits = await refundOp(admin, userId, sOp);
+          logRun({ action: "support", ok: true, ms: Date.now() - t0, user_id: userId, err: "REFUND_RESERVED:" + sOp.slice(0, 30) });
+          return json({ ok: true, action: "refund_reserved", refunded: resv?.amount ?? null, credits });
+        }
+        // 2) Kesinleşmiş ücret → JEST KREDİSİ, GÜNLÜK TAVAN içinde (idempotent)
+        const dailyOps = Math.max(0, Number(Deno.env.get("TA_GOODWILL_DAILY_OPS")) || 2);
+        const dailyAmt = Math.max(0, Number(Deno.env.get("TA_GOODWILL_DAILY_AMT")) || 40);
+        const amount = Math.max(1, Math.min(40, Number(resv?.amount) || 12));
+        try {
+          const { data } = await admin.rpc("goodwill_grant", { p_user: userId, p_op: sOp, p_amount: amount, p_daily_ops: dailyOps, p_daily_amt: dailyAmt });
+          const g = Array.isArray(data) ? data[0] : data;
+          if (g && g.ok && g.code === "granted") { logRun({ action: "support", ok: true, ms: Date.now() - t0, user_id: userId, err: "GOODWILL:" + g.granted + ":" + sOp.slice(0, 24) }); return json({ ok: true, action: "goodwill", granted: g.granted, credits: g.new_credits }); }
+          if (g && g.code === "already") return json({ ok: true, action: "goodwill", granted: 0, credits: g.new_credits, note: "already" });
+          // Tavan doldu / geçersiz → insana devret (rapor/e-posta akışı zaten var)
+          return json({ ok: true, action: "escalate", reason: (g && g.code) || "cap", credits: (g && g.new_credits) ?? bal });
+        } catch (_e) { return json({ ok: true, action: "escalate", reason: "error", credits: bal }); }
+      }
+      return json({ ok: false, error: "Geçersiz destek modu." }, 400);
+    }
+
     // GÖRSEL ÜRETİMİ — metin üretiminden ayrı akış. REZERVE-first: üretimden önce
     // krediyi atomik ayır (3.3), başarısızsa iade. opId istemciden gelir (idempotency).
     if (String(b.action || "") === "image") {
@@ -1511,7 +1602,9 @@ Deno.serve(async (req) => {
       // olsa bile Gemini çalışmaz; seçim gerçekten backend'e ulaşır.
       const ipRaw = String(b.imageProvider || "").trim().toLowerCase();
       let imgProv = "";   // "" → generateImage env varsayılanını kullanır (yalnız eski istemci)
+      let modelForce = "";   // kullanıcı AÇIKÇA tek model seçtiyse (gpt1 → gpt-image-1) zincir tek modele kilitlenir
       if (ipRaw === "gpt" || ipRaw === "openai") imgProv = "openai";
+      else if (ipRaw === "gpt1" || ipRaw === "gpt-image-1") { imgProv = "openai"; modelForce = "gpt-image-1"; }   // GPT Image 1: hızlı/güvenilir, elle seçim
       else if (ipRaw === "gemini") imgProv = "gemini";
       else if (ipRaw === "higgs" || ipRaw === "higgsfield") {
         logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "HIGGS_IMAGE_NOT_CONFIGURED" });
@@ -1559,9 +1652,9 @@ Deno.serve(async (req) => {
       // (parse/storage/DB/exception) global catch'e düşer ve doRefund iadeyi yapar.
       // (Kök neden düzeltmesi: görsel yolu bu ağa bağlı DEĞİLDİ.)
       if (res.reserved) pendingRefund = { admin, user: userId, job: opId };
-      const diag: { d: string; cls?: string; model?: string; provider?: string } = { d: "" };
+      const diag: { d: string; cls?: string; model?: string; provider?: string; reqModel?: string } = { d: "" };
       const tGen = Date.now();
-      let url = await generateImage(String(b.prompt || ""), sizeReq, diag, opId, imgProv, styleKey);
+      let url = await generateImage(String(b.prompt || ""), sizeReq, diag, opId, imgProv, styleKey, modelForce);
       const genMs = Date.now() - tGen;
       // META (şeffaflık): çözünürlük/biçim/bayt HAM data URI'den okunur (upload ÖNCESİ)
       const info = (url && url.startsWith("data:")) ? imageInfo(url) : { w: 0, h: 0, bytes: 0, fmt: "" };
@@ -1591,10 +1684,21 @@ Deno.serve(async (req) => {
           : "Görsel üretilemedi" + (diag.d ? " — sebep: " + diag.d : "") + ". Kredi düşülmedi, tekrar dene.";
         return json({ ok: false, error: msg, errClass: diag.cls, credits }, 502);
       }
+      // GERÇEK MALİYET: kredi, gerçekten ÜRETEN modelin fiyatına göre (rezerve edilen
+      // istenen model fiyatıysa ve yedeğe düşülmüşse fark iade edilir). Gemini/bilinmeyen
+      // → rezerve fiyatı korunur. Asla rezerveyi (cost) AŞMAZ.
+      const actualCost = (cost > 0)
+        ? Math.min(cost, diag.provider === "gemini" ? cost : (diag.model ? imgModelPrice(diag.model) : cost))
+        : cost;
       // KART META (teknik şeffaflık): sağlayıcı, model, stil, biçim, kadraj, çözünürlük, boyut, süre, kredi
       const meta = {
         provider: diag.provider === "gemini" ? "Gemini" : "GPT",
         model: diag.model || "",
+        // ŞEFFAF YEDEK: istenen birincil model (GPT Image 2) zaman aşımına uğrayıp
+        // yedeğe (gpt-image-1) düşüldüyse fellBack=true → kartta bildirilir + "GPT Image 2
+        // ile tekrar dene" sunulur. reqModel/usedModel karta gerçek durumu taşır.
+        reqModel: diag.reqModel || "",
+        fellBack: !!(diag.provider !== "gemini" && diag.model && diag.reqModel && diag.model !== diag.reqModel),
         style: STYLE_LABELS[styleKey] || "",
         format: (info.fmt || "").toUpperCase(),
         aspect: sizeReq,
@@ -1604,7 +1708,7 @@ Deno.serve(async (req) => {
         ratioVerified: !!(info.w && info.h),
         bytes: info.bytes,
         ms: genMs,
-        cost,
+        cost: actualCost,   // kartta GERÇEKTEN düşen kredi
       };
       // KURTARMA: sonucu opId ile job-cache'e yaz → yenileme/tekrar aynı sonucu kredisiz getirir.
       if (b.opId && admin && userId) { try { await saveJobResult(admin, userId, opId, { url, meta }); } catch (_e) { /* kurtarma opsiyonel */ } }
@@ -1622,7 +1726,7 @@ Deno.serve(async (req) => {
             scene_key: skRaw || null, kind,
             provider: meta.provider, model: meta.model, style: meta.style,
             aspect: meta.aspect, resolution: meta.resolution,
-            storage_url: url, bytes: meta.bytes, spent_credits: cost,
+            storage_url: url, bytes: meta.bytes, spent_credits: actualCost,
             prompt: String(b.prompt || "").slice(0, 2000),
             story_title: b.storyTitle ? String(b.storyTitle).slice(0, 200) : null,
           }, { onConflict: "user_id,op_id" });
@@ -1630,10 +1734,11 @@ Deno.serve(async (req) => {
       }
       if (cost > 0 && admin && userId) {
         // Buraya geldiysek res.reserved KESİN true (aksi halde yukarıda 503 döndük) →
-        // rezervasyonu finalize et; eski spendSafe'e sessiz düşüş YOK.
-        await finalizeOp(admin, opId);
+        // rezervasyonu GERÇEK maliyete (üretilen modelin fiyatı) kesinleştir; yedeğe
+        // düşülmüşse fark iade edilir. Eski spendSafe'e sessiz düşüş YOK.
+        const settledBal = await settleOp(admin, userId, opId, actualCost);
         pendingRefund = null;   // başarı → beklenmeyen-hata iadesi devre dışı
-        return json({ ok: true, url, charged: true, credits: res.credits, meta });
+        return json({ ok: true, url, charged: true, credits: settledBal != null ? settledBal : res.credits, cost: actualCost, meta });
       }
       pendingRefund = null;
       return json({ ok: true, url, charged: false, meta });

@@ -1369,7 +1369,7 @@
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div style="display: grid; gap: 4px; max-width: 62ch;">
                       <p style="margin: 0; color: #cfc8b4; font-size: 13px; line-height: 1.55;">Seçtiğin platform, oran ve stil tüm sahnelere uygulanır. Sahne bazında istediğin zaman değiştirebilirsin.</p>
-                      <p style="margin: 0; color: #676d7c; font-size: 11.5px; line-height: 1.5;">İlk 20 sahne görseli 12 KR, sonrası 8 KR. Üretilenler Görsel Stüdyo rafına eklenir.</p>
+                      <p style="margin: 0; color: #676d7c; font-size: 11.5px; line-height: 1.5;">Görsel kredisi motora göre: GPT Image 2 · 20 KR, GPT Image 1 · 8 KR, Gemini · 12 KR. GPT Image 2 zaman aşımında yedeğe düşerse yalnız üretilen modelin fiyatı alınır. Üretilenler Görsel Stüdyo rafına eklenir.</p>
                       <sc-if value="{{ imgGenBlocked }}" hint-placeholder-val="{{ false }}">
                         <p style="margin: 2px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">⚠ {{ imgValMsg }} Üretim bunu seçmeden başlamaz; kredi harcanmaz.</p>
                       </sc-if>
@@ -1604,6 +1604,8 @@
                           <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ GÖRSEL HAZIR · {{ gp.img.count }}</span>
                           <button onClick="{{ gp.makeImg }}" disabled="{{ gp.imgBlocked }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.imgRedoLabel }}</button>
                         </sc-if>
+                        <button onClick="{{ gp.togglePrompt }}" aria-label="{{ gp.promptIconTitle }}" title="{{ gp.promptIconTitle }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 11px; font-size: 13px; line-height: 1.2; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ gp.promptIcon }}</button>
+                        <button onClick="{{ gp.copy }}" aria-label="{{ gp.copyIconTitle }}" title="{{ gp.copyIconTitle }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 11px; font-size: 13px; line-height: 1.2; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ gp.copyIcon }}</button>
                         <span style="position: relative; display: inline-flex;">
                           <button onClick="{{ gp.toggleMenu }}" aria-label="Diğer işlemler" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 12px; font-size: 13px; line-height: 1.2; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">⋯</button>
                           <sc-if value="{{ gp.menuOpen }}" hint-placeholder-val="{{ false }}">
@@ -1618,6 +1620,7 @@
                                 <button onClick="{{ gp.togglePromptHist }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">🕘 Prompt Geçmişi</button>
                               </sc-if>
                               <button onClick="{{ gp.regen }}" style="text-align: left; border: 0; background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">{{ gp.regenLabel }}</button>
+                              <button onClick="{{ gp.reportScene }}" style="text-align: left; border: 0; border-top: 1px solid rgba(129,135,151,.2); background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(201,120,90,.12); color: #e0a58a;">⚠ Bu sahnede sorun bildir</button>
                               <sc-if value="{{ gp.img.hasUrl }}" hint-placeholder-val="{{ false }}">
                                 <button onClick="{{ gp.archImg }}" style="text-align: left; border: 0; border-top: 1px solid rgba(129,135,151,.2); background: transparent; color: #d3d7e0; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(193,154,82,.1); color: #e6c478;">🗄 Arşivle</button>
                                 <button onClick="{{ gp.removeImg }}" style="text-align: left; border: 0; background: transparent; color: #a4a9b5; padding: 11px 14px; font-size: 12.5px; cursor: pointer;" style-hover="background: rgba(192,57,43,.12); color: #e08a80;">🗑 Görseli Sil</button>
@@ -1629,6 +1632,13 @@
                     </div>
                     <sc-if value="{{ gp.anlatim }}" hint-placeholder-val="{{ false }}">
                       <div style="color: #e8dcc0; font-size: 12.5px; line-height: 1.6; font-style: italic; border-left: 2px solid rgba(193,154,82,.55); padding: 2px 0 2px 11px;">🎙 “{{ gp.anlatim }}”</div>
+                    </sc-if>
+                    <!-- ŞEFFAF YEDEK: GPT Image 2 zaman aşımına uğrayıp GPT Image 1'e düşüldüyse açıkça bildir + ücretsiz tekrar -->
+                    <sc-if value="{{ gp.img.fellBack }}" hint-placeholder-val="{{ false }}">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; border: 1px solid rgba(230,196,120,.35); background: rgba(230,196,120,.07); border-radius: 6px; padding: 9px 12px;">
+                        <span style="color: #e0c98a; font-size: 12px; line-height: 1.5;">ℹ {{ gp.img.fellBackNote }}</span>
+                        <button onClick="{{ gp.retryGpt2 }}" disabled="{{ gp.img.busy }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.12); color: #e6c478; padding: 6px 12px; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; cursor: pointer; white-space: nowrap; border-radius: 6px;" style-hover="background: rgba(193,154,82,.24);">↻ GPT Image 2 ile tekrar dene · ücretsiz</button>
+                      </div>
                     </sc-if>
                     <!-- Prompt varsayılan gizli — ⋯ menüsünden "Promptu Gör" ile açılır; kapatma alanın kendi içinde -->
                     <sc-if value="{{ gp.promptShow }}" hint-placeholder-val="{{ false }}">
@@ -2177,6 +2187,7 @@ class Component extends DCLogic {
       editTarget: null, editLabel: '',
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
+      reportBusy: false, reportRef: '', reportCtx: null,   // sorun bildirimi durumu (kayıt + mail) + ajan jest bağlamı
       imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, sceneOpts: (w && w.sceneOpts) || {}, promptHist: (w && w.promptHist) || {}, savedImgs: [], srvImages: [], imgSel: {},
       // Panel seçimleri dosyayla geri yüklenir (UI seçimi yenilemede kaybolmaz/geri dönmez)
       imgStyle: (w && w.imgStyle) || null, imgStyleCat: (w && w.imgStyleCat) || '', imgPlatform: (w && w.imgPlatform) || '',
@@ -2540,7 +2551,8 @@ class Component extends DCLogic {
       ],
       motor: [
         { id: 'auto', name: '⚡ Otomatik', desc: 'Sistem bu üretim için en uygun motoru seçer' },
-        { id: 'gpt', name: 'GPT Image 2', desc: 'Elle seçersen sistem geri değiştirmez' },
+        { id: 'gpt', name: 'GPT Image 2', desc: 'En yüksek kalite — zaman aşımında GPT Image 1 yedeği devreye girer' },
+        { id: 'gpt1', name: 'GPT Image 1', desc: 'Daha hızlı ve güvenilir — kalite biraz daha düşük' },
         { id: 'gemini', name: 'Gemini', desc: 'Google görsel motoru — elle seçim korunur' }
       ]
     };
@@ -3099,8 +3111,12 @@ class Component extends DCLogic {
   // Gerçek görsel üretimi — sunucuda OpenAI ile, her görsel kredi düşer (anti-hile).
   // Kademeli fiyat: ilk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR
   // (uzun videoda çok görsel üretimini ucuzlatır). idx = sahne sırası (0 tabanlı).
-  IMG_COST(idx) { return (typeof idx === 'number' && idx >= 20) ? 8 : 12; }
-  async imageServer(prompt, arKey, idx, onAttempt, opId, style, provider, sceneKey, kind) {
+  // MODEL BAZLI FİYAT (sunucu ile aynı): GPT Image 2=20 · GPT Image 1.5=12 · GPT Image 1=8 · Gemini=12
+  IMG_PRICE(prov) { const k = this._provResolve(prov || (this.state && this.state.imgProvider)); return ({ gpt: 20, gpt1: 8, gemini: 12 })[k] || 20; }
+  // idx artık fiyatı ETKİLEMEZ (kademeli sayı indirimi kaldırıldı; fiyat modele göre).
+  // prov verilirse o motorun (sahne override) fiyatı; yoksa panel motoru.
+  IMG_COST(idx, prov) { return this.IMG_PRICE(prov); }
+  async imageServer(prompt, arKey, idx, onAttempt, opId, style, provider, sceneKey, kind, regenOpt) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     // SESSİZ FALLBACK YOK: bilinmeyen oran anahtarı yataya düşmez — istek hiç atılmaz.
@@ -3129,7 +3145,11 @@ class Component extends DCLogic {
         body: JSON.stringify({ action: 'image', prompt, size: aspect, imgIndex: (typeof idx === 'number' ? idx : 0), opId: opId || undefined, imageProvider: this._provResolve(provider || this.state.imgProvider), style: style || (this.state.imgStyle || this.state.style) || undefined,
           // KALICI ARŞİV bağları: görseli hikâye/sahneye ve hesaba bağlar (sunucu studio_images'e yazar)
           fileId: (kind && kind !== 'standalone') ? (this.state.fileNo || undefined) : undefined, sceneKey: sceneKey || undefined, kind: kind || undefined,
-          storyTitle: (kind && kind !== 'standalone') ? (((this.state.result || {}).baslik) || undefined) : undefined })
+          storyTitle: (kind && kind !== 'standalone') ? (((this.state.result || {}).baslik) || undefined) : undefined,
+          // ŞEFFAF YEDEK — ÜCRETSİZ TEKRAR: GPT Image 2 zaman aşımında GPT Image 1'e düşen
+          // sahneyi kullanıcı "GPT Image 2 ile tekrar dene" ile bir kez ÜCRETSİZ yineler
+          // (regen + prevJob → sunucu op_locks ile tek sefer bedava; çift ücret yok).
+          ...(regenOpt && regenOpt.regen && regenOpt.prevJob ? { regen: true, prevJob: regenOpt.prevJob } : {}) })
       });
     } catch (netErr) {
       // Yanıt alınamadı → sunucudaki gerçek durumu öğren: kurtar ya da iade et.
@@ -3141,7 +3161,8 @@ class Component extends DCLogic {
         }).then(x => x.json()).catch(() => null);
         if (d2 && d2.ok && d2.url) return { url: d2.url, meta: d2.meta || null };   // üretim aslında bitmişti
         if (d2 && typeof d2.credits === 'number') this.setState({ credits: d2.credits }, () => this.persist());
-        throw new Error((d2 && d2.error) || 'Üretim zaman aşımına uğradı; kredi iade edildi. Tekrar dene.');
+        const eT = new Error((d2 && d2.error) || 'Üretim zaman aşımına uğradı; kredi iade edildi. Tekrar dene.');
+        eT.code = 'IMG-TIMEOUT'; throw eT;   // hata kodu sistemi: raporda taşınır
       }
       throw netErr;
     } finally {
@@ -3149,7 +3170,7 @@ class Component extends DCLogic {
     }
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
-    if (!r.ok || !data.ok || !data.url) throw new Error(data.error || 'Görsel üretilemedi');
+    if (!r.ok || !data.ok || !data.url) { const eE = new Error(data.error || 'Görsel üretilemedi'); eE.code = this._imgErrCode(data.errClass); throw eE; }
     if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
     return { url: data.url, meta: data.meta || null };   // meta: kart üzerinde teknik şeffaflık için
   }
@@ -3223,6 +3244,7 @@ class Component extends DCLogic {
   _provResolve(p) {
     const k = String(p || (this.state && this.state.imgProvider) || '').toLowerCase();
     if (k === 'gemini') return 'gemini';
+    if (k === 'gpt1') return 'gpt1';   // GPT Image 1: kullanıcı elle seçti — hızlı/güvenilir
     if (k === 'gpt') return 'gpt';
     return 'gpt';   // '', 'auto', bilinmeyen → varsayılan motor (stile göre kural: PR-3)
   }
@@ -3232,14 +3254,14 @@ class Component extends DCLogic {
   // ASLA undefined/throw olmaz (renderVals bu yüzden çökmemeli).
   _provNm(p) {
     const k = this._provResolve(p);
-    return ({ gpt: 'GPT', gemini: 'Gemini' })[k] || 'GPT';
+    return ({ gpt: 'GPT', gpt1: 'GPT', gemini: 'Gemini' })[k] || 'GPT';
   }
   // Buton başlığı için sağlayıcının VİTRİN model adı (GPT → GPT Image 2 vb.).
   // Not: gerçek üretimde model erişilemezse sunucu yedeğe düşebilir; KART her zaman
   // GERÇEK kullanılan modeli gösterir. Bu yalnız buton etiketidir.
   _provModelLabel(p) {
     const k = this._provResolve(p);
-    return ({ gpt: 'GPT Image 2', gemini: 'Gemini Flash Image' })[k] || 'GPT Image 2';
+    return ({ gpt: 'GPT Image 2', gpt1: 'GPT Image 1', gemini: 'Gemini Flash Image' })[k] || 'GPT Image 2';
   }
 
   // ── TEK KAYNAK: GÖRSEL ÜRETİM AYARI ÇÖZÜMLEYİCİSİ ─────────────────
@@ -3410,11 +3432,12 @@ class Component extends DCLogic {
   // opIdOverride: kararlı iş kimliği (toplu üretimde sahne başına sabit → idempotent
   // rezervasyon/kurtarma; aynı sahne iki kez üretilmez). providerOverride: batch'te
   // sabitlenen sağlayıcı. Dönüş: { ok, err } (toplu kuyruk gerçek hatayı okur).
-  makeImage(promptRaw, idx, sceneKey, arOverride, opIdOverride, providerOverride, styleOverride) {
+  makeImage(promptRaw, idx, sceneKey, arOverride, opIdOverride, providerOverride, styleOverride, regenOpt) {
     const prompt = (promptRaw || '').trim();
     if (!prompt) return Promise.resolve({ ok: false, err: 'boş prompt' });
     const cost = this.IMG_COST(idx);
-    if (this.state.credits < cost) { this.setState({ creditModal: true }); return Promise.resolve({ ok: false, err: 'YETERSIZ_KREDI' }); }
+    // Ücretsiz tekrar (şeffaf yedek sonrası) bakiye kontrolüne takılmasın (sunucuda 0 KR)
+    if (!(regenOpt && regenOpt.regen) && this.state.credits < cost) { this.setState({ creditModal: true }); return Promise.resolve({ ok: false, err: 'YETERSIZ_KREDI' }); }
     // TEK KAPI: ayarlar merkezi çözümleyiciden gelir (sahne ayarı > panel > dosya).
     // Toplu üretim, batch başında dondurduğu değerleri override olarak geçirir.
     const gen = this.resolveImageGenerationSettings(sceneKey, {
@@ -3448,7 +3471,7 @@ class Component extends DCLogic {
     // Aynı opId ile tekrar (kurtarma) rafta kart ÇOĞALTMAZ (id'ye göre filtrele).
     this.setState(st => ({ imgJobs: (st.imgJobs || 0) + 1, imgQueue: [{ id, prompt, ar, label, status: 'ÜRETİLİYOR… (' + cost + ' KR)', url: '' }, ...st.imgQueue.filter(x => x.id !== id)].slice(0, 40) }));
     const done = () => this.setState(st => ({ imgJobs: Math.max(0, (st.imgJobs || 0) - 1) }));
-    return this.imageServer(sendPrompt, ar, idx, null, id, sty, prov, sceneKey, kind).then(res => {
+    return this.imageServer(sendPrompt, ar, idx, null, id, sty, prov, sceneKey, kind, regenOpt).then(res => {
       done();
       const url = res.url, meta = res.meta || null;   // meta: sağlayıcı/model/stil/biçim/kadraj/çözünürlük/boyut/süre/kredi
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: 'HAZIR', url, meta } : x) }));
@@ -3456,14 +3479,15 @@ class Component extends DCLogic {
       // kalıcı arşiv: yerel (IndexedDB) + hesap bağları (fileId/kind/sceneKey) — sunucu studio_images'e de yazar
       this.saveImg({ id, prompt, ar, url, meta, ts: Date.now(), fileId: (kind !== 'standalone' ? (this.state.fileNo || '') : ''), kind, sceneKey: sceneKey || '' });
       this._scheduleSrvRefresh();   // sunucu arşivini (grup/geçmiş) kısa süre sonra tazele (batch'i spam'lemez)
-      return { ok: true, meta };
+      return { ok: true, meta, opId: id };
     }).catch(e => {
       done();
       const isCredit = e.message === 'YETERSIZ_KREDI';
       const msg = isCredit ? 'YETERSİZ KREDİ' : ('HATA: ' + e.message);   // GERÇEK hata gösterilir
       this.setState(st => ({ imgQueue: st.imgQueue.map(x => x.id === id ? { ...x, status: msg } : x) }));
       if (isCredit) this.setState({ creditModal: true });
-      return { ok: false, err: isCredit ? 'YETERSIZ_KREDI' : String(e.message || 'hata') };   // hatalı sahne kredisi sunucuda iade edilir (opId)
+      // hata kodu + opId: "Sorun Bildir" tanılaması için sahnede saklanır (kredi sunucuda iade)
+      return { ok: false, err: isCredit ? 'YETERSIZ_KREDI' : String(e.message || 'hata'), code: e.code || (isCredit ? 'IMG-CREDIT' : 'IMG-UNKNOWN'), opId: id };
     });
   }
 
@@ -4076,7 +4100,27 @@ class Component extends DCLogic {
     this.makeImage(prompt, idx, key).then(r => {
       const ok = !!(r && r.ok);
       const si = (this.state.sceneImgs || {})[key] || {};
-      this.setSceneImg(key, ok ? { busy: false, done: true, count: (si.count || 0) + 1 } : { busy: false });
+      // Başarıda tanılamayı temizle; hatada kod+opId sakla (Sorun Bildir bunları taşır)
+      this.setSceneImg(key, ok
+        ? { busy: false, done: true, count: (si.count || 0) + 1, errCode: '', lastErr: '' }
+        : { busy: false, errCode: (r && r.code) || 'IMG-UNKNOWN', lastErr: (r && r.err) || '', lastOpId: (r && r.opId) || '' });
+    });
+  }
+  // ŞEFFAF YEDEK — "GPT Image 2 ile tekrar dene": zaman aşımında GPT Image 1'e düşen
+  // sahneyi GPT Image 2'yi ZORLAYARAK bir kez ÜCRETSİZ yineler (prevJob = yedeğe düşen
+  // üretim → sunucu op_locks ile tek sefer bedava; çift ücret yok).
+  retrySceneWithGpt2(key, promptRaw, idx) {
+    const si = (this.state.sceneImgs || {})[key] || {};
+    if (si.busy) return;
+    const prompt = (promptRaw || '').trim();
+    if (!prompt) return;
+    const cur = (si.vers || []).find(v => v && v.url === si.url);
+    const prevJob = (cur && cur.id) || '';
+    this.setSceneImg(key, { busy: true });
+    this.makeImage(prompt, idx, key, undefined, undefined, 'gpt', undefined, prevJob ? { regen: true, prevJob } : undefined).then(r => {
+      const ok = !!(r && r.ok);
+      const si2 = (this.state.sceneImgs || {})[key] || {};
+      this.setSceneImg(key, ok ? { busy: false, done: true, count: (si2.count || 0) + 1 } : { busy: false });
     });
   }
   goImgStudio() { this.setState({ tab: 'imgstudio' }); }
@@ -4107,6 +4151,9 @@ class Component extends DCLogic {
       done, notDone: !done,
       busy: !!(si && si.busy),
       count: (si && si.count) || 0,
+      // ŞEFFAF YEDEK: GPT Image 2 zaman aşımına uğrayıp GPT Image 1'e düşüldüyse kartta bildir
+      fellBack: !!(((si && si.meta) || {}).fellBack),
+      fellBackNote: (((si && si.meta) || {}).fellBack) ? 'GPT Image 2 zaman aşımına uğradı. Görseliniz GPT Image 1 ile oluşturuldu.' : '',
       url, hasUrl: !!url,
       vidUrl, hasVid: !!vidUrl, vidBusy,
       canVideo: !!url && !vidBusy,
@@ -4717,14 +4764,102 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     }
   }
 
-  // Sorun bildir — canlı Ajan sohbetini açar, dosya bağlamını hazır doldurur.
-  // Ajan o an yardımcı olur (eksik sahne, hata vb.) — kullanıcı sahipsiz kalmaz.
-  reportProblem() {
+  // ── HATA KODU SİSTEMİ ── sunucu errClass → sabit, destek-dostu kod. Kartta ve
+  // raporda görünür; herkes aynı dili konuşur (IMG-TIMEOUT, IMG-RATE, …).
+  _imgErrCode(cls) {
+    const m = {
+      TIMEOUT: 'IMG-TIMEOUT', RATE_LIMIT: 'IMG-RATE', AUTH_ERROR: 'IMG-AUTH',
+      INVALID_REQUEST: 'IMG-INVALID', MODERATION: 'IMG-MODERATION', PROVIDER_ERROR: 'IMG-PROVIDER',
+      RATIO_MISMATCH: 'IMG-RATIO', CREDIT_SYSTEM_UNAVAILABLE: 'IMG-CREDITSYS',
+      INVALID_IMAGE_PROVIDER: 'IMG-PROVSEC', HIGGS_IMAGE_NOT_CONFIGURED: 'IMG-HIGGS'
+    };
+    return m[cls] || (cls ? ('IMG-' + String(cls).slice(0, 14).toUpperCase()) : 'IMG-UNKNOWN');
+  }
+  // ── SORUN BİLDİRİMİ ── tanılamayı (kod, opId, üretildi mi, kredi düştü mü, model)
+  // OTOMATİK toplar → posta 'report' → problem_reports tablosu + iletisim@tarihajani.com
+  // e-postası. Kullanıcı sahipsiz kalmaz; feedback KESİN bize düşer (sohbet + kayıt + mail).
+  async submitReport(area, extra) {
+    const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const token = this._token() || SB_KEY;
+    const payload = Object.assign({
+      action: 'report', area: area || 'genel',
+      email: this.state.regEmail || '',
+      storyTitle: (this.state.result && this.state.result.baslik) || '',
+    }, extra || {});
+    try {
+      const r = await fetch(SB_URL + '/functions/v1/posta', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(payload)
+      });
+      const d = await r.json().catch(() => ({}));
+      return (d && d.ok) ? (d.ref || '') : '';
+    } catch (e) { return ''; }
+  }
+  // Sorun bildir — tanılamayı bize düşürür (kayıt + mail) VE canlı Ajan sohbetini açar.
+  // sceneKey verilirse o sahnenin gerçek hata kodu/opId/model bilgisi otomatik eklenir.
+  reportProblem(sceneKey) {
     const t = (this.state.result && this.state.result.baslik) || 'bu dosya';
-    this.setState({
-      chatOpen: true,
-      chatInput: 'Sorun bildirimi — "' + t + '": '
+    let area = 'genel', extra = {};
+    if (sceneKey) {
+      const si = (this.state.sceneImgs || {})[sceneKey] || {};
+      const meta = si.meta || {};
+      const produced = !!si.url;
+      area = 'gorsel';
+      extra = {
+        sceneKey,
+        opId: si.lastOpId || '',
+        errorCode: si.errCode || (meta.fellBack ? 'IMG-FELLBACK' : (produced ? '' : 'IMG-UNKNOWN')),
+        modelReq: meta.reqModel || '',
+        modelUsed: meta.model || '',
+        produced,
+        creditDeducted: produced   // üretildi → ücretlendi; üretilmedi → sunucuda iade
+      };
+    }
+    // Ajanın YETKİ bağlamı: hangi üretim (opId/sahne), üretildi mi, hata kodu → jest kararı için
+    const reportCtx = sceneKey ? { opId: extra.opId || '', sceneKey, produced: !!extra.produced, code: extra.errorCode || '' } : null;
+    this.setState({ chatOpen: true, chatInput: 'Sorun bildirimi — "' + t + '": ', reportBusy: true, reportRef: '', reportCtx });
+    this.submitReport(area, extra).then(ref => {
+      this.setState(st => ({
+        reportBusy: false, reportRef: ref || '',
+        chatMsgs: (st.chatMsgs || []).concat(ref
+          ? [{ role: 'assistant', content: 'Bildirimin bize ulaştı ✓  Referans: ' + ref + '\nEkibimize e-posta olarak düştü' + (extra.errorCode ? (' (hata kodu: ' + extra.errorCode + ')') : '') + '. Buradan da anlatırsan hemen bakayım — kredin düştüyse iade eder, üretilmeyen görsele yeni hak veririm.' }]
+          : [{ role: 'assistant', content: 'Seni dinliyorum — sorunu birkaç kelimeyle yaz, hemen bakayım. (Otomatik bildirim gönderilemediyse de buradan hallederiz.)' }])
+      }), () => this._scrollChat());
     });
+  }
+  // ── OTONOM DESTEK: sunucu 'support' ucu (tanılama + jest). Guardrail sunucuda:
+  // günlük 2 işlem / 40 kredi, op başına idempotent. İstemci yalnız çağırır.
+  async support(mode, opId, kind) {
+    const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const token = this._token() || SB_KEY;
+    try {
+      const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ action: 'support', mode: mode || 'lookup', opId: opId || undefined, kind: kind || undefined })
+      });
+      return await r.json().catch(() => null);
+    } catch (e) { return null; }
+  }
+  // Ajan direktifini uygula: [[GOODWILL:refund|retry:OPID]] → sunucu jesti + kullanıcıya net sonuç.
+  async _applyGoodwill(kind, opId) {
+    const rc = this.state.reportCtx || {};
+    if (kind === 'retry') {
+      await this.support('goodwill', opId, 'retry');
+      const key = rc.sceneKey || '';
+      const m = /^([a-z]+)(\d+)$/.exec(key);
+      if (m) { const i = +m[2]; const arr = ((this.state.result || {}).gorsel_promptlar) || []; const pr = (arr[i] || {}).prompt || ''; if (pr) this.retrySceneWithGpt2(key, pr, i); }
+      this.setState(st => ({ chatMsgs: (st.chatMsgs || []).concat([{ role: 'assistant', content: '✓ Ücretsiz yeniden üretim hakkını tanımladım' + (m ? ' ve sahneyi yeniden üretiyorum' : '') + '. Kredin düşmeyecek.' }]) }), () => this._scrollChat());
+      return;
+    }
+    const res = await this.support('goodwill', opId, 'refund');
+    let note = 'Talebini aldım; ekibe ilettim, en kısa sürede dönüş yapılacak.';
+    if (res && res.action === 'goodwill' && res.granted > 0) { note = '✓ ' + res.granted + ' krediyi hesabına iade ettim. Yaşattığımız aksama için kusura bakma.'; if (typeof res.credits === 'number') this.setState({ credits: res.credits }, () => this.persist()); }
+    else if (res && res.action === 'goodwill' && res.note === 'already') note = 'Bu üretim için jest zaten uygulanmıştı — tekrar düşmedi.';
+    else if (res && res.action === 'refund_reserved') { note = '✓ Ayrılan kredini iade ettim.'; if (typeof res.credits === 'number') this.setState({ credits: res.credits }, () => this.persist()); }
+    else if (res && res.action === 'escalate') note = 'Bugünkü otomatik iade sınırına takıldık; talebini ekibe ilettim, elle halledilecek.';
+    this.setState(st => ({ chatMsgs: (st.chatMsgs || []).concat([{ role: 'assistant', content: note }]) }), () => this._scrollChat());
   }
 
   qualityFix(result) {
@@ -5586,7 +5721,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       // 'auto' yalnız arayüz kavramı — sunucuya daima _provResolve ile gerçek motor gider.
       // Manuel seçim kullanıcınındır; sistem asla geri almaz.
       imgProvider: s.imgProvider || 'auto',
-      imgProviders: [['auto', '⚡ Otomatik', false], ['gpt', 'GPT Image 2', false], ['gemini', 'Gemini', false], ['higgs', 'Higgs', true]].map(([id, label, passive]) => {
+      imgProviders: [['auto', '⚡ Otomatik', false], ['gpt', 'GPT Image 2', false], ['gpt1', 'GPT Image 1', false], ['gemini', 'Gemini', false], ['higgs', 'Higgs', true]].map(([id, label, passive]) => {
         const cur = (s.imgProvider || 'auto') === id;
         return {
           label: passive ? (label + ' · Yakında') : label,
@@ -6283,15 +6418,27 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           '• Kredi YALNIZCA işlem BAŞARILI olduğunda düşer. Görsel/seslendirme hata verirse kredi DÜŞMEZ; tekrar denenebilir.\n' +
           '• Görsel üretimi hata verirse sistem otomatik 3 kez dener; yine olmazsa kredi iade/hiç düşülmez — kullanıcı tekrar deneyebilir.\n' +
           '• Dosya üretim maliyeti süreye göre: ~60 sn 35 kredi, 4 dk 80, 8 dk 140, 10 dk 170 kredi (formül: max(30, yuvarla((20+saniye/4)/5)*5)).\n' +
-          '• Görsel: ilk 20 sahne görseli 12 kredi, 21. sahneden itibaren 8 kredi. Seslendirme: her 1000 karakter ~5 kredi (taban 10). Sahne yenileme: 5 kredi.\n' +
+          '• Görsel kredisi MOTORA göre: GPT Image 2 = 20 kredi, GPT Image 1 = 8 kredi, Gemini = 12 kredi. GPT Image 2 zaman aşımında yedeğe (GPT Image 1) düşerse YALNIZ üretilen modelin fiyatı (8) alınır, farkı iade edilir. Seslendirme: her 1000 karakter ~5 kredi (taban 10). Sahne yenileme: 5 kredi.\n' +
+          '• GPT Image 2 yavaşsa/başarısızsa sistem otomatik GPT Image 1 yedeğine düşer (görsel yine gelir) ve kart "GPT Image 2 ile tekrar dene · ücretsiz" sunar. Kullanıcı sorun yaşarsa her görselde "Sorun Bildir" var — bildirim ekibe e-posta olarak düşer, referans kodu (TA-XXXX) verilir.\n' +
           '• Geçmiş (üretilen dosyalar) artık hesaba bağlıdır ve cihazlar arası senkronlanır: aynı hesapla giriş yapıldığında mobilde ve webde üretilenler birlikte görünür. Görünmüyorsa: aynı hesapla giriş yapıldığından ve internetin bağlı olduğundan emin ol, sayfayı yenile.\n' +
           '• "KREDİ GEÇMİŞİ" listesindeki eski kayıtlar bir süre sabit "-100" etiketi gösteriyordu; bu yalnızca ETİKET hatasıydı, gerçekte düşülen tutar yukarıdaki fiyatlardır. Güncellendi.\n' +
           '• Yeni üyelere 30 kredi tanımlanır; AJAN10 kodu ile ilk alışverişte %10 indirim (tek sefer).\n' +
-          'Gerçekten çözülemeyen, hesaba özel bir bakiye uyuşmazlığı kalırsa (senin göremediğin sunucu kaydı gerekiyorsa) kullanıcıdan e-postasını al ve "ekip bakiyeni kontrol edip düzeltecek" de; savuşturma, sahiplen.\n\n';
-        prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanı VE resmî destek hattısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır; senaryo taslakları, başlıklar, fikirler üretir; kredi/hesap/teknik sorunları BURADA çözersin. Türkçe, net, sıcak ve çözüm odaklı cevap ver; gerektiğinde madde kullan.\n\n' + bilgi + durum + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
+          'Gerçekten çözülemeyen, hesaba özel bir bakiye uyuşmazlığı kalırsa (senin göremediğin sunucu kaydı gerekiyorsa) kullanıcıdan e-postasını al ve "ekip bakiyeni kontrol edip düzeltecek" de; savuşturma, sahiplen.\n' +
+          'YETKİN VAR — GERÇEK MAĞDURİYETTE JEST YAP: Kullanıcı bir üretimde gerçekten mağdur olduysa (görsel gelmedi ama kredi düştü, kalite/erişim sorunu, tekrar tekrar hata) senin gerçek yetkilerin var. Karşılığında yanıtının EN SONUNA tek satır SİSTEM DİREKTİFİ yaz (kullanıcı bu satırı GÖRMEZ, sistem uygular ve GÜVENLE sınırlar):\n' +
+          '• Ücretsiz yeniden üretim hakkı: [[GOODWILL:retry:OPID]]\n' +
+          '• Kredi iadesi / jest kredisi: [[GOODWILL:refund:OPID]]\n' +
+          'OPID yerine AKTİF SORUN BAĞLAMI\'ndaki opId\'yi koy. Sistem senin adına uygular; GÜNLÜK TAVAN (kullanıcı başına 2 işlem / 40 kredi) ve op-başına-tek-kez ile korunur, tavan dolarsa otomatik ekibe iletir — yani cömert olabilirsin, suistimali sistem engeller. Ama direktifi YALNIZ gerçek bir sorun varsa ve opId biliniyorsa ekle; her mesaja ekleme, selamlaşmaya jest yapma.\n\n';
+        const rc = s.reportCtx;
+        const sorunBaglam = rc ? ('AKTİF SORUN BAĞLAMI (bu üretim için jest yetkin var): opId=' + (rc.opId || '-') + ' · sahne=' + (rc.sceneKey || '-') + ' · üretildi=' + (rc.produced ? 'evet' : 'hayır') + ' · hata kodu=' + (rc.code || '-') + '\n\n') : '';
+        prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanı VE resmî destek hattısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır; senaryo taslakları, başlıklar, fikirler üretir; kredi/hesap/teknik sorunları BURADA çözersin. Türkçe, net, sıcak ve çözüm odaklı cevap ver; gerektiğinde madde kullan.\n\n' + bilgi + durum + sorunBaglam + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
       }
       const reply = await this.askAI(prompt, 4000);
-      this.setState(st => ({ chatMsgs: [...msgs, { role: 'assistant', content: reply.trim() }], chatBusy: false }), () => this._scrollChat());
+      // OTONOM DESTEK: ajan direktifi [[GOODWILL:refund|retry:OPID]] → sistem uygular (kullanıcı görmez)
+      const raw = reply.trim();
+      const gw = raw.match(/\[\[GOODWILL:(refund|retry):([a-zA-Z0-9_-]+)\]\]/);
+      const shown = raw.replace(/\[\[GOODWILL:[^\]]*\]\]/g, '').trim();
+      this.setState(st => ({ chatMsgs: [...msgs, { role: 'assistant', content: shown || 'Bakıyorum…' }], chatBusy: false }), () => this._scrollChat());
+      if (gw) this._applyGoodwill(gw[1], gw[2]);
     } catch (e) {
       this.setState({ chatMsgs: [...msgs, { role: 'assistant', content: 'Yanıt alınamadı: ' + e.message }], chatBusy: false }, () => this._scrollChat());
     }
@@ -6339,8 +6486,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const s = this.state;
     const busy = s.regenKey === kind + i;
     const ibusy = !!((((s.sceneImgs || {})[kind + i]) || {}).busy);   // görsel üretimi sürüyor mu
-    const idx = kind === 'gp' ? i : null;                 // kademeli fiyat sahne sırasına göre
-    const cost = this.IMG_COST(idx);
+    const idx = kind === 'gp' ? i : null;
+    // FİYAT: bu sahnenin ÇÖZÜMLENMİŞ motoruna göre (sahne override > panel)
+    const cost = this.IMG_COST(idx, (this.resolveImageGenerationSettings(kind + i) || {}).resolvedProvider);
     // KART DURUM ROZETİ (toplu üretim): bu sahnenin batch durumu
     const bsc = (s.batch && s.batch.scenes) ? s.batch.scenes.find(sc => sc.key === (kind + i)) : null;
     const badgeMap = { queued: ['⚪ BEKLİYOR', '#818797'], processing: ['🟡 ÜRETİLİYOR', '#c4a7ff'], completed: ['🟢 GÖRSEL HAZIR', '#9ed3a8'], failed: ['🔴 HATA', '#e8a9a9'], refunded: ['🔴 İADE EDİLDİ', '#e6c478'], cancelled: ['⚪ İPTAL', '#676d7c'] };
@@ -6419,6 +6567,12 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       promptShow: !!((s.promptOpen || {})[kind + i]),
       togglePrompt: () => this.setState(st => ({ sceneMenu: '', promptOpen: { ...(st.promptOpen || {}), [kind + i]: !((st.promptOpen || {})[kind + i]) } })),
       promptMenuLabel: ((s.promptOpen || {})[kind + i]) ? '👁 Promptu Gizle' : '👁 Promptu Gör',
+      // KART ÜSTÜNDE HER ZAMAN GÖRÜNÜR: 👁 promptu göster/gizle · ⧉ doğrudan kopyala
+      // (artık ⋯ menüsüne girmeye gerek yok — prompt gizli kalmıyor).
+      promptIcon: ((s.promptOpen || {})[kind + i]) ? '🙈' : '👁',
+      promptIconTitle: ((s.promptOpen || {})[kind + i]) ? 'Promptu gizle' : 'Promptu göster',
+      copyIcon: s.copied[kind + i] ? '✓' : '⧉',
+      copyIconTitle: s.copied[kind + i] ? 'Kopyalandı' : 'Promptu kopyala',
       // ⋯ MENÜSÜ: aynı anda tek menü açık (sceneMenu anahtarı)
       menuOpen: s.sceneMenu === (kind + i),
       toggleMenu: () => this.setState(st => ({ sceneMenu: st.sceneMenu === (kind + i) ? '' : (kind + i) })),
@@ -6451,6 +6605,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       imgBlocked: ibusy || !this.resolveImageGenerationSettings(kind + i).valid,
       // Görseli SATIR İÇİNDE üret — sekme değişmez, sahnede kalırsın (kind==='gp' için)
       makeImg: () => this.makeSceneImg(kind + i, x.prompt, idx),
+      retryGpt2: () => this.retrySceneWithGpt2(kind + i, x.prompt, idx),   // şeffaf yedek → GPT Image 2 ile ücretsiz tekrar
+      reportScene: () => { this.setState({ sceneMenu: '' }); this.reportProblem(kind + i); },   // tanılamalı sorun bildirimi (kayıt + mail)
+      sceneErrCode: ((s.sceneImgs || {})[kind + i] || {}).errCode || '',   // kartta hata kodu (varsa)
       img: this.sceneImgView(kind + i)
     };
   }
