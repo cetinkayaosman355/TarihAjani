@@ -1796,6 +1796,41 @@
                     </sc-if>
                   </div>
                 </sc-for>
+                <!-- BELGESEL VİDEO — ana ekran kısa girişi (Video sekmesindeki panelle AYNI durumu paylaşır) -->
+                <sc-if value="{{ hasScenePrompts }}" hint-placeholder-val="{{ true }}">
+                  <div class="ta-card" style="margin-top: 6px; padding: 16px 18px; border: 1px solid rgba(146,87,238,.3); background: linear-gradient(180deg, rgba(109,59,212,.08), rgba(10,14,24,.4)); display: grid; gap: 11px;">
+                    <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+                      <span style="font-family: 'Playfair Display', serif; font-size: 18px; color: #f2ecd9;">🎞 Belgesel Video</span>
+                      <span style="font-family: 'Special Elite', monospace; font-size: 8.5px; letter-spacing: .14em; color: #b79bff; border: 1px solid rgba(183,155,255,.35); border-radius: 20px; padding: 2px 8px;">KEN BURNS · AZ KREDİ</span>
+                    </div>
+                    <p style="margin: 0; color: #a4a9b5; font-size: 12.5px; line-height: 1.6;">Sahne görsellerinden altyazılı belgesel video — tarayıcıda birleşir. Ayrıntılı seçenekler <strong style="color:#c4b3ff;">Video</strong> sekmesinde.</p>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                      <span style="font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em; color: #818797;">ALTYAZI</span>
+                      <sc-for list="{{ docSubStyles }}" as="ss" hint-placeholder-count="4">
+                        <button onClick="{{ ss.pick }}" style="{{ ss.style }}">{{ ss.label }}</button>
+                      </sc-for>
+                    </div>
+                    <sc-if value="{{ docBusy }}" hint-placeholder-val="{{ false }}">
+                      <div style="height: 6px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden;"><div style="{{ docBarStyle }}"></div></div>
+                      <p style="margin: 0; color: #c4b3ff; font-family: 'Special Elite', monospace; font-size: 10.5px;">{{ docMsg }}</p>
+                    </sc-if>
+                    <sc-if value="{{ docHasUrl }}" hint-placeholder-val="{{ false }}">
+                      <div style="display: grid; gap: 8px;">
+                        <video src="{{ docUrl }}" controls playsinline style="width: 100%; max-width: 320px; border-radius: 8px; border: 1px solid rgba(146,87,238,.35);"></video>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                          <button onClick="{{ docDownload }}" style="border: 0; cursor: pointer; color: #fff; border-radius: 7px; padding: 9px 16px; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em; background: linear-gradient(115deg, #5b32b8, #7c50d8 55%, #9a72ee);">⬇ İNDİR</button>
+                          <button onClick="{{ startDocVideo }}" style="border: 1px solid rgba(129,135,151,.4); background: transparent; color: #a4a9b5; border-radius: 7px; padding: 9px 14px; font-family: 'Special Elite', monospace; font-size: 10px; cursor: pointer;">↻ TEKRAR</button>
+                        </div>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ docErr }}" hint-placeholder-val="{{ false }}">
+                      <p style="margin: 0; color: #e0a58a; font-size: 12px;">⚠ {{ docErr }}</p>
+                    </sc-if>
+                    <sc-if value="{{ docIdle }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ startDocVideo }}" disabled="{{ docNotReady }}" style="{{ docBtnStyle }}">🎞 BELGESEL VİDEOYU OLUŞTUR</button>
+                    </sc-if>
+                  </div>
+                </sc-if>
               </div>
             </sc-if>
 
@@ -1808,10 +1843,17 @@
                   <span style="font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em; color: #b79bff; border: 1px solid rgba(183,155,255,.35); border-radius: 20px; padding: 3px 9px;">KEN BURNS · AZ KREDİ</span>
                 </div>
                 <p style="margin: 0; color: #a4a9b5; font-size: 13px; line-height: 1.65;">Sahne görsellerin + Türkçe seslendirme + altyazı, tek uzun videoda birleşir. Yavaş zoom/kaydırma (Ken Burns) efektiyle. Montaj <strong style="color:#c4b3ff;">senin tarayıcında</strong> yapılır — pahalı AI video kredisi harcanmaz, yalnız seslendirme ücreti düşer.</p>
-                <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
-                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cfd3dc; font-size: 12.5px;"><input type="checkbox" checked="{{ docSubs }}" onChange="{{ toggleDocSubs }}"> Altyazı</label>
-                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cfd3dc; font-size: 12.5px;"><input type="checkbox" checked="{{ docMusic }}" onChange="{{ toggleDocMusic }}"> Fon müziği</label>
-                  <span style="color: #676d7c; font-size: 11.5px;">{{ docSceneInfo }}</span>
+                <div style="display: grid; gap: 9px;">
+                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span style="font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em; color: #818797;">ALTYAZI</span>
+                    <sc-for list="{{ docSubStyles }}" as="ss" hint-placeholder-count="4">
+                      <button onClick="{{ ss.pick }}" style="{{ ss.style }}">{{ ss.label }}</button>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cfd3dc; font-size: 12.5px;"><input type="checkbox" checked="{{ docMusic }}" onChange="{{ toggleDocMusic }}"> Fon müziği</label>
+                    <span style="color: #676d7c; font-size: 11.5px;">{{ docSceneInfo }} · altyazı güvenli konumda (alt UI'ye girmez)</span>
+                  </div>
                 </div>
                 <sc-if value="{{ docNotReady }}" hint-placeholder-val="{{ false }}">
                   <p style="margin: 0; color: #e0a58a; font-size: 12px;">⚠ En az 2 sahne görseli gerekli — önce Görsel sekmesinden sahneleri üret.</p>
@@ -4523,7 +4565,9 @@ class Component extends DCLogic {
   // Ana montaj — Promise<Blob>. onProg(pct, msg) ilerleme bildirir.
   async buildDocVideo(opts, onProg) {
     opts = opts || {};
-    const withSubs = opts.subtitles !== false;
+    // Altyazı stili: 'minimal' (öneri) / 'serit' / 'vurgu' / 'none'. Konum güvenli
+    // bölgede (Instagram/YouTube alt UI'sinin ÜSTÜNDE), boyut küçük ve orantılı.
+    const subStyle = (opts.subtitles === false || opts.subStyle === 'none') ? 'none' : (opts.subStyle || 'minimal');
     const withMusic = !!opts.music;
     const scenes = this._docScenes();
     if (scenes.length < 2) throw new Error('En az 2 sahne görseli gerekli — önce görselleri üret.');
@@ -4603,27 +4647,40 @@ class Component extends DCLogic {
         const dy = (H - dh) / 2 - (dh - H) * 0.06 * (lp - 0.5);
         g.globalAlpha = alpha;
         try { g.drawImage(p.img, dx, dy, dw, dh); } catch (e) {}
-        // Altyazı
-        if (withSubs && p.text) {
-          const fs = Math.round(H * 0.030);
-          g.font = '600 ' + fs + 'px -apple-system, BlinkMacSystemFont, sans-serif';
-          g.textAlign = 'center'; g.textBaseline = 'bottom';
-          const lines = this._wrapLines(g, p.text, W * 0.86);
-          const lh = fs * 1.32, padY = fs * 0.7;
-          const blockH = lines.length * lh + padY * 2;
-          const yBase = H - Math.round(H * 0.06);
-          g.globalAlpha = alpha * 0.5;
-          g.fillStyle = '#03040800'; // şeffaf başlar
-          const grad = g.createLinearGradient(0, yBase - blockH, 0, H);
-          grad.addColorStop(0, 'rgba(3,4,8,0)'); grad.addColorStop(1, 'rgba(3,4,8,0.82)');
-          g.fillStyle = grad; g.fillRect(0, yBase - blockH, W, blockH + Math.round(H * 0.06));
+        // Altyazı — stil + GÜVENLİ konum (dikeyde alt UI'nin üstünde, %78-80 bandı)
+        if (subStyle !== 'none' && p.text) {
+          const conf = ({
+            minimal: { fs: 0.0225, weight: 600, band: false, yPos: 0.80 },
+            serit:   { fs: 0.0250, weight: 600, band: true,  yPos: 0.80 },
+            vurgu:   { fs: 0.0320, weight: 800, band: true,  yPos: 0.77 }
+          })[subStyle] || { fs: 0.0225, weight: 600, band: false, yPos: 0.80 };
+          const fs = Math.round(H * conf.fs);
+          g.font = conf.weight + ' ' + fs + "px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+          g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+          const lines = this._wrapLines(g, p.text, W * 0.84);
+          const lh = fs * 1.34;
+          const yBase = Math.round(H * conf.yPos);   // dikey videoda alt ~%20 UI'ye girmez
           g.globalAlpha = alpha;
           for (let li = 0; li < lines.length; li++) {
             const y = yBase - (lines.length - 1 - li) * lh;
-            g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillText(lines[li], W / 2 + 1.5, y + 1.5);
-            g.fillStyle = '#f4eeddff'; g.fillText(lines[li], W / 2, y);
+            if (conf.band) {
+              const tw = g.measureText(lines[li]).width;
+              const padX = fs * 0.62, padYb = fs * 0.30;
+              const bx = W / 2 - tw / 2 - padX, by = y - fs - padYb, bw = tw + padX * 2, bh = fs + padYb * 2;
+              g.fillStyle = 'rgba(4,5,10,0.60)';
+              const rr = Math.min(8, bh / 2);
+              g.beginPath();
+              g.moveTo(bx + rr, by); g.arcTo(bx + bw, by, bx + bw, by + bh, rr); g.arcTo(bx + bw, by + bh, bx, by + bh, rr);
+              g.arcTo(bx, by + bh, bx, by, rr); g.arcTo(bx, by, bx + bw, by, rr); g.closePath(); g.fill();
+              g.fillStyle = '#f6f0e0'; g.fillText(lines[li], W / 2, y);
+            } else {
+              // minimal: bant YOK — ince kontur + hafif gölge, temiz
+              g.lineJoin = 'round'; g.lineWidth = Math.max(2, fs * 0.16); g.strokeStyle = 'rgba(0,0,0,0.72)';
+              g.strokeText(lines[li], W / 2, y);
+              g.fillStyle = '#f6f0e0'; g.fillText(lines[li], W / 2, y);
+            }
           }
-          g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+          g.textAlign = 'left';
         }
         g.globalAlpha = 1;
         prog(48 + (el / total) * 50, 'Video oluşuyor · %' + Math.round(el / total * 100) + ' (' + (idx + 1) + '/' + prep.length + ')');
@@ -4636,7 +4693,7 @@ class Component extends DCLogic {
   startDocVideo() {
     if (this.state.docBusy) return;
     if (!this._docReady()) { this.setState({ docErr: 'En az 2 sahne görseli gerekli — önce görselleri üret.' }); return; }
-    const opts = { subtitles: this.state.docSubs !== false, music: !!this.state.docMusic };
+    const opts = { subStyle: this.state.docSubStyle || 'minimal', music: !!this.state.docMusic };
     this.setState({ docBusy: true, docErr: '', docPct: 0, docMsg: 'Başlıyor…', docUrl: '' });
     this.buildDocVideo(opts, (pct, msg) => this.setState({ docPct: pct, docMsg: msg }))
       .then(blob => {
@@ -6575,10 +6632,20 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       docMsg: s.docMsg || 'Hazırlanıyor…',
       docIdle: !s.docBusy && !s.docUrl,
       docNotReady: !this._docReady(),
-      docSubs: s.docSubs !== false,
       docMusic: !!s.docMusic,
-      toggleDocSubs: () => this.setState({ docSubs: !(s.docSubs !== false) }),
       toggleDocMusic: () => this.setState({ docMusic: !s.docMusic }),
+      // Altyazı stili: Minimal (öneri) / Şerit / Vurgu / Yok — küçük, güvenli konumlu
+      docSubStyles: (() => {
+        const cur = s.docSubStyle || 'minimal';
+        return [['minimal', 'Minimal'], ['serit', 'Şerit'], ['vurgu', 'Vurgu'], ['none', 'Yok']].map(([id, label]) => ({
+          label, pick: () => this.setState({ docSubStyle: id }, () => this.persist()),
+          style: {
+            cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.06em', padding: '6px 12px', borderRadius: '5px',
+            border: cur === id ? '1px solid #b79bff' : '1px solid rgba(129,135,151,.3)',
+            background: cur === id ? 'rgba(146,87,238,.16)' : 'transparent', color: cur === id ? '#c4b3ff' : '#a4a9b5'
+          }
+        }));
+      })(),
       docSceneInfo: (() => { const n = this._docScenes().length; return n ? (n + ' sahne görseli hazır') : 'sahne görseli yok'; })(),
       docBarStyle: { height: '100%', width: (s.docPct || 0) + '%', background: 'linear-gradient(90deg,#7c50d8,#b79bff)', transition: 'width .3s' },
       docBtnStyle: { border: 0, cursor: this._docReady() ? 'pointer' : 'not-allowed', color: '#fff', borderRadius: '8px', padding: '13px 22px', fontFamily: "'Special Elite', monospace", fontSize: '11.5px', letterSpacing: '.1em', opacity: this._docReady() ? '1' : '.5', background: 'linear-gradient(115deg,#5b32b8,#7c50d8 55%,#9a72ee)', boxShadow: '0 8px 22px rgba(110,70,210,.32)', justifySelf: 'start' },
