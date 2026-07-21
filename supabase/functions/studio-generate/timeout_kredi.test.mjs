@@ -64,6 +64,20 @@ test("imgreclaim ucu: önce KURTAR (sonuç varsa), yoksa idempotent İADE", () =
   assert.ok(indexSrc.includes('cost > 0 || isEdit || act === "imgreclaim"'), "reclaim için giriş şart (başkasının rezervasyonu iade edilemez)");
 });
 
+test("KÖK NEDEN: imgreclaim prompt-gate'e TAKILMAZ (iade çağrısı prompt göndermez)", () => {
+  // Canlı vakanın ikinci ayağı: imgreclaim prompt'suz çağrılır; muafiyet listesinde
+  // olmadığı için "Konu veya prompt gir." 400 ile reddediliyordu → iade HİÇ çalışmıyor,
+  // kredi kayıp kalıyordu. imgreclaim (ve tts/fetch_result/video/video_status) muaf olmalı.
+  const gate = indexSrc.slice(indexSrc.indexOf("if (!prompt &&"), indexSrc.indexOf("Konu veya prompt gir.") + 30);
+  assert.ok(gate.includes('act !== "imgreclaim"'), "imgreclaim prompt kapısından muaf");
+  // imgreclaim gerçekten prompt'suz çağrılır (istemci yalnız opId gönderir) — kapı onu geçirmeli
+  assert.ok(studioSrc.includes("action: 'imgreclaim', opId }"), "istemci imgreclaim'i prompt'suz çağırır");
+  // Muaf uçlar eksiksiz: prompt gerektirmeyen tüm işlemler listede
+  for (const a of ['"tts"', '"fetch_result"', '"video"', '"video_status"', '"imgreclaim"']) {
+    assert.ok(gate.includes("act !== " + a), "prompt kapısı muafiyeti: " + a);
+  }
+});
+
 test("İstemci: 150 sn sınır + yanıt alınamazsa tek seferlik reclaim", () => {
   assert.ok(studioSrc.includes("setTimeout(() => { try { ac.abort(); } catch (e) {} }, 150000)"), "istemci fetch zaman sınırı");
   assert.ok(studioSrc.includes("action: 'imgreclaim', opId"), "reclaim çağrısı");
