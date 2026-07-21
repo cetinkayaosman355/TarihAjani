@@ -1314,7 +1314,7 @@ Deno.serve(async (req) => {
     // action + prompt eskiden ücretsiz metin üretimine (gen) düşüp endpoint'i genel
     // amaçlı AI servisi gibi kullandırabiliyordu. "" = uygulama içi ücretsiz metin
     // yardımcıları (sohbet, konu önerisi, Shorts, bölüm metni) — izinli kalır.
-    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate", "imgreclaim"]);
+    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate", "imgreclaim", "support"]);
     if (!ALLOWED_ACTIONS.has(act)) return json({ ok: false, error: "Geçersiz işlem." }, 400);
     // TOPLU MALİYET TAHMİNİ — SUNUCU-TARAFLI (istemci fiyatına güvenilmez). Kredi düşmez,
     // rezervasyon yok. scenes: 0-tabanlı imgIndex dizisi VEYA count. "Tüm sahneleri üret"
@@ -1476,7 +1476,7 @@ Deno.serve(async (req) => {
     // üretimin (prevJob) bir defalık bedava hakkıyla yeniden üretir.
     let freeRegen = false;
     let regenPrevJob = "";
-    if (cost > 0 || isEdit || act === "imgreclaim") {
+    if (cost > 0 || isEdit || act === "imgreclaim" || act === "support") {
       const SB_URL = Deno.env.get("SUPABASE_URL");
       const SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       if (!SB_URL || !SVC) return json({ ok: false, error: "Sunucu yapılandırması eksik (service role)." }, 500);
@@ -1535,6 +1535,59 @@ Deno.serve(async (req) => {
       const credits = await refundOp(admin, userId, rOp);
       logRun({ action: "imgreclaim", ok: true, ms: Date.now() - t0, user_id: userId, err: "RECLAIM:" + rOp.slice(0, 40) });
       return json({ ok: false, reclaimed: true, credits, error: "Üretim zaman aşımına uğradı; kredi iade edildi. Tekrar dene.", errClass: "TIMEOUT_RECLAIMED" }, 200);
+    }
+
+    // ── OTONOM DESTEK AJANI ── Ajanın gerçek yetkileri (kullanıcı adına, opId'ye bakarak):
+    //   mode 'lookup'   → SALT OKUNUR tanılama: üretildi mi? kredi düştü mü? iade edilebilir mi?
+    //   mode 'goodwill' → kind 'retry' (ücretsiz tekrar; istemci regen+prevJob ile yapar, para YOK)
+    //                     kind 'refund': önce ASILI rezervasyon iadesi (güvenli, tavansız — kendi ödemesi);
+    //                       kesinleşmiş ücrette JEST KREDİSİ (goodwill_grant, GÜNLÜK TAVAN 2 işlem/40 kredi,
+    //                       op başına idempotent). Tavan dolarsa → escalate (ekip/e-posta). Suistimal kapalı.
+    if (act === "support") {
+      if (!admin || !userId) return json({ ok: false, error: "Bunun için giriş yap." }, 401);
+      const mode = String(b.mode || "lookup");
+      const sOp = cleanJob(b.opId);
+      let resv: { status?: string; amount?: number } | null = null;
+      if (sOp) {
+        try {
+          const { data } = await admin.from("credit_reservations").select("status, amount").eq("job", sOp).eq("user_id", userId).maybeSingle();
+          resv = data || null;
+        } catch (_e) { /* tablo/satır yok */ }
+      }
+      const produced = sOp ? !!((await loadJobResult(admin, userId, sOp)) || {}).url : false;
+      const charged = resv?.status === "finalized";
+      const refundableReservation = resv?.status === "reserved";
+      let bal: number | undefined;
+      try { const { data } = await admin.rpc("refresh_profile_credits", { p_user: userId }); const r = Array.isArray(data) ? data[0] : data; bal = r && typeof r.credits === "number" ? r.credits : undefined; } catch (_e) { /* yut */ }
+
+      if (mode === "lookup") {
+        return json({ ok: true, found: !!resv || produced, produced, charged, refundableReservation, amount: resv?.amount ?? null, credits: bal });
+      }
+      if (mode === "goodwill") {
+        const kind = String(b.kind || "refund");
+        if (kind === "retry") return json({ ok: true, action: "retry", opId: sOp });   // ücretsiz tekrar → istemci regen yapar
+        if (kind !== "refund") return json({ ok: false, error: "Geçersiz jest türü." }, 400);
+        if (!sOp) return json({ ok: true, action: "escalate", reason: "no_op", credits: bal });   // belirli op yoksa insana devret
+        // 1) Asılı rezervasyon → güvenli iade (tavansız; kullanıcının kendi ayrılmış kredisi)
+        if (refundableReservation) {
+          const credits = await refundOp(admin, userId, sOp);
+          logRun({ action: "support", ok: true, ms: Date.now() - t0, user_id: userId, err: "REFUND_RESERVED:" + sOp.slice(0, 30) });
+          return json({ ok: true, action: "refund_reserved", refunded: resv?.amount ?? null, credits });
+        }
+        // 2) Kesinleşmiş ücret → JEST KREDİSİ, GÜNLÜK TAVAN içinde (idempotent)
+        const dailyOps = Math.max(0, Number(Deno.env.get("TA_GOODWILL_DAILY_OPS")) || 2);
+        const dailyAmt = Math.max(0, Number(Deno.env.get("TA_GOODWILL_DAILY_AMT")) || 40);
+        const amount = Math.max(1, Math.min(40, Number(resv?.amount) || 12));
+        try {
+          const { data } = await admin.rpc("goodwill_grant", { p_user: userId, p_op: sOp, p_amount: amount, p_daily_ops: dailyOps, p_daily_amt: dailyAmt });
+          const g = Array.isArray(data) ? data[0] : data;
+          if (g && g.ok && g.code === "granted") { logRun({ action: "support", ok: true, ms: Date.now() - t0, user_id: userId, err: "GOODWILL:" + g.granted + ":" + sOp.slice(0, 24) }); return json({ ok: true, action: "goodwill", granted: g.granted, credits: g.new_credits }); }
+          if (g && g.code === "already") return json({ ok: true, action: "goodwill", granted: 0, credits: g.new_credits, note: "already" });
+          // Tavan doldu / geçersiz → insana devret (rapor/e-posta akışı zaten var)
+          return json({ ok: true, action: "escalate", reason: (g && g.code) || "cap", credits: (g && g.new_credits) ?? bal });
+        } catch (_e) { return json({ ok: true, action: "escalate", reason: "error", credits: bal }); }
+      }
+      return json({ ok: false, error: "Geçersiz destek modu." }, 400);
     }
 
     // GÖRSEL ÜRETİMİ — metin üretiminden ayrı akış. REZERVE-first: üretimden önce

@@ -2187,7 +2187,7 @@ class Component extends DCLogic {
       editTarget: null, editLabel: '',
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
-      reportBusy: false, reportRef: '',   // sorun bildirimi durumu (kayıt + mail)
+      reportBusy: false, reportRef: '', reportCtx: null,   // sorun bildirimi durumu (kayıt + mail) + ajan jest bağlamı
       imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, sceneOpts: (w && w.sceneOpts) || {}, promptHist: (w && w.promptHist) || {}, savedImgs: [], srvImages: [], imgSel: {},
       // Panel seçimleri dosyayla geri yüklenir (UI seçimi yenilemede kaybolmaz/geri dönmez)
       imgStyle: (w && w.imgStyle) || null, imgStyleCat: (w && w.imgStyleCat) || '', imgPlatform: (w && w.imgPlatform) || '',
@@ -4816,7 +4816,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         creditDeducted: produced   // üretildi → ücretlendi; üretilmedi → sunucuda iade
       };
     }
-    this.setState({ chatOpen: true, chatInput: 'Sorun bildirimi — "' + t + '": ', reportBusy: true, reportRef: '' });
+    // Ajanın YETKİ bağlamı: hangi üretim (opId/sahne), üretildi mi, hata kodu → jest kararı için
+    const reportCtx = sceneKey ? { opId: extra.opId || '', sceneKey, produced: !!extra.produced, code: extra.errorCode || '' } : null;
+    this.setState({ chatOpen: true, chatInput: 'Sorun bildirimi — "' + t + '": ', reportBusy: true, reportRef: '', reportCtx });
     this.submitReport(area, extra).then(ref => {
       this.setState(st => ({
         reportBusy: false, reportRef: ref || '',
@@ -4825,6 +4827,39 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           : [{ role: 'assistant', content: 'Seni dinliyorum — sorunu birkaç kelimeyle yaz, hemen bakayım. (Otomatik bildirim gönderilemediyse de buradan hallederiz.)' }])
       }), () => this._scrollChat());
     });
+  }
+  // ── OTONOM DESTEK: sunucu 'support' ucu (tanılama + jest). Guardrail sunucuda:
+  // günlük 2 işlem / 40 kredi, op başına idempotent. İstemci yalnız çağırır.
+  async support(mode, opId, kind) {
+    const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const token = this._token() || SB_KEY;
+    try {
+      const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ action: 'support', mode: mode || 'lookup', opId: opId || undefined, kind: kind || undefined })
+      });
+      return await r.json().catch(() => null);
+    } catch (e) { return null; }
+  }
+  // Ajan direktifini uygula: [[GOODWILL:refund|retry:OPID]] → sunucu jesti + kullanıcıya net sonuç.
+  async _applyGoodwill(kind, opId) {
+    const rc = this.state.reportCtx || {};
+    if (kind === 'retry') {
+      await this.support('goodwill', opId, 'retry');
+      const key = rc.sceneKey || '';
+      const m = /^([a-z]+)(\d+)$/.exec(key);
+      if (m) { const i = +m[2]; const arr = ((this.state.result || {}).gorsel_promptlar) || []; const pr = (arr[i] || {}).prompt || ''; if (pr) this.retrySceneWithGpt2(key, pr, i); }
+      this.setState(st => ({ chatMsgs: (st.chatMsgs || []).concat([{ role: 'assistant', content: '✓ Ücretsiz yeniden üretim hakkını tanımladım' + (m ? ' ve sahneyi yeniden üretiyorum' : '') + '. Kredin düşmeyecek.' }]) }), () => this._scrollChat());
+      return;
+    }
+    const res = await this.support('goodwill', opId, 'refund');
+    let note = 'Talebini aldım; ekibe ilettim, en kısa sürede dönüş yapılacak.';
+    if (res && res.action === 'goodwill' && res.granted > 0) { note = '✓ ' + res.granted + ' krediyi hesabına iade ettim. Yaşattığımız aksama için kusura bakma.'; if (typeof res.credits === 'number') this.setState({ credits: res.credits }, () => this.persist()); }
+    else if (res && res.action === 'goodwill' && res.note === 'already') note = 'Bu üretim için jest zaten uygulanmıştı — tekrar düşmedi.';
+    else if (res && res.action === 'refund_reserved') { note = '✓ Ayrılan kredini iade ettim.'; if (typeof res.credits === 'number') this.setState({ credits: res.credits }, () => this.persist()); }
+    else if (res && res.action === 'escalate') note = 'Bugünkü otomatik iade sınırına takıldık; talebini ekibe ilettim, elle halledilecek.';
+    this.setState(st => ({ chatMsgs: (st.chatMsgs || []).concat([{ role: 'assistant', content: note }]) }), () => this._scrollChat());
   }
 
   qualityFix(result) {
@@ -6388,11 +6423,22 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           '• Geçmiş (üretilen dosyalar) artık hesaba bağlıdır ve cihazlar arası senkronlanır: aynı hesapla giriş yapıldığında mobilde ve webde üretilenler birlikte görünür. Görünmüyorsa: aynı hesapla giriş yapıldığından ve internetin bağlı olduğundan emin ol, sayfayı yenile.\n' +
           '• "KREDİ GEÇMİŞİ" listesindeki eski kayıtlar bir süre sabit "-100" etiketi gösteriyordu; bu yalnızca ETİKET hatasıydı, gerçekte düşülen tutar yukarıdaki fiyatlardır. Güncellendi.\n' +
           '• Yeni üyelere 30 kredi tanımlanır; AJAN10 kodu ile ilk alışverişte %10 indirim (tek sefer).\n' +
-          'Gerçekten çözülemeyen, hesaba özel bir bakiye uyuşmazlığı kalırsa (senin göremediğin sunucu kaydı gerekiyorsa) kullanıcıdan e-postasını al ve "ekip bakiyeni kontrol edip düzeltecek" de; savuşturma, sahiplen.\n\n';
-        prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanı VE resmî destek hattısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır; senaryo taslakları, başlıklar, fikirler üretir; kredi/hesap/teknik sorunları BURADA çözersin. Türkçe, net, sıcak ve çözüm odaklı cevap ver; gerektiğinde madde kullan.\n\n' + bilgi + durum + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
+          'Gerçekten çözülemeyen, hesaba özel bir bakiye uyuşmazlığı kalırsa (senin göremediğin sunucu kaydı gerekiyorsa) kullanıcıdan e-postasını al ve "ekip bakiyeni kontrol edip düzeltecek" de; savuşturma, sahiplen.\n' +
+          'YETKİN VAR — GERÇEK MAĞDURİYETTE JEST YAP: Kullanıcı bir üretimde gerçekten mağdur olduysa (görsel gelmedi ama kredi düştü, kalite/erişim sorunu, tekrar tekrar hata) senin gerçek yetkilerin var. Karşılığında yanıtının EN SONUNA tek satır SİSTEM DİREKTİFİ yaz (kullanıcı bu satırı GÖRMEZ, sistem uygular ve GÜVENLE sınırlar):\n' +
+          '• Ücretsiz yeniden üretim hakkı: [[GOODWILL:retry:OPID]]\n' +
+          '• Kredi iadesi / jest kredisi: [[GOODWILL:refund:OPID]]\n' +
+          'OPID yerine AKTİF SORUN BAĞLAMI\'ndaki opId\'yi koy. Sistem senin adına uygular; GÜNLÜK TAVAN (kullanıcı başına 2 işlem / 40 kredi) ve op-başına-tek-kez ile korunur, tavan dolarsa otomatik ekibe iletir — yani cömert olabilirsin, suistimali sistem engeller. Ama direktifi YALNIZ gerçek bir sorun varsa ve opId biliniyorsa ekle; her mesaja ekleme, selamlaşmaya jest yapma.\n\n';
+        const rc = s.reportCtx;
+        const sorunBaglam = rc ? ('AKTİF SORUN BAĞLAMI (bu üretim için jest yetkin var): opId=' + (rc.opId || '-') + ' · sahne=' + (rc.sceneKey || '-') + ' · üretildi=' + (rc.produced ? 'evet' : 'hayır') + ' · hata kodu=' + (rc.code || '-') + '\n\n') : '';
+        prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanı VE resmî destek hattısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır; senaryo taslakları, başlıklar, fikirler üretir; kredi/hesap/teknik sorunları BURADA çözersin. Türkçe, net, sıcak ve çözüm odaklı cevap ver; gerektiğinde madde kullan.\n\n' + bilgi + durum + sorunBaglam + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
       }
       const reply = await this.askAI(prompt, 4000);
-      this.setState(st => ({ chatMsgs: [...msgs, { role: 'assistant', content: reply.trim() }], chatBusy: false }), () => this._scrollChat());
+      // OTONOM DESTEK: ajan direktifi [[GOODWILL:refund|retry:OPID]] → sistem uygular (kullanıcı görmez)
+      const raw = reply.trim();
+      const gw = raw.match(/\[\[GOODWILL:(refund|retry):([a-zA-Z0-9_-]+)\]\]/);
+      const shown = raw.replace(/\[\[GOODWILL:[^\]]*\]\]/g, '').trim();
+      this.setState(st => ({ chatMsgs: [...msgs, { role: 'assistant', content: shown || 'Bakıyorum…' }], chatBusy: false }), () => this._scrollChat());
+      if (gw) this._applyGoodwill(gw[1], gw[2]);
     } catch (e) {
       this.setState({ chatMsgs: [...msgs, { role: 'assistant', content: 'Yanıt alınamadı: ' + e.message }], chatBusy: false }, () => this._scrollChat());
     }
