@@ -19,7 +19,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   POST {action:"version"} → { ok, build, primaryModel, prices }
 // Deploy drift'in (dashboard'a eski/yarım kod yapıştırma) tek panzehiri budur.
 // HER kod değişikliğinde bu damga da güncellenir (test bunu zorlar).
-const BUILD = "sg-2026-07-21-r3";
+const BUILD = "sg-2026-07-21-r4";
 
 // NOT: imagescript'in WASM kodeği Supabase Deno edge arch'ında yüklenmiyor
 // (unsupported arch/platform) → kırpma zaten HİÇ çalışmıyor, sadece her üretimde
@@ -1329,7 +1329,23 @@ Deno.serve(async (req) => {
     // Eski build'de bu action yoktur → "Geçersiz işlem." döner = ESKİ SÜRÜM CANLIDA.
     if (act === "version") {
       const primary = (Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-1.5").trim();
-      return json({ ok: true, build: BUILD, primaryModel: primary, provider: (Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim(), prices: { "gpt-image-2": 20, "gpt-image-1.5": 12, "gpt-image-1": 8, gemini: 12 } });
+      // GÜVENLİ TEŞHİS: hangi anahtarlar TANIMLI (değerler ASLA dönmez, yalnız var/yok).
+      // Video "API hatalı" sorununda: hangi sağlayıcı bağlı, hangi secret eksik/yanlış-isim?
+      const has = (k: string) => !!(Deno.env.get(k) || "").trim();
+      return json({
+        ok: true, build: BUILD, primaryModel: primary,
+        provider: (Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim(),
+        prices: { "gpt-image-2": 20, "gpt-image-1.5": 12, "gpt-image-1": 8, gemini: 12 },
+        videoProvider: (Deno.env.get("VIDEO_PROVIDER") || "grok").trim(),
+        keys: {
+          openai: has("OPENAI_API_KEY"),
+          gemini: has("GEMINI_API_KEY"),
+          grok_xai: has("XAI_API_KEY"),
+          kling: has("KLING_ACCESS_KEY") && has("KLING_SECRET_KEY"),
+          fal: has("FAL_KEY") || has("FAL_API_KEY"),
+          eleven: has("ELEVENLABS_API_KEY"),
+        },
+      });
     }
     if (act === "estimate") {
       const idxs: number[] = Array.isArray(b.scenes)
