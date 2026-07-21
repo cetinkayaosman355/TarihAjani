@@ -1,0 +1,70 @@
+# ============================================================================
+# SUPABASE OTOMATİK DEPLOY — deploy drift'in kalıcı çözümü
+# main'e supabase/functions/** dokunan her push'ta edge function'lar CLI ile
+# otomatik yüklenir. Dashboard'a elle yapıştırma (eski/yarım kod riski) BİTER.
+#
+# KURULUM (tek seferlik, repo Settings → Secrets and variables → Actions):
+#   SUPABASE_ACCESS_TOKEN  → supabase.com/dashboard/account/tokens 'dan üret
+#   SUPABASE_PROJECT_REF   → ddyuopqcvpzaysnfavqc  (proje ref'i)
+# Secrets eklenene kadar bu workflow çalışır ama "skipped" düşer; zarar vermez.
+#
+# Doğrulama: deploy sonrası {action:"version"} canlı build damgasını döner —
+# hangi sürümün canlıda olduğu artık TAHMİN değil, TEK İSTEKLE görülür.
+# ============================================================================
+name: Supabase Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/**"
+  workflow_dispatch: {}
+
+jobs:
+  deploy-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Secrets kontrolü
+        id: creds
+        run: |
+          if [ -n "${{ secrets.SUPABASE_ACCESS_TOKEN }}" ] && [ -n "${{ secrets.SUPABASE_PROJECT_REF }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::SUPABASE_ACCESS_TOKEN / SUPABASE_PROJECT_REF secrets eksik — deploy atlandı. Repo Settings → Secrets'a ekleyin."
+          fi
+
+      - name: Supabase CLI kur
+        if: steps.creds.outputs.ready == 'true'
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: studio-generate deploy
+        if: steps.creds.outputs.ready == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy studio-generate --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+
+      - name: posta deploy
+        if: steps.creds.outputs.ready == 'true'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy posta --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+
+      - name: Canlı sürüm doğrulaması
+        if: steps.creds.outputs.ready == 'true'
+        run: |
+          sleep 8
+          BUILD_EXPECTED=$(grep -oP 'const BUILD = "\K[^"]+' supabase/functions/studio-generate/index.ts)
+          BUILD_LIVE=$(curl -s -m 20 -X POST "https://${{ secrets.SUPABASE_PROJECT_REF }}.supabase.co/functions/v1/studio-generate" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc' }}" \
+            -d '{"action":"version"}' | grep -oP '"build":"\K[^"]+' || true)
+          echo "beklenen=$BUILD_EXPECTED canli=$BUILD_LIVE"
+          if [ "$BUILD_EXPECTED" != "$BUILD_LIVE" ]; then
+            echo "::error::Canlı build ($BUILD_LIVE) beklenen ($BUILD_EXPECTED) ile uyuşmuyor!"
+            exit 1
+          fi

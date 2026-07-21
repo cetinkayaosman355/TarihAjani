@@ -3170,7 +3170,16 @@ class Component extends DCLogic {
     }
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
-    if (!r.ok || !data.ok || !data.url) { const eE = new Error(data.error || 'Görsel üretilemedi'); eE.code = this._imgErrCode(data.errClass); throw eE; }
+    if (!r.ok || !data.ok || !data.url) {
+      // SÜRÜM UYUŞMAZLIĞI KORUMASI: yeni arayüz 'gpt1' gönderdi ama sunucu eski
+      // build ise 'Geçersiz sağlayıcı' döner. Anlamsız hata yerine NET sebep söylenir.
+      // (Sessiz motor değişimi YOK — seçilen = çıktı kuralı korunur.)
+      if (data.errClass === 'INVALID_IMAGE_PROVIDER' && provider === 'gpt1') {
+        const eV = new Error('Sunucudaki görsel sistemi henüz güncellenmedi (GPT Image 1 seçeneği yeni sürüm ister). Studio-generate güncellemesi yüklenene dek GPT Image 2 veya Gemini seç.');
+        eV.code = 'IMG-SURUM'; throw eV;
+      }
+      const eE = new Error(data.error || 'Görsel üretilemedi'); eE.code = this._imgErrCode(data.errClass); throw eE;
+    }
     if (typeof data.credits === 'number') this.setState({ credits: data.credits }, () => this.persist());
     return { url: data.url, meta: data.meta || null };   // meta: kart üzerinde teknik şeffaflık için
   }
@@ -3543,7 +3552,7 @@ class Component extends DCLogic {
       const token = this._token() || sb.key;
       const r = await fetch(sb.url + '/functions/v1/studio-generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ action: 'estimate', scenes: idxs })
+        body: JSON.stringify({ action: 'estimate', scenes: idxs, imageProvider: this._provResolve() })
       });
       const d = await r.json().catch(() => null);
       return (d && d.ok && typeof d.total === 'number') ? d : null;
