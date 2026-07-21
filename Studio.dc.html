@@ -993,10 +993,11 @@
             <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ADIM 1 / 4 · VAKA TALEBİ</p>
             <h2 style="margin: 12px 0 8px; font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 700; line-height: 1.08;">Hangi tarih sırrını çözelim?</h2>
             <p style="margin: 0 0 18px; color: #a4a9b5; line-height: 1.65; font-size: 15px;">Bir olay, kişi, dönem ya da soru yaz — gerisini Ajan devralsın. Araştırılmış senaryo, gerçek Türkçe seslendirme, sinematik sahneler ve yayına hazır paket dakikalar içinde elinde.</p>
-            <!-- İKİ MOD: Sen Öner / Benim Fikrim Var -->
+            <!-- MOD: tek bağlamsal geçiş (eski çalışmayan öneri-modu düğmesi kaldırıldı —
+                 varsayılan zaten öneri modu olduğundan tıklayınca hiçbir şey olmuyor gibiydi).
+                 Bu düğme daima anlamlı: öneri modundayken "kendi fikrim", kendi fikir modunda "ajan önersin". -->
             <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
-              <button onClick="{{ setModeSuggest }}" style="{{ modeSuggestStyle }}">◈ Sen Öner</button>
-              <button onClick="{{ setModeOwn }}" style="{{ modeOwnStyle }}">✎ Benim Fikrim Var</button>
+              <button onClick="{{ toggleIdeaMode }}" style="{{ modeToggleStyle }}">{{ modeToggleLabel }}</button>
             </div>
             <sc-if value="{{ isOwnMode }}" hint-placeholder-val="{{ false }}">
               <p style="margin: 0 0 8px; color: #818797; font-size: 12.5px; line-height: 1.5;">Fikrini ya da kısa hikâyeni serbestçe yaz. "Taslağı Hazırla" ile ajan onu <strong style="color:#a7adba;">değiştirmeden</strong> netleştirip yapılandırır — tam üretim yapmaz.</p>
@@ -3372,9 +3373,8 @@ class Component extends DCLogic {
       gravur: B + 'hf_20260720_191628_ca6bf8a9-0799-4411-8bb4-1b85b739aa88_min.webp',
       minyatur: B + 'hf_20260720_191632_f8c6dfc9-53b0-4c45-9902-d051f5d24c1b_min.webp',
       animasyon: B + 'hf_20260720_192416_72238365-81df-4bf3-8e3a-8fbb7aad248f_min.webp',
-      // Çizgi Film: gerçek örnek görsel henüz yok → düz cartoon hissi veren inline SVG
-      // (kırık resim görünmesin; kredi harcamadan). Sonra gerçek örnekle değişebilir.
-      cizgi: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="300" viewBox="0 0 240 300"><rect width="240" height="300" fill="%23f4c542"/><rect x="0" y="200" width="240" height="100" fill="%237ec8e3"/><circle cx="120" cy="140" r="62" fill="%23ffe08a" stroke="%23241a12" stroke-width="7"/><circle cx="98" cy="128" r="9" fill="%23241a12"/><circle cx="142" cy="128" r="9" fill="%23241a12"/><path d="M96 162 q24 26 48 0" fill="none" stroke="%23241a12" stroke-width="7" stroke-linecap="round"/><rect x="0" y="0" width="240" height="300" fill="none" stroke="%23241a12" stroke-width="10"/></svg>')
+      // Çizgi Film: gerçek 2D cartoon örneği (diğer stiller gibi onaylı görsel)
+      cizgi: B + 'hf_20260721_201552_e2783941-79a9-4c0b-8906-2cbc617aa2e9_min.webp'
     })[k] || '';
   }
   // DOSYANIN NORMALİZE ÜRETİM TERCİHLERİ — tek görünüm; ayrı paralel alan tutulmaz,
@@ -5965,8 +5965,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       isSuggestMode: (s.ideaMode || 'suggest') !== 'own',
       setModeSuggest: () => this.setState({ ideaMode: 'suggest', draftErr: '' }),
       setModeOwn: () => this.setState({ ideaMode: 'own', draftErr: '' }),
-      modeSuggestStyle: (() => { const on = (s.ideaMode || 'suggest') !== 'own'; return { cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '9px 16px', borderRadius: '8px', border: on ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)', background: on ? 'rgba(193,154,82,.14)' : 'rgba(4,6,12,.6)', color: on ? '#e6c478' : '#a4a9b5' }; })(),
-      modeOwnStyle: (() => { const on = (s.ideaMode || 'suggest') === 'own'; return { cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '9px 16px', borderRadius: '8px', border: on ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)', background: on ? 'rgba(193,154,82,.14)' : 'rgba(4,6,12,.6)', color: on ? '#e6c478' : '#a4a9b5' }; })(),
+      // Tek bağlamsal geçiş: mevcut modun TERSİNE götürür (hep bir işe yarar).
+      toggleIdeaMode: () => this.setState({ ideaMode: (s.ideaMode || 'suggest') === 'own' ? 'suggest' : 'own', draftErr: '' }),
+      modeToggleLabel: (s.ideaMode || 'suggest') === 'own' ? '◈ Ajan önersin' : '✎ Kendi fikrimi yazacağım',
+      modeToggleStyle: { cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '9px 16px', borderRadius: '8px', border: '1px solid rgba(129,135,151,.3)', background: 'rgba(4,6,12,.6)', color: '#a4a9b5' },
       noDraft: !s.draft,
       draftView: !!s.draft,
       draftBusy: !!s.draftBusy,
