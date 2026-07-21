@@ -982,10 +982,19 @@
 
         <!-- ADIM 1 · FİKİR -->
         <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ noDraft }}" hint-placeholder-val="{{ true }}">
           <div class="ta-entry" style="animation: ta-rise .5s ease both; max-width: 1040px; margin: 0 auto;">
             <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ADIM 1 / 4 · VAKA TALEBİ</p>
             <h2 style="margin: 12px 0 8px; font-family: 'Playfair Display', serif; font-size: 44px; font-weight: 700; line-height: 1.08;">Hangi tarih sırrını çözelim?</h2>
-            <p style="margin: 0 0 22px; color: #a4a9b5; line-height: 1.65; font-size: 15px;">Bir olay, kişi, dönem ya da soru yaz — gerisini Ajan devralsın. Araştırılmış senaryo, gerçek Türkçe seslendirme, sinematik sahneler ve yayına hazır paket dakikalar içinde elinde.</p>
+            <p style="margin: 0 0 18px; color: #a4a9b5; line-height: 1.65; font-size: 15px;">Bir olay, kişi, dönem ya da soru yaz — gerisini Ajan devralsın. Araştırılmış senaryo, gerçek Türkçe seslendirme, sinematik sahneler ve yayına hazır paket dakikalar içinde elinde.</p>
+            <!-- İKİ MOD: Sen Öner / Benim Fikrim Var -->
+            <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+              <button onClick="{{ setModeSuggest }}" style="{{ modeSuggestStyle }}">◈ Sen Öner</button>
+              <button onClick="{{ setModeOwn }}" style="{{ modeOwnStyle }}">✎ Benim Fikrim Var</button>
+            </div>
+            <sc-if value="{{ isOwnMode }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 0 0 8px; color: #818797; font-size: 12.5px; line-height: 1.5;">Fikrini ya da kısa hikâyeni serbestçe yaz. "Taslağı Hazırla" ile ajan onu <strong style="color:#a7adba;">değiştirmeden</strong> netleştirip yapılandırır — tam üretim yapmaz.</p>
+            </sc-if>
             <textarea value="{{ idea }}" onChange="{{ onIdea }}" rows="4" placeholder="ör. Fatih'in ölümünün ardındaki zehir şüphesi… ya da Enigma'yı kıran görünmez kadınlar…" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 18px; font-size: 17px; line-height: 1.6; min-height: 130px;"></textarea>
             <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;">
               <button onClick="{{ suggestIdea }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 8px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">◈ {{ suggestLabel }}</button>
@@ -1027,10 +1036,50 @@
                 <button onClick="{{ findTopic }}" style="margin-top: 8px; border: 0; background: transparent; color: #e6c478; font-size: 12.5px; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px;">Ajanla konuşarak konu bulalım →</button>
               </div>
             </sc-if>
+            <sc-if value="{{ draftErr }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 14px 0 0; color: #e0a58a; font-size: 13px;">⚠ {{ draftErr }}</p>
+            </sc-if>
             <div class="ta-stepnav" style="display: flex; justify-content: flex-end; margin-top: 26px;">
-              <button onClick="{{ toStep2 }}" disabled="{{ ideaEmpty }}" style="{{ nextBtnStyle }}" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">SEÇENEKLERE GEÇ →</button>
+              <sc-if value="{{ isOwnMode }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ prepareDraftBase }}" disabled="{{ draftBtnDisabled }}" style="{{ nextBtnStyle }}" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">{{ draftBtnLabel }}</button>
+              </sc-if>
+              <sc-if value="{{ isSuggestMode }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ toStep2 }}" disabled="{{ ideaEmpty }}" style="{{ nextBtnStyle }}" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">SEÇENEKLERE GEÇ →</button>
+              </sc-if>
             </div>
           </div>
+          </sc-if>
+          <!-- TASLAK EKRANI (Benim Fikrim Var → Taslağı Hazırla) -->
+          <sc-if value="{{ draftView }}" hint-placeholder-val="{{ false }}">
+          <div class="ta-entry" style="animation: ta-rise .4s ease both; max-width: 900px; margin: 0 auto;">
+            <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">TASLAK · ajan senin fikrini netleştirdi (henüz üretim yok)</p>
+            <h2 style="margin: 10px 0 18px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700;">Taslağın hazır</h2>
+            <div style="display: grid; gap: 12px;">
+              <sc-for list="{{ draftFields }}" as="df" hint-placeholder-count="5">
+                <div style="border: 1px solid rgba(129,135,151,.2); border-radius: 10px; background: rgba(7,10,18,.5); padding: 12px 15px;">
+                  <span style="display: block; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em; margin-bottom: 4px;">{{ df.label }}</span>
+                  <span style="color: #e9dfc8; font-size: 14px; line-height: 1.55;">{{ df.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: flex; gap: 9px; flex-wrap: wrap; margin-top: 22px;">
+              <button onClick="{{ approveDraft }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px 20px; font-weight: 800; font-size: 13px; letter-spacing: .04em; cursor: pointer; border-radius: 8px;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.3);">✓ Bu taslak doğru →</button>
+              <button onClick="{{ draftDetailToggle }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 13px; cursor: pointer; border-radius: 8px;" style-hover="background: rgba(193,154,82,.12);">＋ Ayrıntı ekle</button>
+              <button onClick="{{ draftEnrich }}" disabled="{{ draftBusy }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 13px; cursor: pointer; border-radius: 8px;" style-hover="background: rgba(193,154,82,.12);">{{ draftEnrichLabel }}</button>
+              <button onClick="{{ draftVariant }}" disabled="{{ draftBusy }}" style="border: 1px solid rgba(129,135,151,.4); background: transparent; color: #a4a9b5; padding: 12px 18px; font-size: 13px; cursor: pointer; border-radius: 8px;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">↻ Farklı taslak üret</button>
+            </div>
+            <sc-if value="{{ draftExtraOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top: 14px; display: grid; gap: 8px;">
+                <textarea value="{{ draftExtra }}" onChange="{{ onDraftExtra }}" rows="2" placeholder="Eklemek istediğin ayrıntıları yaz — ör. 'baş karakterin gözünden anlat', 'sonu açık kalsın'…" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #e6dfcb; padding: 12px 14px; font-size: 13.5px; line-height: 1.55;"></textarea>
+                <button onClick="{{ draftApplyExtra }}" disabled="{{ draftBusy }}" style="justify-self: start; border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 9px 16px; font-size: 12.5px; font-weight: 700; cursor: pointer; border-radius: 7px;" style-hover="background: rgba(193,154,82,.2);">{{ draftApplyLabel }}</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ draftErr }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 14px 0 0; color: #e0a58a; font-size: 13px;">⚠ {{ draftErr }}</p>
+            </sc-if>
+            <button onClick="{{ draftBack }}" style="margin-top: 16px; border: 0; background: transparent; color: #818797; font-size: 12.5px; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px;" style-hover="color: #e6c478;">← Fikri düzenle</button>
+          </div>
+          </sc-if>
         </sc-if>
 
         <!-- ADIM 2 · SEÇENEKLER -->
@@ -2138,6 +2187,8 @@ class Component extends DCLogic {
       // ÜRETİM ÇIKTI SEÇİMİ + 'Ben Hikayemi Yazacağım' modu (Hikaye zorunlu taban)
       genOutputs: { gorsel: true, ses: false, video: false, thumb: false },
       ownStory: false,
+      // FİKİR MODU + TASLAK (Benim Fikrim Var)
+      ideaMode: 'suggest', draft: null, draftBusy: false, draftErr: '', draftExtra: '', draftExtraOpen: false,
       imgFilter: 'all',                          // Görseller sekmesi filtresi: all | story | standalone
       videoModal: null,                          // video sağlayıcı/süre/maliyet modalı
       batch: savedBatch,                         // kontrollü toplu üretim durumu (yenilemede geri yüklenir)
@@ -4743,6 +4794,53 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     } catch (e) { return null; }
   }
 
+  // ── TASLAK MODU ── "Benim Fikrim Var": kullanıcının fikrini DEĞİŞTİRMEDEN
+  // 8 alanlı bir taslağa netleştirir. Tam üretim YAPMAZ. Ücretsiz: askAI
+  // action'sız (generic metin) → kredi düşmez, backend üretim akışı DEĞİŞMEZ.
+  async prepareDraft(variant) {
+    const s = this.state;
+    const base = (s.idea || '').trim();
+    if (!base) { this.setState({ ideaWarn: 'Önce fikrini ya da kısa hikâyeni yaz.' }); return; }
+    if (s.draftBusy) return;
+    this.setState({ draftBusy: true, draftErr: '' });
+    const extra = (s.draftExtra || '').trim();
+    const varLine = variant === 'variant'
+      ? '\nBu sefer AYNI temel fikri koruyarak FARKLI bir taslak çıkar: farklı bir bakış açısı, çerçeve ya da vurgu dene.'
+      : variant === 'enrich'
+        ? '\nBu fikri daha da GELİŞTİR: dramatik yayı güçlendir, somut ayrıntı ve gerilim ekle — ama temel fikri ve niyeti DEĞİŞTİRME.'
+        : '';
+    const detailLine = extra ? ('\nKullanıcının EKLEDİĞİ ayrıntılar (mutlaka dahil et): "' + extra.slice(0, 600) + '"') : '';
+    const prompt = 'Sen bir Türkçe tarih içerik danışmanısın. Aşağıda kullanıcının KENDİ yazdığı fikir ya da kısa hikâye var. Bu metnin TEMEL FİKRİNİ ASLA DEĞİŞTİRME; yalnızca düzenle, netleştir ve yapılandır. Uydurma büyük olaylar EKLEME, kullanıcının niyetine sadık kal.' + varLine + detailLine + '\n\nKULLANICININ METNİ:\n"' + base.slice(0, 2000) + '"\n\nÇIKTI: SADECE tek geçerli JSON, ilk karakter { son karakter }. Tüm alanlar Türkçe ve DOLU olsun:\n{"ana_fikir":"tek cümlelik öz","bakis_acisi":"anlatı hangi göz/çerçeveden","baslangic":"açılış durumu / kanca","gelisme":"orta gelişim, artan gerilim","final":"kapanış / çözüm","onemli_ayrintilar":["somut ayrıntılar"],"korunacak":["kesinlikle korunacak unsurlar"],"istenmeyen":["dahil edilmemesi gereken unsurlar"]}';
+    try {
+      const txt = await this.askAI(prompt, 1500);
+      const d = this.parseGenJson(txt);
+      if (!d || !d.ana_fikir) throw new Error('taslak okunamadı');
+      this.setState({ draft: d, draftBusy: false, draftExtraOpen: false, draftExtra: '' });
+    } catch (e) {
+      this.setState({ draftBusy: false, draftErr: 'Taslak hazırlanamadı (' + (e.message || 'hata') + '). Tekrar dene.' });
+    }
+  }
+  // "Bu taslak doğru" → taslak ÖZEL İSTEK (custom) alanına yapılandırılmış brief
+  // olarak eklenir; buildPrompt bunu EN YÜKSEK ÖNCELİKLE zaten okur (yeni backend
+  // akışı YOK). Kullanıcının temel fikri korunur; üretim buna sadık kalır.
+  approveDraft() {
+    const d = this.state.draft; if (!d) return;
+    const arr = (x) => Array.isArray(x) && x.length ? x.join('; ') : '';
+    const brief = [
+      'ONAYLANMIŞ TASLAK (bu çerçeveye SADIK kal, kullanıcının fikrini değiştirme):',
+      d.ana_fikir ? '• Ana fikir: ' + d.ana_fikir : '',
+      d.bakis_acisi ? '• Bakış açısı: ' + d.bakis_acisi : '',
+      d.baslangic ? '• Başlangıç: ' + d.baslangic : '',
+      d.gelisme ? '• Gelişme: ' + d.gelisme : '',
+      d.final ? '• Final: ' + d.final : '',
+      arr(d.onemli_ayrintilar) ? '• Önemli ayrıntılar: ' + arr(d.onemli_ayrintilar) : '',
+      arr(d.korunacak) ? '• Korunacak: ' + arr(d.korunacak) : '',
+      arr(d.istenmeyen) ? '• İstenmeyen: ' + arr(d.istenmeyen) : ''
+    ].filter(Boolean).join('\n');
+    const cur = (this.state.custom || '').trim();
+    this.setState({ custom: cur ? (cur + '\n\n' + brief) : brief, draft: null, step: 2 }, () => this.persist());
+  }
+
   async startGenerate() {
     const s = this.state;
     if (s.generating) return;
@@ -5434,6 +5532,46 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       editIg: () => this.startEdit('ig', 0, 'Instagram açıklaması'),
       suggestIdea: () => this.suggestIdeaNow(),
       findTopic: () => this.findTopic(),
+      // FİKİR MODU + TASLAK VM
+      ideaMode: s.ideaMode || 'suggest',
+      isOwnMode: (s.ideaMode || 'suggest') === 'own',
+      isSuggestMode: (s.ideaMode || 'suggest') !== 'own',
+      setModeSuggest: () => this.setState({ ideaMode: 'suggest', draftErr: '' }),
+      setModeOwn: () => this.setState({ ideaMode: 'own', draftErr: '' }),
+      modeSuggestStyle: (() => { const on = (s.ideaMode || 'suggest') !== 'own'; return { cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '9px 16px', borderRadius: '8px', border: on ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)', background: on ? 'rgba(193,154,82,.14)' : 'rgba(4,6,12,.6)', color: on ? '#e6c478' : '#a4a9b5' }; })(),
+      modeOwnStyle: (() => { const on = (s.ideaMode || 'suggest') === 'own'; return { cursor: 'pointer', fontSize: '13px', fontWeight: 700, padding: '9px 16px', borderRadius: '8px', border: on ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)', background: on ? 'rgba(193,154,82,.14)' : 'rgba(4,6,12,.6)', color: on ? '#e6c478' : '#a4a9b5' }; })(),
+      noDraft: !s.draft,
+      draftView: !!s.draft,
+      draftBusy: !!s.draftBusy,
+      draftErr: s.draftErr || '',
+      draftBtnDisabled: !s.idea.trim() || !!s.draftBusy,
+      draftBtnLabel: s.draftBusy ? 'TASLAK HAZIRLANIYOR…' : '◈ TASLAĞI HAZIRLA →',
+      prepareDraftBase: () => this.prepareDraft('base'),
+      draftEnrich: () => this.prepareDraft('enrich'),
+      draftEnrichLabel: s.draftBusy ? '…' : '✦ AI ile geliştir',
+      draftVariant: () => this.prepareDraft('variant'),
+      approveDraft: () => this.approveDraft(),
+      draftBack: () => this.setState({ draft: null, draftErr: '' }),
+      draftExtra: s.draftExtra || '',
+      onDraftExtra: e => this.setState({ draftExtra: e.target.value }),
+      draftExtraOpen: !!s.draftExtraOpen,
+      draftDetailToggle: () => this.setState(st => ({ draftExtraOpen: !st.draftExtraOpen })),
+      draftApplyExtra: () => this.prepareDraft('base'),
+      draftApplyLabel: s.draftBusy ? 'GÜNCELLENİYOR…' : 'Ayrıntıyı ekle ve taslağı güncelle',
+      draftFields: (() => {
+        const d = s.draft || {};
+        const arr = (x) => Array.isArray(x) ? x.filter(Boolean).join(' · ') : (x || '');
+        return [
+          ['ANA FİKİR', d.ana_fikir || ''],
+          ['BAKIŞ AÇISI', d.bakis_acisi || ''],
+          ['BAŞLANGIÇ', d.baslangic || ''],
+          ['GELİŞME', d.gelisme || ''],
+          ['FİNAL', d.final || ''],
+          ['ÖNEMLİ AYRINTILAR', arr(d.onemli_ayrintilar)],
+          ['KORUNACAK UNSURLAR', arr(d.korunacak)],
+          ['İSTENMEYEN UNSURLAR', arr(d.istenmeyen)]
+        ].filter(x => x[1]).map(([label, value]) => ({ label, value }));
+      })(),
       suggestLabel: s.suggestBusy ? 'AJAN DÜŞÜNÜYOR…' : 'SEN ÖNER',
       addShort: () => this.addShortNow(),
       shortLabel: s.shortBusy ? 'YAZILIYOR…' : '+ 30 SN SHORTS VERSİYONU EKLE',
