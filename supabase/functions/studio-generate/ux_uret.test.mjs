@@ -34,8 +34,8 @@ test("Motor: ⚡ Otomatik varsayılan; sunucuya giden HER yol _provResolve'dan g
   assert.ok(studioSrc.includes("imgProvider: saved.imgProvider || 'auto'"), "varsayılan auto");
   assert.ok(studioSrc.includes("['auto', '⚡ Otomatik', false]"), "seçici listede Otomatik");
   assert.ok(studioSrc.includes("imageProvider: this._provResolve(provider || this.state.imgProvider)"), "imageServer yolu çözümlenir");
-  assert.ok(studioSrc.includes("this._provResolve(providerOverride || this.state.imgProvider)"), "makeImage yolu çözümlenir");
-  assert.ok(studioSrc.includes("this._provResolve(s.imgProvider)"), "genAllScenes (batch) yolu çözümlenir");
+  assert.ok(studioSrc.includes("resolvedProvider: this._provResolve(provRaw)") && studioSrc.includes("const prov = gen.resolvedProvider"), "makeImage yolu merkezi çözümleyiciden geçer");
+  assert.ok(studioSrc.includes("const provider = gen.resolvedProvider") && studioSrc.includes("this._provResolve(provider)"), "genAllScenes (batch) yolu çözümlenir");
   assert.ok(!studioSrc.includes("imageProvider: 'auto'"), "'auto' hiçbir yerde doğrudan gönderilmez");
   assert.ok(studioSrc.includes("imgAutoNote"), "Otomatik/elle şeffaflık notu");
 });
@@ -171,26 +171,32 @@ test("Backend DOKUNULMADI: PR-2 yalnız frontend", () => {
   assert.ok(indexSrc.includes('|| "gpt-image-2"') && indexSrc.includes('|| "gpt-image-1.5"'), "model zinciri yerinde");
 });
 
-test("ORAN AKIŞI UÇTAN UCA: UI → payload → sunucu boyutu → kırpma hedefi → metadata", () => {
-  // İstemci: seçili anahtar → API size string'i
-  assert.ok(studioSrc.includes("{ yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect]"), "istemci arKey → size çevirisi");
-  // Sunucu: size → OpenAI'nin GERÇEKTEN desteklediği boyut
-  assert.ok(indexSrc.includes('const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024"'), "sunucu size → gerçek üretim boyutu");
-  // Sunucu: üretim sonrası KESİN orana kırpma (9:16 → portrait, 16:9 → landscape; 1:1 zaten kare)
-  assert.ok(indexSrc.includes('const target = size === "9:16" ? 9 / 16 : size === "16:9" ? 16 / 9 : 0'), "cropToAspect kesin oran hedefi");
-  assert.ok(indexSrc.includes('url = await cropToAspect(url, String(b.size || ""))'), "kırpma üretim yolunda uygulanır");
+test("ORAN AKIŞI UÇTAN UCA: UI → payload → sunucu boyutu → doğrulama → metadata", () => {
+  // İstemci: seçili anahtar → API size string'i (SESSİZ 16:9 FALLBACK YOK)
+  assert.ok(studioSrc.includes("const aspect = this.AR_MAP()[arKey];"), "istemci arKey → size çevirisi merkezi haritadan");
+  assert.ok(studioSrc.includes("Geçersiz oran seçimi ("), "bilinmeyen anahtar üretimi durdurur (16:9'a düşmez)");
+  // Sunucu: oran allowlist + sağlayıcı başına açık boyut eşlemesi
+  assert.ok(indexSrc.includes('const SUPPORTED_ASPECTS = new Set(["9:16", "16:9", "1:1"])'), "sunucu oran allowlist");
+  assert.ok(indexSrc.includes('"9:16": "1024x1536", "16:9": "1536x1024", "1:1": "1024x1024"'), "OpenAI açık boyut eşlemesi");
+  assert.ok(indexSrc.includes("const GEMINI_ASPECT: Record<string, string>"), "Gemini açık oran eşlemesi");
+  // Gemini imageConfig.aspectRatio VARSAYILAN AÇIK (yalnız TA_GEMINI_ASPECT=0 kapatır)
+  assert.ok(indexSrc.includes('Deno.env.get("TA_GEMINI_ASPECT") === "0"'), "Gemini oranı varsayılan gönderilir");
+  assert.ok(!indexSrc.includes('Deno.env.get("TA_GEMINI_ASPECT") === "1"'), "eski 'yalnız =1 iken gönder' kapısı kalmadı");
+  // Sunucu: gerçek çıktı doğrulaması (metadata 9:16 derken dosya 1:1/16:9 olamaz)
+  assert.ok(indexSrc.includes("function ratioOk(size: string, w: number, h: number)"), "gerçek piksel oran doğrulaması");
+  assert.ok(indexSrc.includes('"RATIO_MISMATCH"'), "uyuşmazlık başarı sayılmaz (iade + açık hata)");
   // Metadata: aspect = istenen; resolution = GERÇEK bayt başlığından okunan WxH (uydurma değil)
-  assert.ok(indexSrc.includes('aspect: String(b.size || "")'), "metadata aspect = istenen oran");
+  assert.ok(indexSrc.includes("aspect: sizeReq"), "metadata aspect = istenen oran");
   assert.ok(indexSrc.includes("function imageInfo(dataUri:"), "resolution gerçek dosya baytlarından (PNG/JPEG başlığı) okunur");
 });
 
-test("BUG FIX: ekranda seçili oran ÜRETİME gider (9:16 seçiliyken 16:9 üretme hatası)", () => {
-  // Kök neden: makeSceneImg dosyanın sihirbaz oranını (s.aspect) ZORLUYORDU;
-  // PLATFORM/ORAN satırının yazdığı imgAspect sahne üretiminde yok sayılıyordu.
-  assert.ok(studioSrc.includes("this.makeImage(prompt, idx, key, (so.ar || this.state.imgAspect || this.state.aspect)"), "tekil sahne üretimi etkin oranı kullanır (sahne > panel > dosya)");
-  assert.ok(studioSrc.includes("aspect: (s.imgAspect || s.aspect)"), "toplu üretim (batch) etkin oranı kullanır");
-  assert.ok(studioSrc.includes("(so.ar || b.aspect)"), "batch işçisi sahne override oranına saygılı");
+test("BUG FIX: ekranda seçili oran ÜRETİME gider — tüm yollar merkezi çözümleyiciden", () => {
+  assert.ok(studioSrc.includes("resolveImageGenerationSettings(sceneKey, frozen)"), "merkezi çözümleyici tanımlı");
+  assert.ok(studioSrc.includes("const gen = this.resolveImageGenerationSettings(sceneKey,"), "makeImage tek kapıdan geçer");
+  assert.ok(studioSrc.includes("this.makeImage(prompt, idx, key).then"), "makeSceneImg kendi oran zinciri kurmaz (resolver)");
+  assert.ok(studioSrc.includes("id: batchId, provider, aspect: gen.arKey, style: gen.styleId"), "batch başında genel ayarlar resolver'dan dondurulur");
   assert.ok(!studioSrc.includes("this.makeImage(prompt, idx, key, this.state.aspect)"), "eski oran-zorlama çağrısı kalmadı");
+  assert.ok(!studioSrc.includes("[arKey || this.state.aspect] || '16:9'"), "sessiz 16:9 fallback kalmadı");
 });
 
 // ── (B) Saf aynalar ─────────────────────────────────────────────────────────

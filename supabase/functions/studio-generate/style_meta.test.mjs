@@ -109,7 +109,7 @@ test("index.ts: merkezi STYLE_TEMPLATES (6 stil) + styleTemplate + generateImage
 });
 test("index.ts: imageInfo parser + META 9 alan yanıtta döner", () => {
   assert.ok(indexSrc.includes("function imageInfo("), "imageInfo parser olmalı");
-  const mBlk = indexSrc.slice(indexSrc.indexOf("const meta = {"), indexSrc.indexOf("const meta = {") + 400);
+  const mBlk = indexSrc.slice(indexSrc.indexOf("const meta = {"), indexSrc.indexOf("const meta = {") + 800);
   for (const f of ["provider:", "model:", "style:", "format:", "aspect:", "resolution:", "bytes:", "ms:", "cost"]) {
     assert.ok(mBlk.includes(f), "meta alanı eksik: " + f);
   }

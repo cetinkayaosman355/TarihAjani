@@ -39,7 +39,7 @@ test("index.ts: yönerge ORTAK prompt 'p'ye eklenir → hem OpenAI hem Gemini al
 
 test("index.ts: kompozisyon YALNIZ prompt'u etkiler — boyut/kalite DEĞİŞMEZ", () => {
   // desteklenen standart boyutlar ve quality=high yerinde
-  assert.ok(gi.includes('const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";'), "boyutlar değişmemeli");
+  assert.ok(gi.includes('const gStd = OPENAI_SIZE[size] || "'), "boyutlar merkezi eşlemeden gelmeli (OPENAI_SIZE)");
   assert.ok(gi.includes("const gSize = gStd;"), "API'ye standart boyut gitmeli (değişmedi)");
   assert.ok(gi.includes('quality: "high"'), "quality high korunmalı");
   assert.ok(gi.includes('(Deno.env.get("TA_IMAGE_FORMAT") || "png")'), "çıktı biçimi (png) değişmemeli");

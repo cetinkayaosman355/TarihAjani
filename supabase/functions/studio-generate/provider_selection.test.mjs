@@ -130,7 +130,7 @@ test("index.ts: OpenAI desteklenmeyen HD boyutları KALDIRILDI (yalnız standart
   const gi = indexSrc.slice(indexSrc.indexOf("async function generateImage("), indexSrc.indexOf("async function generateSpeech("));
   for (const bad of ["1536x2048", "2048x1536", "2048x2048"]) assert.ok(!gi.includes(bad), "HD boyutu kalmamalı: " + bad);
   assert.ok(!gi.includes("const gHd") && !gi.includes("TA_IMAGE_HD"), "HD boyut mantığı kalmamalı");
-  assert.ok(gi.includes('const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";'), "yalnız desteklenen standart boyutlar");
+  assert.ok(indexSrc.includes('const OPENAI_SIZE: Record<string, string> = { "9:16": "1024x1536", "16:9": "1536x1024", "1:1": "1024x1024" }') && gi.includes('const gStd = OPENAI_SIZE[size] || "'), "yalnız desteklenen standart boyutlar (merkezi eşleme)");
   assert.ok(gi.includes("const gSize = gStd;"), "API'ye yalnız standart boyut gitmeli");
   assert.ok(gi.includes('quality: "high"'), "quality=high korunmalı");
 });
@@ -158,8 +158,8 @@ test("Studio.dc.html: görsel MOTOR durumu (Otomatik vars.) + istemci imageProvi
   // PR-2: varsayılan 'auto' (arayüz kavramı) — sunucuya HER yolda _provResolve ile GERÇEK motor gider.
   assert.ok(studioSrc.includes("imgProvider: saved.imgProvider || 'auto'"), "imgProvider state (vars. auto) olmalı");
   assert.ok(studioSrc.includes("imageProvider: this._provResolve(provider || this.state.imgProvider)"), "istek gövdesinde imageProvider _provResolve'dan geçmeli ('auto' sunucuya sızmaz)");
-  assert.ok(studioSrc.includes("_provResolve(providerOverride || this.state.imgProvider)"), "makeImage sağlayıcıyı çözümlemeli");
-  assert.ok(studioSrc.includes("_provResolve(s.imgProvider)"), "genAllScenes batch sağlayıcısını çözümlemeli");
+  assert.ok(studioSrc.includes("resolveImageGenerationSettings(sceneKey,") && studioSrc.includes("const prov = gen.resolvedProvider"), "makeImage sağlayıcıyı merkezi çözümleyiciden almalı");
+  assert.ok(studioSrc.includes("const provider = gen.resolvedProvider"), "genAllScenes batch sağlayıcısını merkezi çözümleyiciden almalı");
   assert.ok(studioSrc.includes("imgProviders:"), "görsel motor seçici listesi olmalı");
   assert.ok(studioSrc.includes("['auto', '⚡ Otomatik', false]"), "⚡ Otomatik seçenek + varsayılan olmalı");
   assert.ok(studioSrc.includes("['higgs', 'Higgs', true]"), "higgs pasif (Yakında) olmalı");

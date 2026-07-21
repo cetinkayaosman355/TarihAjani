@@ -248,13 +248,33 @@ const STYLE_TEMPLATES: Record<string, string> = {
   animasyon: "high-quality 3D animated feature film still, Pixar-DreamWorks style stylized characters with expressive faces, soft global illumination, warm vibrant colors, cinematic composition, charming family-animation look",
 };
 const STYLE_LABELS: Record<string, string> = {
-  sinematik: "Sinematik", hollywood: "Gerçekçi", belgeselfoto: "Belgesel",
-  gravur: "Gravür", minyatur: "Minyatür", animasyon: "Animasyon",
+  sinematik: "Sinematik", hollywood: "Hollywood Foto-gerçekçi", belgeselfoto: "Belgesel",
+  gravur: "Gravür", minyatur: "Osmanlı Minyatürü", animasyon: "Animasyon",
 };
 function styleKeyOf(id: unknown): string { return String(id || "").trim().toLowerCase(); }
 function styleTemplate(id: unknown): string {
   const t = STYLE_TEMPLATES[styleKeyOf(id)];
   return t ? ("\n\nSTYLE (only this style applies): " + t + ".") : "";
+}
+
+// ── ORAN SÖZLEŞMESİ (tek kaynak) ────────────────────────────────────
+// Desteklenen oranlar ve SAĞLAYICI BAŞINA açık boyut eşlemesi. Bilinmeyen oran
+// üretime GİRMEZ (400, kredi ayrılmaz) — sessiz 1:1/16:9 varsayılanı yasak.
+const SUPPORTED_ASPECTS = new Set(["9:16", "16:9", "1:1"]);
+const OPENAI_SIZE: Record<string, string> = { "9:16": "1024x1536", "16:9": "1536x1024", "1:1": "1024x1024" };
+const GEMINI_ASPECT: Record<string, string> = { "9:16": "9:16", "16:9": "16:9", "1:1": "1:1" };
+// GERÇEK ÇIKTI DOĞRULAMASI: sağlayıcı 200 döndü diye başarı sayılmaz — gerçek
+// piksel oranı istenenle uyuşmalı. OpenAI doğal boyutları (2:3 / 3:2) ilgili
+// yönün kabul edilen çıktısıdır (OPENAI_SIZE sözleşmesi); Gemini tam oran döner.
+// w/h okunamazsa (başlık çözülemedi) doğrulama atlanır ama loglanır.
+function ratioOk(size: string, w: number, h: number): boolean {
+  if (!w || !h) return true;
+  const r = w / h;
+  const near = (t: number, tol = 0.06) => Math.abs(r - t) <= t * tol;
+  if (size === "9:16") return h > w && (near(9 / 16) || near(2 / 3));
+  if (size === "16:9") return w > h && (near(16 / 9) || near(3 / 2));
+  if (size === "1:1") return near(1, 0.02);
+  return false;
 }
 
 // ── GÖRSEL META (şeffaflık): ham baytlardan çözünürlük + biçim + bayt sayısı ──
@@ -434,12 +454,15 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
     const gchain = (gfb && gfb !== gm) ? [gm, gfb] : [gm];
     // responseModalities: bazı modeller ["IMAGE"], bazıları ["TEXT","IMAGE"] ister → secret ile ayarlanabilir.
     const mods = (Deno.env.get("TA_GEMINI_RESPONSE_MODALITIES") || "IMAGE").split(",").map((s) => s.trim()).filter(Boolean);
-    // Opsiyonel oran (yalnız TA_GEMINI_ASPECT=1): yeni modeller imageConfig.aspectRatio destekler;
-    // varsayılan KAPALI → bilinmeyen alan 400 riski yok, oran istemci prompt'u + cropToAspect ile korunur.
-    const aspOn = Deno.env.get("TA_GEMINI_ASPECT") === "1";
-    const aspRatio = size === "9:16" ? "9:16" : size === "16:9" ? "16:9" : "1:1";
+    // ORAN VARSAYILAN AÇIK (kök neden düzeltmesi): eskiden imageConfig yalnız
+    // TA_GEMINI_ASPECT=1 iken gönderiliyordu → Gemini oranı SERBEST üretiyordu
+    // (çoğunlukla kare) ve kırpma pasif olduğundan 9:16 seçimine 1:1 dönüyordu.
+    // Artık aspectRatio HER ZAMAN gönderilir; model alanı reddederse hata AÇIK
+    // görünür (sessiz yanlış oran yerine gerçek hata + iade). Acil kaçış: TA_GEMINI_ASPECT=0.
+    const aspOff = Deno.env.get("TA_GEMINI_ASPECT") === "0";
+    const aspRatio = GEMINI_ASPECT[size] || "";
     const genCfg: Record<string, unknown> = { responseModalities: mods };
-    if (aspOn) genCfg.imageConfig = { aspectRatio: aspRatio };
+    if (!aspOff && aspRatio) genCfg.imageConfig = { aspectRatio: aspRatio };
 
     const callGemini = async (model: string): Promise<ImgCall> => {
       try {
@@ -476,10 +499,11 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   const key = Deno.env.get("OPENAI_API_KEY");
   if (!key) { if (diag) { diag.d = "OPENAI_API_KEY tanımsız"; diag.cls = "AUTH_ERROR"; } return ""; }
   // gpt-image oranları: kare / yatay (3:2) / dikey (2:3). STANDART çözünürlük.
-  // OpenAI gpt-image YALNIZ şu boyutları destekler: 1024x1536 (9:16), 1536x1024 (16:9),
-  // 1024x1024 (kare). Desteklenmeyen ~4K/2K HD varsayımları KALDIRILDI → API 400 vermez.
-  // Çözünürlük yerine quality=high korunur (aşağıda).
-  const gStd = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
+  // Boyut MERKEZİ sözleşmeden gelir (OPENAI_SIZE) — bilinmeyen oran buraya
+  // ULAŞAMAZ (handler 400 ile reddeder); yine de güvenlik kemeri olarak boş
+  // eşleme üretimi durdurur (sessiz 1:1 varsayılanı kaldırıldı).
+  const gStd = OPENAI_SIZE[size] || "";
+  if (!gStd) { if (diag) { diag.d = "desteklenmeyen oran: " + size; diag.cls = "INVALID_REQUEST"; } return ""; }
   // 3 KADEMELİ ZİNCİR: birincil gpt-image-2 → yedek gpt-image-1.5 → son yedek gpt-image-1.
   // Yedeğe YALNIZ model-yok / geçici sağlayıcı hatasında geçilir (runImageChain).
   // rate-limit(429 tavan)/auth/moderation/geçersiz istekte SESSİZ geçiş YOK → gerçek hata + iade.
@@ -849,7 +873,9 @@ async function editImage(imageUri: string, prompt: string, size: string): Promis
     } catch (_e) { /* indirilemezse aşağıda boş döner */ }
   }
   if (!parsed) return "";
-  const gSize = size === "9:16" ? "1024x1536" : size === "16:9" ? "1536x1024" : "1024x1024";
+  // Boyut merkezi eşlemeden; oran kayıtta yoksa "auto" → düzenleme kaynağın
+  // kendi kadrajını korur (sessiz 1:1/16:9 dayatması yok).
+  const gSize = OPENAI_SIZE[size] || "auto";
   const ext = parsed.type.indexOf("png") >= 0 ? "png" : "jpg";
   const fd = new FormData();
   fd.append("model", "gpt-image-1");
@@ -1427,6 +1453,21 @@ Deno.serve(async (req) => {
         logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "INVALID_IMAGE_PROVIDER:" + ipRaw.slice(0, 20) });
         return json({ ok: false, error: "Geçersiz görsel sağlayıcısı. Kredi düşülmedi. GPT veya Gemini seç.", errClass: "INVALID_IMAGE_PROVIDER" }, 400);
       }
+      // ── İSTEK VALİDASYONU (rezervasyondan ÖNCE — geçersiz istekte kredi ayrılmaz) ──
+      // Oran: yalnız desteklenen üç oran. Eskiden bilinmeyen size sessizce 1024x1024'e
+      // düşüyordu → "seçtiğim oran üretilmedi" sınıfı hataların sunucu ayağı kapandı.
+      const sizeReq = String(b.size || "").trim();
+      if (!SUPPORTED_ASPECTS.has(sizeReq)) {
+        logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "VALIDATION_ASPECT:" + sizeReq.slice(0, 12) });
+        return json({ ok: false, error: "Seçilen oran desteklenmiyor (9:16, 16:9 veya 1:1 seç). Kredi düşülmedi.", errClass: "VALIDATION_ASPECT" }, 400);
+      }
+      // Stil: bilinmeyen/boş stil anahtarı üretime girmez — "hangi stil uygulandı belli
+      // değil" durumu yasak. İstemci her üretimde geçerli styleId gönderir (tek kaynak).
+      const styleKey = styleKeyOf(b.style);
+      if (!STYLE_TEMPLATES[styleKey]) {
+        logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "VALIDATION_STYLE:" + styleKey.slice(0, 20) });
+        return json({ ok: false, error: "Bu üretim için geçerli bir görsel stil seçilmedi. Kredi düşülmedi.", errClass: "VALIDATION_STYLE" }, 400);
+      }
       const opId = cleanJob(b.opId) || crypto.randomUUID();
       // KURTARMA (sayfa yenileme / toplu üretim tekrarı): aynı opId için önceki sonuç
       // Storage job-cache'inde varsa YENİDEN ÜRETME/ÜCRETLENDİRME yok → aynı sahne iki
@@ -1447,13 +1488,25 @@ Deno.serve(async (req) => {
         return json({ ok: false, error: "Kredi sistemi şu an kullanılamıyor. Görsel üretilmedi, kredi düşülmedi. Lütfen birazdan tekrar deneyin.", errClass: "CREDIT_SYSTEM_UNAVAILABLE" }, 503);
       }
       const diag: { d: string; cls?: string; model?: string; provider?: string } = { d: "" };
-      const styleKey = styleKeyOf(b.style);
       const tGen = Date.now();
-      let url = await generateImage(String(b.prompt || ""), String(b.size || ""), diag, opId, imgProv, styleKey);
+      let url = await generateImage(String(b.prompt || ""), sizeReq, diag, opId, imgProv, styleKey);
       const genMs = Date.now() - tGen;
       // META (şeffaflık): çözünürlük/biçim/bayt HAM data URI'den okunur (upload ÖNCESİ)
       const info = (url && url.startsWith("data:")) ? imageInfo(url) : { w: 0, h: 0, bytes: 0, fmt: "" };
-      if (url && url.startsWith("data:")) url = await cropToAspect(url, String(b.size || ""));
+      // ÜRETİM DENETİM İZİ: istek ↔ gerçek çıktı tek satırda (destek/teşhis için)
+      console.log(`img_audit op=${opId} scene=${String(b.sceneKey || "-").slice(0, 20)} provider=${diag.provider || imgProv || "env"} model=${diag.model || "-"} size=${sizeReq} style=${styleKey} real=${info.w}x${info.h} fmt=${info.fmt || "-"} ms=${genMs}`);
+      // ── GERÇEK ÇIKTI DOĞRULAMASI ── sağlayıcı 200 döndü diye başarı sayılmaz:
+      // gerçek piksel oranı istenen yön/oranla uyuşmuyorsa üretim BAŞARISIZ sayılır,
+      // rezervasyon iade edilir, UI'ya "hazır görsel" dönmez. (Metadata 9:16 derken
+      // dosyanın 1:1/16:9 çıkması artık imkânsız.)
+      if (url && url.startsWith("data:") && !ratioOk(sizeReq, info.w, info.h)) {
+        console.error(`img_ratio_mismatch op=${opId} provider=${diag.provider || imgProv} model=${diag.model || "-"} size=${sizeReq} real=${info.w}x${info.h}`);
+        logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "RATIO_MISMATCH:" + sizeReq + ":" + info.w + "x" + info.h });
+        let credits: number | undefined;
+        if (res.reserved) credits = await refundOp(admin, userId, opId);
+        return json({ ok: false, error: "Üretilen görsel seçilen orana (" + sizeReq + ") uymadı — üretim başarısız sayıldı, kredi iade edildi. Tekrar dene.", errClass: "RATIO_MISMATCH", credits }, 502);
+      }
+      if (url && url.startsWith("data:")) url = await cropToAspect(url, sizeReq);
       // CİHAZLAR ARASI: data: URI cihaza özeldir → Storage'a yükle, kalıcı URL ver
       if (url && url.startsWith("data:") && admin) url = await uploadImage(admin, userId, url);
       logRun({ action: "image", ok: !!url, ms: Date.now() - t0, user_id: userId || null, err: url ? null : (diag.cls ? diag.cls + ":" : "") + (diag.d || "uretilemedi").slice(0, 80) });
@@ -1469,8 +1522,11 @@ Deno.serve(async (req) => {
         model: diag.model || "",
         style: STYLE_LABELS[styleKey] || "",
         format: (info.fmt || "").toUpperCase(),
-        aspect: String(b.size || ""),
+        aspect: sizeReq,
         resolution: (info.w && info.h) ? (info.w + "×" + info.h) : "",
+        // Oran doğrulaması: true = gerçek pikseller istenen oranla uyuştu;
+        // false = başlık okunamadı, doğrulanamadı (uyuşmazlık buraya ULAŞAMAZ — üstte iade edilir).
+        ratioVerified: !!(info.w && info.h),
         bytes: info.bytes,
         ms: genMs,
         cost,
