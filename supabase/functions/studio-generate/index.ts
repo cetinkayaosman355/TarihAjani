@@ -19,7 +19,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   POST {action:"version"} → { ok, build, primaryModel, prices }
 // Deploy drift'in (dashboard'a eski/yarım kod yapıştırma) tek panzehiri budur.
 // HER kod değişikliğinde bu damga da güncellenir (test bunu zorlar).
-const BUILD = "sg-2026-07-21-r5";
+const BUILD = "sg-2026-07-21-r6";
 
 // NOT: imagescript'in WASM kodeği Supabase Deno edge arch'ında yüklenmiyor
 // (unsupported arch/platform) → kırpma zaten HİÇ çalışmıyor, sadece her üretimde
@@ -1129,15 +1129,32 @@ function pickProvider(p?: string): string {
     ? (v === "higgsfield" ? "higgs" : v) : videoProvider();
 }
 
-async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string, provider?: string): Promise<{ id?: string; err?: string }> {
+// SES MODU: 'silent' (tam sessiz) | 'ambient' (ortam sesi, KONUŞMA+MÜZİK yok) | 'speech' (tam ses).
+// Kling: settings.audio off/on ile kontrol. Grok: API'de ses parametresi belgeli değil →
+// prompt YÖNERGELERİYLE kontrol (kullanıcı da eskiden prompt'a yazıyordu). audioDirective()
+// prompt'a eklenecek İngilizce yönergeyi döndürür (sağlayıcıdan bağımsız güçlendirme).
+type AudioMode = "silent" | "ambient" | "speech";
+function normAudio(a?: string): AudioMode {
+  const v = String(a || "").toLowerCase();
+  return (v === "ambient" || v === "speech") ? v : "silent";
+}
+function audioDirective(mode: AudioMode): string {
+  if (mode === "silent") return " No audio. Silent. No music, no speech, no dialogue, no sound effects.";
+  if (mode === "ambient") return " Ambient/diegetic sound and subtle sound effects only. No speech, no dialogue, no narration, no voiceover, no music.";
+  return "";   // speech: tam ses — kısıtlama yok
+}
+async function submitVideo(prompt: string, imageUrl: string, dur: number, aspect: string, provider?: string, audio?: string): Promise<{ id?: string; err?: string }> {
   // OTOMATİK SAĞLAYICI FALLBACK YOK: kullanıcı hangi sağlayıcıyı seçtiyse YALNIZ o çağrılır.
   // Anahtar eksik/başarısızsa ilgili submit fonksiyonu NET hata döndürür; başka sağlayıcıya DÜŞÜLMEZ.
   const use = pickProvider(provider);
+  const am = normAudio(audio);
+  // Grok/Fal: ses yönergesini prompt'a ekle (API ses parametresi yok). Kling: audio off/on kendi içinde.
+  const promptA = (prompt || "") + (use === "kling" ? "" : audioDirective(am));
   if (use === "veo") return { err: "VEO_PROVIDER_NOT_CONFIGURED" };     // doğrudan Veo entegrasyonu yok
   if (use === "higgs") return { err: "HIGGS_PROVIDER_NOT_CONFIGURED" }; // Higgs backend erişimi doğrulanmadı
-  if (use === "fal") return await submitFal(prompt, imageUrl, dur, aspect);   // yalnız açıkça Fal seçilince; id zaten "fal:" ön ekli
-  if (use === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect); return r.id ? { id: "kling:" + r.id } : r; }
-  const r = await submitGrok(prompt, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id } : r;
+  if (use === "fal") return await submitFal(promptA, imageUrl, dur, aspect);   // yalnız açıkça Fal seçilince; id zaten "fal:" ön ekli
+  if (use === "kling") { const r = await submitKling(prompt, imageUrl, dur, aspect, am); return r.id ? { id: "kling:" + r.id } : r; }
+  const r = await submitGrok(promptA, imageUrl, dur, aspect); return r.id ? { id: "grok:" + r.id } : r;
 }
 async function pollVideo(job: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
   if (job.indexOf("fal:") === 0) return pollFal(job.slice(4));
@@ -1169,7 +1186,7 @@ async function klingAuth(): Promise<{ token: string; v3: boolean } | null> {
   const jwt = await klingToken();                            // eski hesaplar: JWT (ACCESS+SECRET)
   return jwt ? { token: jwt, v3: false } : null;
 }
-async function submitKling(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
+async function submitKling(prompt: string, imageUrl: string, dur: number, aspect: string, audio: AudioMode = "silent"): Promise<{ id?: string; err?: string }> {
   const auth = await klingAuth();
   if (!auth) return { err: "KLING_API_KEY (Kling 3.0) veya KLING_ACCESS_KEY+KLING_SECRET_KEY secret eksik." };
   if (!imageUrl) return { err: "Kling image→video için sahne görseli gerekli." };
@@ -1179,14 +1196,18 @@ async function submitKling(prompt: string, imageUrl: string, dur: number, aspect
       // ── Kling 3.0 (yeni API): POST /image-to-video/kling-3.0, contents yapısı ──
       const model = Deno.env.get("KLING_MODEL") || "kling-3.0";
       const duration = Math.min(15, Math.max(3, Math.round(dur || 5)));
+      // SES: silent → audio off. ambient/speech → audio on. ambient'te müzik/konuşma
+      // çakışmasın diye prompt'a yönerge eklenir (Kling audio-on müzik de ekleyebiliyor).
+      const audioOn = audio !== "silent";
+      const promptText = ((prompt || "") + (audio === "ambient" ? audioDirective("ambient") : "")).slice(0, 2500);
       const body = {
         contents: [
-          { type: "prompt", text: (prompt || "").slice(0, 2500) },
+          { type: "prompt", text: promptText },
           { type: "first_frame", url: imageUrl },
         ],
         settings: {
           resolution: Deno.env.get("KLING_RES") || "1080p",
-          duration, audio: "off", multi_shot: false,
+          duration, audio: audioOn ? "on" : "off", multi_shot: false,
         },
         options: { watermark_info: { enabled: false } },
       };
@@ -1923,7 +1944,7 @@ Deno.serve(async (req) => {
         } catch (_e) { vReserved = false; }
       }
       // 2) Sağlayıcıya gönder
-      const sub = await submitVideo(String(b.prompt || ""), String(b.image || ""), sec, String(b.size || ""), String(b.vprovider || ""));
+      const sub = await submitVideo(String(b.prompt || ""), String(b.image || ""), sec, String(b.size || ""), String(b.vprovider || ""), String(b.vaudio || ""));
       if (!sub.id) {
         await doRefund();   // rezerve edildiyse geri ver
         logRun({ action: "video", ok: false, ms: Date.now() - t0, user_id: userId || null, err: (sub.err || "submit").slice(0, 60) });

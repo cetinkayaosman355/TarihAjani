@@ -25,13 +25,25 @@ test("klingAuth: KLING_API_KEY varsa v3 (doğrudan Bearer), yoksa JWT'ye düşer
 
 test("submitKling v3: POST /image-to-video/kling-3.0 + contents(first_frame) + Bearer", () => {
   const i = src.indexOf("async function submitKling");
-  const blk = src.slice(i, i + 1500);
+  const blk = src.slice(i, i + 2000);
   assert.ok(blk.includes('"/image-to-video/" + model'), "yeni image-to-video yolu");
   assert.ok(blk.includes('"kling-3.0"'), "varsayılan model kling-3.0");
   assert.ok(blk.includes('type: "first_frame"'), "ilk kare görseli contents içinde gönderilir");
   assert.ok(blk.includes('type: "prompt"'), "prompt contents içinde gönderilir");
   assert.ok(blk.includes("Bearer ${auth.token}"), "Bearer kimlik");
-  assert.ok(blk.includes("multi_shot: false") && blk.includes('audio: "off"'), "settings alanları");
+  assert.ok(blk.includes("multi_shot: false") && blk.includes('audioOn ? "on" : "off"'), "settings alanları (ses moduna göre audio on/off)");
+});
+
+test("SES modu: silent/ambient/speech yönergeleri + Kling audio on/off", () => {
+  assert.ok(src.includes('type AudioMode = "silent" | "ambient" | "speech"'), "AudioMode türü");
+  const di = src.indexOf("function audioDirective");
+  const dblk = src.slice(di, di + 400);
+  assert.ok(dblk.includes("No speech") && dblk.includes("No music"), "silent yönergesi konuşma+müzik yasağı");
+  assert.ok(dblk.includes("Ambient") && dblk.includes("no music"), "ambient yönergesi müzik yok");
+  // submitVideo: Grok/Fal prompt'a yönerge ekler; Kling audio ayarını kendi içinde yapar
+  const sv = src.slice(src.indexOf("async function submitVideo"), src.indexOf("async function submitVideo") + 1400);
+  assert.ok(sv.includes("audioDirective(am)"), "prompt'a ses yönergesi eklenir (Grok/Fal)");
+  assert.ok(sv.includes("submitKling(prompt, imageUrl, dur, aspect, am)"), "Kling'e ses modu geçirilir");
 });
 
 test("submitKling: eski JWT yolu geriye uyum için korunur (image2video)", () => {

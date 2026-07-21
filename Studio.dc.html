@@ -2113,6 +2113,12 @@
             <button onClick="{{ vd.pick }}" style="{{ vd.style }}">{{ vd.label }}</button>
           </sc-for>
         </div>
+        <p style="margin: 0 0 8px; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">SES</p>
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <sc-for list="{{ videoModalAudios }}" as="va" hint-placeholder-count="3">
+            <button onClick="{{ va.pick }}" style="{{ va.style }}">{{ va.label }}<span style="{{ va.hintStyle }}">{{ va.hint }}</span></button>
+          </sc-for>
+        </div>
         <p style="margin: 0 0 8px; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">SAĞLAYICI</p>
         <div style="display: grid; gap: 8px;">
           <sc-for list="{{ videoModalProviders }}" as="vpr" hint-placeholder-count="4">
@@ -3925,7 +3931,7 @@ class Component extends DCLogic {
   _setGalVid(id, patch) {
     this.setState(st => ({ galVid: { ...(st.galVid || {}), [id]: { ...((st.galVid || {})[id] || {}), ...patch } } }));
   }
-  makeGalVideo(x, provider, sec) {
+  makeGalVideo(x, provider, sec, audio) {
     const gv = (this.state.galVid || {})[x.id] || {};
     if (gv.busy || !x || !x.url) return;
     const prov = provider === 'kling' ? 'kling' : 'grok';
@@ -3935,7 +3941,7 @@ class Component extends DCLogic {
     const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[x.ar] || x.ar || '9:16';
     const label = prov === 'kling' ? 'Kling' : 'Grok';
     this._setGalVid(x.id, { busy: true, menuOpen: false, status: '🎬 ' + label + ' GÖNDERİLİYOR…' });
-    this.videoServer(x.url, x.prompt || '', aspect, prov, vsec).then(job => {
+    this.videoServer(x.url, x.prompt || '', aspect, prov, vsec, audio || 'silent').then(job => {
       this._setGalVid(x.id, { busy: true, job, status: '🎬 ' + label + ' HAZIRLANIYOR… (1-3 dk)' });
       this.pollGalVideo(x, job, 0);
     }).catch(e => {
@@ -4241,16 +4247,17 @@ class Component extends DCLogic {
   }
   // İstemci maliyet AYNASI (yalnız gösterim/ön kontrol; kesin ücret sunucuda videoCost ile hesaplanır)
   VID_COST(sec, prov) { const s = Math.round(Math.min(15, Math.max(3, sec || 5))); const k = prov === 'kling'; return Math.max(k ? 300 : 120, s * (k ? 60 : 24)); }
-  openVideoModal(desc) { this.setState({ videoModal: Object.assign({ provider: 'kling', sec: 5 }, desc) }); }
+  openVideoModal(desc) { this.setState({ videoModal: Object.assign({ provider: 'kling', sec: 5, audio: 'silent' }, desc) }); }
   submitVideoModal() {
     const vm = this.state.videoModal; if (!vm) return;
     const prov = (vm.provider === 'kling') ? 'kling' : 'grok';   // yalnız çalışan sağlayıcılar; veo/higgs modalda pasif
     const sec = vm.sec || 5;
+    const audio = vm.audio || 'silent';
     this.setState({ videoModal: null });
-    if (vm.kind === 'scene') this.makeVideo(vm.key, vm.url, prov, sec);
-    else this.makeGalVideo(vm.x, prov, sec);
+    if (vm.kind === 'scene') this.makeVideo(vm.key, vm.url, prov, sec, audio);
+    else this.makeGalVideo(vm.x, prov, sec, audio);
   }
-  makeVideo(key, imageUrl, provider, sec) {
+  makeVideo(key, imageUrl, provider, sec, audio) {
     const si = (this.state.sceneImgs || {})[key] || {};
     if (si.vidBusy || !imageUrl) return;
     const prov = (provider === 'kling') ? 'kling' : 'grok';
@@ -4273,7 +4280,7 @@ class Component extends DCLogic {
       : (this.AR_MAP()[this.resolveImageGenerationSettings(key).arKey] || '9:16');
     const label = prov === 'kling' ? 'Kling' : 'Grok';
     this.setSceneImg(key, { vidBusy: true, vidMenuOpen: false, vidStatus: '🎬 ' + label + ' GÖNDERİLİYOR…' });
-    this.videoServer(imageUrl, prompt, aspect, prov, vsec).then(job => {
+    this.videoServer(imageUrl, prompt, aspect, prov, vsec, audio).then(job => {
       // İş kimliğini KAYDET → sayfa yenilense bile arka plandaki video kaybolmaz,
       // açılışta poll kaldığı yerden devam eder (kredi zaten düşmüştü).
       this.setSceneImg(key, { vidJob: job, vidBusy: true, vidStatus: '🎬 ' + label + ' HAZIRLANIYOR… (1-3 dk)' });
@@ -4286,12 +4293,12 @@ class Component extends DCLogic {
       if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
     });
   }
-  async videoServer(imageUrl, prompt, aspect, provider, sec) {
+  async videoServer(imageUrl, prompt, aspect, provider, sec, audio) {
     const s = this._sbUrlKey();
     const token = this._token() || s.key;
     const r = await fetch(s.url + '/functions/v1/studio-generate', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'video', image: imageUrl, prompt: prompt, size: aspect, vsec: Math.round(Math.min(15, Math.max(3, sec || 5))), vprovider: provider || 'grok' })
+      body: JSON.stringify({ action: 'video', image: imageUrl, prompt: prompt, size: aspect, vsec: Math.round(Math.min(15, Math.max(3, sec || 5))), vprovider: provider || 'grok', vaudio: audio || 'silent' })
     });
     const d = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof d.credits === 'number') this.setState({ credits: d.credits }); throw new Error('YETERSIZ_KREDI'); }
@@ -6010,6 +6017,30 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
               color: p.passive ? '#818797' : (sel ? '#f4ead0' : '#cfd3dc')
             },
             tagStyle: { fontSize: '9.5px', color: p.passive ? '#676d7c' : (sel ? '#e6c478' : '#9aa0ae') }
+          };
+        });
+      })(),
+      // SES: her üretimde seçilir. Sessiz (ham; kendi seslendirmen) / Ortam (konuşma+müzik YOK) /
+      // Konuşmalı (tam ses). Kling'de audio off/on; Grok'ta yönergeler prompt'a eklenir (sunucu).
+      videoModalAudios: (() => {
+        const vm = s.videoModal || {}; const cur = vm.audio || 'silent';
+        const rows = [
+          { id: 'silent', label: '🔇 Sessiz', hint: 'ham video' },
+          { id: 'ambient', label: '🌊 Ortam sesi', hint: 'konuşma·müzik yok' },
+          { id: 'speech', label: '🗣 Konuşmalı', hint: 'tam ses' }
+        ];
+        return rows.map(a => {
+          const sel = cur === a.id;
+          return {
+            label: a.label, hint: a.hint,
+            pick: () => this.setState({ videoModal: Object.assign({}, vm, { audio: a.id }) }),
+            style: {
+              flex: '1', cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10.5px', letterSpacing: '.03em',
+              padding: '9px 6px', textAlign: 'center', lineHeight: '1.5',
+              border: sel ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+              background: sel ? 'rgba(193,154,82,.14)' : 'transparent', color: sel ? '#e6c478' : '#a4a9b5'
+            },
+            hintStyle: { display: 'block', fontSize: '8.5px', color: sel ? '#c9a25a' : '#6c7280', letterSpacing: '.02em' }
           };
         });
       })(),
