@@ -6383,7 +6383,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           '• Kredi YALNIZCA işlem BAŞARILI olduğunda düşer. Görsel/seslendirme hata verirse kredi DÜŞMEZ; tekrar denenebilir.\n' +
           '• Görsel üretimi hata verirse sistem otomatik 3 kez dener; yine olmazsa kredi iade/hiç düşülmez — kullanıcı tekrar deneyebilir.\n' +
           '• Dosya üretim maliyeti süreye göre: ~60 sn 35 kredi, 4 dk 80, 8 dk 140, 10 dk 170 kredi (formül: max(30, yuvarla((20+saniye/4)/5)*5)).\n' +
-          '• Görsel: ilk 20 sahne görseli 12 kredi, 21. sahneden itibaren 8 kredi. Seslendirme: her 1000 karakter ~5 kredi (taban 10). Sahne yenileme: 5 kredi.\n' +
+          '• Görsel kredisi MOTORA göre: GPT Image 2 = 20 kredi, GPT Image 1 = 8 kredi, Gemini = 12 kredi. GPT Image 2 zaman aşımında yedeğe (GPT Image 1) düşerse YALNIZ üretilen modelin fiyatı (8) alınır, farkı iade edilir. Seslendirme: her 1000 karakter ~5 kredi (taban 10). Sahne yenileme: 5 kredi.\n' +
+          '• GPT Image 2 yavaşsa/başarısızsa sistem otomatik GPT Image 1 yedeğine düşer (görsel yine gelir) ve kart "GPT Image 2 ile tekrar dene · ücretsiz" sunar. Kullanıcı sorun yaşarsa her görselde "Sorun Bildir" var — bildirim ekibe e-posta olarak düşer, referans kodu (TA-XXXX) verilir.\n' +
           '• Geçmiş (üretilen dosyalar) artık hesaba bağlıdır ve cihazlar arası senkronlanır: aynı hesapla giriş yapıldığında mobilde ve webde üretilenler birlikte görünür. Görünmüyorsa: aynı hesapla giriş yapıldığından ve internetin bağlı olduğundan emin ol, sayfayı yenile.\n' +
           '• "KREDİ GEÇMİŞİ" listesindeki eski kayıtlar bir süre sabit "-100" etiketi gösteriyordu; bu yalnızca ETİKET hatasıydı, gerçekte düşülen tutar yukarıdaki fiyatlardır. Güncellendi.\n' +
           '• Yeni üyelere 30 kredi tanımlanır; AJAN10 kodu ile ilk alışverişte %10 indirim (tek sefer).\n' +
