@@ -1274,10 +1274,13 @@
                     <div style="display: grid; gap: 4px; max-width: 62ch;">
                       <p style="margin: 0; color: #cfc8b4; font-size: 13px; line-height: 1.55;">Seçtiğin platform, oran ve stil tüm sahnelere uygulanır. Sahne bazında istediğin zaman değiştirebilirsin.</p>
                       <p style="margin: 0; color: #676d7c; font-size: 11.5px; line-height: 1.5;">İlk 20 sahne görseli 12 KR, sonrası 8 KR. Üretilenler Görsel Stüdyo rafına eklenir.</p>
+                      <sc-if value="{{ imgGenBlocked }}" hint-placeholder-val="{{ false }}">
+                        <p style="margin: 2px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">⚠ {{ imgValMsg }} Üretim bunu seçmeden başlamaz; kredi harcanmaz.</p>
+                      </sc-if>
                     </div>
                     <span style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <sc-if value="{{ hasPendingScenes }}" hint-placeholder-val="{{ true }}">
-                      <button class="ta-genall" onClick="{{ genAll }}" disabled="{{ batchBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-weight: 800; font-size: 12.5px; letter-spacing: .04em; padding: 11px 18px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
+                      <button class="ta-genall" onClick="{{ genAll }}" disabled="{{ genAllDisabled }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-weight: 800; font-size: 12.5px; letter-spacing: .04em; padding: 11px 18px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
                     </sc-if>
                     <sc-if value="{{ batchPauseBtn }}" hint-placeholder-val="{{ false }}">
                       <button onClick="{{ pauseBatch }}" style="border: 1px solid rgba(230,196,120,.6); cursor: pointer; background: rgba(230,196,120,.1); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="background: rgba(230,196,120,.2);">⏸ DURAKLAT</button>
@@ -1370,6 +1373,9 @@
                         <button onClick="{{ ss.pick }}" style="{{ ss.style }}"><span style="display: block; font-weight: 600; font-size: 13.5px;">{{ ss.label }}</span><span style="display: block; font-size: 11.5px; opacity: .75; margin-top: 2px;">{{ ss.desc }}</span></button>
                       </sc-for>
                     </div>
+                    <sc-if value="{{ styleNeedSub }}" hint-placeholder-val="{{ false }}">
+                      <p style="margin: 4px 0 0; color: #e8a9a9; font-size: 12.5px;">⚠ Bir görsel stil seç — kategori tek başına üretim stili değildir.</p>
+                    </sc-if>
                   </sc-if>
 
                   <div style="border: 1px solid rgba(193,154,82,.55); border-radius: 12px; background: linear-gradient(160deg, rgba(193,154,82,.1), rgba(193,154,82,.02)); padding: 14px 16px; display: grid; gap: 8px; margin-top: 10px;">
@@ -1402,11 +1408,11 @@
                           </div>
                           <span style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                             <sc-if value="{{ ch.img.notDone }}" hint-placeholder-val="{{ true }}">
-                              <button onClick="{{ ch.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer; white-space: nowrap;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ ch.imgBtnLabel }}</button>
+                              <button onClick="{{ ch.makeImg }}" disabled="{{ ch.imgBlocked }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer; white-space: nowrap;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ ch.imgBtnLabel }}</button>
                             </sc-if>
                             <sc-if value="{{ ch.img.done }}" hint-placeholder-val="{{ false }}">
                               <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ · {{ ch.img.count }}</span>
-                              <button onClick="{{ ch.makeImg }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer; white-space: nowrap;" style-hover="background: rgba(193,154,82,.2);">{{ ch.imgRedoLabel }}</button>
+                              <button onClick="{{ ch.makeImg }}" disabled="{{ ch.imgBlocked }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer; white-space: nowrap;" style-hover="background: rgba(193,154,82,.2);">{{ ch.imgRedoLabel }}</button>
                             </sc-if>
                           </span>
                         </div>
@@ -1426,11 +1432,11 @@
                           <span style="font-weight: 700; font-size: 14px; color: #e6c478;">{{ kp.ad }}</span>
                           <span style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                             <sc-if value="{{ kp.img.notDone }}" hint-placeholder-val="{{ true }}">
-                              <button onClick="{{ kp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ kp.imgBtnLabel }}</button>
+                              <button onClick="{{ kp.makeImg }}" disabled="{{ kp.imgBlocked }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ kp.imgBtnLabel }}</button>
                             </sc-if>
                             <sc-if value="{{ kp.img.done }}" hint-placeholder-val="{{ false }}">
                               <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ GÖRSEL HAZIR · {{ kp.img.count }}</span>
-                              <button onClick="{{ kp.makeImg }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ kp.imgRedoLabel }}</button>
+                              <button onClick="{{ kp.makeImg }}" disabled="{{ kp.imgBlocked }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ kp.imgRedoLabel }}</button>
                             </sc-if>
                             <button onClick="{{ kp.copy }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478;">{{ kp.copyLabel }}</button>
                           </span>
@@ -1487,11 +1493,11 @@
                       </div>
                       <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                         <sc-if value="{{ gp.img.notDone }}" hint-placeholder-val="{{ true }}">
-                          <button onClick="{{ gp.makeImg }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ gp.imgCostLabel }}</button>
+                          <button onClick="{{ gp.makeImg }}" disabled="{{ gp.imgBlocked }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ gp.imgCostLabel }}</button>
                         </sc-if>
                         <sc-if value="{{ gp.img.done }}" hint-placeholder-val="{{ false }}">
                           <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ GÖRSEL HAZIR · {{ gp.img.count }}</span>
-                          <button onClick="{{ gp.makeImg }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.imgRedoLabel }}</button>
+                          <button onClick="{{ gp.makeImg }}" disabled="{{ gp.imgBlocked }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.imgRedoLabel }}</button>
                         </sc-if>
                         <span style="position: relative; display: inline-flex;">
                           <button onClick="{{ gp.toggleMenu }}" aria-label="Diğer işlemler" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 12px; font-size: 13px; line-height: 1.2; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">⋯</button>
@@ -2023,8 +2029,10 @@ class Component extends DCLogic {
       editTarget: null, editLabel: '',
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
-      imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, sceneOpts: (w && w.sceneOpts) || {}, imgStyle: null, savedImgs: [], srvImages: [], imgSel: {},
-      imgAspect: null, imgZoom: '',
+      imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, sceneOpts: (w && w.sceneOpts) || {}, savedImgs: [], srvImages: [], imgSel: {},
+      // Panel seçimleri dosyayla geri yüklenir (UI seçimi yenilemede kaybolmaz/geri dönmez)
+      imgStyle: (w && w.imgStyle) || null, imgStyleCat: (w && w.imgStyleCat) || '', imgPlatform: (w && w.imgPlatform) || '',
+      imgAspect: (w && w.imgAspect) || null, imgAspectManual: !!(w && w.imgAspectManual), imgValErr: '', imgZoom: '',
       imgProvider: saved.imgProvider || 'auto',   // görsel motoru: auto (vars. — arayüz kavramı, sunucuya gerçek motor gider) | gpt | gemini | higgs(pasif)
       histTab: 'files',                          // Geçmiş Üretimler sekmesi: files | images | videos
       imgFilter: 'all',                          // Görseller sekmesi filtresi: all | story | standalone
@@ -2182,6 +2190,10 @@ class Component extends DCLogic {
     const work = (s.result && s.mode === 'wizard') ? {
       result: s.result, sceneImgs: s.sceneImgs || {}, sceneOpts: s.sceneOpts || {}, fileNo: s.fileNo, tab: s.tab || 'senaryo',
       idea: s.idea, tone: s.tone, voice: s.voice, style: s.style, aspect: s.aspect,
+      // Panel seçimleri de dosyayla yaşar: yenilemede oran/stil/kategori/platform seçimi
+      // sessizce sihirbaz değerine GERİ DÖNMEZ (UI seçimi = üretim değeri kalıcı).
+      imgAspect: s.imgAspect || null, imgAspectManual: !!s.imgAspectManual,
+      imgStyle: s.imgStyle || null, imgStyleCat: s.imgStyleCat || '', imgPlatform: s.imgPlatform || '',
       duration: s.duration, model: s.model, format: s.format || 'belgesel', sysAudioUrl: s.sysAudioUrl || '', ts: Date.now()
     } : null;
     // Aktif dosyanın görsel/video/ses durumunu kendi geçmiş kaydına da işle → dosyayı
@@ -2911,7 +2923,10 @@ class Component extends DCLogic {
   async imageServer(prompt, arKey, idx, onAttempt, opId, style, provider, sceneKey, kind) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
-    const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey || this.state.aspect] || '16:9';
+    // SESSİZ FALLBACK YOK: bilinmeyen oran anahtarı yataya düşmez — istek hiç atılmaz.
+    // (Eski sabit yatay varsayılanı "9:16 seçtim 16:9 üretildi" hattının istemci ayağıydı.)
+    const aspect = this.AR_MAP()[arKey];
+    if (!aspect) throw new Error('Geçersiz oran seçimi (' + String(arKey || 'boş') + ') — üretim başlatılmadı, kredi düşülmedi.');
     const token = this._token() || SB_KEY;
     // STABİLİZASYON Faz 3 — RETRY FIRTINASI DURDURULDU: istemci ARTIK KENDİ BAŞINA
     // aynı ücretli isteği TEKRAR GÖNDERMEZ. Kontrollü tekrar (429/5xx/ağ) yalnız
@@ -3022,6 +3037,46 @@ class Component extends DCLogic {
     const k = this._provResolve(p);
     return ({ gpt: 'GPT Image 2', gemini: 'Gemini Flash Image' })[k] || 'GPT Image 2';
   }
+
+  // ── TEK KAYNAK: GÖRSEL ÜRETİM AYARI ÇÖZÜMLEYİCİSİ ─────────────────
+  // Bütün üretim yolları (tek sahne, toplu, kapak, portre, serbest stüdyo, sahne
+  // override) ayarları BURADAN okur. Öncelik: sahne ayarı > panel > dosya sihirbazı.
+  // Bilinmeyen oran/stil sessizce varsayılana DÜŞMEZ — valid:false döner ve üretim
+  // hiç başlamaz (istek gönderilmez, kredi düşmez).
+  AR_MAP() { return { yatay: '16:9', dikey: '9:16', kare: '1:1' }; }
+  STYLE_KEYS() { return ['sinematik', 'belgeselfoto', 'hollywood', 'gravur', 'minyatur', 'animasyon']; }
+  STYLE_CAT_OF(k) { return k === 'sinematik' ? 'sinematik' : (k === 'belgeselfoto' || k === 'hollywood') ? 'gercekci' : (k ? 'sanatsal' : ''); }
+  CAT_STYLES(cat) { return ({ sinematik: ['sinematik'], gercekci: ['belgeselfoto', 'hollywood'], sanatsal: ['gravur', 'minyatur', 'animasyon'] })[cat] || []; }
+  resolveImageGenerationSettings(sceneKey, frozen) {
+    const s = this.state;
+    const so = (sceneKey && (s.sceneOpts || {})[sceneKey]) || {};
+    const base = frozen || {};   // toplu üretim: batch başlangıcında dondurulan genel ayarlar
+    const source = (so.ar || so.style || so.prov) ? 'sceneOverride' : 'global';
+    const arKey = so.ar || base.arKey || s.imgAspect || s.aspect || '';
+    const aspectRatio = this.AR_MAP()[arKey] || '';   // '' → geçersiz; sessiz 16:9 yok
+    // STİL: kategori seçilip alt stil seçilmemişse styleId YOKTUR (üretim bloklanır).
+    // Kategori hiç seçilmemişse dosya sihirbazının stili geçerlidir (eski davranış).
+    let styleId = so.style || base.styleId || s.imgStyle || '';
+    if (!styleId) {
+      const cat = s.imgStyleCat || '';
+      styleId = !cat ? (s.style || '') : (cat === 'sinematik' ? 'sinematik' : '');
+    }
+    if (this.STYLE_KEYS().indexOf(styleId) < 0) styleId = '';
+    const provRaw = so.prov || base.provider || s.imgProvider || 'auto';
+    return {
+      platform: s.imgPlatform || '',
+      arKey,
+      aspectRatio,
+      outputSize: aspectRatio,   // sağlayıcı boyutu sunucuda tek merkezden çözülür (OPENAI_SIZE/GEMINI_ASPECT)
+      styleCategory: s.imgStyleCat || this.STYLE_CAT_OF(styleId),
+      styleId,
+      providerMode: String(provRaw).toLowerCase() === 'auto' ? 'auto' : 'manual',
+      resolvedProvider: this._provResolve(provRaw),
+      source,
+      valid: !!(aspectRatio && styleId),
+      err: !aspectRatio ? 'Geçerli bir oran seç (9:16 · 1:1 · 16:9).' : (!styleId ? 'Bir görsel stil seç.' : '')
+    };
+  }
   // KART META (teknik şeffaflık): sunucudan gelen meta'yı kartta gösterilecek
   // etiket/değer satırlarına çevirir. Boş alanlar gizlenir.
   // MODEL adını kullanıcı-dostu göster (teknik id/provider string gösterme):
@@ -3085,11 +3140,13 @@ class Component extends DCLogic {
   // Kadraj yardımcıları — seçilen orana göre prompttaki çelişen oran ifadesini
   // temizler ve doğru oranı ekler; böylece 9:16 / 16:9 / 1:1 gerçekten uygulanır.
   aspectPhrase(arKey) {
+    // Sessiz 16:9 varsayılanı KALDIRILDI: bilinmeyen anahtar boş döner; üretim yolu
+    // zaten resolveImageGenerationSettings ile geçersiz oranı üretime sokmaz.
     return {
       yatay: 'wide 16:9 horizontal cinematic framing, full-bleed landscape composition',
       dikey: 'vertical 9:16 full-frame composition, tall portrait orientation for mobile shorts',
       kare: 'square 1:1 centered composition'
-    }[arKey] || 'wide 16:9 horizontal cinematic framing';
+    }[arKey] || '';
   }
   stripAspect(p) {
     return String(p || '')
@@ -3107,7 +3164,8 @@ class Component extends DCLogic {
     const clean = this.stripAspect(p).replace(/[.,\s]+$/, '');
     // STİL ARTIK SUNUCUDA MERKEZİ (styleTemplate) — istemci prompt'a stil BAKMAZ ki
     // stiller birbirine karışmasın ve seçilen stil tek kaynaktan uygulansın.
-    return (clean ? clean + '. ' : '') + this.aspectPhrase(arKey) + '.';
+    const ph = this.aspectPhrase(arKey);
+    return (clean ? clean + '. ' : '') + (ph ? ph + '.' : '');
   }
   // Promise döndürür (toplu üretim kuyruğu bunun üstüne kurulu); sceneKey verilirse
   // üretilen görsel sahne kartında satır içi gösterilir.
@@ -3119,11 +3177,20 @@ class Component extends DCLogic {
     if (!prompt) return Promise.resolve({ ok: false, err: 'boş prompt' });
     const cost = this.IMG_COST(idx);
     if (this.state.credits < cost) { this.setState({ creditModal: true }); return Promise.resolve({ ok: false, err: 'YETERSIZ_KREDI' }); }
-    // Dosyaya ait üretim (sahne/kapak/karakter) DOSYA oranını kullanır (arOverride);
-    // yalnız serbest Görsel Stüdyo kuyruğu panel kadrajını (imgAspect) kullanır.
-    const ar = arOverride || this.state.imgAspect || this.state.aspect;
-    const sty = styleOverride || this.state.imgStyle || this.state.style;    // sahne override > panel > sihirbaz
-    const prov = this._provResolve(providerOverride || this.state.imgProvider);   // batch'te sabit; 'auto' asla sunucuya gitmez
+    // TEK KAPI: ayarlar merkezi çözümleyiciden gelir (sahne ayarı > panel > dosya).
+    // Toplu üretim, batch başında dondurduğu değerleri override olarak geçirir.
+    const gen = this.resolveImageGenerationSettings(sceneKey, {
+      arKey: arOverride || undefined, styleId: styleOverride || undefined, provider: providerOverride || undefined
+    });
+    // ÜRETİM KAPISI: geçersiz oran ya da seçilmemiş stil → istek HİÇ atılmaz, kredi düşmez.
+    if (!gen.valid) {
+      this.setState({ imgValErr: gen.err });
+      return Promise.resolve({ ok: false, err: gen.err });
+    }
+    if (this.state.imgValErr) this.setState({ imgValErr: '' });
+    const ar = gen.arKey;
+    const sty = gen.styleId;
+    const prov = gen.resolvedProvider;   // 'auto' asla sunucuya gitmez
     const sendPrompt = this.withAspect(prompt, ar);         // kadraj prompta yerleşir; STİL sunucuya anahtar olarak gider
     const id = opIdOverride || ('img' + Date.now() + Math.floor(Math.random() * 1000));
     // ARŞİV TÜRÜ: kapak → cover, sahne (gp3 gibi) → scene, serbest görsel → standalone (Bağımsız)
@@ -3253,8 +3320,9 @@ class Component extends DCLogic {
       const opId = (b.id + sc.key).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 60);   // KARARLI opId
       this._batchStarts[sc.key] = Date.now();
       try {
-        const so = (this.state.sceneOpts || {})[sc.key] || {};   // Sahne Ayarları toplu üretimde de geçerli
-        const r = await this.makeImage(sc.prompt, sc.idx, sc.key, (so.ar || b.aspect), opId, this._provResolve(so.prov || provider), (so.style || undefined));
+        // Batch başında dondurulan genel ayarlar override olarak geçer; sahne ayarı
+        // (sceneOpts) resolveImageGenerationSettings içinde yine ÖNCELİKLİDİR.
+        const r = await this.makeImage(sc.prompt, sc.idx, sc.key, b.aspect, opId, this._provResolve(provider), (b.style || undefined));
         if (r && r.ok) {
           const dt = Date.now() - (this._batchStarts[sc.key] || Date.now());
           this._batchDur.push(dt); if (this._batchDur.length > 20) this._batchDur.shift();   // ort. süre penceresi
@@ -3284,15 +3352,19 @@ class Component extends DCLogic {
       .map((x, i) => ({ x, i, key: 'gp' + i }))
       .filter(it => it.x && it.x.prompt && !(((s.sceneImgs || {})[it.key]) || {}).done);
     if (!pending.length) return;
+    // ÜRETİM KAPISI: genel ayarlar geçerli değilse (ör. kategori seçilip alt stil
+    // seçilmemişse) toplu üretim HİÇ başlamaz — istek yok, rezervasyon yok.
+    const gen = this.resolveImageGenerationSettings('');
+    if (!gen.valid) { this.setState({ imgValErr: gen.err }); return; }
     const est = await this._estimateCost(pending.map(it => it.i));   // SUNUCU onaylı toplam
     const total = est ? est.total : pending.reduce((a, it) => a + this.IMG_COST(it.i), 0);
     if (!window.confirm(pending.length + ' sahne üretilecek · toplam ~' + total + ' KR' + (est ? ' (sunucu onaylı)' : '') + '.\nAynı anda en fazla 2 sahne üretilir. Hata veren sahnenin kredisi iade edilir; istediğin an DURAKLAT/İPTAL. Devam?')) return;
     const batchId = ('b' + (s.fileNo || '') + Date.now().toString(36)).replace(/[^a-zA-Z0-9_-]/g, '');
-    const provider = this._provResolve(s.imgProvider);
+    const provider = gen.resolvedProvider;
     const perMap = {};
     if (est && Array.isArray(est.per)) pending.forEach((it, k) => { perMap[it.key] = est.per[k]; });   // sahne başına sunucu maliyeti
     const batch = {
-      id: batchId, provider, aspect: (s.imgAspect || s.aspect),   // ekranda seçili etkin oran (9:16 seçiliyken 16:9 üretme hatasının düzeltmesi)
+      id: batchId, provider, aspect: gen.arKey, style: gen.styleId,   // batch başında DONDURULAN genel ayarlar (ekrandaki etkin seçim)
       scenes: pending.map(it => ({ key: it.key, idx: it.i, prompt: it.x.prompt, status: 'queued', err: '', cost: (perMap[it.key] != null ? perMap[it.key] : this.IMG_COST(it.i)) })),
       stopped: false, paused: false, done: false, startedAt: Date.now(), finishedAt: 0
     };
@@ -3607,12 +3679,13 @@ class Component extends DCLogic {
   async editServer(imageUri, prompt, arKey) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
-    const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[arKey] || '16:9';
+    // Sessiz 16:9 yok: oran kayıtta yoksa size gönderilmez (düzenleme orijinal kadrajı korur).
+    const aspect = this.AR_MAP()[arKey] || '';
     const token = this._token() || SB_KEY;
     const r = await fetch(SB_URL + '/functions/v1/studio-generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ action: 'edit', image: imageUri, prompt, size: aspect })
+      body: JSON.stringify({ action: 'edit', image: imageUri, prompt, size: aspect || undefined })
     });
     const data = await r.json().catch(() => ({ ok: false, error: 'yanıt okunamadı' }));
     if (r.status === 402) { if (typeof data.credits === 'number') this.setState({ credits: data.credits }); throw new Error('YETERSIZ_KREDI'); }
@@ -3666,10 +3739,9 @@ class Component extends DCLogic {
     this.setState({ imgPrompt: prompt });               // Görsel Stüdyo bu sahnenin hikâyesini tutsun
     this.setSceneImg(key, { busy: true });              // buton anında ÜRETİLİYOR'a döner
     // "Üretildi" işareti yalnız GERÇEK başarıda konur (eskiden hata da ✓ görünüyordu)
-    // ORAN/STİL/MOTOR ÖNCELİĞİ: Sahne Ayarları (override) > ekranda seçili genel > dosya.
-    // (9:16 seçiliyken 16:9 üretme hatasının düzeltmesi korunur.)
-    const so = (this.state.sceneOpts || {})[key] || {};
-    this.makeImage(prompt, idx, key, (so.ar || this.state.imgAspect || this.state.aspect), undefined, (so.prov || undefined), (so.style || undefined)).then(r => {
+    // ORAN/STİL/MOTOR tek kaynaktan: makeImage içindeki resolveImageGenerationSettings
+    // sahne ayarı > panel > dosya önceliğini uygular (9:16→16:9 düzeltmesi orada korunur).
+    this.makeImage(prompt, idx, key).then(r => {
       const ok = !!(r && r.ok);
       const si = (this.state.sceneImgs || {})[key] || {};
       this.setSceneImg(key, ok ? { busy: false, done: true, count: (si.count || 0) + 1 } : { busy: false });
@@ -3716,7 +3788,13 @@ class Component extends DCLogic {
       makeGrok: () => this.makeVideo(key, url, 'grok'),
       makeKling: () => this.makeVideo(key, url, 'kling'),
       zoom: () => this.openZoom(url),
-      thumbStyle: { ...this.thumbBox(this.state.aspect), marginTop: '4px' },
+      // Küçük görünüm kutusu GÖRSELİN KENDİ oranında çizilir (dosya sihirbazının
+      // oranında değil) — 9:16 üretilmiş sahne 16:9 kutuda yamuk görünmesin.
+      thumbStyle: { ...this.thumbBox(
+        ({ '16:9': 'yatay', '9:16': 'dikey', '1:1': 'kare' })[String(((si && si.meta) || {}).aspect || '')]
+        || this.resolveImageGenerationSettings(key).arKey
+        || this.state.aspect
+      ), marginTop: '4px' },
       goStudio: () => this.goImgStudio()
     };
   }
@@ -3752,7 +3830,12 @@ class Component extends DCLogic {
       const vp = r.video_promptlar || [], gp = r.gorsel_promptlar || [];
       prompt = (vp[i] && vp[i].prompt) || (gp[i] && gp[i].prompt) || '';
     }
-    const aspect = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[this.state.aspect] || '9:16';
+    // VİDEO ORANI = GÖRSELİN KENDİ KAYDI: sahne görseli hangi oranda üretildiyse video
+    // o oranda istenir (dosya sihirbazının oranı DEĞİL — override'lı sahnede yanlıştı).
+    const recAr = String(((si.meta || {}).aspect) || '');
+    const aspect = (recAr === '9:16' || recAr === '16:9' || recAr === '1:1')
+      ? recAr
+      : (this.AR_MAP()[this.resolveImageGenerationSettings(key).arKey] || '9:16');
     const label = prov === 'kling' ? 'Kling' : 'Grok';
     this.setSceneImg(key, { vidBusy: true, vidMenuOpen: false, vidStatus: '🎬 ' + label + ' GÖNDERİLİYOR…' });
     this.videoServer(imageUrl, prompt, aspect, prov, vsec).then(job => {
@@ -5046,7 +5129,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const cur = s.imgPlatform === id;
         return {
           label, sub,
-          pick: () => this.setState({ imgPlatform: id, imgAspect: sug, imgAspectManual: false, imgOranOpen: false }),
+          pick: () => this.setState({ imgPlatform: id, imgAspect: sug, imgAspectManual: false, imgOranOpen: false }, () => this.persist()),
           style: {
             cursor: 'pointer', textAlign: 'left', minWidth: '150px', borderRadius: '12px',
             padding: '12px 14px', border: cur ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.28)',
@@ -5071,10 +5154,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           const cur = (s.imgStyleCat || catOf(eff)) === id;
           return {
             label, desc,
-            // Sinematik doğrudan stili seçer (alt adım yok); diğerleri alt kartları açar
+            // Sinematik doğrudan stili seçer (alt adım yok); diğerleri alt kartları açar.
+            // KATEGORİ DEĞİŞİNCE önceki kategoriye ait styleId TEMİZLENİR — Hollywood
+            // seçiliyken Sanatsal'a geçince Hollywood sessizce üretime gidemez.
             pick: id === 'sinematik'
-              ? (() => this.setState({ imgStyle: 'sinematik', imgStyleCat: '' }))
-              : (() => this.setState({ imgStyleCat: id })),
+              ? (() => this.setState({ imgStyle: 'sinematik', imgStyleCat: '' }, () => this.persist()))
+              : (() => this.setState(st => ({
+                  imgStyleCat: id,
+                  imgStyle: this.STYLE_CAT_OF(st.imgStyle || '') === id ? st.imgStyle : null
+                }), () => this.persist())),
             style: {
               cursor: 'pointer', textAlign: 'left', flex: '1 1 220px', maxWidth: '300px', borderRadius: '12px',
               padding: '13px 15px', border: cur ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.28)',
@@ -5085,20 +5173,23 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         });
       })(),
       ...(() => {
-        const eff = s.imgStyle || s.style;
-        const catOf = (k) => k === 'sinematik' ? 'sinematik' : (k === 'belgeselfoto' || k === 'hollywood') ? 'gercekci' : 'sanatsal';
-        const open = s.imgStyleCat || (catOf(eff) !== 'sinematik' ? catOf(eff) : '');
+        // GERÇEK üretim stili merkezi çözümleyiciden okunur: kategori seçilip alt stil
+        // seçilmediyse styleId BOŞTUR → hiçbir alt kart vurgulanmaz, uyarı görünür,
+        // üretim butonları kilitlenir (kategori ≠ üretim stili).
+        const gen0 = this.resolveImageGenerationSettings('');
+        const open = s.imgStyleCat || (this.STYLE_CAT_OF(gen0.styleId) !== 'sinematik' ? this.STYLE_CAT_OF(gen0.styleId) : '');
         const SUBS = {
           gercekci: [['belgeselfoto', 'Belgesel', 'Doğal ışık, saha fotoğrafı'], ['hollywood', 'Hollywood Foto-gerçekçi', 'Sinema kamerası, ultra gerçekçi']],
           sanatsal: [['gravur', 'Gravür', 'Oyma baskı, yaşlı kâğıt'], ['minyatur', 'Osmanlı Minyatürü', 'Düz perspektif, altın bezeme'], ['animasyon', 'Animasyon', 'Çizim / illüstrasyon dili']]
         };
         return {
           styleSubOpen: !!(open && SUBS[open]),
+          styleNeedSub: !!(open && SUBS[open] && !gen0.styleId),   // kategori açık ama alt stil yok
           styleSubs: (SUBS[open] || []).map(([k, label, desc]) => {
-            const cur = eff === k;
+            const cur = gen0.styleId === k;
             return {
               label, desc,
-              pick: () => this.setState({ imgStyle: k }),
+              pick: () => this.setState({ imgStyle: k, imgValErr: '' }, () => this.persist()),
               style: {
                 cursor: 'pointer', textAlign: 'left', minWidth: '170px', borderRadius: '11px',
                 padding: '11px 13px', border: cur ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.28)',
@@ -5111,11 +5202,14 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       })(),
       // SEÇİMİN özeti + motor satırı (motor yalnız "Değiştir" ile açılır)
       secimOzet: (() => {
+        const gen0 = this.resolveImageGenerationSettings('');
         const platNm = { reels: 'Reels / Story', shorts: 'YouTube Shorts', tiktok: 'TikTok', igpost: 'Instagram Gönderisi', youtube: 'YouTube', kare11: 'Kare İçerik' }[s.imgPlatform] || '';
-        const arLbl = { yatay: '16:9', dikey: '9:16', kare: '1:1' }[s.imgAspect || s.aspect] || '';
-        const stLbl = { sinematik: 'Sinematik', belgeselfoto: 'Belgesel', hollywood: 'Hollywood Foto-gerçekçi', gravur: 'Gravür', minyatur: 'Osmanlı Minyatürü', animasyon: 'Animasyon' }[s.imgStyle || s.style] || '';
-        return [platNm, arLbl, stLbl].filter(Boolean).join(' · ');
+        const stLbl = { sinematik: 'Sinematik', belgeselfoto: 'Belgesel', hollywood: 'Hollywood Foto-gerçekçi', gravur: 'Gravür', minyatur: 'Osmanlı Minyatürü', animasyon: 'Animasyon' }[gen0.styleId] || '⚠ stil seçilmedi';
+        return [platNm, gen0.aspectRatio, stLbl].filter(Boolean).join(' · ');
       })(),
+      // ÜRETİM KAPISI görünürlüğü: geçersiz ayar varsa CTA/butonlar kilitli + tek net mesaj
+      imgGenBlocked: !this.resolveImageGenerationSettings('').valid,
+      imgValMsg: s.imgValErr || this.resolveImageGenerationSettings('').err || '',
       motorAd: this._provIsAuto() ? 'Otomatik' : this._provNm(),
       motorSub: this._provIsAuto() ? ('Bu üretim için ' + this._provModelLabel() + ' seçilecek.') : (this._provModelLabel() + ' · elle seçildi'),
       motorOpen: !!s.imgMotorOpen,
@@ -5125,7 +5219,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const eff = s.imgAspect || s.aspect;
         return {
           label: { yatay: 'YATAY 16:9', dikey: 'DİKEY 9:16', kare: 'KARE 1:1' }[k],
-          pick: () => this.setState({ imgAspect: k, imgAspectManual: true }),
+          pick: () => this.setState({ imgAspect: k, imgAspectManual: true }, () => this.persist()),
           style: {
             cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em',
             padding: '8px 12px', border: eff === k ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
@@ -5140,7 +5234,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const effS = s.imgStyle || s.style;   // stil seçilmediyse sihirbazda seçilen stil görünür
         return {
           label,
-          pick: () => this.setState({ imgStyle: k }),
+          pick: () => this.setState({ imgStyle: k, imgValErr: '' }, () => this.persist()),
           style: {
             cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em',
             padding: '8px 12px', border: effS === k ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
@@ -5395,6 +5489,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           ...x,
           makeImg: () => this.makeSceneImg('kp' + i, x.prompt),
           imgBtnLabel: kbusy ? '⟳ ÜRETİLİYOR…' : '◈ GÖRSEL ÜRET · 12 KR',
+          imgBlocked: kbusy || !this.resolveImageGenerationSettings('kp' + i).valid,
           imgRedoLabel: kbusy ? '⟳ ÜRETİLİYOR…' : '↻ TEKRAR ÜRET · 12 KR',
           img: this.sceneImgView('kp' + i)
         };
@@ -5406,6 +5501,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           ad: k.ad, gorunum: k.gorunum || '',
           makeImg: () => this.makeSceneImg('ch' + i, cp),
           imgBtnLabel: cbusy ? '⟳ ÜRETİLİYOR…' : '◈ PORTRE ÜRET · 12 KR',
+          imgBlocked: cbusy || !this.resolveImageGenerationSettings('ch' + i).valid,
           imgRedoLabel: cbusy ? '⟳ ÜRETİLİYOR…' : '↻ TEKRAR · 12 KR',
           img: this.sceneImgView('ch' + i)
         };
@@ -5490,6 +5586,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       cancelBatch: () => this.cancelBatch(),
       closeBatchSummary: () => this.closeBatchSummary(),
       batchBusy: !!s.batchRunning,
+      // CTA kilidi: motor çalışıyorken VEYA ayarlar geçersizken (ör. alt stil seçilmedi)
+      genAllDisabled: !!s.batchRunning || !this.resolveImageGenerationSettings('').valid,
       batchRunning: !!s.batchRunning,
       // ANA CTA (Freeze v1): "Tüm Görselleri Üret · N sahne · X KR" — kredi GERÇEK
       // kademeli tarifeden (IMG_COST, sunucu costFor ile aynı formül); tahmin yok.
@@ -5724,6 +5822,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       regenLabel: busy ? '⟳ Prompt yenileniyor…' : '↻ Promptu Ajanla Yenile · 5 KR',
       imgCostLabel: ibusy ? '⟳ ÜRETİLİYOR…' : ('◈ GÖRSEL ÜRET · ' + cost + ' KR'),
       imgRedoLabel: ibusy ? '⟳ ÜRETİLİYOR…' : ('↻ YENİDEN ÜRET · ' + cost + ' KR'),
+      // ÜRETİM KAPISI (sahne bazında): bu sahnenin çözümlenen ayarı geçersizse buton kilitli
+      imgBlocked: ibusy || !this.resolveImageGenerationSettings(kind + i).valid,
       // Görseli SATIR İÇİNDE üret — sekme değişmez, sahnede kalırsın (kind==='gp' için)
       makeImg: () => this.makeSceneImg(kind + i, x.prompt, idx),
       img: this.sceneImgView(kind + i)
