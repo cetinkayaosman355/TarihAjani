@@ -726,20 +726,37 @@
                   <p style="margin: 0; color: #8a8f9c; font-size: 13.5px; line-height: 1.7; max-width: 46ch;">Bir sahne ya da galeri görselinden <strong style="color: #c19a52;">Video Üret</strong> aksiyonuyla video oluşturduğunda burada listelenir.</p>
                 </div>
               </sc-if>
+              <sc-if value="{{ histVideosAny }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+                  <sc-for list="{{ vidFilterChips }}" as="vf" hint-placeholder-count="3">
+                    <button onClick="{{ vf.pick }}" style="{{ vf.style }}">{{ vf.label }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noFilteredVideos }}" hint-placeholder-val="{{ false }}">
+                <div style="border: 1px dashed rgba(193,154,82,.3); background: rgba(193,154,82,.04); padding: 30px; text-align: center; color: #8a8f9c; font-size: 13px;">Bu filtrede video yok. Başka bir filtre seç.</div>
+              </sc-if>
               <sc-if value="{{ hasHistVideos }}" hint-placeholder-val="{{ false }}">
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;">
                   <sc-for list="{{ histVideos }}" as="vd" hint-placeholder-count="2">
-                    <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; overflow: hidden; display: flex; flex-direction: column; position: relative;">
+                      <sc-if value="{{ vd.belgesel }}" hint-placeholder-val="{{ false }}">
+                        <span style="position: absolute; left: 8px; top: 8px; z-index: 2; font-family: 'Special Elite', monospace; font-size: 8px; letter-spacing: .1em; color: #c4b3ff; background: rgba(10,8,20,.72); border: 1px solid rgba(183,155,255,.4); border-radius: 20px; padding: 3px 9px;">BELGESEL</span>
+                      </sc-if>
+                      <button onClick="{{ vd.favToggle }}" title="{{ vd.favTitle }}" aria-label="{{ vd.favTitle }}" style="position: absolute; right: 8px; top: 8px; z-index: 2; border: 1px solid rgba(193,154,82,.4); background: rgba(10,8,20,.7); color: #e6c478; border-radius: 6px; padding: 3px 8px; font-size: 13px; cursor: pointer; line-height: 1;">{{ vd.favIcon }}</button>
                       <video src="{{ vd.vidUrl }}" poster="{{ vd.poster }}" controls playsinline preload="metadata" style="{{ vd.thumbStyle }}"></video>
                       <div style="padding: 13px 15px; display: grid; gap: 5px;">
                         <strong style="color: #f2ecd9; font-size: 13.5px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ vd.title }}</strong>
                         <sc-if value="{{ vd.hasMeta }}" hint-placeholder-val="{{ false }}">
-                          <span style="color: #a77dff; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .05em;">🎬 {{ vd.metaLabel }}</span>
+                          <span style="color: #a77dff; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .05em;">{{ vd.metaLabel }}</span>
                         </sc-if>
                         <p style="margin: 0; color: #818797; font-size: 11.5px;">{{ vd.date }}</p>
                         <div style="display: flex; gap: 8px; margin-top: 4px;">
-                          <button onClick="{{ vd.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR (MP4)</button>
+                          <button onClick="{{ vd.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
                           <button onClick="{{ vd.openTab }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px 10px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">↗ AÇ</button>
+                          <sc-if value="{{ vd.canDel }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ vd.del }}" title="Sil" aria-label="Sil" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; font-size: 12px; padding: 8px 9px; cursor: pointer;" style-hover="color: #e08a80; border-color: rgba(192,57,43,.5);">🗑</button>
+                          </sc-if>
                         </div>
                       </div>
                     </div>
@@ -2314,7 +2331,7 @@ class Component extends DCLogic {
       doc: null, docPage: 0, arsivEk: [],
       shortBusy: false, suggestBusy: false,
       reportBusy: false, reportRef: '', reportCtx: null,   // sorun bildirimi durumu (kayıt + mail) + ajan jest bağlamı
-      imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, sceneOpts: (w && w.sceneOpts) || {}, promptHist: (w && w.promptHist) || {}, savedImgs: [], srvImages: [], imgSel: {},
+      imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, sceneOpts: (w && w.sceneOpts) || {}, promptHist: (w && w.promptHist) || {}, savedImgs: [], srvImages: [], belgeselVids: [], vidFilter: 'all', imgSel: {},
       // Panel seçimleri dosyayla geri yüklenir (UI seçimi yenilemede kaybolmaz/geri dönmez)
       imgStyle: (w && w.imgStyle) || null, imgStyleCat: (w && w.imgStyleCat) || '', imgPlatform: (w && w.imgPlatform) || '',
       imgAspect: (w && w.imgAspect) || null, imgAspectManual: !!(w && w.imgAspectManual), imgValErr: '', imgZoom: '',
@@ -3924,8 +3941,42 @@ class Component extends DCLogic {
       const db = await this._openImgDB();
       const all = await new Promise((res) => { const rq = db.transaction('imgs', 'readonly').objectStore('imgs').getAll(); rq.onsuccess = () => res(rq.result || []); rq.onerror = () => res([]); });
       all.sort((a, b) => (b.ts || 0) - (a.ts || 0));
-      this.setState({ savedImgs: all.slice(0, 120) });
+      // Belgesel kayıtları (gerçek Blob) ayrı: her açılışta taze objectURL üret → Videolarım'da kalıcı
+      const belg = all.filter(r => r && r.belgesel && r.blob).map(r => { try { return { ...r, vidUrl: URL.createObjectURL(r.blob) }; } catch (e) { return null; } }).filter(Boolean);
+      const imgs = all.filter(r => r && !r.belgesel);
+      this.setState({ savedImgs: imgs.slice(0, 120), belgeselVids: belg.slice(0, 60) });
     } catch (e) {}
+  }
+  // BELGESEL kalıcı kayıt: Blob'u IndexedDB'ye yaz (ücretsiz, cihaz-yerel, yenilemede durur).
+  async _saveBelgesel(blob, ar, story) {
+    if (!blob) return;
+    try {
+      const rec = { id: 'belg_' + Date.now() + '_' + Math.floor(Math.random() * 1000), belgesel: true, blob, ar: ar || '', story: story || 'Belgesel', ts: Date.now(), fav: false };
+      const db = await this._openImgDB();
+      await new Promise((res) => { const tx = db.transaction('imgs', 'readwrite'); tx.objectStore('imgs').put(rec); tx.oncomplete = res; tx.onerror = res; });
+      const vidUrl = URL.createObjectURL(blob);
+      this.setState(st => ({ belgeselVids: [{ ...rec, vidUrl }, ...(st.belgeselVids || [])].slice(0, 60) }));
+    } catch (e) { /* kota/erişim hatası sessiz */ }
+  }
+  // BELGESEL favori (yerel): IndexedDB kaydını ve durumu günceller.
+  async _belgFav(id) {
+    const cur = (this.state.belgeselVids || []).find(x => x && x.id === id);
+    if (!cur) return;
+    const nf = !cur.fav;
+    this.setState(st => ({ belgeselVids: (st.belgeselVids || []).map(x => x.id === id ? { ...x, fav: nf } : x) }));
+    try {
+      const db = await this._openImgDB();
+      await new Promise((res) => {
+        const tx = db.transaction('imgs', 'readwrite'); const store = tx.objectStore('imgs');
+        const g = store.get(id); g.onsuccess = () => { const r = g.result; if (r) { r.fav = nf; store.put(r); } }; tx.oncomplete = res; tx.onerror = res;
+      });
+    } catch (e) {}
+  }
+  // BELGESEL sil (yerel kayıt): IndexedDB + görünümden kaldır.
+  async _belgDel(id) {
+    if (!window.confirm('Bu belgesel videoyu cihazından sil?')) return;
+    this.setState(st => ({ belgeselVids: (st.belgeselVids || []).filter(x => x.id !== id) }));
+    try { const db = await this._openImgDB(); await new Promise((res) => { const tx = db.transaction('imgs', 'readwrite'); tx.objectStore('imgs').delete(id); tx.oncomplete = res; tx.onerror = res; }); } catch (e) {}
   }
   // ── HESABA BAĞLI kalıcı arşiv (studio_images) — cihazlar arası ──
   // Sunucudaki (RLS ile KENDİ) görselleri çeker; galeri/geçmiş bunlarla beslenir.
@@ -4080,15 +4131,30 @@ class Component extends DCLogic {
       };
     });
   }
-  // VİDEOLAR sekmesi — üretilmiş videolar (galeri kayıtlarında vidUrl). Yeni backend yok.
+  // VİDEOLAR sekmesi — Belgesel (yerel, kalıcı) + sahne/galeri videoları. Filtre: tümü/belgesel/favori.
   _histVideoCards() {
-    return this._galleryItems().filter(x => x && x.vidUrl).slice(0, 120).map(x => ({
+    const filt = this.state.vidFilter || 'all';
+    // 1) Belgesel videoları (IndexedDB Blob → objectURL); en üstte, "Belgesel" rozetli
+    const belg = (this.state.belgeselVids || []).map(x => ({
+      vidUrl: x.vidUrl, thumbStyle: this.thumbBox(x.ar), poster: '',
+      title: x.story || 'Belgesel', metaLabel: '🎞 Belgesel · Ken Burns', hasMeta: true,
+      belgesel: true, fav: !!x.fav, favIcon: x.fav ? '★' : '☆', favTitle: x.fav ? 'Favoriden çıkar' : 'Favorilere ekle',
+      favToggle: () => this._belgFav(x.id), canDel: true, del: () => this._belgDel(x.id),
+      date: this._fmtDate(x.ts), dl: () => this.dlVideo(x.vidUrl), openTab: () => window.open(x.vidUrl, '_blank')
+    }));
+    // 2) Sahne/galeri videoları
+    const gal = this._galleryItems().filter(x => x && x.vidUrl).slice(0, 120).map(x => ({
       vidUrl: x.vidUrl, thumbStyle: this.thumbBox(x.ar), poster: this._dispSrc(x.url || '', 400),
       title: x.story || (x.prompt ? String(x.prompt).slice(0, 44) : 'Video'),
       metaLabel: this._vidMetaLabel(x.vidMeta), hasMeta: !!this._vidMetaLabel(x.vidMeta),
-      date: this._fmtDate(x.ts), dl: () => this.dlVideo(x.vidUrl),
-      openTab: () => window.open(x.vidUrl, '_blank')
+      belgesel: false, fav: !!x.fav, favIcon: x.fav ? '★' : '☆', favTitle: x.fav ? 'Favoriden çıkar' : 'Favorilere ekle',
+      favToggle: () => (x.opId ? this._imgFlag(x.opId, { is_favorite: !x.fav }) : null), canDel: false, del: () => {},
+      date: this._fmtDate(x.ts), dl: () => this.dlVideo(x.vidUrl), openTab: () => window.open(x.vidUrl, '_blank')
     }));
+    let all = [...belg, ...gal];
+    if (filt === 'belgesel') all = all.filter(v => v.belgesel);
+    else if (filt === 'fav') all = all.filter(v => v.fav);
+    return all;
   }
   // SESLERİM sekmesi — MEVCUT seslendirmeler (dosya geçmişindeki audioUrl). Yeni backend/
   // tablo YOK; yalnız var olan veriden gösterim. Veri yoksa premium boş durum.
@@ -4763,6 +4829,8 @@ class Component extends DCLogic {
         if (job) { try { await this._belgeselCharge('finalize', { job }); } catch (er) {} }   // ücret kesinleşir
         const url = URL.createObjectURL(blob);
         this.setState({ docBusy: false, docPct: 100, docMsg: '', docUrl: url });
+        // KALICI KAYIT: belgeseli IndexedDB'ye Blob olarak yaz → yenilemede Videolarım'da durur
+        try { this._saveBelgesel(blob, this.state.aspect, ((this.state.result || {}).baslik) || ''); } catch (er) {}
       })
       .catch(async e => {
         // Render başarısız → montaj ücretini İADE et (seslendirme ayrı düşer)
@@ -6030,7 +6098,21 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       histImagesEmpty: this._histImageCards().length === 0,
       histVideos: this._histVideoCards(),
       hasHistVideos: this._histVideoCards().length > 0,
-      noHistVideos: this._histVideoCards().length === 0,
+      noHistVideos: ((s.belgeselVids || []).length + this._galleryItems().filter(x => x && x.vidUrl).length) === 0,
+      // Videolarım filtresi: Tümü / Belgesel / Favoriler
+      histVideosAny: ((s.belgeselVids || []).length + this._galleryItems().filter(x => x && x.vidUrl).length) > 0,
+      noFilteredVideos: (((s.belgeselVids || []).length + this._galleryItems().filter(x => x && x.vidUrl).length) > 0) && this._histVideoCards().length === 0,
+      vidFilterChips: (() => {
+        const cur = s.vidFilter || 'all';
+        return [['all', 'Tümü'], ['belgesel', '🎞 Belgesel'], ['fav', '★ Favoriler']].map(([id, label]) => ({
+          label, pick: () => this.setState({ vidFilter: id }),
+          style: {
+            cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em', padding: '7px 14px', borderRadius: '6px',
+            border: cur === id ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
+            background: cur === id ? 'rgba(193,154,82,.14)' : 'transparent', color: cur === id ? '#e6c478' : '#a4a9b5'
+          }
+        }));
+      })(),
       histSounds: this._histSoundCards(),
       hasHistSounds: this._histSoundCards().length > 0,
       noHistSounds: this._histSoundCards().length === 0,
