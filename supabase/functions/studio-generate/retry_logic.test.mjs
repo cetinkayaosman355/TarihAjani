@@ -289,7 +289,7 @@ test("index.ts: provider=gemini iken OpenAI OTOMATİK ÇAĞRILMAZ (erken return)
 test("index.ts: ortak orchestrator + Faz 3 değişmezleri korunur", () => {
   assert.ok(indexSrc.includes("async function runImageChain("), "ortak orchestrator olmalı");
   assert.ok(indexSrc.includes("const MAX_CALLS = 3;"), "MUTLAK çağrı tavanı 3 korunmalı");
-  assert.ok(indexSrc.includes('runImageChain(chain, "openai"'), "OpenAI yolu da ortak orchestrator'ı kullanmalı");
+  assert.ok(indexSrc.includes('runImageChain(useChain, "openai"'), "OpenAI yolu da ortak orchestrator'ı kullanmalı (useChain: elle model seçimi/zincir)");
 });
 
 test("Studio.dc.html: toplu sahne üretimi KONTROLLÜ KUYRUK (concurrency 2)", () => {

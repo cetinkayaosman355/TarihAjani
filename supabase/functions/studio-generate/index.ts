@@ -394,7 +394,7 @@ async function runImageChain(
   chain: string[],
   provider: string,
   opId: string | undefined,
-  diag: { d: string; cls?: string; model?: string; provider?: string } | undefined,
+  diag: { d: string; cls?: string; model?: string; provider?: string; reqModel?: string } | undefined,
   callOnce: (model: string, isPrimary: boolean, timeoutMs: number) => Promise<ImgCall>,
 ): Promise<string> {
   const MAX_CALLS = 3;
@@ -469,7 +469,7 @@ async function runImageChain(
 // Her iki yol da AYNI ortak orchestrator'ı (runImageChain) kullanır → Faz 3
 // değişmezleri (max 3 çağrı, geçici retry, hata sınıflandırma, opId log) korunur.
 // diag: başarısızlıkta SON gerçek sebep (model + sınıf) + sınıf kodu buraya yazılır.
-async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string; model?: string; provider?: string }, opId?: string, providerOverride?: string, style?: string): Promise<string> {
+async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string; model?: string; provider?: string; reqModel?: string }, opId?: string, providerOverride?: string, style?: string, modelOverride?: string): Promise<string> {
   if (!prompt.trim()) return "";
   // Sağlayıcı: istemciden doğrulanmış imageProvider (providerOverride) > env varsayılanı > openai.
   const provider = (providerOverride || Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim().toLowerCase();
@@ -558,6 +558,14 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   const fallback = (Deno.env.get("TA_IMAGE_FALLBACK_MODEL") || "gpt-image-1.5").trim();
   const last = (Deno.env.get("TA_IMAGE_LAST_MODEL") || "gpt-image-1").trim();
   const chain = [primary, fallback, last].filter((m, i, a) => m && a.indexOf(m) === i);   // sırayı koru, boş/tekrarı at
+  // KULLANICI AÇIKÇA TEK MODEL SEÇTİYSE (ör. "GPT Image 1") yalnız onu kullan — sessiz
+  // yükseltme/düşürme YOK (seçilen = çıktı). Aksi hâlde 3 kademeli kalite zinciri işler.
+  const OPENAI_IMG_MODELS = new Set([primary, fallback, last, "gpt-image-1", "gpt-image-1.5", "gpt-image-2"]);
+  const forcedModel = (modelOverride || "").trim();
+  const useChain = (forcedModel && OPENAI_IMG_MODELS.has(forcedModel)) ? [forcedModel] : chain;
+  // İSTENEN birincil model (kart şeffaflığı): gerçek üretilen model bundan farklıysa
+  // (zaman aşımı → yedeğe düşüldü) kartta "GPT Image 1 ile oluşturuldu" gösterilir.
+  if (diag) diag.reqModel = useChain[0];
 
   // ChatGPT KALİTE PARİTESİ: gpt-image çıktısı VARSAYILAN PNG (KAYIPSIZ) — ChatGPT'nin
   // döndürdüğü kalitenin aynısı. Eski JPEG (kayıplı, chroma subsampling) netliği düşürüyordu.
@@ -596,7 +604,7 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
       return { url: "", status: 0, timeout: true, body: String(e).slice(0, 200) };
     }
   };
-  return await runImageChain(chain, "openai", opId, diag, callOpenAI);
+  return await runImageChain(useChain, "openai", opId, diag, callOpenAI);
 }
 
 // Gerçek seslendirme — OpenAI gpt-4o-mini-tts (mp3). Uzun metin ≤3800
@@ -1461,7 +1469,9 @@ Deno.serve(async (req) => {
       }
       // YENİDEN ÜRET: yalnız GERÇEK, ücretli, hakkı henüz kullanılmamış önceki
       // job'a bağlıysa ücretsiz — böylece sonsuz bedava üretim mümkün olmaz.
-      regenPrevJob = (String(b.action || "") === "generate" && b.regen === true) ? cleanJob(b.prevJob) : "";
+      // ÜCRETSİZ TEKRAR: senaryo (generate) + görsel (image). Görselde "şeffaf yedek"
+      // sonrası "GPT Image 2 ile tekrar dene" bir kez bedava (prevJob = yedeğe düşen op).
+      regenPrevJob = ((String(b.action || "") === "generate" || String(b.action || "") === "image") && b.regen === true) ? cleanJob(b.prevJob) : "";
       if (regenPrevJob) {
         try {
           const pj = await loadJobResult(admin, userId, regenPrevJob);
@@ -1511,7 +1521,9 @@ Deno.serve(async (req) => {
       // olsa bile Gemini çalışmaz; seçim gerçekten backend'e ulaşır.
       const ipRaw = String(b.imageProvider || "").trim().toLowerCase();
       let imgProv = "";   // "" → generateImage env varsayılanını kullanır (yalnız eski istemci)
+      let modelForce = "";   // kullanıcı AÇIKÇA tek model seçtiyse (gpt1 → gpt-image-1) zincir tek modele kilitlenir
       if (ipRaw === "gpt" || ipRaw === "openai") imgProv = "openai";
+      else if (ipRaw === "gpt1" || ipRaw === "gpt-image-1") { imgProv = "openai"; modelForce = "gpt-image-1"; }   // GPT Image 1: hızlı/güvenilir, elle seçim
       else if (ipRaw === "gemini") imgProv = "gemini";
       else if (ipRaw === "higgs" || ipRaw === "higgsfield") {
         logRun({ action: "image", ok: false, ms: Date.now() - t0, user_id: userId || null, err: "HIGGS_IMAGE_NOT_CONFIGURED" });
@@ -1559,9 +1571,9 @@ Deno.serve(async (req) => {
       // (parse/storage/DB/exception) global catch'e düşer ve doRefund iadeyi yapar.
       // (Kök neden düzeltmesi: görsel yolu bu ağa bağlı DEĞİLDİ.)
       if (res.reserved) pendingRefund = { admin, user: userId, job: opId };
-      const diag: { d: string; cls?: string; model?: string; provider?: string } = { d: "" };
+      const diag: { d: string; cls?: string; model?: string; provider?: string; reqModel?: string } = { d: "" };
       const tGen = Date.now();
-      let url = await generateImage(String(b.prompt || ""), sizeReq, diag, opId, imgProv, styleKey);
+      let url = await generateImage(String(b.prompt || ""), sizeReq, diag, opId, imgProv, styleKey, modelForce);
       const genMs = Date.now() - tGen;
       // META (şeffaflık): çözünürlük/biçim/bayt HAM data URI'den okunur (upload ÖNCESİ)
       const info = (url && url.startsWith("data:")) ? imageInfo(url) : { w: 0, h: 0, bytes: 0, fmt: "" };
@@ -1595,6 +1607,11 @@ Deno.serve(async (req) => {
       const meta = {
         provider: diag.provider === "gemini" ? "Gemini" : "GPT",
         model: diag.model || "",
+        // ŞEFFAF YEDEK: istenen birincil model (GPT Image 2) zaman aşımına uğrayıp
+        // yedeğe (gpt-image-1) düşüldüyse fellBack=true → kartta bildirilir + "GPT Image 2
+        // ile tekrar dene" sunulur. reqModel/usedModel karta gerçek durumu taşır.
+        reqModel: diag.reqModel || "",
+        fellBack: !!(diag.provider !== "gemini" && diag.model && diag.reqModel && diag.model !== diag.reqModel),
         style: STYLE_LABELS[styleKey] || "",
         format: (info.fmt || "").toUpperCase(),
         aspect: sizeReq,

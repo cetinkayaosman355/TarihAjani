@@ -105,11 +105,11 @@ test("index.ts: merkezi STYLE_TEMPLATES (6 stil) + styleTemplate + generateImage
   }
   assert.ok(indexSrc.includes("function styleTemplate("), "styleTemplate olmalı");
   assert.ok(indexSrc.includes("+ styleTemplate(style) + NO_SPLIT"), "stil promptun başına eklenmeli (merkezi)");
-  assert.ok(indexSrc.includes("style?: string): Promise<string>"), "generateImage style parametresi almalı");
+  assert.ok(indexSrc.includes("style?: string, modelOverride?: string): Promise<string>"), "generateImage style + modelOverride parametreleri almalı");
 });
 test("index.ts: imageInfo parser + META 9 alan yanıtta döner", () => {
   assert.ok(indexSrc.includes("function imageInfo("), "imageInfo parser olmalı");
-  const mBlk = indexSrc.slice(indexSrc.indexOf("const meta = {"), indexSrc.indexOf("const meta = {") + 800);
+  const mBlk = indexSrc.slice(indexSrc.indexOf("const meta = {"), indexSrc.indexOf("const meta = {") + 1200);
   for (const f of ["provider:", "model:", "style:", "format:", "aspect:", "resolution:", "bytes:", "ms:", "cost"]) {
     assert.ok(mBlk.includes(f), "meta alanı eksik: " + f);
   }
