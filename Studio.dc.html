@@ -1369,7 +1369,7 @@
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div style="display: grid; gap: 4px; max-width: 62ch;">
                       <p style="margin: 0; color: #cfc8b4; font-size: 13px; line-height: 1.55;">Seçtiğin platform, oran ve stil tüm sahnelere uygulanır. Sahne bazında istediğin zaman değiştirebilirsin.</p>
-                      <p style="margin: 0; color: #676d7c; font-size: 11.5px; line-height: 1.5;">İlk 20 sahne görseli 12 KR, sonrası 8 KR. Üretilenler Görsel Stüdyo rafına eklenir.</p>
+                      <p style="margin: 0; color: #676d7c; font-size: 11.5px; line-height: 1.5;">Görsel kredisi motora göre: GPT Image 2 · 20 KR, GPT Image 1 · 8 KR, Gemini · 12 KR. GPT Image 2 zaman aşımında yedeğe düşerse yalnız üretilen modelin fiyatı alınır. Üretilenler Görsel Stüdyo rafına eklenir.</p>
                       <sc-if value="{{ imgGenBlocked }}" hint-placeholder-val="{{ false }}">
                         <p style="margin: 2px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">⚠ {{ imgValMsg }} Üretim bunu seçmeden başlamaz; kredi harcanmaz.</p>
                       </sc-if>
@@ -3111,7 +3111,11 @@ class Component extends DCLogic {
   // Gerçek görsel üretimi — sunucuda OpenAI ile, her görsel kredi düşer (anti-hile).
   // Kademeli fiyat: ilk 20 sahne görseli 12 KR, 21. sahneden itibaren 8 KR
   // (uzun videoda çok görsel üretimini ucuzlatır). idx = sahne sırası (0 tabanlı).
-  IMG_COST(idx) { return (typeof idx === 'number' && idx >= 20) ? 8 : 12; }
+  // MODEL BAZLI FİYAT (sunucu ile aynı): GPT Image 2=20 · GPT Image 1.5=12 · GPT Image 1=8 · Gemini=12
+  IMG_PRICE(prov) { const k = this._provResolve(prov || (this.state && this.state.imgProvider)); return ({ gpt: 20, gpt1: 8, gemini: 12 })[k] || 20; }
+  // idx artık fiyatı ETKİLEMEZ (kademeli sayı indirimi kaldırıldı; fiyat modele göre).
+  // prov verilirse o motorun (sahne override) fiyatı; yoksa panel motoru.
+  IMG_COST(idx, prov) { return this.IMG_PRICE(prov); }
   async imageServer(prompt, arKey, idx, onAttempt, opId, style, provider, sceneKey, kind, regenOpt) {
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
@@ -6435,8 +6439,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const s = this.state;
     const busy = s.regenKey === kind + i;
     const ibusy = !!((((s.sceneImgs || {})[kind + i]) || {}).busy);   // görsel üretimi sürüyor mu
-    const idx = kind === 'gp' ? i : null;                 // kademeli fiyat sahne sırasına göre
-    const cost = this.IMG_COST(idx);
+    const idx = kind === 'gp' ? i : null;
+    // FİYAT: bu sahnenin ÇÖZÜMLENMİŞ motoruna göre (sahne override > panel)
+    const cost = this.IMG_COST(idx, (this.resolveImageGenerationSettings(kind + i) || {}).resolvedProvider);
     // KART DURUM ROZETİ (toplu üretim): bu sahnenin batch durumu
     const bsc = (s.batch && s.batch.scenes) ? s.batch.scenes.find(sc => sc.key === (kind + i)) : null;
     const badgeMap = { queued: ['⚪ BEKLİYOR', '#818797'], processing: ['🟡 ÜRETİLİYOR', '#c4a7ff'], completed: ['🟢 GÖRSEL HAZIR', '#9ed3a8'], failed: ['🔴 HATA', '#e8a9a9'], refunded: ['🔴 İADE EDİLDİ', '#e6c478'], cancelled: ['⚪ İPTAL', '#676d7c'] };

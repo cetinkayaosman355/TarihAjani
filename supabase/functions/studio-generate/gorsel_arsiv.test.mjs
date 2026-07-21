@@ -38,7 +38,7 @@ test("Migration: studio_images tablosu + gerekli bağlar + RLS + idempotent teki
 test("index.ts: başarılı görsel studio_images'e yazılır (idempotent, best-effort)", () => {
   assert.ok(indexSrc.includes('admin.from("studio_images").upsert('), "studio_images'e upsert");
   assert.ok(indexSrc.includes('onConflict: "user_id,op_id"'), "idempotent (op_id) — çift satır yok");
-  assert.ok(indexSrc.includes("storage_url: url") && indexSrc.includes("spent_credits: cost"), "storage URL + harcanan kredi yazılır");
+  assert.ok(indexSrc.includes("storage_url: url") && indexSrc.includes("spent_credits: actualCost"), "storage URL + GERÇEK harcanan kredi (actualCost) yazılır");
   assert.ok(indexSrc.includes('b.fileId') && indexSrc.includes('b.sceneKey') && indexSrc.includes('b.storyTitle'), "hikâye/sahne bağları gövdeden okunur");
   assert.ok(indexSrc.includes('url.indexOf("data:") !== 0'), "yalnız kalıcı Storage URL arşivlenir (data: değil)");
   // best-effort: arşiv hatası üretimi bozmamalı (try/catch sarmalı)

@@ -138,7 +138,7 @@ test("Kurtarma bildirimi koşulu: bitmemiş + işlenecek sahnesi olan batch", ()
 
 // ── (D) GERÇEK kaynak değişmezleri ──────────────────────────────────────────
 test("index.ts: sunucu-taraflı estimate + image recovery-by-opId + save-on-success", () => {
-  assert.ok(indexSrc.includes('act === "estimate"') && indexSrc.includes('costFor("image", "", i)'), "sunucu estimate (costFor) olmalı");
+  assert.ok(indexSrc.includes('act === "estimate"') && indexSrc.includes('const unit = imgRequestPrice(b)'), "sunucu estimate MODEL bazlı fiyatla (imgRequestPrice)");
   assert.ok(indexSrc.includes('"estimate"') && indexSrc.includes("ALLOWED_ACTIONS"), "estimate izinli action");
   assert.ok(indexSrc.includes("loadJobResult(admin, userId, opId)") && indexSrc.includes("recovered: true"), "opId ile kurtarma (çift üretim yok)");
   assert.ok(indexSrc.includes("saveJobResult(admin, userId, opId, { url, meta })"), "sonuç job-cache'e yazılmalı");

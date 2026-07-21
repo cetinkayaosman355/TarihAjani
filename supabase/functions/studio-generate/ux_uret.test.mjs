@@ -126,7 +126,7 @@ test("Yükleniyor durumu: iskelet + 'Görsel hazırlanıyor…' (kahverengi plac
 
 test("UI metinleri kullanıcı dilinde: sade açıklama + ikincil kredi satırı", () => {
   assert.ok(studioSrc.includes("Seçtiğin platform, oran ve stil tüm sahnelere uygulanır. Sahne bazında istediğin zaman değiştirebilirsin."), "sade açıklama");
-  assert.ok(studioSrc.includes("İlk 20 sahne görseli 12 KR, sonrası 8 KR."), "kredi kuralı ikincil satırda");
+  assert.ok(studioSrc.includes("GPT Image 2 · 20 KR, GPT Image 1 · 8 KR, Gemini · 12 KR"), "kredi kuralı MODEL bazlı ikincil satırda");
   assert.ok(studioSrc.includes("Elle seçilen oran korunur."), "oran kalıcılığı kısa kullanıcı dilinde (eski ✋ rozet metni kalktı)");
 });
 

@@ -196,8 +196,26 @@ async function callClaude(prompt: string, maxTokens?: number, jsonMode?: boolean
 // Üretim maliyeti süre kademesine göre; sahne yenileme sabit.
 // Süre kaydırmalı: client "s<saniye>" gönderir (30-600); eski anahtarlar geriye dönük.
 // Kredi ve sahne CLIENT ile AYNI formül — ama değer sunucuda hesaplanır (anti-hile).
-const IMAGE_COST = 12;        // ilk 20 sahne görseli
-const IMAGE_COST_BULK = 8;    // 21. sahneden itibaren (kademeli indirim)
+const IMAGE_COST = 12;        // varsayılan / Gemini
+const IMAGE_COST_BULK = 8;    // (eski kademe — görselde artık MODEL bazlı fiyat kullanılır)
+// MODEL BAZLI GÖRSEL FİYATI: GPT Image 2=20 · 1.5=12 · 1=8 · diğer(Gemini)=12.
+// Kullanıcı GPT Image 2 ister ama yedeğe (gpt-image-1) düşülürse settle ile YALNIZ
+// gerçekten üretilen modelin fiyatı alınır (fark iade). "gerçek maliyet" kuralı.
+function imgModelPrice(model: string): number {
+  const m = (model || "").trim();
+  if (m === "gpt-image-2") return 20;
+  if (m === "gpt-image-1.5") return 12;
+  if (m === "gpt-image-1") return 8;
+  return IMAGE_COST;   // gemini / bilinmeyen
+}
+// İstenen (rezerve edilecek) fiyat: istemci imageProvider → birincil model fiyatı.
+function imgRequestPrice(b: { imageProvider?: unknown }): number {
+  const ip = String(b.imageProvider || "").trim().toLowerCase();
+  if (ip === "gemini") return IMAGE_COST;
+  if (ip === "gpt1" || ip === "gpt-image-1") return imgModelPrice("gpt-image-1");
+  // gpt / openai / boş → birincil model (env, vars. gpt-image-2)
+  return imgModelPrice((Deno.env.get("TA_IMAGE_PRIMARY_MODEL") || "gpt-image-2").trim());
+}
 function secsOf(duration: string): number {
   const m = /^s(\d+)$/.exec(duration || "");
   if (m) return Math.min(600, Math.max(30, parseInt(m[1], 10)));
@@ -1051,6 +1069,13 @@ async function reserveOp(admin: any, userId: string, cost: number, reason: strin
 async function finalizeOp(admin: any, opId: string): Promise<void> {
   try { await admin.rpc("finalize_reservation", { p_job: opId }); } catch (_e) { /* yut */ }
 }
+// KISMİ KESİNLEŞTİR: rezervasyonu YALNIZ gerçek maliyete (finalCost) düşürür; fazla
+// ayrılanı iade eder (GPT Image 2 → yedeğe düşünce farkı geri ver). settle RPC yoksa
+// (eski şema) düz finalize'a düşer → davranış bozulmaz.
+async function settleOp(admin: any, userId: string, opId: string, finalCost: number): Promise<number | undefined> {
+  try { const { data } = await admin.rpc("settle_reservation", { p_user: userId, p_job: opId, p_final: Math.max(0, Math.floor(finalCost)) }); return typeof data === "number" ? data : undefined; }
+  catch (_e) { try { await admin.rpc("finalize_reservation", { p_job: opId }); } catch (_e2) { /* yut */ } return undefined; }
+}
 async function refundOp(admin: any, userId: string, opId: string): Promise<number | undefined> {
   try { const { data } = await admin.rpc("refund_reservation", { p_user: userId, p_job: opId }); return typeof data === "number" ? data : undefined; }
   catch (_e) { return undefined; }
@@ -1298,7 +1323,8 @@ Deno.serve(async (req) => {
       const idxs: number[] = Array.isArray(b.scenes)
         ? b.scenes.slice(0, 200).map((n: any) => Math.max(0, Number(n) || 0))
         : Array.from({ length: Math.max(0, Math.min(200, Number(b.count) || 0)) }, (_v, i) => i);
-      const per = idxs.map((i) => costFor("image", "", i));
+      const unit = imgRequestPrice(b);   // MODEL bazlı: seçilen motorun birim fiyatı
+      const per = idxs.map(() => unit);
       const total = per.reduce((a, c) => a + c, 0);
       return json({ ok: true, total, count: idxs.length, per });
     }
@@ -1426,7 +1452,9 @@ Deno.serve(async (req) => {
         ? EDIT_COST
         : act === "video"
           ? videoCost(Number(b.vsec) || 5, String(b.vprovider || ""))
-          : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
+          : act === "image"
+            ? imgRequestPrice(b)   // MODEL bazlı: istenen motorun birincil model fiyatı (rezerve)
+            : costFor(act, String(b.duration || ""), Number(b.imgIndex) || 0));
 
     // G-01: ücretsiz AI uçları sınırlı — bot/istismar faturamızı şişiremesin.
     // GİRİŞLİ kullanıcıya 90/dk: uzun üretimde bölüm metinleri + sahne promptları
@@ -1603,6 +1631,12 @@ Deno.serve(async (req) => {
           : "Görsel üretilemedi" + (diag.d ? " — sebep: " + diag.d : "") + ". Kredi düşülmedi, tekrar dene.";
         return json({ ok: false, error: msg, errClass: diag.cls, credits }, 502);
       }
+      // GERÇEK MALİYET: kredi, gerçekten ÜRETEN modelin fiyatına göre (rezerve edilen
+      // istenen model fiyatıysa ve yedeğe düşülmüşse fark iade edilir). Gemini/bilinmeyen
+      // → rezerve fiyatı korunur. Asla rezerveyi (cost) AŞMAZ.
+      const actualCost = (cost > 0)
+        ? Math.min(cost, diag.provider === "gemini" ? cost : (diag.model ? imgModelPrice(diag.model) : cost))
+        : cost;
       // KART META (teknik şeffaflık): sağlayıcı, model, stil, biçim, kadraj, çözünürlük, boyut, süre, kredi
       const meta = {
         provider: diag.provider === "gemini" ? "Gemini" : "GPT",
@@ -1621,7 +1655,7 @@ Deno.serve(async (req) => {
         ratioVerified: !!(info.w && info.h),
         bytes: info.bytes,
         ms: genMs,
-        cost,
+        cost: actualCost,   // kartta GERÇEKTEN düşen kredi
       };
       // KURTARMA: sonucu opId ile job-cache'e yaz → yenileme/tekrar aynı sonucu kredisiz getirir.
       if (b.opId && admin && userId) { try { await saveJobResult(admin, userId, opId, { url, meta }); } catch (_e) { /* kurtarma opsiyonel */ } }
@@ -1639,7 +1673,7 @@ Deno.serve(async (req) => {
             scene_key: skRaw || null, kind,
             provider: meta.provider, model: meta.model, style: meta.style,
             aspect: meta.aspect, resolution: meta.resolution,
-            storage_url: url, bytes: meta.bytes, spent_credits: cost,
+            storage_url: url, bytes: meta.bytes, spent_credits: actualCost,
             prompt: String(b.prompt || "").slice(0, 2000),
             story_title: b.storyTitle ? String(b.storyTitle).slice(0, 200) : null,
           }, { onConflict: "user_id,op_id" });
@@ -1647,10 +1681,11 @@ Deno.serve(async (req) => {
       }
       if (cost > 0 && admin && userId) {
         // Buraya geldiysek res.reserved KESİN true (aksi halde yukarıda 503 döndük) →
-        // rezervasyonu finalize et; eski spendSafe'e sessiz düşüş YOK.
-        await finalizeOp(admin, opId);
+        // rezervasyonu GERÇEK maliyete (üretilen modelin fiyatı) kesinleştir; yedeğe
+        // düşülmüşse fark iade edilir. Eski spendSafe'e sessiz düşüş YOK.
+        const settledBal = await settleOp(admin, userId, opId, actualCost);
         pendingRefund = null;   // başarı → beklenmeyen-hata iadesi devre dışı
-        return json({ ok: true, url, charged: true, credits: res.credits, meta });
+        return json({ ok: true, url, charged: true, credits: settledBal != null ? settledBal : res.credits, cost: actualCost, meta });
       }
       pendingRefund = null;
       return json({ ok: true, url, charged: false, meta });
