@@ -225,6 +225,8 @@
     @media (max-width: 480px) {
       .ta-genall { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; white-space: normal !important; line-height: 1.35;
         position: sticky; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 30; box-shadow: 0 10px 30px rgba(0,0,0,.55); }
+      .ta-stylegrid { display: flex !important; overflow-x: auto; padding-bottom: 6px; }
+      .ta-stylegrid > * { flex: 0 0 168px; }
       .ta-card button { min-height: 44px; }
       .ta-setrow { flex-wrap: nowrap !important; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; scrollbar-width: thin; }
       .ta-setrow button { white-space: nowrap; flex: 0 0 auto; }
@@ -1087,6 +1089,26 @@
                       </sc-for>
                     </div>
                   </sc-if>
+                  <!-- GÖRSEL STİL — gerçek örnek görselli kartlar (masaüstü grid, mobil carousel) -->
+                  <sc-if value="{{ grp.isStyle }}" hint-placeholder-val="{{ false }}">
+                    <div class="ta-stylegrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px;">
+                      <sc-for list="{{ grp.styleCards }}" as="sk" hint-placeholder-count="6">
+                        <div onClick="{{ sk.pick }}" role="button" tabindex="0" style="{{ sk.cardStyle }}" style-hover="border-color: rgba(193,154,82,.7);">
+                          <span style="position: relative; display: block;">
+                            <img loading="lazy" src="{{ sk.img }}" alt="{{ sk.name }} örneği" style="width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block; background: #0a0f1a;">
+                            <button onClick="{{ sk.zoom }}" aria-label="Örneği büyüt" title="Örneği büyüt" style="position: absolute; right: 8px; bottom: 8px; border: 1px solid rgba(193,154,82,.5); background: rgba(5,7,13,.72); color: #e6c478; width: 30px; height: 30px; border-radius: 8px; cursor: zoom-in; font-size: 13px;" style-hover="background: rgba(193,154,82,.25);">🔍</button>
+                            <sc-if value="{{ sk.check }}" hint-placeholder-val="{{ false }}">
+                              <span style="position: absolute; left: 8px; top: 8px; color: #e6c478; background: rgba(5,7,13,.72); border: 1px solid rgba(193,154,82,.5); border-radius: 999px; font-family: 'Special Elite', monospace; font-size: 8.5px; letter-spacing: .1em; padding: 3px 8px;">{{ sk.check }}</span>
+                            </sc-if>
+                          </span>
+                          <span style="display: grid; gap: 2px; padding: 9px 11px 11px;">
+                            <span style="{{ sk.nameStyle }}">{{ sk.name }}</span>
+                            <span style="color: #818797; font-size: 11px; line-height: 1.4;">{{ sk.desc }}</span>
+                          </span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
                   <!-- SESLENDİRME — tek panel, kategori başlıklı, her satırda ▶ önizleme -->
                   <sc-if value="{{ grp.isVoice }}" hint-placeholder-val="{{ false }}">
                     <div style="border: 1px solid rgba(193,154,82,.2); border-radius: 12px; overflow: hidden; background: rgba(8,11,19,.5); box-shadow: 0 16px 42px -34px rgba(0,0,0,.8);">
@@ -1343,8 +1365,25 @@
                       </div>
                     </div>
                   </sc-if>
-                  <!-- SADE AYAR ALANI · 3 karar: Nerede? · Nasıl görünsün? · Üret -->
-                  <p style="margin: 6px 0 2px; font-family: 'Playfair Display', Georgia, serif; font-size: 17px; font-weight: 700; color: #f3eddc;">Nerede yayınlayacaksın?</p>
+                  <!-- GENEL GÖRSEL AYARLARI · kompakt özet kartı — dosyada kayıtlı tercihler.
+                       Büyük seçim alanları yalnız "Değiştir" ile açılır; ekran üretim odaklı kalır. -->
+                  <div style="border: 1px solid rgba(193,154,82,.55); border-radius: 12px; background: linear-gradient(160deg, rgba(193,154,82,.1), rgba(193,154,82,.02)); padding: 14px 16px; display: grid; gap: 7px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                      <span style="font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; color: #c19a52;">GENEL GÖRSEL AYARLARI</span>
+                      <button onClick="{{ toggleImgSet }}" style="margin-left: auto; border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-size: 12.5px; padding: 7px 14px; border-radius: 8px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ imgSetLinkLabel }}</button>
+                    </div>
+                    <span style="font-size: 15.5px; font-weight: 600; color: #e6c478;">{{ secimOzet }}</span>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #a7adba;">
+                      <span>Görsel motoru: <strong style="color: #d3d7e0;">{{ motorAd }}</strong></span>
+                      <span style="color: #868c99; font-size: 12.5px;">{{ motorSub }}</span>
+                    </div>
+                    <sc-if value="{{ imgSetNotice }}" hint-placeholder-val="{{ false }}">
+                      <span style="color: #9ed3a8; font-size: 12.5px;">✓ Genel görsel ayarları güncellendi. Yeni üretimler bu ayarları kullanacak; hazır görseller değişmez.</span>
+                    </sc-if>
+                  </div>
+                  <sc-if value="{{ imgSetOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="border: 1px solid rgba(129,135,151,.25); border-radius: 12px; background: rgba(7,10,18,.6); padding: 14px 16px; display: grid; gap: 10px;">
+                  <p style="margin: 0 0 2px; font-family: 'Playfair Display', Georgia, serif; font-size: 17px; font-weight: 700; color: #f3eddc;">Nerede yayınlayacaksın?</p>
                   <div class="ta-setrow" style="display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap;">
                     <sc-for list="{{ imgPlatforms }}" as="pl" hint-placeholder-count="3">
                       <button onClick="{{ pl.pick }}" style="{{ pl.style }}"><span style="display: block; font-weight: 600; font-size: 14px;">{{ pl.label }}</span><span style="display: block; font-size: 12px; opacity: .75; margin-top: 2px;">{{ pl.sub }}</span></button>
@@ -1361,7 +1400,7 @@
                     </div>
                   </sc-if>
 
-                  <p style="margin: 12px 0 2px; font-family: 'Playfair Display', Georgia, serif; font-size: 17px; font-weight: 700; color: #f3eddc;">Nasıl görünsün?</p>
+                  <p style="margin: 8px 0 2px; font-family: 'Playfair Display', Georgia, serif; font-size: 17px; font-weight: 700; color: #f3eddc;">Nasıl görünsün?</p>
                   <div class="ta-setrow" style="display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap;">
                     <sc-for list="{{ styleCats }}" as="ct" hint-placeholder-count="3">
                       <button onClick="{{ ct.pick }}" style="{{ ct.style }}"><span style="display: block; font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 15px;">{{ ct.label }}</span><span style="display: block; font-size: 12px; opacity: .8; margin-top: 2px; line-height: 1.45;">{{ ct.desc }}</span></button>
@@ -1378,23 +1417,15 @@
                     </sc-if>
                   </sc-if>
 
-                  <div style="border: 1px solid rgba(193,154,82,.55); border-radius: 12px; background: linear-gradient(160deg, rgba(193,154,82,.1), rgba(193,154,82,.02)); padding: 14px 16px; display: grid; gap: 8px; margin-top: 10px;">
-                    <span style="font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; color: #c19a52;">SEÇİMİN</span>
-                    <span style="font-size: 15.5px; font-weight: 600; color: #e6c478;">{{ secimOzet }}</span>
-                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #a7adba;">
-                      <span>Görsel motoru: <strong style="color: #d3d7e0;">{{ motorAd }}</strong></span>
-                      <span style="color: #868c99; font-size: 12.5px;">{{ motorSub }}</span>
-                      <button onClick="{{ toggleMotor }}" style="border: 0; background: transparent; color: #e6c478; font-size: 12.5px; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px;">{{ motorLinkLabel }}</button>
-                    </div>
-                    <sc-if value="{{ motorOpen }}" hint-placeholder-val="{{ false }}">
-                      <div class="ta-setrow" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                        <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
-                          <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
-                        </sc-for>
-                        <span style="color: #6c7280; font-size: 11.5px;">Elle seçersen sistem geri değiştirmez.</span>
-                      </div>
-                    </sc-if>
+                  <p style="margin: 8px 0 2px; font-family: 'Playfair Display', Georgia, serif; font-size: 17px; font-weight: 700; color: #f3eddc;">Görsel motoru</p>
+                  <div class="ta-setrow" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <sc-for list="{{ imgProviders }}" as="ip" hint-placeholder-count="3">
+                      <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
+                    </sc-for>
+                    <span style="color: #6c7280; font-size: 11.5px;">Elle seçersen sistem geri değiştirmez.</span>
                   </div>
+                  </div>
+                  </sc-if>
                 </div>
                 <sc-if value="{{ hasSceneChars }}" hint-placeholder-val="{{ false }}">
                   <div style="border: 1px solid rgba(193,154,82,.25); background: #070a12; padding: 14px 18px; display: grid; gap: 8px;">
@@ -2033,6 +2064,7 @@ class Component extends DCLogic {
       // Panel seçimleri dosyayla geri yüklenir (UI seçimi yenilemede kaybolmaz/geri dönmez)
       imgStyle: (w && w.imgStyle) || null, imgStyleCat: (w && w.imgStyleCat) || '', imgPlatform: (w && w.imgPlatform) || '',
       imgAspect: (w && w.imgAspect) || null, imgAspectManual: !!(w && w.imgAspectManual), imgValErr: '', imgZoom: '',
+      genCreatedPreset: (w && w.genCreatedPreset) || '', genUpdatedAt: (w && w.genUpdatedAt) || 0, imgSetOpen: false, imgSetNotice: false,
       imgProvider: saved.imgProvider || 'auto',   // görsel motoru: auto (vars. — arayüz kavramı, sunucuya gerçek motor gider) | gpt | gemini | higgs(pasif)
       histTab: 'files',                          // Geçmiş Üretimler sekmesi: files | images | videos
       imgFilter: 'all',                          // Görseller sekmesi filtresi: all | story | standalone
@@ -2194,13 +2226,25 @@ class Component extends DCLogic {
       // sessizce sihirbaz değerine GERİ DÖNMEZ (UI seçimi = üretim değeri kalıcı).
       imgAspect: s.imgAspect || null, imgAspectManual: !!s.imgAspectManual,
       imgStyle: s.imgStyle || null, imgStyleCat: s.imgStyleCat || '', imgPlatform: s.imgPlatform || '',
+      genCreatedPreset: s.genCreatedPreset || '', genUpdatedAt: s.genUpdatedAt || 0,
       duration: s.duration, model: s.model, format: s.format || 'belgesel', sysAudioUrl: s.sysAudioUrl || '', ts: Date.now()
     } : null;
     // Aktif dosyanın görsel/video/ses durumunu kendi geçmiş kaydına da işle → dosyayı
     // Geçmiş/Arşiv'ten tekrar açınca üretilenler geri gelir (yalnız aktif kaydı günceller).
     let hist = s.history || [];
     if (s.fileNo && s.result) {
-      hist = hist.map(h => (h.fileNo && h.fileNo === s.fileNo) ? Object.assign({}, h, { sceneImgs: s.sceneImgs || {}, audioUrl: s.sysAudioUrl || h.audioUrl || '' }) : h);
+      // Aktif dosyanın görselleri + sahne ayarları + üretim tercihleri kendi geçmiş
+      // kaydına da işlenir → dosya geçmişten tekrar açılınca AYNI değerler döner.
+      hist = hist.map(h => (h.fileNo && h.fileNo === s.fileNo) ? Object.assign({}, h, {
+        sceneImgs: s.sceneImgs || {}, sceneOpts: s.sceneOpts || {}, audioUrl: s.sysAudioUrl || h.audioUrl || '',
+        picks: Object.assign({}, h.picks || {}, {
+          tone: s.tone, voice: s.voice, style: s.style, duration: s.duration, model: s.model,
+          aspect: s.aspect, format: s.format,
+          imgStyle: s.imgStyle || null, imgStyleCat: s.imgStyleCat || '', imgAspect: s.imgAspect || null,
+          imgAspectManual: !!s.imgAspectManual, imgPlatform: s.imgPlatform || '',
+          genCreatedPreset: s.genCreatedPreset || '', genUpdatedAt: s.genUpdatedAt || 0
+        })
+      }) : h);
     }
     const base = { agent: s.agentName, email: s.regEmail, credits: s.credits, tier: s.tier, elKey: s.elKey, pendingJob: s.pendingJob || null, imgProvider: s.imgProvider || 'auto' };
     try {
@@ -2351,7 +2395,7 @@ class Component extends DCLogic {
         { id: 'mossbeard', name: 'Mossbeard · Vahşi ⚡ (Premium)', desc: 'Vahşi, destansı — PAHALI, 4× kredi, yalnız gerekliyse kullan', cat: 'Özel', engine: 'eleven', elId: 'bFrjFL4nlpeYNwNRhXxq', oa: 'onyx', premium: true, el: { name: 'Mossbeard', id: 'bFrjFL4nlpeYNwNRhXxq', stability: 0.45, style: 0.4 } }
       ],
       style: [
-        { id: 'hollywood', name: 'Hollywood Gerçekçi', desc: 'ARRI sinema kamerası, profesyonel ışık, fotogerçekçi' },
+        { id: 'hollywood', name: 'Hollywood Foto-gerçekçi', desc: 'ARRI sinema kamerası, profesyonel ışık, fotogerçekçi' },
         { id: 'sinematik', name: 'Karanlık Sinematik', desc: 'Mum ışığı, gölge, noir atmosfer' },
         { id: 'belgeselfoto', name: 'Belgesel Foto', desc: 'Doğal ışık, temiz gerçekçilik, editoryal' },
         { id: 'gravur', name: 'Tarihî Gravür', desc: 'Bakır baskı dokusu, dönem illüstrasyonu' },
@@ -3047,6 +3091,40 @@ class Component extends DCLogic {
   STYLE_KEYS() { return ['sinematik', 'belgeselfoto', 'hollywood', 'gravur', 'minyatur', 'animasyon']; }
   STYLE_CAT_OF(k) { return k === 'sinematik' ? 'sinematik' : (k === 'belgeselfoto' || k === 'hollywood') ? 'gercekci' : (k ? 'sanatsal' : ''); }
   CAT_STYLES(cat) { return ({ sinematik: ['sinematik'], gercekci: ['belgeselfoto', 'hollywood'], sanatsal: ['gravur', 'minyatur', 'animasyon'] })[cat] || []; }
+  // Onaylı gerçek örnek görseller (aynı tarihî sahnenin 6 stil versiyonu; daha önce
+  // üretildi — yeniden kredi harcanmaz). Kartlarda ve büyütmede kullanılır.
+  STYLE_IMG(k) {
+    const B = 'https://d8j0ntlcm91z4.cloudfront.net/user_307wLSX1tDNKgJWvmbjFeQ0HpZF/';
+    return ({
+      sinematik: B + 'hf_20260720_192402_69520cd0-6a6b-4b98-bb2d-49823aadd0b8_min.webp',
+      belgeselfoto: B + 'hf_20260720_192409_298851b1-e432-4418-8f5a-3a5bf4f95c28_min.webp',
+      hollywood: B + 'hf_20260720_192406_e623da24-1f5a-435d-9509-5a8c41782bb1_min.webp',
+      gravur: B + 'hf_20260720_191628_ca6bf8a9-0799-4411-8bb4-1b85b739aa88_min.webp',
+      minyatur: B + 'hf_20260720_191632_f8c6dfc9-53b0-4c45-9902-d051f5d24c1b_min.webp',
+      animasyon: B + 'hf_20260720_192416_72238365-81df-4bf3-8e3a-8fbb7aad248f_min.webp'
+    })[k] || '';
+  }
+  // DOSYANIN NORMALİZE ÜRETİM TERCİHLERİ — tek görünüm; ayrı paralel alan tutulmaz,
+  // değerler dosyayla yaşayan mevcut alanlardan türetilir (tek kaynak korunur).
+  fileGenSettings() {
+    const s = this.state;
+    const g = this.resolveImageGenerationSettings('');
+    return {
+      contentMode: s.format || '',
+      durationSeconds: this.durationSec(),
+      storyModel: s.model || '',
+      narrationTone: s.tone || '',
+      voiceId: s.voice || '',
+      visualStyle: g.styleId,
+      styleCategory: g.styleCategory,
+      platform: g.platform,
+      aspectRatio: g.aspectRatio,
+      imageProviderMode: g.providerMode,
+      resolvedImageProvider: g.resolvedProvider,
+      createdFromPreset: s.genCreatedPreset || '',
+      updatedAt: s.genUpdatedAt || 0
+    };
+  }
   resolveImageGenerationSettings(sceneKey, frozen) {
     const s = this.state;
     const so = (sceneKey && (s.sceneOpts || {})[sceneKey]) || {};
@@ -4521,11 +4599,20 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       result.senaryo = this.clampSenaryo(result.senaryo, Math.round(this.durationSec() * 2.6));
       clearInterval(this._mt);
       const no = 'TA-' + new Date().getFullYear() + '-' + String(Math.floor(100 + Math.random() * 900));
+      // DOSYA TERCİHLERİ KALICI: seçenekler ekranındaki TÜM seçimler dosya kaydına
+      // yazılır — dosya yeniden açıldığında (yenileme/geçmiş) aynı değerler döner,
+      // kullanıcıya ikinci kez seçtirilmez.
+      const genTs = Date.now();
       const entry = {
         title: result.baslik || this.state.idea.slice(0, 60),
-        date: new Date().toLocaleDateString('tr-TR'), ts: Date.now(), cost,
+        date: new Date().toLocaleDateString('tr-TR'), ts: genTs, cost,
         fileNo: no, result, idea: this.state.idea, partial,
-        picks: { tone: this.state.tone, voice: this.state.voice, style: this.state.style, duration: this.state.duration, model: this.state.model }
+        picks: {
+          tone: this.state.tone, voice: this.state.voice, style: this.state.style, duration: this.state.duration, model: this.state.model,
+          aspect: this.state.aspect, format: this.state.format,
+          imgStyle: this.state.style, imgStyleCat: '', imgAspect: this.state.aspect, imgAspectManual: false, imgPlatform: '',
+          genCreatedPreset: this.state.format || '', genUpdatedAt: genTs
+        }
       };
       // Claude istendi ama sunucu OpenAI'ya düştüyse SEBEBİNİ göster (sessiz kalma) —
       // ElevenLabs'taki gibi: kullanıcı neden Claude gelmediğini bilsin.
@@ -4533,6 +4620,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       const claudeFellBack = wantClaude && genCharge && genCharge.provider && genCharge.provider !== 'claude';
       this.setState(st => ({
         generating: false, genPct: 100, result, fileNo: no, step: 4, tab: 'senaryo', fromArsiv: false, pendingJob: null,
+        // Yeni dosyanın görsel tercihleri sihirbaz seçimlerinden başlar (kalıcı);
+        // önceki dosyadan sahne ayarı/panel seçimi TAŞINMAZ.
+        imgStyle: this.state.style, imgStyleCat: '', imgAspect: this.state.aspect, imgAspectManual: false,
+        imgPlatform: '', sceneOpts: {}, imgValErr: '',
+        genCreatedPreset: this.state.format || '', genUpdatedAt: genTs,
         genWarn: partial
           ? 'Dosyan hazır ve kaydedildi — ama sahne promptları tamamlanamadı. Görsel Promptları sekmesinden “Sahne promptlarını üret” ile ek kredi olmadan tamamlayabilirsin.'
           : (claudeFellBack ? ('⚠️ Claude kullanılamadı, yedek model (OpenAI) ile üretildi. Sebep: ' + (genCharge.providerNote || 'bilinmiyor') + '. (Secrets → ANTHROPIC_API_KEY kontrol et.)') : ''),
@@ -4744,6 +4836,32 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const order = [], map = {};
         opts.forEach(o => { if (!map[o.cat]) { map[o.cat] = []; order.push(o.cat); } map[o.cat].push(o); });
         return { title: g.title, hint: g.hint, isVoice: true, notVoice: false, cats: order.map(l => ({ label: l, items: map[l] })) };
+      }
+      // GÖRSEL STİL: gerçek örnek görselli kartlar (aynı tarihî sahnenin 6 stil
+      // versiyonu — onaylı, önceden üretilmiş; placeholder yok). 🔍 büyütür.
+      if (g.key === 'style') {
+        return {
+          title: g.title, hint: g.hint, isVoice: false, notVoice: false, isStyle: true,
+          styleCards: optionDefs.style.map(o => {
+            const on = s.style === o.id;
+            const img = this.STYLE_IMG(o.id);
+            return {
+              name: o.name, desc: o.desc, img,
+              pick: () => this.setState({ style: o.id }),
+              zoom: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.openZoom(img); },
+              cardStyle: {
+                display: 'grid', textAlign: 'left', cursor: 'pointer', padding: 0, overflow: 'hidden',
+                borderRadius: '11px', position: 'relative',
+                border: on ? '1px solid ' + gold : '1px solid rgba(129,135,151,.25)',
+                background: on ? 'rgba(193,154,82,.1)' : 'rgba(8,11,19,.8)',
+                boxShadow: on ? '0 0 24px rgba(193,154,82,.12)' : 'none',
+                color: '#e9dfc8', transition: 'border-color .2s, background .2s'
+              },
+              nameStyle: { fontWeight: 700, fontSize: '13.5px', color: on ? '#e6c478' : '#e9dfc8' },
+              check: on ? '● SEÇİLİ' : ''
+            };
+          })
+        };
       }
       return { title: g.title, hint: g.hint, isVoice: false, notVoice: true, options: optionDefs[g.key].map(o => buildCard(g.key, o)) };
     });
@@ -4988,6 +5106,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         openFile: () => (a.bloklar || a.sayfalar) ? this.setState({ mode: 'arsiv', doc: a, docPage: 0 }) : this.setState({
           mode: 'wizard', step: 4, tab: 'senaryo',
           result: a.result, fileNo: a.fileNo, idea: a.result.baslik, sceneImgs: this._hydrateSceneImgs(a.fileNo, a.sceneImgs || {}),
+          // Önceki dosyanın panel/sahne seçimleri arşiv dosyasına TAŞINMAZ
+          sceneOpts: {}, imgStyle: null, imgStyleCat: '', imgAspect: null, imgAspectManual: false, imgPlatform: '', imgValErr: '', imgSetOpen: false, imgSetNotice: false,
           audioUrl: '', ttsError: '', genError: '', sysAudioUrl: '', sysTtsError: ''
         }, () => { this.persist(); this.loadServerImages().then(() => this._rehydrateCurrentStory()); }),
         uret: () => this.uretFromArsiv(a)    // "Studio'da üret" — hazır dosyayı sonuçta aç
@@ -5013,6 +5133,13 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           result: h.result, fileNo: h.fileNo || '', idea: h.idea || '',
           // Bu dosyanın kayıtlı görselleri/videoları da geri gelsin (yerel + SUNUCU arşivi → cihazlar arası)
           sceneImgs: this._hydrateSceneImgs(h.fileNo || '', h.sceneImgs || {}),
+          // DOSYA TERCİHLERİ: bu dosyanın kayıtlı değerleri gelir; önceki dosyanın
+          // panel/sahne seçimleri TAŞINMAZ (kayıt yoksa sihirbaz değerlerine döner).
+          sceneOpts: (h.sceneOpts) || {},
+          imgStyle: (h.picks && h.picks.imgStyle) || null, imgStyleCat: (h.picks && h.picks.imgStyleCat) || '',
+          imgAspect: (h.picks && h.picks.imgAspect) || null, imgAspectManual: !!(h.picks && h.picks.imgAspectManual),
+          imgPlatform: (h.picks && h.picks.imgPlatform) || '', imgValErr: '', imgSetOpen: false, imgSetNotice: false,
+          genCreatedPreset: (h.picks && h.picks.genCreatedPreset) || '', genUpdatedAt: (h.picks && h.picks.genUpdatedAt) || 0,
           // K-04: eski dosyanın sesi/uyarısı yeni dosyaya taşınmaz; bu dosyanın kayıtlı sesi geri gelir
           sysAudioUrl: h.audioUrl || '', audioUrl: '', ttsError: '', sysTtsError: '', genWarn: '',
           ...(h.picks || {})
@@ -5058,7 +5185,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         return {
           label: passive ? (label + ' · Yakında') : label,
           disabled: passive,
-          pick: passive ? (() => {}) : (() => this.setState({ imgProvider: id }, () => this.persist())),
+          pick: passive ? (() => {}) : (() => this.setState({ imgProvider: id, imgSetNotice: true, genUpdatedAt: Date.now() }, () => this.persist())),
           style: {
             cursor: passive ? 'not-allowed' : 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em',
             padding: '8px 12px', opacity: passive ? '.5' : '1',
@@ -5129,7 +5256,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const cur = s.imgPlatform === id;
         return {
           label, sub,
-          pick: () => this.setState({ imgPlatform: id, imgAspect: sug, imgAspectManual: false, imgOranOpen: false }, () => this.persist()),
+          pick: () => this.setState({ imgPlatform: id, imgAspect: sug, imgAspectManual: false, imgOranOpen: false, imgSetNotice: true, genUpdatedAt: Date.now() }, () => this.persist()),
           style: {
             cursor: 'pointer', textAlign: 'left', minWidth: '150px', borderRadius: '12px',
             padding: '12px 14px', border: cur ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.28)',
@@ -5158,10 +5285,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
             // KATEGORİ DEĞİŞİNCE önceki kategoriye ait styleId TEMİZLENİR — Hollywood
             // seçiliyken Sanatsal'a geçince Hollywood sessizce üretime gidemez.
             pick: id === 'sinematik'
-              ? (() => this.setState({ imgStyle: 'sinematik', imgStyleCat: '' }, () => this.persist()))
+              ? (() => this.setState({ imgStyle: 'sinematik', imgStyleCat: '', imgSetNotice: true, genUpdatedAt: Date.now() }, () => this.persist()))
               : (() => this.setState(st => ({
                   imgStyleCat: id,
-                  imgStyle: this.STYLE_CAT_OF(st.imgStyle || '') === id ? st.imgStyle : null
+                  imgStyle: this.STYLE_CAT_OF(st.imgStyle || '') === id ? st.imgStyle : null,
+                  imgSetNotice: true, genUpdatedAt: Date.now()
                 }), () => this.persist())),
             style: {
               cursor: 'pointer', textAlign: 'left', flex: '1 1 220px', maxWidth: '300px', borderRadius: '12px',
@@ -5189,7 +5317,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
             const cur = gen0.styleId === k;
             return {
               label, desc,
-              pick: () => this.setState({ imgStyle: k, imgValErr: '' }, () => this.persist()),
+              pick: () => this.setState({ imgStyle: k, imgValErr: '', imgSetNotice: true, genUpdatedAt: Date.now() }, () => this.persist()),
               style: {
                 cursor: 'pointer', textAlign: 'left', minWidth: '170px', borderRadius: '11px',
                 padding: '11px 13px', border: cur ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.28)',
@@ -5200,26 +5328,29 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           })
         };
       })(),
-      // SEÇİMİN özeti + motor satırı (motor yalnız "Değiştir" ile açılır)
+      // GENEL GÖRSEL AYARLARI özeti — dosyada kayıtlı tercihler (stil · oran · platform)
       secimOzet: (() => {
         const gen0 = this.resolveImageGenerationSettings('');
         const platNm = { reels: 'Reels / Story', shorts: 'YouTube Shorts', tiktok: 'TikTok', igpost: 'Instagram Gönderisi', youtube: 'YouTube', kare11: 'Kare İçerik' }[s.imgPlatform] || '';
-        const stLbl = { sinematik: 'Sinematik', belgeselfoto: 'Belgesel', hollywood: 'Hollywood Foto-gerçekçi', gravur: 'Gravür', minyatur: 'Osmanlı Minyatürü', animasyon: 'Animasyon' }[gen0.styleId] || '⚠ stil seçilmedi';
-        return [platNm, gen0.aspectRatio, stLbl].filter(Boolean).join(' · ');
+        const arWord = { '16:9': 'Yatay 16:9', '9:16': 'Dikey 9:16', '1:1': 'Kare 1:1' }[gen0.aspectRatio] || '';
+        const stLbl = { sinematik: 'Karanlık Sinematik', belgeselfoto: 'Belgesel Foto', hollywood: 'Hollywood Foto-gerçekçi', gravur: 'Tarihî Gravür', minyatur: 'Osmanlı Minyatürü', animasyon: 'Animasyon' }[gen0.styleId] || '⚠ stil seçilmedi';
+        return [stLbl, arWord, platNm].filter(Boolean).join(' · ');
       })(),
       // ÜRETİM KAPISI görünürlüğü: geçersiz ayar varsa CTA/butonlar kilitli + tek net mesaj
       imgGenBlocked: !this.resolveImageGenerationSettings('').valid,
       imgValMsg: s.imgValErr || this.resolveImageGenerationSettings('').err || '',
       motorAd: this._provIsAuto() ? 'Otomatik' : this._provNm(),
-      motorSub: this._provIsAuto() ? ('Bu üretim için ' + this._provModelLabel() + ' seçilecek.') : (this._provModelLabel() + ' · elle seçildi'),
-      motorOpen: !!s.imgMotorOpen,
-      toggleMotor: () => this.setState(st => ({ imgMotorOpen: !st.imgMotorOpen })),
-      motorLinkLabel: s.imgMotorOpen ? 'Kapat ▴' : 'Değiştir ▾',
+      motorSub: this._provIsAuto() ? (this._provModelLabel() + ' kullanılacak.') : (this._provModelLabel() + ' · elle seçildi'),
+      // Ayar paneli yalnız "Değiştir" ile açılır; açılınca önceki bildirim temizlenir
+      imgSetOpen: !!s.imgSetOpen,
+      toggleImgSet: () => this.setState(st => ({ imgSetOpen: !st.imgSetOpen, imgSetNotice: st.imgSetOpen ? st.imgSetNotice : false })),
+      imgSetLinkLabel: s.imgSetOpen ? 'Kapat ▴' : 'Değiştir ▾',
+      imgSetNotice: !!s.imgSetNotice,
       imgAspects: ['yatay', 'dikey', 'kare'].map(k => {
         const eff = s.imgAspect || s.aspect;
         return {
           label: { yatay: 'YATAY 16:9', dikey: 'DİKEY 9:16', kare: 'KARE 1:1' }[k],
-          pick: () => this.setState({ imgAspect: k, imgAspectManual: true }, () => this.persist()),
+          pick: () => this.setState({ imgAspect: k, imgAspectManual: true, imgSetNotice: true, genUpdatedAt: Date.now() }, () => this.persist()),
           style: {
             cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em',
             padding: '8px 12px', border: eff === k ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
@@ -5234,7 +5365,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const effS = s.imgStyle || s.style;   // stil seçilmediyse sihirbazda seçilen stil görünür
         return {
           label,
-          pick: () => this.setState({ imgStyle: k, imgValErr: '' }, () => this.persist()),
+          pick: () => this.setState({ imgStyle: k, imgValErr: '', imgSetNotice: true, genUpdatedAt: Date.now() }, () => this.persist()),
           style: {
             cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.08em',
             padding: '8px 12px', border: effS === k ? '1px solid #c19a52' : '1px solid rgba(129,135,151,.3)',
