@@ -1285,7 +1285,10 @@ Deno.serve(async (req) => {
     const isEdit = act === "edit";
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
     // TTS/video'nun prompt/konusu yok — bu kontrolden muaf
-    if (!prompt && act !== "tts" && act !== "fetch_result" && act !== "video" && act !== "video_status") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
+    // imgreclaim (timeout sonrası kurtarma/iade) prompt GÖNDERMEZ → bu kapıya
+    // takılırsa iade HİÇ çalışmaz ve kredi kayıp kalır (canlı timeout vakasının
+    // ikinci ayağı buydu). Prompt'suz kurtarma/durum uçları muaf tutulur.
+    if (!prompt && act !== "tts" && act !== "fetch_result" && act !== "video" && act !== "video_status" && act !== "imgreclaim") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
 
     // VIDEO KURTARMA — kullanıcının TAMAMLANMIŞ tüm videolarını döndürür. İstemci
     // yerelde iz kaybettiyse (başka cihaz / sayfa yenilendi / dosya değişti) buradan
