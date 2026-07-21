@@ -273,6 +273,17 @@ const GEMINI_ASPECT: Record<string, string> = { "9:16": "9:16", "16:9": "16:9", 
 // OpenAI/Gemini senkron beklemesi hiçbir durumda ~135-140 sn'yi aşmaz.
 const IMG_ATTEMPT_MS = Math.min(120_000, Math.max(30_000, Number(Deno.env.get("TA_IMG_ATTEMPT_TIMEOUT_MS")) || 100_000));
 const IMG_BUDGET_MS = Math.min(140_000, Math.max(60_000, Number(Deno.env.get("TA_IMG_BUDGET_MS")) || 135_000));
+// KÖK NEDEN 2 (canlı log: img_budget_stop op=… model=gpt-image-2 → GÖRSEL HİÇ ÜRETİLMİYOR):
+// birincil (yavaş) model, zaman aşımı + AYNI modeli tekrar deneme ile TÜM bütçeyi
+// yiyordu; güvenilir son yedek (gpt-image-1) hiç çalışamıyordu → kredi iade ediliyor
+// ama kullanıcıya görsel dönmüyordu. İki düzeltme:
+//   (a) KUYRUK REZERVİ: son olmayan kademeler bütçenin tamamını yiyemez — güvenilir
+//       son modele daima anlamlı bir pencere (IMG_TAIL_RESERVE_MS) kalır.
+//   (b) TIMEOUT'ta AYNI model TEKRAR DENENMEZ (yavaş = yine yavaş); doğrudan sıradaki
+//       (daha hızlı/güvenilir) modele geçilir. Retry yalnız GERÇEK geçici hatada
+//       (429/5xx) yapılır. Böylece görsel HER ZAMAN bir modelde üretilir.
+const IMG_TAIL_RESERVE_MS = Math.min(90_000, Math.max(30_000, Number(Deno.env.get("TA_IMG_TAIL_RESERVE_MS")) || 60_000));
+const IMG_MIN_ATTEMPT_MS = 12_000;
 // GERÇEK ÇIKTI DOĞRULAMASI: sağlayıcı 200 döndü diye başarı sayılmaz — gerçek
 // piksel oranı istenenle uyuşmalı. OpenAI doğal boyutları (2:3 / 3:2) ilgili
 // yönün kabul edilen çıktısıdır (OPENAI_SIZE sözleşmesi); Gemini tam oran döner.
@@ -403,10 +414,22 @@ async function runImageChain(
         if (diag && !diag.cls) { diag.d = model + ": üretim zaman bütçesi doldu"; diag.cls = "TIMEOUT"; }
         return "";
       }
+      // KUYRUK REZERVİ: son olmayan kademe, güvenilir SON modele ayrılan pencereyi
+      // (IMG_TAIL_RESERVE_MS) yiyemez. Böylece birincil yavaş/asılı kalsa bile son
+      // yedek (gpt-image-1) gerçek bir deneme alır → görsel üretilir (canlı kök neden).
+      const isLastModel = mi === chain.length - 1;
+      const reserveTail = isLastModel ? 0 : IMG_TAIL_RESERVE_MS;
+      const attemptMs = Math.min(IMG_ATTEMPT_MS, remaining() - 8_000 - reserveTail);
+      // Son OLMAYAN kademeye anlamlı süre kalmadıysa: bu modeli atla, rezervi koru,
+      // doğrudan sıradaki (daha güvenilir) modele geç — bütçeyi boşa harcama.
+      if (!isLastModel && attemptMs < IMG_MIN_ATTEMPT_MS) {
+        console.error(`img_tail_reserve op=${opId || "-"} provider=${provider} model=${model} leftMs=${remaining()}`);
+        break;   // dıştaki for → sıradaki kademe (rezerve edilen süreyle)
+      }
       const attemptNo = transientTries + 1;
       const t0 = Date.now();
       totalCalls++;
-      const res = await callOnce(model, isPrimary, Math.min(IMG_ATTEMPT_MS, remaining() - 8_000));
+      const res = await callOnce(model, isPrimary, attemptMs);
       const ms = Date.now() - t0;
       if (res.url) {
         console.log(`img_ok op=${opId || "-"} provider=${provider} model=${model} attempt=${attemptNo} calls=${totalCalls} ms=${ms}`);
@@ -417,8 +440,11 @@ async function runImageChain(
       console.error(`img_fail op=${opId || "-"} provider=${provider} model=${model} attempt=${attemptNo} calls=${totalCalls} status=${res.status} class=${ci.cls} ms=${ms} :: ${(res.body || "").slice(0, 200)}`);
       if (diag) { diag.d = imgErrMsg(model, ci.cls, res.status); diag.cls = ci.cls; }
       // Geçici hata → AYNI modeli EN FAZLA bir kez daha dene (1200–2000ms bekleme).
-      // Bütçede anlamlı süre kalmadıysa tekrar denenmez (kontrol fonksiyona döner).
-      if (ci.transient && transientTries < 1 && totalCalls < MAX_CALLS && remaining() > 25_000) {
+      // AMA TIMEOUT'ta DENEME: yavaş model tekrar denemede yine yavaştır; aynı modeli
+      // yeniden beklemek bütçeyi yer ve güvenilir yedeği aç bırakır (canlı kök neden) →
+      // TIMEOUT'ta doğrudan sıradaki modele geçilir. Retry yalnız 429/5xx içindir.
+      // Bütçede anlamlı süre kalmadıysa yine denenmez (kontrol fonksiyona döner).
+      if (ci.transient && ci.cls !== "TIMEOUT" && transientTries < 1 && totalCalls < MAX_CALLS && remaining() > 25_000) {
         transientTries++;
         await new Promise((r) => setTimeout(r, 1200 + Math.floor(Math.random() * 800)));
         continue;
