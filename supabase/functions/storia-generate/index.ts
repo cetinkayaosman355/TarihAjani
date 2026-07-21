@@ -68,24 +68,59 @@ const TONE: Record<string, string> = {
   enerjik:   "enerjik, hızlı, genç ve dinamik bir tempoda",
 };
 
+// Süre → sahne sayısı (frontend sceneFor ile aynı) ve konuşma kelime bütçesi.
+function scenesForSecs(sec: number): number { return Math.max(3, Math.min(12, Math.round(sec / 30) + 2)); }
+
 function buildPrompt(b: any): string {
   const tone = TONE[b.tone] || TONE["merak"];
-  const outs = (b.outputs && b.outputs.length ? b.outputs : ["senaryo", "seslendirme", "baslik", "promptlar", "yayin"]);
-  const map: Record<string, string> = {
-    senaryo: "## SENARYO\nSahne sahne, girişte güçlü bir kanca ve sonda akılda kalan bir kapanışla.",
-    seslendirme: "## SESLENDİRME METNİ\nDoğal, akıcı, " + (b.voice || "nötr") + " bir anlatıcıya uygun; nefes/duraklama işaretleriyle.",
-    baslik: "## BAŞLIK & AÇIKLAMA\n5 alternatif başlık + YouTube açıklaması + etiketler.",
-    promptlar: "## GÖRSEL / SAHNE PROMPTLARI\nHer ana sahne için İngilizce, foto-gerçekçi görsel üretim promptu.",
-    yayin: "## YAYIN PAKETİ\nYouTube başlığı/açıklaması + Instagram Reels metni + kapak fikri.",
-  };
-  const sections = outs.map((o: string) => map[o]).filter(Boolean).join("\n\n");
-  return `Sen içerik üreticileri için çalışan uzman bir senarist, araştırmacı ve yapım yönetmenisin. İzleyiciyi ilk saniyeden yakalayan, akıcı ve doğru içerik üretirsin. Üslup: ${tone}.
+  const en = String(b.lang || "tr").toLowerCase().startsWith("en");
+  const L = en ? "İngilizce (English)" : "Türkçe";
+  const sec = secsOf(String(b.duration || "dk4"));
+  const scenes = scenesForSecs(sec);
+  const words = Math.round(sec * (en ? 2.6 : 2.3)); // doğal anlatı temposu (~150 kelime/dk)
+  const styleHint = String(b.style || "").trim();
+  const customRaw = String(b.custom || "").trim().slice(0, 800);
+  const custom = customRaw
+    ? `\n\nKULLANICININ EK YÖNERGESİ (mutlaka uygula, ama JSON şemasını bozma):\n"""${customRaw}"""`
+    : "";
+
+  // Craft kuralları — üretimin kalbi. Model bunlara göre "eğitilir".
+  return `Sen dünya standardında bir kısa-video yapımcısısın: aynı anda kıdemli bir senarist, bir seslendirme yazarı (voice-over copywriter) ve bir görsel yönetmenisin. İşin, izleyiciyi ilk 3 saniyede yakalayıp sonuna kadar tutan, akıcı ve DOĞRU içerik üretmek. Ucuz klişelerden ("Merhaba arkadaşlar", "Bugün sizlere", "hazır mısınız") kesinlikle kaçın.
 
 KONU: ${b.topic}
+DİL: Tüm izleyiciye dönük metinler (başlık, senaryo, seslendirme, açıklamalar) ${L} olacak. Görsel/video promptları HER ZAMAN İngilizce.
+ÜSLUP: ${tone}.
+HEDEF SÜRE: ~${sec} saniye → tam ${scenes} sahne. Seslendirme metni ~${words} kelime (bu süreye oturmalı; uzatma/kısaltma yapma).${styleHint ? `\nGÖRSEL STİL: "${styleHint}" — görsel promptlarını bu estetikte kur.` : ""}${custom}
 
-Aşağıdaki bölümleri Türkçe, eksiksiz ve doğrudan kullanılabilir şekilde üret:
+ÇALIŞMA İLKELERİ
+1) HOOK (ilk sahne): İlk cümle bir soru, çarpıcı bir iddia, sayı veya sahne olmalı — asla selamlama/tanıtım değil. İzleyicinin kaydırmayı durdurmasını sağla.
+2) RETENTION: Her sahne bir sonrakine merak köprüsüyle bağlanır ("ama asıl mesele…", "işte tam burada…"). Ölü cümle yok; her cümle ya bilgi ya gerilim taşır.
+3) DOĞRULUK: Uydurma isim/tarih/sayı YOK. Emin değilsen genel ama doğru konuş. Araştırma dosyası verildiyse ona sadık kal.
+4) SESLENDİRME METNİ (en önemli çıktı): GÖZE değil KULAĞA yazılır. Kısa, konuşma dili cümleler. Doğal ritim ve nefes. Markdown yok, madde işareti yok, emoji yok, sahne etiketi yok — sadece akıp giden, yüksek sesle okunacak tek bir anlatı. Bağlaçlarla akıcılık ("çünkü", "ama", "işte"). Rakamları okunuşuyla yaz (1923 → "bin dokuz yüz yirmi üç" yerine akıcıysa "1923" bırakılabilir; kısaltmaları aç). ${words} kelimeyi hedefle.
+5) GÖRSEL PROMPTLARI: Her sahne için 1 adet, İngilizce, foto-gerçekçi ve SİNEMATİK. Şunları içer: özne + aksiyon, ortam, ışık (ör. golden hour, soft rim light), kamera/lens (ör. 35mm, shallow depth of field), kompozisyon, atmosfer. Metin/logo/filigran İSTEME. Karakter tutarlılığı için "karakterler" bölümündeki görünümleri tekrar et. Sahne sayısı kadar prompt üret.
+6) VIDEO PROMPTLARI: Her görselin hareketli hali — yavaş sinematik kamera (push-in, parallax), doğal hareket; İngilizce, kısa.
 
-${sections}`;
+SADECE aşağıdaki JSON'u döndür. Başka hiçbir metin, açıklama veya markdown YAZMA. Alanları eksiksiz doldur:
+
+{
+  "baslik": "${L} — tıklanmayı tetikleyen, merak uyandıran video başlığı (clickbait değil, dürüst ama güçlü)",
+  "logline": "Tek cümlelik vaat: izleyici bu videodan ne kazanacak",
+  "karakterler": [{"isim": "rol adı", "gorunum": "English visual description for consistency across all image prompts"}],
+  "senaryo": [
+    {"baslik": "sahne etiketi (ör. Açılış kancası)", "anlatim": "bu sahnede ekranda ne olur + bu sahnenin seslendirme cümleleri (${L})", "gorsel": "kısa görsel notu (${L})"}
+  ],
+  "seslendirme_metni": "TÜM videonun kesintisiz seslendirme metni, ${L}, ~${words} kelime, kulağa yazılmış, markdown'sız düz metin",
+  "seslendirme_notu": "Seslendirme yönlendirmesi: ton, tempo, vurgu (${L})",
+  "youtube": {"baslik": "SEO uyumlu YouTube başlığı", "aciklama": "2-3 cümle açıklama + izlemeye çağrı", "etiketler": ["8-12 alakalı etiket"]},
+  "instagram": {"aciklama": "Reels için kısa, kancalı açıklama + CTA", "hashtagler": ["8-12 hashtag, # olmadan"]},
+  "kapak": ["thumbnail fikri 1 (kısa)", "thumbnail fikri 2"],
+  "gorsel_promptlar": ["English cinematic photo prompt, one per scene, ${scenes} total"],
+  "video_promptlar": ["English motion prompt, one per scene"],
+  "uretim_notu": "Tek cümlelik yapım ipucu (${L})"
+}
+
+senaryo, gorsel_promptlar ve video_promptlar dizileri TAM ${scenes} eleman içermeli ve aynı sırayı takip etmeli.
+Eğer konu bir video dosyasına dönüştürülemeyecek kadar anlamsız/boşsa, yalnızca şu JSON'u döndür: {"gecersiz": true, "mesaj": "Bir olay, kişi, soru ya da fikir yaz — ondan tam bir video dosyası çıkarayım."}`;
 }
 
 // Current models. gpt-5 first (falls back to gpt-4o). gpt-5 needs different params.
@@ -371,7 +406,11 @@ async function generateSpeech(text: string, voice: string): Promise<Uint8Array |
   async function ttsOnce(model: string, voice2: string, input: string): Promise<Uint8Array | null> {
     const body: Record<string, unknown> = { model, voice: voice2, input, response_format: "mp3" };
     if (model === "gpt-4o-mini-tts") {
-      body.instructions = "Türkçe profesyonel anlatıcı: net, akıcı ve sürükleyici. Cümleleri doğal bir tempoda, izleyiciyi tutacak bir enerjiyle oku.";
+      // Dil, metindeki Türkçe'ye özgü karakterlerden sezilir → doğru anlatım yönergesi.
+      const isTr = /[ışğüçöİĞÜŞÇÖ]/.test(input);
+      body.instructions = isTr
+        ? "Türkçe profesyonel anlatıcı: net, akıcı ve sürükleyici. Cümleleri doğal bir tempoda, izleyiciyi tutacak bir enerjiyle, doğru vurgularla oku."
+        : "Professional English narrator: clear, warm and engaging. Read at a natural pace with confident emphasis that holds the viewer's attention.";
     }
     try {
       const r = await fetchT("https://api.openai.com/v1/audio/speech", {
