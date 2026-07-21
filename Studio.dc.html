@@ -3477,8 +3477,10 @@ class Component extends DCLogic {
   // tut — web'de dev açılmasını ve kutuya oturmamasını önler (mobil bozulmaz).
   thumbBox(ar) {
     const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[ar] || '16/9';
-    const box = { yatay: { mw: 'min(100%, 640px)', mh: '46vh' }, dikey: { mw: '300px', mh: '62vh' }, kare: { mw: '400px', mh: '52vh' } }[ar] || { mw: 'min(100%, 640px)', mh: '46vh' };
-    return { width: '100%', aspectRatio: arCss, maxWidth: box.mw, maxHeight: box.mh, objectFit: 'contain', background: '#05070d', display: 'block', margin: '0 auto', cursor: 'zoom-in', border: '1px solid rgba(129,135,151,.2)' };
+    // Daha kompakt + premium: dev 9:16 görseller artık ekranı kaplamıyor; ilki düzenli
+    // durur, büyütmek için tıklanır. (Kullanıcı geri bildirimi: "çok yer kaplıyor".)
+    const box = { yatay: { mw: 'min(100%, 540px)', mh: '38vh' }, dikey: { mw: '256px', mh: '44vh' }, kare: { mw: '336px', mh: '42vh' } }[ar] || { mw: 'min(100%, 540px)', mh: '38vh' };
+    return { width: '100%', aspectRatio: arCss, maxWidth: box.mw, maxHeight: box.mh, objectFit: 'contain', background: '#05070d', display: 'block', margin: '0 auto', cursor: 'zoom-in', borderRadius: '8px', border: '1px solid rgba(193,154,82,.18)', boxShadow: '0 10px 30px rgba(0,0,0,.4)' };
   }
   // Lightbox galerisi: açık ekrandaki büyütülebilir görselleri sırayla topla,
   // ← → ile gez. DOM'dan okur — her raf (sahne/kapak/üretilen) otomatik dahil.
