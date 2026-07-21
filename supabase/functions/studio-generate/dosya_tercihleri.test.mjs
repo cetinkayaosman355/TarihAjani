@@ -67,7 +67,7 @@ test("Görsel Promptları kompakt: seçim satırları sürekli görünmez, özet
   const iPlat = studioSrc.indexOf("Nerede yayınlayacaksın?");
   const iStyle = studioSrc.indexOf("Nasıl görünsün?");
   assert.ok(iOpen > 0 && iPlat > iOpen && iStyle > iPlat, "platform + stil alanları imgSetOpen panelinin İÇİNDE");
-  assert.ok(studioSrc.includes(">GENEL GÖRSEL AYARLARI</span>"), "kompakt özet kartı");
+  assert.ok(studioSrc.includes("{{ secimKompakt }}"), "kompakt tek satır özet");
   assert.ok(studioSrc.includes("hazır görseller değişmez"), "değişiklik bildirimi: eski görseller korunur");
 });
 
