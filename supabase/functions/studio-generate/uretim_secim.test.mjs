@@ -54,10 +54,13 @@ test("buildPrompt çıktı sınırları: thumbnail yoksa kapak [], seslendirme y
   assert.ok(studioSrc.includes("return p + deferScenes + (outlineOnly ? summarize : '') + modeRules;"), "koşullar prompta eklenir");
 });
 
-test("Sahne aşaması gating: yalnız görsel/video istendiyse çalışır; istenmeyen dizi boşalır", () => {
+test("Sahne aşaması gating: görsel/video istendiyse çalışır; video promptları HER ZAMAN korunur", () => {
   assert.ok(studioSrc.includes("if (go2.gorsel || go2.video) {"), "sahne aşaması yalnız gerekince");
   assert.ok(studioSrc.includes("if (!go2.gorsel) result.gorsel_promptlar = [];"), "görsel istenmezse boş");
-  assert.ok(studioSrc.includes("if (!go2.video) result.video_promptlar = [];"), "video istenmezse boş");
+  // DEĞİŞTİ: video promptları artık ATILMAZ — genScenePrompts bunları görsel promptlarıyla
+  // aynı (ücretsiz) çağrıda üretir; her hikâyede hazır kalır ki video üretimi kullanabilsin.
+  assert.ok(!studioSrc.includes("if (!go2.video) result.video_promptlar = [];"), "video promptları artık silinmez");
+  assert.ok(studioSrc.includes("VİDEO PROMPTLARI HER ZAMAN KORUNUR"), "video promptları korunma gerekçesi belgeli");
   assert.ok(studioSrc.includes("if (!go2.thumb) result.kapak = [];"), "thumbnail istenmezse kapak boş");
 });
 
