@@ -28,7 +28,7 @@ test("Frontend: GPT Image 1 motor seçeneği eklendi (opt-in)", () => {
 test("Backend: imageProvider 'gpt1' → openai + gpt-image-1 modeline KİLİTLENİR (sessiz değişim yok)", () => {
   assert.ok(indexSrc.includes('ipRaw === "gpt1" || ipRaw === "gpt-image-1"'), "gpt1 allowlist'te");
   assert.ok(indexSrc.includes('modelForce = "gpt-image-1"'), "gpt1 → model gpt-image-1'e sabitlenir");
-  assert.ok(indexSrc.includes("generateImage(String(b.prompt || \"\"), sizeReq, diag, opId, imgProv, styleKey, modelForce)"), "modelForce generateImage'a geçer");
+  assert.ok(indexSrc.includes("generateImage(String(b.prompt || \"\"), sizeReq, diag, opId, imgProv, styleKey, modelForce, String(b.refImage || \"\"))"), "modelForce + refImage generateImage'a geçer");
   // generateImage: elle model seçilince zincir TEK modele iner
   assert.ok(indexSrc.includes("const useChain = (forcedModel && OPENAI_IMG_MODELS.has(forcedModel)) ? [forcedModel] : chain"), "forced model → tek elemanlı zincir");
 });
