@@ -19,7 +19,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   POST {action:"version"} → { ok, build, primaryModel, prices }
 // Deploy drift'in (dashboard'a eski/yarım kod yapıştırma) tek panzehiri budur.
 // HER kod değişikliğinde bu damga da güncellenir (test bunu zorlar).
-const BUILD = "sg-2026-07-21-r4";
+const BUILD = "sg-2026-07-21-r5";
 
 // NOT: imagescript'in WASM kodeği Supabase Deno edge arch'ında yüklenmiyor
 // (unsupported arch/platform) → kırpma zaten HİÇ çalışmıyor, sadece her üretimde
@@ -1109,7 +1109,7 @@ async function loadJobResult(admin: any, userId: string, job: string): Promise<a
 const cleanJob = (v: unknown) => String(v || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 60);
 
 // ── VIDEO (çoklu sağlayıcı: xAI Grok Imagine + Kling) ───────────────────
-// Sağlayıcı VIDEO_PROVIDER env'i ile seçilir ("grok" | "kling"; varsayılan grok).
+// Sağlayıcı VIDEO_PROVIDER env'i ile seçilir ("kling" | "grok"; varsayılan kling).
 // İş kimliğine sağlayıcı ön eki eklenir ("grok:<id>" / "kling:<id>") ki poll doğru
 // API'ye gitsin. Async: submit (ücretlendirir) → video_status ile poll (ücretsiz).
 // Sağlayıcıya göre kredi: Kling daha kaliteli → daha pahalı (5 sn: Grok 120 KR, Kling 300 KR).
@@ -1118,7 +1118,7 @@ function videoCost(sec: number, provider?: string): number {
   const kling = pickProvider(provider) === "kling";
   return Math.max(kling ? 300 : 120, s * (kling ? 60 : 24));
 }
-function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "grok").toLowerCase(); }
+function videoProvider(): string { return (Deno.env.get("VIDEO_PROVIDER") || "kling").toLowerCase(); }
 // İstemci sağlayıcıyı AÇIKÇA seçer; geçersiz/boşsa env varsayılanına düşer.
 // STABİLİZASYON Faz 5: "veo" ARTIK fal'a EŞLENMEZ — olduğu gibi döner. submitVideo
 // doğrudan Veo entegrasyonu olmadığından bunu VEO_PROVIDER_NOT_CONFIGURED'a çevirir.
@@ -1160,20 +1160,54 @@ async function klingToken(): Promise<string | null> {
   return data + "." + sigStr;
 }
 function klingBase(): string { return (Deno.env.get("KLING_BASE") || "https://api-singapore.klingai.com").replace(/\/+$/, ""); }
+// KİMLİK: Kling 3.0 TEK Bearer API anahtarı (KLING_API_KEY) kullanır. Eski hesaplar
+// JWT (ACCESS+SECRET) kullanıyordu → geriye uyum için o da denenir. KLING_API_KEY
+// varsa yeni 3.0 yolu; yoksa eski JWT yolu.
+async function klingAuth(): Promise<{ token: string; v3: boolean } | null> {
+  const apiKey = (Deno.env.get("KLING_API_KEY") || "").trim();
+  if (apiKey) return { token: apiKey, v3: true };            // Kling 3.0: doğrudan Bearer
+  const jwt = await klingToken();                            // eski hesaplar: JWT (ACCESS+SECRET)
+  return jwt ? { token: jwt, v3: false } : null;
+}
 async function submitKling(prompt: string, imageUrl: string, dur: number, aspect: string): Promise<{ id?: string; err?: string }> {
-  const tok = await klingToken();
-  if (!tok) return { err: "KLING_ACCESS_KEY / KLING_SECRET_KEY secret eksik." };
+  const auth = await klingAuth();
+  if (!auth) return { err: "KLING_API_KEY (Kling 3.0) veya KLING_ACCESS_KEY+KLING_SECRET_KEY secret eksik." };
   if (!imageUrl) return { err: "Kling image→video için sahne görseli gerekli." };
-  const body: Record<string, unknown> = {
-    model_name: Deno.env.get("KLING_MODEL") || "kling-v1-6",
-    image: imageUrl, prompt: (prompt || "").slice(0, 2000),
-    mode: Deno.env.get("KLING_MODE") || "std",
-    duration: dur > 7 ? "10" : "5", cfg_scale: 0.5,
-  };
   void aspect;
   try {
+    if (auth.v3) {
+      // ── Kling 3.0 (yeni API): POST /image-to-video/kling-3.0, contents yapısı ──
+      const model = Deno.env.get("KLING_MODEL") || "kling-3.0";
+      const duration = Math.min(15, Math.max(3, Math.round(dur || 5)));
+      const body = {
+        contents: [
+          { type: "prompt", text: (prompt || "").slice(0, 2500) },
+          { type: "first_frame", url: imageUrl },
+        ],
+        settings: {
+          resolution: Deno.env.get("KLING_RES") || "1080p",
+          duration, audio: "off", multi_shot: false,
+        },
+        options: { watermark_info: { enabled: false } },
+      };
+      const r = await fetchT(klingBase() + "/image-to-video/" + model, {
+        method: "POST", headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
+      }, 60_000);
+      const d = await r.json().catch(() => ({} as any));
+      if (!r.ok || (d && typeof d.code === "number" && d.code !== 0)) return { err: (d && (d.message || d.msg)) || ("Kling " + r.status) };
+      const id = d.data?.id || d.data?.task_id;
+      if (!id) return { err: "Kling görev kimliği alınamadı." };
+      return { id: String(id) };
+    }
+    // ── Eski JWT yolu (geriye uyum) ──
+    const body: Record<string, unknown> = {
+      model_name: Deno.env.get("KLING_MODEL_LEGACY") || "kling-v1-6",
+      image: imageUrl, prompt: (prompt || "").slice(0, 2000),
+      mode: Deno.env.get("KLING_MODE") || "std",
+      duration: dur > 7 ? "10" : "5", cfg_scale: 0.5,
+    };
     const r = await fetchT(klingBase() + "/v1/videos/image2video", {
-      method: "POST", headers: { Authorization: `Bearer ${tok}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
+      method: "POST", headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
     }, 60_000);
     const d = await r.json().catch(() => ({} as any));
     if (!r.ok || (d && typeof d.code === "number" && d.code !== 0)) return { err: (d && (d.message || d.msg)) || ("Kling " + r.status) };
@@ -1183,10 +1217,26 @@ async function submitKling(prompt: string, imageUrl: string, dur: number, aspect
   } catch (e) { return { err: String(e).slice(0, 160) }; }
 }
 async function pollKling(id: string): Promise<{ done: boolean; url?: string; failed?: boolean; err?: string }> {
-  const tok = await klingToken();
-  if (!tok) return { done: false, err: "Kling secret eksik." };
+  const auth = await klingAuth();
+  if (!auth) return { done: false, err: "Kling secret eksik." };
   try {
-    const r = await fetchT(klingBase() + "/v1/videos/image2video/" + encodeURIComponent(id), { headers: { Authorization: `Bearer ${tok}` } }, 30_000);
+    if (auth.v3) {
+      // Kling 3.0: GET /tasks?task_ids=<id> → data[] içinde status + outputs
+      const r = await fetchT(klingBase() + "/tasks?task_ids=" + encodeURIComponent(id), { headers: { Authorization: `Bearer ${auth.token}` } }, 30_000);
+      const d = await r.json().catch(() => ({} as any));
+      if (!r.ok) return { done: false, err: (d && d.message) || ("Kling " + r.status) };
+      const arr = Array.isArray(d.data) ? d.data : (d.data?.result || []);
+      const task = arr.find((t: any) => String(t.id) === String(id)) || arr[0];
+      if (!task) return { done: false };
+      const status = String(task.status || "").toLowerCase();
+      if (status === "failed") return { done: false, failed: true, err: String(task.message || "üretim başarısız") };
+      const vid = Array.isArray(task.outputs) ? task.outputs.find((o: any) => o && o.type === "video") : null;
+      const url = (vid && vid.url) || "";
+      if (status === "succeeded" && url) return { done: true, url };
+      return { done: false };
+    }
+    // Eski JWT yolu
+    const r = await fetchT(klingBase() + "/v1/videos/image2video/" + encodeURIComponent(id), { headers: { Authorization: `Bearer ${auth.token}` } }, 30_000);
     const d = await r.json().catch(() => ({} as any));
     if (!r.ok) return { done: false, err: "Kling " + r.status };
     const data = d.data || {};
@@ -1336,15 +1386,17 @@ Deno.serve(async (req) => {
         ok: true, build: BUILD, primaryModel: primary,
         provider: (Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim(),
         prices: { "gpt-image-2": 20, "gpt-image-1.5": 12, "gpt-image-1": 8, gemini: 12 },
-        videoProvider: (Deno.env.get("VIDEO_PROVIDER") || "grok").trim(),
+        videoProvider: (Deno.env.get("VIDEO_PROVIDER") || "kling").trim(),
         keys: {
           openai: has("OPENAI_API_KEY"),
           gemini: has("GEMINI_API_KEY"),
           grok_xai: has("XAI_API_KEY"),
-          kling: has("KLING_ACCESS_KEY") && has("KLING_SECRET_KEY"),
+          kling: has("KLING_API_KEY") || (has("KLING_ACCESS_KEY") && has("KLING_SECRET_KEY")),
           fal: has("FAL_KEY") || has("FAL_API_KEY"),
           eleven: has("ELEVENLABS_API_KEY"),
         },
+        // Kling kimlik modu: v3 = tek Bearer API anahtarı (yeni), legacy = JWT (eski)
+        klingMode: has("KLING_API_KEY") ? "v3" : (has("KLING_ACCESS_KEY") ? "legacy" : "none"),
       });
     }
     if (act === "estimate") {
