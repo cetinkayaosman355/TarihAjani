@@ -730,11 +730,14 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;">
                   <sc-for list="{{ histVideos }}" as="vd" hint-placeholder-count="2">
                     <div style="border: 1px solid rgba(193,154,82,.22); background: #070a12; overflow: hidden; display: flex; flex-direction: column;">
-                      <video src="{{ vd.vidUrl }}" controls playsinline style="{{ vd.thumbStyle }}"></video>
+                      <video src="{{ vd.vidUrl }}" poster="{{ vd.poster }}" controls playsinline preload="metadata" style="{{ vd.thumbStyle }}"></video>
                       <div style="padding: 13px 15px; display: grid; gap: 5px;">
                         <strong style="color: #f2ecd9; font-size: 13.5px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ vd.title }}</strong>
                         <p style="margin: 0; color: #818797; font-size: 11.5px;">{{ vd.date }}</p>
-                        <button onClick="{{ vd.dl }}" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px; cursor: pointer; margin-top: 4px;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
+                        <div style="display: flex; gap: 8px; margin-top: 4px;">
+                          <button onClick="{{ vd.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR (MP4)</button>
+                          <button onClick="{{ vd.openTab }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px 10px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">↗ AÇ</button>
+                        </div>
                       </div>
                     </div>
                   </sc-for>
@@ -3247,6 +3250,30 @@ class Component extends DCLogic {
       window.open(url, '_blank');   // CORS/ağ hatası → son çare yeni sekme
     }
   }
+  // VİDEO indirme: görselden AYRI — video baytlarını doğru .mp4 uzantısıyla kaydeder.
+  // (Eski hata: video, dlImage ile inince 'gorsel….jpg' adıyla iniyor ve AÇILMIYORDU;
+  // görsel kırpma/uzantı mantığı videoya uygulanıyordu.) Kırpma YOK, gerçek biçim korunur.
+  async dlVideo(url) {
+    if (!url) return;
+    const base = 'tarih-ajani-video-' + Date.now();
+    const extFromType = (t, u) => {
+      if (t) { if (t.indexOf('webm') >= 0) return 'webm'; if (t.indexOf('quicktime') >= 0 || t.indexOf('mov') >= 0) return 'mov'; if (t.indexOf('mp4') >= 0) return 'mp4'; }
+      if (/\.webm(\?|$)/i.test(u)) return 'webm';
+      if (/\.mov(\?|$)/i.test(u)) return 'mov';
+      return 'mp4';   // Kling/Grok varsayılanı
+    };
+    const save = (href, ext) => { const a = document.createElement('a'); a.href = href; a.download = base + '.' + ext; document.body.appendChild(a); a.click(); a.remove(); };
+    try {
+      if (url.indexOf('data:') === 0) { save(url, 'mp4'); return; }
+      const r = await fetch(url);
+      const blob = await r.blob();
+      const bu = URL.createObjectURL(blob);
+      save(bu, extFromType(blob.type, url));
+      setTimeout(() => { try { URL.revokeObjectURL(bu); } catch (e) {} }, 8000);
+    } catch (e) {
+      window.open(url, '_blank');   // CORS/ağ hatası → son çare yeni sekmede aç
+    }
+  }
   // MOTOR 'Otomatik' ÇÖZÜMLEMESİ: 'auto' yalnız arayüz kavramıdır — sunucu allowlist'i
   // yalnız gpt/gemini kabul eder, 'auto' giderse istek REDDEDİLİR. Bu yüzden sunucuya
   // giden HER yol buradan geçer ve daima gerçek bir sağlayıcı döner.
@@ -3853,9 +3880,10 @@ class Component extends DCLogic {
   // VİDEOLAR sekmesi — üretilmiş videolar (galeri kayıtlarında vidUrl). Yeni backend yok.
   _histVideoCards() {
     return this._galleryItems().filter(x => x && x.vidUrl).slice(0, 120).map(x => ({
-      vidUrl: x.vidUrl, thumbStyle: this.thumbBox(x.ar),
+      vidUrl: x.vidUrl, thumbStyle: this.thumbBox(x.ar), poster: x.url || '',
       title: x.story || (x.prompt ? String(x.prompt).slice(0, 44) : 'Video'),
-      date: this._fmtDate(x.ts), dl: () => this.dlImage(x.vidUrl, x.ar)
+      date: this._fmtDate(x.ts), dl: () => this.dlVideo(x.vidUrl),
+      openTab: () => window.open(x.vidUrl, '_blank')
     }));
   }
   // SESLERİM sekmesi — MEVCUT seslendirmeler (dosya geçmişindeki audioUrl). Yeni backend/
@@ -5777,7 +5805,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           thumbStyle: this.thumbBox(x.ar),
           pendStyle: { width: '100%', aspectRatio: arCss, maxHeight: '56vh', display: 'grid', placeItems: 'center', background: 'repeating-linear-gradient(45deg, #090d16, #090d16 12px, #0b101b 12px, #0b101b 24px)', backgroundSize: '34px 34px', animation: 'ta-scan .9s linear infinite' },
           zoom: () => this.openZoom(x.url),
-          dl: () => this.dlImage(x.url, x.ar),
+          dl: () => gv.url ? this.dlVideo(gv.url) : this.dlImage(x.url, x.ar),
           sel: !!(s.imgSel || {})[x.id],
           onSel: () => this.toggleImgSel(x.id),
           // gerçek düzenleme kutusu (mevcut görseli korur, istediğini değiştirir)
@@ -6054,7 +6082,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           vidUrl: x.vidUrl || '',
           thumbStyle: this.thumbBox(x.ar),
           zoom: () => this.openZoom(x.url),
-          dl: () => this.dlImage(hasVid ? x.vidUrl : x.url, x.ar),
+          dl: () => hasVid ? this.dlVideo(x.vidUrl) : this.dlImage(x.url, x.ar),
           del: () => this.delSavedImg(x.id),
           // Galeriden video üretimi (yalnız videosu olmayan görsellerde)
           canMakeVid: !hasVid,
