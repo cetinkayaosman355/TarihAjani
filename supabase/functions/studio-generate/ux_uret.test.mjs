@@ -68,13 +68,15 @@ test("Sade Ayar: stil 3 kategori — Sinematik TEK adım, alt kartlar yalnız ge
   assert.ok(studioSrc.includes("styleSubOpen"), "alt kartlar sc-if arkasında");
 });
 
-test("Sade Ayar: SEÇİMİN özeti + motor 'Değiştir' arkasında, dili dürüst", () => {
-  assert.ok(studioSrc.includes("secimOzet:"), "özet VM (platform · oran · stil)");
-  assert.ok(studioSrc.includes(">SEÇİMİN</span>"), "özet kartı başlığı");
-  assert.ok(studioSrc.includes("'Bu üretim için ' + this._provModelLabel() + ' seçilecek.'"), "Otomatik alt metni: hangi model seçilecek");
+test("Genel Görsel Ayarları: kompakt özet kartı + tüm seçim alanları 'Değiştir' arkasında", () => {
+  assert.ok(studioSrc.includes("secimOzet:"), "özet VM (stil · oran · platform)");
+  assert.ok(studioSrc.includes(">GENEL GÖRSEL AYARLARI</span>"), "kompakt kart başlığı kullanıcı dilinde");
+  assert.ok(studioSrc.includes("imgSetLinkLabel"), "kart üzerinde Değiştir/Kapat");
+  assert.ok(studioSrc.includes('sc-if value="{{ imgSetOpen }}"'), "platform/oran/stil/motor alanları panel arkasında (sürekli görünmez)");
+  assert.ok(studioSrc.includes(" kullanılacak.'") || studioSrc.includes(" kullanılacak.\""), "Otomatik alt metni: hangi model kullanılacak");
   assert.ok(studioSrc.includes("' · elle seçildi'"), "elle seçim alt metni");
   assert.ok(studioSrc.includes("Elle seçersen sistem geri değiştirmez."), "motor kalıcılık dili");
-  assert.ok(studioSrc.includes("motorLinkLabel"), "motor yalnız Değiştir bağlantısıyla açılır");
+  assert.ok(studioSrc.includes("Genel görsel ayarları güncellendi. Yeni üretimler bu ayarları kullanacak"), "değişiklik bildirimi kullanıcı dilinde");
 });
 
 test("Sahne Ayarları (override): açık kalıtım + Genel ayarlara dön + kalıcılık", () => {
