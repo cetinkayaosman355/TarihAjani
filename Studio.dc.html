@@ -1604,6 +1604,8 @@
                           <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ GÖRSEL HAZIR · {{ gp.img.count }}</span>
                           <button onClick="{{ gp.makeImg }}" disabled="{{ gp.imgBlocked }}" style="border: 1px solid rgba(193,154,82,.6); background: rgba(193,154,82,.1); color: #e6c478; padding: 5px 10px; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ gp.imgRedoLabel }}</button>
                         </sc-if>
+                        <button onClick="{{ gp.togglePrompt }}" aria-label="{{ gp.promptIconTitle }}" title="{{ gp.promptIconTitle }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 11px; font-size: 13px; line-height: 1.2; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ gp.promptIcon }}</button>
+                        <button onClick="{{ gp.copy }}" aria-label="{{ gp.copyIconTitle }}" title="{{ gp.copyIconTitle }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 11px; font-size: 13px; line-height: 1.2; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ gp.copyIcon }}</button>
                         <span style="position: relative; display: inline-flex;">
                           <button onClick="{{ gp.toggleMenu }}" aria-label="Diğer işlemler" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 5px 12px; font-size: 13px; line-height: 1.2; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">⋯</button>
                           <sc-if value="{{ gp.menuOpen }}" hint-placeholder-val="{{ false }}">
@@ -6419,6 +6421,12 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       promptShow: !!((s.promptOpen || {})[kind + i]),
       togglePrompt: () => this.setState(st => ({ sceneMenu: '', promptOpen: { ...(st.promptOpen || {}), [kind + i]: !((st.promptOpen || {})[kind + i]) } })),
       promptMenuLabel: ((s.promptOpen || {})[kind + i]) ? '👁 Promptu Gizle' : '👁 Promptu Gör',
+      // KART ÜSTÜNDE HER ZAMAN GÖRÜNÜR: 👁 promptu göster/gizle · ⧉ doğrudan kopyala
+      // (artık ⋯ menüsüne girmeye gerek yok — prompt gizli kalmıyor).
+      promptIcon: ((s.promptOpen || {})[kind + i]) ? '🙈' : '👁',
+      promptIconTitle: ((s.promptOpen || {})[kind + i]) ? 'Promptu gizle' : 'Promptu göster',
+      copyIcon: s.copied[kind + i] ? '✓' : '⧉',
+      copyIconTitle: s.copied[kind + i] ? 'Kopyalandı' : 'Promptu kopyala',
       // ⋯ MENÜSÜ: aynı anda tek menü açık (sceneMenu anahtarı)
       menuOpen: s.sceneMenu === (kind + i),
       toggleMenu: () => this.setState(st => ({ sceneMenu: st.sceneMenu === (kind + i) ? '' : (kind + i) })),
