@@ -20,10 +20,12 @@ const studioSrc = readFileSync(join(REPO, "Studio.dc.html"), "utf8");
 test("Dosya oluşturma: seçenekler dosya kaydına KALICI yazılır (picks + state başlangıcı)", () => {
   // history kaydındaki picks tüm üretim tercihlerini taşır
   assert.ok(studioSrc.includes("aspect: this.state.aspect, format: this.state.format,"), "picks: oran + içerik türü");
-  assert.ok(studioSrc.includes("imgStyle: this.state.style, imgStyleCat: '', imgAspect: this.state.aspect, imgAspectManual: false, imgPlatform: ''"), "picks: görsel tercihler sihirbazdan başlar");
+  assert.ok(studioSrc.includes("imgStyle: this.state.style, imgStyleCat: '', imgAspect: this.state.aspect, imgAspectManual: false, imgPlatform: this.state.imgPlatform || ''"), "picks: görsel tercihler sihirbazdan başlar (platform dahil)");
+  assert.ok(studioSrc.includes("{ key: 'platform', title: 'Platform'") && studioSrc.includes("{ key: 'motor', title: 'Görsel Motoru'"), "sihirbazda platform + motor grupları");
+  assert.ok(studioSrc.includes("o.sug ? { aspect: o.sug } : {}"), "platform seçimi oranı yalnız önerir");
   assert.ok(studioSrc.includes("genCreatedPreset: this.state.format || '', genUpdatedAt: genTs"), "picks: hazır mod + güncelleme zamanı");
   // yeni dosya açılırken state de aynı değerlerle başlar; önceki dosyanın seçimleri taşınmaz
-  assert.ok(studioSrc.includes("imgStyle: this.state.style, imgStyleCat: '', imgAspect: this.state.aspect, imgAspectManual: false,\n        imgPlatform: '', sceneOpts: {}, imgValErr: '',"), "yeni dosya: panel + sahne ayarları sıfırdan");
+  assert.ok(studioSrc.includes("imgPlatform: this.state.imgPlatform || '', sceneOpts: {}, imgValErr: '',"), "yeni dosya: panel + sahne ayarları sıfırdan");
 });
 
 test("Geçmişten açma: dosyanın KENDİ tercihleri döner; önceki dosyanınki taşınmaz", () => {

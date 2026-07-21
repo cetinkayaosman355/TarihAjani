@@ -2406,6 +2406,20 @@ class Component extends DCLogic {
         { id: 'yatay', name: 'Yatay · 16:9', desc: 'YouTube ana video kadrajı' },
         { id: 'dikey', name: 'Dikey · 9:16', desc: 'Shorts · Reels · TikTok' },
         { id: 'kare', name: 'Kare · 1:1', desc: 'Instagram gönderi kadrajı' }
+      ],
+      // Platform yalnız oran ÖNERİR (sug) — elle oran seçimi her zaman korunur.
+      platform: [
+        { id: '', name: 'Serbest', desc: 'Platform önerisi olmadan devam et' },
+        { id: 'reels', name: 'Reels / Story', desc: 'Instagram · Dikey 9:16 önerilir', sug: 'dikey' },
+        { id: 'shorts', name: 'YouTube Shorts', desc: 'Dikey 9:16 önerilir', sug: 'dikey' },
+        { id: 'tiktok', name: 'TikTok', desc: 'Dikey 9:16 önerilir', sug: 'dikey' },
+        { id: 'igpost', name: 'Instagram Gönderisi', desc: 'Kare 1:1 önerilir', sug: 'kare' },
+        { id: 'youtube', name: 'YouTube', desc: 'Yatay 16:9 önerilir', sug: 'yatay' }
+      ],
+      motor: [
+        { id: 'auto', name: '⚡ Otomatik', desc: 'Sistem bu üretim için en uygun motoru seçer' },
+        { id: 'gpt', name: 'GPT Image 2', desc: 'Elle seçersen sistem geri değiştirmez' },
+        { id: 'gemini', name: 'Gemini', desc: 'Google görsel motoru — elle seçim korunur' }
       ]
     };
   }
@@ -4634,7 +4648,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         picks: {
           tone: this.state.tone, voice: this.state.voice, style: this.state.style, duration: this.state.duration, model: this.state.model,
           aspect: this.state.aspect, format: this.state.format,
-          imgStyle: this.state.style, imgStyleCat: '', imgAspect: this.state.aspect, imgAspectManual: false, imgPlatform: '',
+          imgStyle: this.state.style, imgStyleCat: '', imgAspect: this.state.aspect, imgAspectManual: false, imgPlatform: this.state.imgPlatform || '',
           genCreatedPreset: this.state.format || '', genUpdatedAt: genTs
         }
       };
@@ -4647,7 +4661,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         // Yeni dosyanın görsel tercihleri sihirbaz seçimlerinden başlar (kalıcı);
         // önceki dosyadan sahne ayarı/panel seçimi TAŞINMAZ.
         imgStyle: this.state.style, imgStyleCat: '', imgAspect: this.state.aspect, imgAspectManual: false,
-        imgPlatform: '', sceneOpts: {}, imgValErr: '',
+        imgPlatform: this.state.imgPlatform || '', sceneOpts: {}, imgValErr: '',
         genCreatedPreset: this.state.format || '', genUpdatedAt: genTs,
         genWarn: partial
           ? 'Dosyan hazır ve kaydedildi — ama sahne promptları tamamlanamadı. Görsel Promptları sekmesinden “Sahne promptlarını üret” ile ek kredi olmadan tamamlayabilirsin.'
@@ -4853,8 +4867,34 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       { key: 'tone', title: 'Anlatım Tonu', hint: 'Dosyanın duygusal rengi' },
       { key: 'voice', title: 'Seslendirme', hint: '▶ Dinle, beğendiğini seç (ücretsiz önizleme)' },
       { key: 'style', title: 'Görsel Stil', hint: 'Kapak ve sahne üretim estetiği' },
-      { key: 'aspect', title: 'En-Boy Oranı', hint: 'Görsel ve video kadrajı' }
+      { key: 'platform', title: 'Platform', hint: 'Nerede yayınlayacaksın? Yalnız oran önerir' },
+      { key: 'aspect', title: 'En-Boy Oranı', hint: 'Görsel ve video kadrajı' },
+      { key: 'motor', title: 'Görsel Motoru', hint: 'Varsayılan: Otomatik' }
     ].map(g => {
+      // PLATFORM: dosyanın imgPlatform alanına yazar; seçim oranı yalnız ÖNERİR
+      if (g.key === 'platform') {
+        return { title: g.title, hint: g.hint, isVoice: false, notVoice: true, options: optionDefs.platform.map(o => {
+          const c = buildCard('imgPlatform', o);
+          c.pick = () => this.setState(Object.assign({ imgPlatform: o.id, imgAspectManual: false }, o.sug ? { aspect: o.sug } : {}));
+          const on = (s.imgPlatform || '') === o.id;
+          c.cardStyle.border = on ? '1px solid ' + gold : '1px solid rgba(129,135,151,.25)';
+          c.cardStyle.background = on ? 'rgba(193,154,82,.1)' : 'rgba(8,11,19,.8)';
+          c.nameStyle = { fontWeight: 700, fontSize: '14.5px', color: on ? '#e6c478' : '#e9dfc8' };
+          return c;
+        }) };
+      }
+      // GÖRSEL MOTORU: kanal düzeyi tercih (imgProvider); 'auto' arayüz kavramıdır
+      if (g.key === 'motor') {
+        return { title: g.title, hint: g.hint, isVoice: false, notVoice: true, options: optionDefs.motor.map(o => {
+          const c = buildCard('imgProvider', o);
+          const on = (s.imgProvider || 'auto') === o.id;
+          c.pick = () => this.setState({ imgProvider: o.id }, () => this.persist());
+          c.cardStyle.border = on ? '1px solid ' + gold : '1px solid rgba(129,135,151,.25)';
+          c.cardStyle.background = on ? 'rgba(193,154,82,.1)' : 'rgba(8,11,19,.8)';
+          c.nameStyle = { fontWeight: 700, fontSize: '14.5px', color: on ? '#e6c478' : '#e9dfc8' };
+          return c;
+        }) };
+      }
       if (g.key === 'voice') {
         const opts = optionDefs.voice.map(buildVoice);
         const order = [], map = {};
