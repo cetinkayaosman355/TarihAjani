@@ -25,7 +25,7 @@ test("Dosya oluşturma: seçenekler dosya kaydına KALICI yazılır (picks + sta
   assert.ok(studioSrc.includes("o.sug ? { aspect: o.sug } : {}"), "platform seçimi oranı yalnız önerir");
   assert.ok(studioSrc.includes("genCreatedPreset: this.state.format || '', genUpdatedAt: genTs"), "picks: hazır mod + güncelleme zamanı");
   // yeni dosya açılırken state de aynı değerlerle başlar; önceki dosyanın seçimleri taşınmaz
-  assert.ok(studioSrc.includes("imgPlatform: this.state.imgPlatform || '', sceneOpts: {}, promptHist: {}, imgValErr: '',"), "yeni dosya: panel + sahne ayarları sıfırdan");
+  assert.ok(studioSrc.includes("imgPlatform: this.state.imgPlatform || '', sceneImgs: {}, sceneOpts: {}, promptHist: {}, imgValErr: '',"), "yeni dosya: panel + sahne görselleri + sahne ayarları sıfırdan");
 });
 
 test("Geçmişten açma: dosyanın KENDİ tercihleri döner; önceki dosyanınki taşınmaz", () => {
