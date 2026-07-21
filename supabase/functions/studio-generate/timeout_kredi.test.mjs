@@ -30,11 +30,25 @@ test("Merkezi zaman bütçesi: deneme + toplam süre config'te; zincir bütçeye
   assert.ok(indexSrc.includes("Math.min(140_000"), "toplam senkron bekleme 140 sn'yi AŞAMAZ");
   assert.ok(indexSrc.includes("const remaining = () => IMG_BUDGET_MS - (Date.now() - chainT0)"), "kalan süre takibi");
   assert.ok(indexSrc.includes("if (remaining() < 20_000) {"), "kalan süre yetmiyorsa YENİ deneme başlamaz (kontrol fonksiyona döner)");
-  assert.ok(indexSrc.includes("Math.min(IMG_ATTEMPT_MS, remaining() - 8_000)"), "her çağrının süresi kalan bütçeden kırpılır");
+  assert.ok(indexSrc.includes("Math.min(IMG_ATTEMPT_MS, remaining() - 8_000 - reserveTail)"), "her çağrının süresi kalan bütçeden (VE kuyruk rezervinden) kırpılır");
   assert.ok(indexSrc.includes("remaining() > 25_000"), "retry yalnız bütçe varsa");
   // eski sabit 120 sn görsel çağrılarında kalmadı (görsel yolunda dinamik timeoutMs)
   assert.ok(indexSrc.includes("callOnce: (model: string, isPrimary: boolean, timeoutMs: number)"), "callOnce timeout parametresi alır");
   assert.ok(indexSrc.includes("}, timeoutMs);"), "fetchT görsel çağrılarında dinamik timeout kullanır");
+});
+
+test("KÖK NEDEN 2: görsel HİÇ üretilmiyordu — kuyruk rezervi + TIMEOUT'ta yedeğe geç", () => {
+  // (a) Kuyruk rezervi: son olmayan kademe, güvenilir son modele ayrılan pencereyi yiyemez
+  assert.ok(indexSrc.includes("const IMG_TAIL_RESERVE_MS"), "kuyruk rezervi sabiti merkezi");
+  assert.ok(indexSrc.includes('Deno.env.get("TA_IMG_TAIL_RESERVE_MS")'), "kuyruk rezervi env ile ayarlanır");
+  assert.ok(indexSrc.includes("const isLastModel = mi === chain.length - 1"), "son model tespiti");
+  assert.ok(indexSrc.includes("const reserveTail = isLastModel ? 0 : IMG_TAIL_RESERVE_MS"), "yalnız son OLMAYAN kademe rezerve bırakır");
+  assert.ok(indexSrc.includes("if (!isLastModel && attemptMs < IMG_MIN_ATTEMPT_MS)"), "son olmayan kademeye süre yoksa atla (rezervi koru)");
+  assert.ok(indexSrc.includes("img_tail_reserve"), "atlama loglanır");
+  // (b) TIMEOUT'ta AYNI model tekrar denenmez → doğrudan sıradaki (güvenilir) modele
+  assert.ok(indexSrc.includes('ci.transient && ci.cls !== "TIMEOUT" && transientTries < 1'), "TIMEOUT same-model retry KAPALI (retry yalnız 429/5xx)");
+  // fallback koşulu değişmedi: TIMEOUT hâlâ geçici → sıradaki modele düşer
+  assert.ok(indexSrc.includes("(mi + 1 < chain.length) && (ci.modelMissing || ci.transient)"), "TIMEOUT geçici sayılır → sıradaki modele fallback");
 });
 
 test("Görsel yolu garantili-iade ağına bağlı: beklenmeyen exception da iade eder", () => {
@@ -100,31 +114,55 @@ test("Timeout sonrası studio_images'e 'başarılı' kayıt düşmez (kaynak sı
 });
 
 // ── (B) SAF AYNALAR ─────────────────────────────────────────────────────────
-// Bütçe zamanlayıcısı aynası — runImageChain ile aynı kurallar.
-function chainSim(attempts, BUDGET = 135, ATTEMPT = 100, MIN_LEFT = 20, TRIM = 8) {
-  let t = 0; const calls = [];
-  for (const dur of attempts) {
-    const left = BUDGET - t;
-    if (left < MIN_LEFT) { calls.push({ skipped: true, left }); break; }
-    const tmo = Math.min(ATTEMPT, left - TRIM);
-    const spent = Math.min(dur, tmo);
-    calls.push({ tmo, spent });
+// Zincir aynası — runImageChain ile aynı kurallar: KUYRUK REZERVİ + TIMEOUT'ta
+// same-model retry KAPALI. models = zincir uzunluğu (varsayılan 3). Her attempt
+// bir modeldir; dur = o modelin gerçekte harcayacağı süre (sn), timeout ise
+// sonsuz (tmo kadar asılı kalır). Döner: modellerin denenip denenmediği + toplam.
+function chainSim(durs, { BUDGET = 135, ATTEMPT = 100, TAIL = 60, MIN_LEFT = 20, TRIM = 8, MIN_ATT = 12 } = {}) {
+  let t = 0; const calls = []; const n = durs.length;
+  for (let mi = 0; mi < n; mi++) {
+    const left = () => BUDGET - t;
+    if (left() < MIN_LEFT) { calls.push({ model: mi, skipped: "budget", left: left() }); break; }
+    const isLast = mi === n - 1;
+    const reserve = isLast ? 0 : TAIL;
+    const tmo = Math.min(ATTEMPT, left() - TRIM - reserve);
+    if (!isLast && tmo < MIN_ATT) { calls.push({ model: mi, skipped: "tail_reserve", left: left() }); continue; }
+    const dur = durs[mi];
+    const spent = dur === "timeout" ? tmo : Math.min(dur, tmo);
+    const produced = dur !== "timeout" && dur <= tmo;
+    calls.push({ model: mi, tmo, spent, produced });
     t += spent;
+    if (produced) break;   // görsel üretildi → dur
   }
-  return { calls, total: t };
+  return { calls, total: t, produced: calls.some((c) => c.produced) };
 }
-test("Ayna bütçe: 3 × 120 sn'lik eski felaket artık İMKÂNSIZ — toplam ≤ 135 sn", () => {
-  const r = chainSim([999, 999, 999]);   // hepsi asılı kalan çağrılar
-  assert.ok(r.total <= 135, "toplam süre bütçeyi aşamaz (eski: ~360 sn)");
-  assert.equal(r.calls[0].tmo, 100, "ilk deneme en çok 100 sn");
-  assert.ok(r.calls[1].tmo <= 35 - 8 + 8, "ikinci deneme kalan bütçeye kırpılır");
-  const last = r.calls[r.calls.length - 1];
-  assert.ok(last.skipped || r.total <= 135, "bütçe bitince yeni deneme başlamaz");
+test("Ayna: birincil ASILI kalsa bile güvenilir SON model çalışır → görsel üretilir", () => {
+  // Canlı kök neden senaryosu: gpt-image-2 asılı (timeout), gpt-image-1.5 asılı,
+  // gpt-image-1 (son, güvenilir) 45 sn'de üretir. Eskiden son model hiç çalışmıyordu.
+  const r = chainSim(["timeout", "timeout", 45]);
+  assert.ok(r.total <= 135, "toplam bütçeyi aşamaz");
+  const lastCall = r.calls[r.calls.length - 1];
+  assert.equal(lastCall.model, 2, "son güvenilir model denendi");
+  assert.ok(lastCall.tmo >= 45, `son modele yeterli pencere kaldı (tmo=${lastCall.tmo})`);
+  assert.equal(r.produced, true, "GÖRSEL ÜRETİLDİ (kök neden çözüldü)");
 });
-test("Ayna bütçe: hızlı başarısızlıkta yedek modele süre KALIR", () => {
-  const r = chainSim([5, 5, 100]);
-  assert.equal(r.calls.length, 3, "üç çağrı da yapılabildi");
+test("Ayna: birincil hızlı üretirse tek çağrı — mutlu yol değişmedi", () => {
+  const r = chainSim([40, 999, 999]);
+  assert.equal(r.calls.length, 1, "birincil üretti, yedek denenmedi");
+  assert.equal(r.produced, true);
+});
+test("Ayna: 3 × asılı çağrıda bile toplam ≤ 135 sn (platform kill'i önlenir)", () => {
+  const r = chainSim(["timeout", "timeout", "timeout"]);
+  assert.ok(r.total <= 135, "toplam süre bütçeyi aşamaz (eski: ~360 sn)");
+  assert.equal(r.produced, false, "hepsi asılıysa üretim yok — ama kredi iade edilir");
+});
+test("Ayna: son olmayan kademeye süre kalmazsa ATLANIR, rezerve son modele gider", () => {
+  // birincil bütçenin çoğunu yerse orta kademe atlanır, son güvenilir model korunur
+  const r = chainSim([70, "timeout", 40]);   // birincil 70 sn asılı sonra üretemedi say → timeout benzeri
+  const skipped = r.calls.find((c) => c.skipped === "tail_reserve");
+  const lastCall = r.calls[r.calls.length - 1];
   assert.ok(r.total <= 135);
+  assert.ok(lastCall.model === 2, "son model her hâlükârda denenir");
 });
 
 // İade durum makinesi — rezervasyon SONRASI her hata yolu iade eder.
