@@ -4213,7 +4213,7 @@ class Component extends DCLogic {
   }
   // İstemci maliyet AYNASI (yalnız gösterim/ön kontrol; kesin ücret sunucuda videoCost ile hesaplanır)
   VID_COST(sec, prov) { const s = Math.round(Math.min(15, Math.max(3, sec || 5))); const k = prov === 'kling'; return Math.max(k ? 300 : 120, s * (k ? 60 : 24)); }
-  openVideoModal(desc) { this.setState({ videoModal: Object.assign({ provider: 'grok', sec: 5 }, desc) }); }
+  openVideoModal(desc) { this.setState({ videoModal: Object.assign({ provider: 'kling', sec: 5 }, desc) }); }
   submitVideoModal() {
     const vm = this.state.videoModal; if (!vm) return;
     const prov = (vm.provider === 'kling') ? 'kling' : 'grok';   // yalnız çalışan sağlayıcılar; veo/higgs modalda pasif
