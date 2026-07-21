@@ -19,7 +19,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   POST {action:"version"} → { ok, build, primaryModel, prices }
 // Deploy drift'in (dashboard'a eski/yarım kod yapıştırma) tek panzehiri budur.
 // HER kod değişikliğinde bu damga da güncellenir (test bunu zorlar).
-const BUILD = "sg-2026-07-21-r7";
+const BUILD = "sg-2026-07-21-r8";
 
 // NOT: imagescript'in WASM kodeği Supabase Deno edge arch'ında yüklenmiyor
 // (unsupported arch/platform) → kırpma zaten HİÇ çalışmıyor, sadece her üretimde
@@ -494,7 +494,34 @@ async function runImageChain(
 // Her iki yol da AYNI ortak orchestrator'ı (runImageChain) kullanır → Faz 3
 // değişmezleri (max 3 çağrı, geçici retry, hata sınıflandırma, opId log) korunur.
 // diag: başarısızlıkta SON gerçek sebep (model + sınıf) + sınıf kodu buraya yazılır.
-async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string; model?: string; provider?: string; reqModel?: string }, opId?: string, providerOverride?: string, style?: string, modelOverride?: string): Promise<string> {
+// Referans görsel byte'larını GÜVENLİ getir: data URI veya YALNIZ kendi Supabase
+// Storage'ımız (SSRF koruması — editImage ile aynı politika). Karakter tutarlılığı için
+// önceki sahne / kullanıcı referansı buradan yüklenir.
+async function loadRefBytes(uri: string): Promise<{ bytes: Uint8Array; type: string } | null> {
+  if (!uri) return null;
+  const parsed = dataUriToBytes(uri);
+  if (parsed) return parsed;
+  if (/^https?:\/\//i.test(uri)) {
+    let ok = false;
+    try {
+      const u = new URL(uri);
+      const sb = new URL(Deno.env.get("SUPABASE_URL") || "https://ddyuopqcvpzaysnfavqc.supabase.co");
+      ok = u.protocol === "https:" && u.hostname === sb.hostname && u.pathname.startsWith("/storage/v1/object/");
+    } catch (_e) { ok = false; }
+    if (!ok) return null;
+    try {
+      const r = await fetchT(uri, {}, 60_000);
+      if (r.ok) {
+        const bytes = new Uint8Array(await r.arrayBuffer());
+        const ct = r.headers.get("content-type") || "image/png";
+        if (/^image\//i.test(ct) && bytes.length <= 15_000_000) return { bytes, type: ct };
+      }
+    } catch (_e) { /* indirilemezse null */ }
+  }
+  return null;
+}
+const REF_CONSISTENCY = "\n\nCHARACTER CONSISTENCY: A reference image is provided. Keep the SAME recurring person(s) — identical face, hair, build, age and signature clothing — visually consistent with the reference. Do NOT copy the reference composition; create the NEW scene exactly as described in the prompt (new setting, action, camera and framing).";
+async function generateImage(prompt: string, size: string, diag?: { d: string; cls?: string; model?: string; provider?: string; reqModel?: string }, opId?: string, providerOverride?: string, style?: string, modelOverride?: string, refImage?: string): Promise<string> {
   if (!prompt.trim()) return "";
   // Sağlayıcı: istemciden doğrulanmış imageProvider (providerOverride) > env varsayılanı > openai.
   const provider = (providerOverride || Deno.env.get("TA_IMAGE_PROVIDER") || "openai").trim().toLowerCase();
@@ -513,7 +540,10 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
     "medium shot by default; avoid excessive headroom; avoid large empty space above the subjects; " +
     "cinematic close-medium framing unless the prompt explicitly requests a wide establishing shot.";
   // MERKEZİ STİL: yalnız seçilen stilin şablonu eklenir (styleTemplate; boşsa hiç).
-  const p = prompt.trim().slice(0, 29000) + styleTemplate(style) + NO_SPLIT + VERTICAL_SAFE + COMPOSITION;   // stil + anti-split + (dikeyde) güvenli kadraj + kompozisyon paritesi
+  const pBase = prompt.trim().slice(0, 29000) + styleTemplate(style) + NO_SPLIT + VERTICAL_SAFE + COMPOSITION;   // stil + anti-split + (dikeyde) güvenli kadraj + kompozisyon paritesi
+  // KARAKTER TUTARLILIĞI: referans görsel verildiyse GÜVENLİ yükle; tutarlılık yönergesi ekle.
+  const refBytes = refImage ? await loadRefBytes(refImage) : null;
+  const p = refBytes ? (pBase + REF_CONSISTENCY) : pBase;
 
   // ── GEMINI YOLU ── (yalnız TA_IMAGE_PROVIDER=gemini). OpenAI'ye düşülmez.
   if (provider === "gemini") {
@@ -536,12 +566,18 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
     const genCfg: Record<string, unknown> = { responseModalities: mods };
     if (!aspOff && aspRatio) genCfg.imageConfig = { aspectRatio: aspRatio };
 
+    // Referans görsel varsa girdi part'ı olarak eklenir (nano banana karakteri korur).
+    const gParts: Array<Record<string, unknown>> = [{ text: p }];
+    if (refBytes) {
+      let b64 = ""; try { b64 = bytesToB64(refBytes.bytes); } catch (_e) { b64 = ""; }
+      if (b64) gParts.push({ inlineData: { mimeType: refBytes.type || "image/png", data: b64 } });
+    }
     const callGemini = async (model: string, _isPrimary: boolean, timeoutMs: number): Promise<ImgCall> => {
       try {
         const r = await fetchT(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-goog-api-key": gkey },
-          body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: p }] }], generationConfig: genCfg }),
+          body: JSON.stringify({ contents: [{ role: "user", parts: gParts }], generationConfig: genCfg }),
         }, timeoutMs);
         if (r.ok) {
           const d = await r.json();
@@ -570,6 +606,14 @@ async function generateImage(prompt: string, size: string, diag?: { d: string; c
   // ── OPENAI YOLU (VARSAYILAN) ── Faz 3 mantığı — DAVRANIŞ AYNEN KORUNDU.
   const key = Deno.env.get("OPENAI_API_KEY");
   if (!key) { if (diag) { diag.d = "OPENAI_API_KEY tanımsız"; diag.cls = "AUTH_ERROR"; } return ""; }
+  // KARAKTER TUTARLILIĞI (OpenAI): referans varsa /images/edits ile üret (gpt-image-1).
+  // Başarısız olursa NORMAL üretime düşülür (kullanıcı yine görsel alsın; sessiz kalite kaybı yerine güvenli).
+  if (refBytes && refImage) {
+    try {
+      const edited = await editImage(refImage, p, size);
+      if (edited) { if (diag) { diag.provider = "openai"; diag.model = "gpt-image-1-edit"; } return edited; }
+    } catch (_e) { /* düşerek normal üretime devam */ }
+  }
   // gpt-image oranları: kare / yatay (3:2) / dikey (2:3). STANDART çözünürlük.
   // Boyut MERKEZİ sözleşmeden gelir (OPENAI_SIZE) — bilinmeyen oran buraya
   // ULAŞAMAZ (handler 400 ile reddeder); yine de güvenlik kemeri olarak boş
@@ -1756,7 +1800,7 @@ Deno.serve(async (req) => {
       if (res.reserved) pendingRefund = { admin, user: userId, job: opId };
       const diag: { d: string; cls?: string; model?: string; provider?: string; reqModel?: string } = { d: "" };
       const tGen = Date.now();
-      let url = await generateImage(String(b.prompt || ""), sizeReq, diag, opId, imgProv, styleKey, modelForce);
+      let url = await generateImage(String(b.prompt || ""), sizeReq, diag, opId, imgProv, styleKey, modelForce, String(b.refImage || ""));
       const genMs = Date.now() - tGen;
       // META (şeffaflık): çözünürlük/biçim/bayt HAM data URI'den okunur (upload ÖNCESİ)
       const info = (url && url.startsWith("data:")) ? imageInfo(url) : { w: 0, h: 0, bytes: 0, fmt: "" };

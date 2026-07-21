@@ -105,7 +105,7 @@ test("index.ts: merkezi STYLE_TEMPLATES (6 stil) + styleTemplate + generateImage
   }
   assert.ok(indexSrc.includes("function styleTemplate("), "styleTemplate olmalı");
   assert.ok(indexSrc.includes("+ styleTemplate(style) + NO_SPLIT"), "stil promptun başına eklenmeli (merkezi)");
-  assert.ok(indexSrc.includes("style?: string, modelOverride?: string): Promise<string>"), "generateImage style + modelOverride parametreleri almalı");
+  assert.ok(indexSrc.includes("style?: string, modelOverride?: string, refImage?: string): Promise<string>"), "generateImage style + modelOverride + refImage parametreleri almalı");
 });
 test("index.ts: imageInfo parser + META 9 alan yanıtta döner", () => {
   assert.ok(indexSrc.includes("function imageInfo("), "imageInfo parser olmalı");
