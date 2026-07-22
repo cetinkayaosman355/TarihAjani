@@ -383,6 +383,18 @@
     /* soluk altın → okunur koyu altın */
     html[data-theme="light"] [style*="color: #9a7d43"],
     html[data-theme="light"] [style*="color: #d9a441"] { color: #8a6417 !important; }
+    /* Aydınlık tema: GÖVDE soluk grileri (#a4a9b5 · #818797 · #a3aabb) ivory zeminde
+       gri kalıyordu (ör. Karakter tutarlılığı açıklaması). Header dışındaki içerik
+       için okunur koyu mürekkebe çek. Header kendi eşlemesini (üstte) korur. */
+    html[data-theme="light"] [style*="color: #a4a9b5"],
+    html[data-theme="light"] [style*="color: rgb(164, 169, 181)"],
+    html[data-theme="light"] [style*="color: #818797"],
+    html[data-theme="light"] [style*="color: rgb(129, 135, 151)"],
+    html[data-theme="light"] [style*="color: #a3aabb"],
+    html[data-theme="light"] [style*="color: #a9b0bf"] { color: #4a4436 !important; }
+    /* mor vurgu (karakter tutarlılığı "farklı bir yüz" vb.) ivoryde soluyordu → koyu mor */
+    html[data-theme="light"] [style*="color: #c4b3ff"],
+    html[data-theme="light"] [style*="color: #b79bff"] { color: #5b34c4 !important; }
     /* Aydınlık tema: soluk gri PROMPT metinleri (kod blokları) ivory zeminde
        okunmuyordu → koyu mürekkep + hafif kâğıt zemin. */
     html[data-theme="light"] [style*="color: #c8cfdd"],
@@ -1880,7 +1892,7 @@
                 <sc-if value="{{ hasScenePrompts }}" hint-placeholder-val="{{ true }}">
                   <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 4px;">
                     <span style="color: #818797; font-size: 11.5px; margin-right: auto;">Eksik / hatalı sahne mi var? Ajan anında çözsün.</span>
-                    <button onClick="{{ makeScenePrompts }}" disabled="{{ scenesBusy }}" style="border: 1px solid rgba(193,154,82,.55); background: rgba(193,154,82,.09); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; padding: 8px 13px; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ scenesFixLabel }}</button>
+                    <button onClick="{{ agentComplete }}" disabled="{{ scenesBusy }}" style="border: 1px solid rgba(193,154,82,.55); background: rgba(193,154,82,.09); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; padding: 8px 13px; cursor: pointer;" style-hover="background: rgba(193,154,82,.2);">{{ scenesFixLabel }}</button>
                     <button onClick="{{ reportProblem }}" style="border: 1px solid rgba(129,135,151,.4); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; padding: 8px 13px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">⚠ SORUN BİLDİR</button>
                   </div>
                   <sc-if value="{{ scenesErr }}" hint-placeholder-val="{{ false }}">
@@ -1902,7 +1914,7 @@
                       <span style="color: #f2ecd9; font-size: 13.5px; font-weight: 600;">🔗 Karakter tutarlılığı</span>
                       <span style="color: #b79bff; font-family: 'Special Elite', monospace; font-size: 8.5px; letter-spacing: .12em; border: 1px solid rgba(183,155,255,.35); border-radius: 20px; padding: 2px 8px;">REFERANS GÖRSEL</span>
                     </label>
-                    <p style="margin: 0; color: #a4a9b5; font-size: 12px; line-height: 1.6;">Sorun şu: yapay zekâ her görseli sıfırdan çizer — aynı kişi her sahnede <strong style="color:#c4b3ff;">farklı bir yüzle</strong> çıkabilir. Bu anahtar açıkken sistem, karakterin daha önce üretilmiş görselini sonraki sahnelere <strong style="color:#c4b3ff;">örnek (referans)</strong> olarak verir → aynı yüz, aynı kıyafet devam eder. Birden çok karakter varsa her biri <strong style="color:#c4b3ff;">kendi</strong> ilk görünüşünü hatırlar. Kendi fotoğrafını/karakterini yüklersen tüm sahneler onu baz alır. İpucu: motor olarak <strong style="color:#e6c478;">Gemini</strong> referansa en sadık olandır.</p>
+                    <p style="margin: 0; color: #a4a9b5; font-size: 12px; line-height: 1.6;">Sorun şu: yapay zekâ her görseli sıfırdan çizer — aynı kişi her sahnede <strong style="color:#c4b3ff;">farklı bir yüzle</strong> çıkabilir. Bu anahtar açıkken sistem, karakterin daha önce üretilmiş görselini sonraki sahnelere <strong style="color:#c4b3ff;">örnek (referans)</strong> olarak verir → aynı yüz, aynı kıyafet devam eder. Birden çok karakter varsa her biri <strong style="color:#c4b3ff;">kendi</strong> ilk görünüşünü hatırlar. Kendi fotoğrafını/karakterini yüklersen tüm sahneler onu baz alır. İpucu: en tutarlı sonuç için <strong style="color:#e6c478;">kendi referans görselini yükle</strong> — sistem hangi motoru kullanırsan kullan (GPT ya da Gemini) o yüzü baz alır.</p>
                     <sc-if value="{{ charLock }}" hint-placeholder-val="{{ false }}">
                       <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                         <label style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .08em; padding: 7px 13px; cursor: pointer; border-radius: 6px;">⬆ REFERANS YÜKLE<input type="file" accept="image/*" onChange="{{ onCharRefUpload }}" style="display: none;"></label>
@@ -6060,6 +6072,89 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     }
   }
 
+  // ── AJANLA TAMAMLA ── dosyanın TÜM bölümlerini tarar, eksik/zayıf olanları
+  // tespit eder ve YALNIZ onları doldurur (var olan iyi içeriğe dokunmaz).
+  // Kredi harcamaz: metin eksikleri action'sız askAI (ücretsiz), sahne promptları
+  // 'scenes' aksiyonu (ücretsiz) ile üretilir. "Bir-iki cümlelik boş dosya" sorununu
+  // ve süresiz/eksik yayın paketini kökten çözer.
+  _fileGaps(r) {
+    r = r || this.state.result || {};
+    const sec = this.durationSec();
+    const wmin = Math.round(sec * 2.0);
+    const vt = (this.voiceText() || '').trim();
+    const vw = vt ? vt.split(/\s+/).filter(Boolean).length : 0;
+    const secs = (r.senaryo || []).filter(x => !/^shorts/i.test((x && x.bolum) || ''));
+    const N = this.fmtFor(sec).sahne;
+    const gaps = [];
+    // seslendirme HEDEFİN çok altındaysa (ör. 1-2 cümle) → zayıf
+    if (vw < Math.round(wmin * 0.7)) gaps.push('seslendirme');
+    // bölümlerin süresi ("sure") boşsa
+    if (secs.length && secs.some(x => !((x.sure || '') + '').trim())) gaps.push('sure');
+    // sahne (görsel) promptları hedefin çok altında/boşsa
+    if (((r.gorsel_promptlar || []).length) < Math.max(3, Math.round(N * 0.6))) gaps.push('gorsel');
+    // video promptları boşsa
+    if (!((r.video_promptlar || []).length)) gaps.push('video');
+    // YouTube paketi eksik/zayıf
+    if (!(((r.youtube || {}).aciklama || '') + '').trim() || (((r.youtube || {}).etiketler || []).length) < 10) gaps.push('youtube');
+    // Instagram eksik
+    if (!(((r.instagram || {}).aciklama || '') + '').trim()) gaps.push('instagram');
+    return gaps;
+  }
+  // Metin eksiklerini (seslendirme/süre/youtube/instagram) TEK ücretsiz çağrıda doldur.
+  async _completeText(r, gaps) {
+    const sec = this.durationSec();
+    const wmin = Math.round(sec * 2.0), wmax = Math.round(sec * 2.6);
+    const m = this.promptMaps();
+    const tonStr = m.ton[this.state.tone] || m.ton.merak;
+    const iste = [];
+    if (gaps.includes('seslendirme')) iste.push('senaryo: mevcut kısa/eksik seslendirmeyi KORUYARAK ' + wmin + '-' + wmax + ' kelimeye TAMAMLA (aynı konu ve üslupla derinleştir; dolgu değil GERÇEK olay/isim/tarih ekle). Her bölüm "metin" DOLU olsun.');
+    if (gaps.includes('sure')) iste.push('senaryo: her bölüme "sure" alanı yaz = (o bölümün kelime sayısı ÷ 2.4) saniye; ardışık ve toplam süreyle tutarlı.');
+    if (gaps.includes('youtube')) iste.push('youtube: {"baslik":"70 karakteri geçmeyen tıklanabilir başlık","aciklama":"3+ paragraf + zaman damgaları","etiketler":[15 etiket]}');
+    if (gaps.includes('instagram')) iste.push('instagram: {"aciklama":"hook satırı + 2 paragraf + CTA","hashtagler":["5 hashtag"]}');
+    const mevcut = { baslik: r.baslik, logline: r.logline, senaryo: (r.senaryo || []).map(x => ({ bolum: x.bolum, sure: x.sure, metin: x.metin })) };
+    const prompt = 'Sen "Tarih Ajanı" kanalının baş senaristisin. Aşağıda YARIM bir tarih videosu dosyası var. SADECE aşağıda istenen EKSİK alanları doldur; var olan içeriği bozma. Türkçe, akıcı, tüm sayı/tarih YAZIYLA, ton: ' + tonStr + '.\n\nEKSİKLER:\n- ' + iste.join('\n- ') + '\n\nMEVCUT DOSYA (JSON):\n' + JSON.stringify(mevcut) + '\n\nÇIKTI: SADECE tek geçerli JSON — yalnız doldurduğun anahtarları içersin (senaryo/youtube/instagram). İlk karakter {, son karakter }.';
+    const txt = await this.askAI(prompt, 5000);   // action'sız → ücretsiz
+    const d = this.parseGenJson(txt);
+    if (!d) return r;
+    if (Array.isArray(d.senaryo) && d.senaryo.length) {
+      // bölümleri sırayla eşle (mevcut yapıyı koru, metin/süreyi güncelle)
+      const yeni = d.senaryo;
+      r.senaryo = (r.senaryo || []).map((x, i) => yeni[i] ? { ...x, metin: (yeni[i].metin || x.metin), sure: (yeni[i].sure || x.sure), bolum: (x.bolum || yeni[i].bolum) } : x);
+      // dosyada hiç senaryo yoksa doğrudan al
+      if (!(r.senaryo || []).length) r.senaryo = yeni;
+    }
+    if (d.youtube && typeof d.youtube === 'object') r.youtube = { ...(r.youtube || {}), ...d.youtube };
+    if (d.instagram && typeof d.instagram === 'object') r.instagram = { ...(r.instagram || {}), ...d.instagram };
+    return r;
+  }
+  async agentComplete() {
+    if (this.state.scenesBusy || !this.state.result) return;
+    const gaps = this._fileGaps();
+    if (!gaps.length) {
+      this.setState({ scenesErr: 'Dosya tam görünüyor — eksik bulunamadı ✓' });
+      setTimeout(() => this.setState({ scenesErr: '' }), 2800);
+      return;
+    }
+    this.setState({ scenesBusy: true, scenesErr: '', genMsg: 'AJAN EKSİKLERİ TARIYOR…' });
+    try {
+      let r = JSON.parse(JSON.stringify(this.state.result));
+      const textGaps = gaps.filter(g => ['seslendirme', 'sure', 'youtube', 'instagram'].includes(g));
+      if (textGaps.length) {
+        this.setState({ genMsg: 'METİN EKSİKLERİ TAMAMLANIYOR…' });
+        r = await this._completeText(r, textGaps);
+      }
+      if (gaps.includes('gorsel') || gaps.includes('video')) {
+        this.setState({ genMsg: 'SAHNE PROMPTLARI ÜRETİLİYOR…' });
+        r = await this.genScenePrompts(r);
+      }
+      const kalan = this._fileGaps(r);
+      this.setState({ result: r, scenesBusy: false, genMsg: '',
+        scenesErr: kalan.length ? ('Bazı eksikler kaldı (' + kalan.join(', ') + ') — tekrar dene.') : '' }, () => this.persist());
+    } catch (e) {
+      const msg = e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Tamamlanamadı: ' + (e.message || 'hata'));
+      this.setState({ scenesBusy: false, genMsg: '', scenesErr: msg });
+    }
+  }
   // ── HATA KODU SİSTEMİ ── sunucu errClass → sabit, destek-dostu kod. Kartta ve
   // raporda görünür; herkes aynı dili konuşur (IMG-TIMEOUT, IMG-RATE, …).
   _imgErrCode(cls) {
@@ -7806,6 +7901,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       scenesErr: s.scenesErr || '',
       scenesBtnLabel: s.scenesBusy ? 'ÜRETİLİYOR…' : '◈ SAHNE PROMPTLARINI ÜRET',
       makeScenePrompts: () => this.makeScenePrompts(),
+      agentComplete: () => this.agentComplete(),
       downloadAll: () => this.downloadAllImages(),
       downloadSelected: () => this.downloadSelectedImages(),
       imgSelCount: Object.keys(s.imgSel || {}).length,
@@ -8004,7 +8100,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         // FAZ D — SOHBETLE ÜRETİM: kullanıcı konuşarak üretim yaptırabilir. Ajan
         // niyeti anlayıp yanıtın SONUNA tek gizli direktif ekler; sistem uygular.
         const komut =
-          'SEN AYNI ZAMANDA BİR ÜRETİM AJANISIN — kullanıcı SENİNLE KONUŞARAK üretim yaptırabilir. Konu bulmaktan (birlikte beyin fırtınası) tek tek görsel/seslendirme/video üretmeye kadar. Kullanıcı net bir üretim işlemi isterse, gerekli sohbeti yaptıktan sonra yanıtının EN SONUNA TEK satır gizli SİSTEM DİREKTİFİ ekle (kullanıcı bu satırı GÖRMEZ; sistem uygular ve kredi/ücret onayını AYRICA sorar):\n' +
+          'SEN AYNI ZAMANDA BİR ÜRETİM AJANISIN — kullanıcı SENİNLE KONUŞARAK üretim yaptırabilir VE ayarları değiştirtebilir. Kullanıcıyı ASLA "üstteki panelden sen seç / sen tıkla" diye YÖNLENDİRME — çünkü ayarları ve üretimi SEN yapabilirsin. Konuşurken üret; panele çıkarma. Gerekli kısa sohbeti yaptıktan sonra yanıtının SONUNA gizli SİSTEM DİREKTİF(LER)İ ekle (kullanıcı bu satırları GÖRMEZ; sistem uygular, kredi/ücret onayını AYRICA sorar). Aynı yanıta BİRDEN ÇOK direktif ekleyebilirsin (ör. önce ayarı, sonra üretimi):\n' +
+          '• AYAR DEĞİŞTİR (SEN yaparsın, panele gönderme): [[DO:ayar:ALAN:DEĞER]] — ALAN şunlardan biri: sure (saniye: 30–600), ton (merak/dramatik/belgesel/destansi/duygusal), format (belgesel/reels/pov/liste/neolurdu/soru/serbest), oran (dikey/kare/yatay), stil (hollywood/sinematik/belgeselfoto/gravur/minyatur/animasyon/cizgi), motor (auto/gpt/gpt1/gemini), ses (kadir/seyfullah/sultan/emin/doga/adam/sevval/belma/mahidevran/cassius). SÜRE saniye cinsindendir; en kısa 30 sn (ör. "4 dk 30 sn"→[[DO:ayar:sure:270]], "1 dakika"→[[DO:ayar:sure:60]], "dikey yap"→[[DO:ayar:oran:dikey]]).\n' +
           '• Dosyayı baştan üret (konu belliyse): [[DO:uret]]\n' +
           '• Konu kutusunu ayarla (kullanıcı bir fikirde karar kıldıysa): [[DO:konu:seçilen konu metni]]\n' +
           '• TÜM sahne görsellerini üret: [[DO:gorseller]]\n' +
@@ -8013,8 +8110,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           '• Bir sahnenin videosunu çıkar (N = sahne no; o sahnenin görseli üretilmiş olmalı): [[DO:video:N]]\n' +
           '• Belgesel videoyu montajla (üretilmiş sahne görsellerinden seslendirme+müzikle TEK video; en az 2 sahne görseli gerekir): [[DO:belgesel]]\n' +
           '• Bir alanı sohbetle DÜZENLE/yeniden yazdır: [[DO:duzenle:HEDEF:kullanıcının isteği]] — HEDEF şunlardan biri: ses (seslendirme metninin tamamı), bolum N (senaryo bölümü N), youtube (YouTube açıklaması), instagram (Instagram açıklaması). Örnek: kullanıcı "seslendirmeyi daha dramatik yap" derse → [[DO:duzenle:ses:daha dramatik yap]]. Sistem yeni metni üretir, kullanıcı ONAYLAYINCA uygulanır.\n' +
-          'KONSEPT → ÖNERİ AKIŞI: Kullanıcı bir konsept seçip öneri isterse (gizem / kişi / olay-dönem / sürpriz), o konseptte 3 ÇARPICI ve az bilinen vaka öner — her biri 1-2 cümle + neden ilgi çeker. Kullanıcı birini beğendiğini söyleyince [[DO:konu:seçilen konu]] ile konu kutusuna yaz ve "üret" komutunu bekle.\n' +
-          'DİREKTİF KURALLARI: (1) YALNIZ kullanıcı o işlemi NET istediyse ekle; belirsizse direktif EKLEME, tek net soru sor (ör. "hangi sahne?", "önce konuyu netleştirelim mi?"). (2) Ön koşul yoksa (dosya üretilmemişken görsel/seslendirme; görsel yokken video) direktif ekleme, eksik adımı söyle. (3) Her mesaja DEĞİL, yalnız gerçek üretim komutunda ekle. (4) Direktiften ön­ce ne yaptığını kısaca söyle ("Tamam, seslendirmeyi üretiyorum…"). DURUM/AYARLAR bloğundaki sahne sayısı ve mevcut duruma göre konuş.\n\n';
+          'ÖNEMLİ — "sen ayarla ve üret": Kullanıcı "sen ayarla", "sen seç", "sen karar ver ve üret" derse SEN uygun ayarı seç ve AYNI yanıta hem ayar direktif(ler)ini hem [[DO:uret]] ekle. Örn. kullanıcı "12–20 saniyelik yap, sen ayarla ve üret" → sistemde en kısa süre 30 sn olduğunu KISACA söyle, [[DO:ayar:sure:30]] ve [[DO:ayar:format:reels]] ve [[DO:uret]] ekle. Bir daha "panelden ayarla" DEME.\n' +
+          'KONSEPT → ÖNERİ AKIŞI: Kullanıcı bir konsept seçip öneri isterse (gizem / kişi / olay-dönem / sürpriz), o konseptte 3 ÇARPICI ve az bilinen vaka öner — her biri 1-2 cümle + neden ilgi çeker. Kullanıcı birini beğendiğini söyleyince [[DO:konu:seçilen konu]] ile konu kutusuna yaz; "üret" derse [[DO:uret]] de ekle.\n' +
+          'DİREKTİF KURALLARI: (1) Kullanıcı bir işlemi/ayarı NET istediyse (ya da "sen ayarla/sen seç" dediyse) direktifi MUTLAKA ekle — panele yönlendirme yok. Yalnız konu/işlem gerçekten belirsizse tek net soru sor. (2) Üretimde ön koşul yoksa (dosya üretilmemişken görsel/seslendirme; görsel yokken video) o direktifi ekleme, eksik adımı söyle — ama AYAR direktifleri her zaman uygulanabilir. (3) Direktiften önce ne yaptığını kısaca söyle ("Tamam, süreyi ayarlayıp üretiyorum…"). DURUM/AYARLAR bloğundaki mevcut değerlere göre konuş.\n\n';
         prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanı VE resmî destek hattısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır; senaryo taslakları, başlıklar, fikirler üretir; konuşarak üretim yaptırır; kredi/hesap/teknik sorunları BURADA çözersin. Türkçe, net, sıcak ve çözüm odaklı cevap ver; gerektiğinde madde kullan.\n\n' + bilgi + komut + durum + sorunBaglam + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
       }
       const reply = await this.askAI(prompt, 4000);
@@ -8022,11 +8120,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       // FAZ D: [[DO:...]] üretim direktifi → sistem ilgili aksiyonu yürütür (kullanıcı görmez)
       const raw = reply.trim();
       const gw = raw.match(/\[\[GOODWILL:(refund|retry):([a-zA-Z0-9_-]+)\]\]/);
-      const act = raw.match(/\[\[DO:\s*([a-zçğıöşü]+)\s*(?::\s*([^\]]*))?\]\]/i);
+      // ÇOKLU DİREKTİF: "süreyi 60 yap ve üret" → [[DO:ayar:sure:60]][[DO:uret]] aynı
+      // yanıtta gelebilir. Hepsini sırayla yürüt; ayar direktifleri ÖNCE uygulanır
+      // (state oturur), sonra üretim onları baz alır.
+      const acts = [...raw.matchAll(/\[\[DO:\s*([a-zçğıöşü]+)\s*(?::\s*([^\]]*))?\]\]/gi)]
+        .map(m => [m[1].toLocaleLowerCase('tr'), (m[2] || '').trim()]);
       const shown = raw.replace(/\[\[GOODWILL:[^\]]*\]\]/g, '').replace(/\[\[DO:[^\]]*\]\]/g, '').trim();
       this.setState(st => ({ chatMsgs: [...msgs, { role: 'assistant', content: shown || 'Bakıyorum…' }], chatBusy: false }), () => this._scrollChat());
       if (gw) this._applyGoodwill(gw[1], gw[2]);
-      if (act) this._chatAction(act[1].toLocaleLowerCase('tr'), (act[2] || '').trim());
+      this._runChatActions(acts);
     } catch (e) {
       this.setState({ chatMsgs: [...msgs, { role: 'assistant', content: 'Yanıt alınamadı: ' + e.message }], chatBusy: false }, () => this._scrollChat());
     }
@@ -8036,9 +8138,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   // üretilmiş görsel/seslendirme, mevcut ayarlar. Ajan buna göre doğru komut/soru üretir.
   _studioCtx() {
     const s = this.state, r = s.result;
-    const set = 'AYARLAR: süre=' + this.fmtFor(this.durationSec()).etiket + ' · ton=' + (s.tone || '-') +
+    const set = 'AYARLAR (hepsini SEN [[DO:ayar:...]] ile değiştirebilirsin — kullanıcıyı panele gönderme): süre=' + this.fmtFor(this.durationSec()).etiket + ' · ton=' + (s.tone || '-') +
       ' · ses=' + (s.voice || '-') + ' · stil=' + (s.style || '-') + ' · format=' + (s.format || 'belgesel') +
-      ' · kadraj=' + (s.aspect || '-');
+      ' · kadraj=' + (s.aspect || '-') + ' · görsel motoru=' + (s.imgProvider || 'auto');
     if (!r) {
       return 'DURUM: henüz dosya üretilmedi. Konu kutusu: "' + ((s.idea || '').trim() || '(boş)') + '".\n' + set + '\n\n';
     }
@@ -8050,6 +8152,95 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       '. Sahne sayısı=' + nGor + ' · üretilen görsel=' + imgDone + '/' + nGor +
       ' · seslendirme=' + (hasSes ? 'hazır' : 'yok') +
       ' · belgesel montajı=' + (this._docReady() ? 'hazır (montajlanabilir)' : 'hazır değil (≥2 sahne görseli gerek)') + '.\n' + set + '\n\n';
+  }
+  // Sohbet direktiflerini SIRAYLA yürüt: önce AYARLAR (state otursun), sonra üretim.
+  // Böylece "süreyi 60 yap ve üret" tek yanıtta ayarı uygular VE üretime geçer.
+  _runChatActions(acts) {
+    if (!acts || !acts.length) return;
+    const settings = acts.filter(a => a[0] === 'ayar');
+    const rest = acts.filter(a => a[0] !== 'ayar');
+    const runRest = () => rest.forEach(a => this._chatAction(a[0], a[1]));
+    if (settings.length) this._applyAyarlar(settings, runRest);
+    else runRest();
+  }
+  // Bir "ayar" spec'ini (alan:değer) geçerli state yamasına + Türkçe nota çevirir.
+  // Bilinmeyen alan/değer → null (sessizce atlanır, uydurma ayar yapılmaz).
+  _resolveAyar(field, val) {
+    const f = String(field || '').trim().toLocaleLowerCase('tr');
+    const v = String(val || '').trim();
+    const low = v.toLocaleLowerCase('tr');
+    const has = (...ks) => ks.some(k => low.indexOf(k) >= 0);
+    if (/^s(ü|u)re|^dur|^uzunluk|^saniye|^dakika/.test(f)) {
+      let sec;
+      const colon = low.match(/(\d+)\s*[:.]\s*(\d+)/);
+      const dm = low.match(/(\d+)\s*(?:dk|dakika|min)/);
+      const sm = low.match(/(\d+)\s*(?:sn|saniye|sec)/);
+      if (colon) sec = (+colon[1]) * 60 + (+colon[2]);
+      else if (dm || sm) sec = (dm ? (+dm[1]) * 60 : 0) + (sm ? +sm[1] : 0);
+      else { const n = parseInt((low.match(/\d+/) || [])[0] || '', 10); sec = isNaN(n) ? NaN : n; }
+      if (isNaN(sec)) return null;
+      sec = Math.min(600, Math.max(30, sec));
+      return { patch: { duration: 's' + sec }, note: 'süre ' + this.fmtFor(sec).etiket };
+    }
+    if (/^ton$/.test(f) || /^ton/.test(f)) {
+      const id = has('merak', 'soru') ? 'merak' : has('dram') ? 'dramatik' : has('belge', 'ciddi', 'otorit') ? 'belgesel'
+        : has('destan', 'epik', 'görkem') ? 'destansi' : has('duygu', 'insani', 'dokunak') ? 'duygusal'
+          : (['merak', 'dramatik', 'belgesel', 'destansi', 'duygusal'].indexOf(low) >= 0 ? low : '');
+      return id ? { patch: { tone: id }, note: 'ton ' + id } : null;
+    }
+    if (/^format$/.test(f) || /^anlat/.test(f)) {
+      const id = has('reels', 'viral', 'tiktok', 'shorts') ? 'reels' : has('pov', 'sen oradasın', 'birinci') ? 'pov'
+        : has('liste', 'top ', 'sıralama') ? 'liste' : has('ne olurdu', 'alternat', 'neolurdu') ? 'neolurdu'
+          : has('soru', 'cevap') ? 'soru' : has('serbest') ? 'serbest' : has('belgesel', 'klasik') ? 'belgesel'
+            : (['belgesel', 'reels', 'pov', 'liste', 'neolurdu', 'soru', 'serbest'].indexOf(low) >= 0 ? low : '');
+      return id ? { patch: { format: id }, note: 'format ' + id } : null;
+    }
+    if (/^oran|^kadraj|^en boy|^aspect|^boyut/.test(f)) {
+      const id = has('9:16', '9x16', 'dikey', 'shorts', 'reels', 'tiktok', 'story') ? 'dikey'
+        : has('1:1', 'kare', 'square', 'instagram gönderi') ? 'kare'
+          : has('16:9', '16x9', 'yatay', 'youtube', 'wide', 'geniş') ? 'yatay'
+            : (['yatay', 'dikey', 'kare'].indexOf(low) >= 0 ? low : '');
+      return id ? { patch: { aspect: id, imgAspect: id }, note: 'kadraj ' + ({ yatay: '16:9', dikey: '9:16', kare: '1:1' }[id]) } : null;
+    }
+    if (/^stil|^g(ö|o)rsel stil|^style/.test(f)) {
+      const id = has('holly') ? 'hollywood' : has('sinema', 'noir', 'karanlık') ? 'sinematik'
+        : has('belgesel', 'doğal', 'foto') ? 'belgeselfoto' : has('gravür', 'gravur', 'baskı') ? 'gravur'
+          : has('minyat', 'osmanlı') ? 'minyatur' : has('animasyon', 'pixar', '3d') ? 'animasyon'
+            : has('çizgi', 'cizgi', 'cartoon') ? 'cizgi'
+              : (this.STYLE_KEYS().indexOf(low) >= 0 ? low : '');
+      return id ? { patch: { style: id, imgStyle: id, imgStyleCat: this.STYLE_CAT_OF(id) }, note: 'stil ' + id } : null;
+    }
+    if (/^motor|^g(ö|o)rsel motor|^engine/.test(f)) {
+      const id = ['auto', 'gpt', 'gpt1', 'gemini'].indexOf(low) >= 0 ? low
+        : has('gemini', 'google') ? 'gemini' : has('gpt1', 'image 1', 'hızlı') ? 'gpt1'
+          : has('1.5', 'gpt', 'openai') ? 'gpt' : has('otomatik', 'auto') ? 'auto' : '';
+      return id ? { patch: { imgProvider: id }, note: 'görsel motoru ' + ({ auto: 'Otomatik', gpt: 'GPT Image 1.5', gpt1: 'GPT Image 1', gemini: 'Gemini' }[id]) } : null;
+    }
+    if (/^ses|^seslendir|^voice|^anlatıcı/.test(f)) {
+      const ids = ['kadir', 'seyfullah', 'sultan', 'emin', 'doga', 'adam', 'sevval', 'belma', 'mahidevran', 'cassius', 'animasyon-ses', 'mossbeard'];
+      let id = ids.indexOf(low) >= 0 ? low : ids.find(x => low.indexOf(x) >= 0) || '';
+      if (!id) { if (has('kadın', 'bayan')) id = 'sevval'; else if (has('erkek', 'bay')) id = 'kadir'; }
+      return id ? { patch: { voice: id }, note: 'ses ' + id } : null;
+    }
+    return null;
+  }
+  // Bir veya birden çok ayar direktifini TEK state yamasında uygula, onayla, kaydet,
+  // sonra done() ile (varsa) üretim direktiflerini çalıştır — state oturmuş olur.
+  _applyAyarlar(settings, done) {
+    const patch = {}; const notes = [];
+    for (const [, spec] of settings) {
+      const seg = String(spec || '').split(':');
+      const field = (seg.shift() || '').trim();
+      const val = seg.join(':').trim();
+      const r = this._resolveAyar(field, val);
+      if (r) { Object.assign(patch, r.patch); notes.push(r.note); }
+    }
+    if (!notes.length) { if (done) done(); return; }
+    this.setState(patch, () => {
+      this.persist();
+      this.setState(st => ({ chatMsgs: [...st.chatMsgs, { role: 'assistant', content: '✓ Ayarları güncelledim → ' + notes.join(' · ') + '.' }] }), () => this._scrollChat());
+      if (done) done();
+    });
   }
   // FAZ D — sohbetten gelen üretim direktifini yürüt. Kredi/ücret onayı ilgili
   // metotların içinde (startGenerate/makeImage/makeTts/openVideoModal) zaten var.
