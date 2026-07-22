@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Ajan Studio">
+  <defs>
+    <linearGradient id="tam-gold" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e6c478"/>
+      <stop offset="0.52" stop-color="#c19a52"/>
+      <stop offset="1" stop-color="#9c7733"/>
+    </linearGradient>
+  </defs>
+  <circle cx="24" cy="24" r="21.2" fill="none" stroke="url(#tam-gold)" stroke-width="2"/>
+  <circle cx="24" cy="24" r="15" fill="none" stroke="url(#tam-gold)" stroke-width="1" opacity="0.45"/>
+  <!-- pusula / ajan yıldızı -->
+  <path d="M24 5.5 L27.1 20.9 L42.5 24 L27.1 27.1 L24 42.5 L20.9 27.1 L5.5 24 L20.9 20.9 Z" fill="url(#tam-gold)"/>
+  <circle cx="24" cy="24" r="2.6" fill="url(#tam-gold)"/>
+  <circle cx="24" cy="24" r="1.15" fill="#0b0e16"/>
+</svg>
