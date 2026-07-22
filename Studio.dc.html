@@ -658,6 +658,7 @@
           <button class="ta-navbtn" onClick="{{ modeVideo }}" title="Aktif dosyanın video çalışma alanı (sahne videoları + belgesel)" style="{{ sideVideoActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg></span> Video</button>
           <button class="ta-navbtn" onClick="{{ modeSes }}" title="Aktif dosyanın seslendirme çalışma alanı" style="{{ sideSesActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg></span> Ses</button>
           <button class="ta-navbtn" onClick="{{ modeMontaj }}" title="Belgesel montaj masası: sahne sırala, tek tek seslendir, videoya bağla" style="{{ sideMontajActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 6v12M17 6v12M3 10h4M3 14h4M17 10h4M17 14h4"/></svg></span> Montaj</button>
+          <button class="ta-navbtn" onClick="{{ modeSerbest }}" title="Serbest Stüdyo: dosyasız, sıfırdan görsel/video/ses üret + kendi medyanı yükle + sunucu montajı" style="{{ sideSerbestActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M6.3 6.3l11.4 11.4M17.7 6.3L6.3 17.7"/></svg></span> Serbest</button>
           <div class="ta-side-head">ÇALIŞMALARIM</div>
           <button class="ta-navbtn" onClick="{{ goHistFiles }}" style="{{ sideDosyalarActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span> Dosyalarım</button>
           <button class="ta-navbtn" onClick="{{ goHistImages }}" style="{{ sideGorsellerActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M4 17l5-5 4 4 3-3 4 4"/></svg></span> Görsellerim</button>
@@ -766,6 +767,90 @@
               <button onClick="{{ modeWizard }}" style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.1); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .12em; padding: 10px; cursor: pointer; border-radius: 8px;" style-hover="background: rgba(193,154,82,.2);">STÜDYODA AÇ →</button>
             </aside>
           </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- SERBEST STÜDYO — dosyasız üretim panosu: prompt→görsel→video, metin→ses,
+             kendi medyanı yükle, sunucu (ffmpeg) montajı -->
+        <sc-if value="{{ isSerbest }}" hint-placeholder-val="{{ false }}">
+          <div style="animation: ta-rise .5s ease both; max-width: 900px; margin: 0 auto; display: grid; gap: 18px;">
+            <div>
+              <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ÜRET · SERBEST STÜDYO</p>
+              <h2 style="margin: 6px 0 4px; font-family: 'Playfair Display', serif; font-size: clamp(22px, 3vw, 30px); font-weight: 700;">Sıfırdan üret & montajla</h2>
+              <p style="margin: 0; color: #a4a9b5; font-size: 13.5px; line-height: 1.6;">Hikâye dosyası gerekmez. Prompt yaz → görsel üret → videoya çevir; metinden ses üret; kendi görsel/videolarını yükle; hepsini sunucuda tek videoya bağla. Oran <strong style="color:#c8cfdd;">{{ sbAspectLabel }}</strong> · stil <strong style="color:#c8cfdd;">{{ sbStyleLabel }}</strong> (Görsel sekmesinden değiştirilir).</p>
+            </div>
+
+            <!-- ÜRET / YÜKLE -->
+            <div style="border: 1px solid rgba(193,154,82,.22); background: rgba(8,11,19,.5); border-radius: 10px; padding: 16px; display: grid; gap: 12px;">
+              <textarea value="{{ sbPrompt }}" onChange="{{ onSbPrompt }}" rows="2" placeholder="Görsel promptu yaz — ör. 'gün batımında yalnız bir kervan, çöl, sinematik ışık'" style="width: 100%; resize: vertical; border: 1px solid rgba(129,135,151,.3); background: #060910; color: #e6dfcb; padding: 12px 14px; font-size: 13.5px; line-height: 1.55; border-radius: 7px;"></textarea>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <button onClick="{{ sbGoImage }}" disabled="{{ sbImgBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 11.5px; letter-spacing: .1em; padding: 12px 20px; border-radius: 7px;">{{ sbImgLabel }}</button>
+                <label style="border: 1px solid rgba(193,154,82,.45); background: rgba(193,154,82,.07); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; padding: 11px 16px; cursor: pointer; border-radius: 7px;">⬆ GÖRSEL/VİDEO YÜKLE<input type="file" accept="image/*,video/*" multiple onChange="{{ sbUpload }}" style="display: none;"></label>
+                <span style="color: #818797; font-size: 12px;">{{ sbClipCount }} klip panoda</span>
+              </div>
+            </div>
+
+            <!-- KLİP PANOSU -->
+            <sc-if value="{{ sbHasClips }}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; gap: 12px;">
+                <sc-for list="{{ sbClipsView }}" as="c" hint-placeholder-count="0">
+                  <div style="border: 1px solid rgba(193,154,82,.18); background: rgba(8,11,19,.55); border-radius: 9px; padding: 12px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; min-width: 26px;">{{ c.no }}</span>
+                    <sc-if value="{{ c.isVid }}" hint-placeholder-val="{{ false }}">
+                      <video src="{{ c.url }}" controls playsinline loop style="width: 150px; max-height: 110px; border-radius: 6px; border: 1px solid rgba(193,154,82,.3); background: #000;"></video>
+                    </sc-if>
+                    <sc-if value="{{ c.isImg }}" hint-placeholder-val="{{ true }}">
+                      <img src="{{ c.url }}" alt="" style="width: 150px; max-height: 110px; object-fit: cover; border-radius: 6px; border: 1px solid rgba(193,154,82,.3);">
+                    </sc-if>
+                    <div style="flex: 1; min-width: 160px;">
+                      <p style="margin: 0; color: #d3d7e0; font-size: 12.5px; line-height: 1.4;">{{ c.label }}</p>
+                      <p style="margin: 3px 0 0; color: #818797; font-size: 11px;">{{ c.badge }}</p>
+                    </div>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                      <button onClick="{{ c.up }}" title="Yukarı" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; width: 32px; height: 32px; border-radius: 6px; cursor: pointer;">▲</button>
+                      <button onClick="{{ c.down }}" title="Aşağı" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; width: 32px; height: 32px; border-radius: 6px; cursor: pointer;">▼</button>
+                      <sc-if value="{{ c.canVideo }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ c.toVideo }}" title="Videoya çevir" style="border: 1px solid rgba(110,70,210,.5); background: rgba(110,70,210,.14); color: #b9a0ff; font-size: 11px; padding: 7px 11px; border-radius: 6px; cursor: pointer;">🎬 Video</button>
+                      </sc-if>
+                      <button onClick="{{ c.dl }}" title="İndir" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 11px; padding: 7px 11px; border-radius: 6px; cursor: pointer;">⬇</button>
+                      <button onClick="{{ c.remove }}" title="Sil" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; width: 32px; height: 32px; border-radius: 6px; cursor: pointer;" style-hover="color: #e08a80;">✕</button>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- SESLENDİRME -->
+            <div style="border: 1px solid rgba(193,154,82,.22); background: rgba(8,11,19,.5); border-radius: 10px; padding: 16px; display: grid; gap: 10px;">
+              <p style="margin: 0; color: #b7a06a; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em;">SESLENDİRME (opsiyonel · montaja tek şerit olarak eklenir)</p>
+              <textarea value="{{ sbVoiceText }}" onChange="{{ onSbVoiceText }}" rows="2" placeholder="Seslendirme metni yaz — montajda videonun altına döşenir." style="width: 100%; resize: vertical; border: 1px solid rgba(129,135,151,.3); background: #060910; color: #e6dfcb; padding: 12px 14px; font-size: 13.5px; line-height: 1.55; border-radius: 7px;"></textarea>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <button onClick="{{ sbVoiceGo }}" disabled="{{ sbVoiceBusy }}" style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.1); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; padding: 11px 16px; cursor: pointer; border-radius: 7px;">{{ sbVoiceLabel }}</button>
+                <sc-if value="{{ sbHasVoice }}" hint-placeholder-val="{{ false }}">
+                  <audio src="{{ sbVoiceUrl }}" controls style="height: 34px;"></audio>
+                </sc-if>
+              </div>
+            </div>
+
+            <!-- MONTAJ -->
+            <div style="border: 1px solid rgba(110,70,210,.35); background: linear-gradient(120deg, rgba(110,70,210,.08), rgba(8,7,12,.4)); border-radius: 10px; padding: 18px; display: grid; gap: 12px;">
+              <p style="margin: 0; color: #b9a0ff; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em;">SUNUCU MONTAJI (ffmpeg) — klipleri sırayla + seslendirmeyle tek videoya bağlar</p>
+              <div>
+                <button onClick="{{ sbMontage }}" disabled="{{ sbMontajBusy }}" style="border: 0; cursor: pointer; color: #fff; border-radius: 8px; padding: 13px 22px; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 11.5px; letter-spacing: .1em; background: linear-gradient(115deg,#5b32b8,#7c50d8 55%,#9a72ee); box-shadow: 0 8px 22px rgba(110,70,210,.32);">{{ sbMontajLabel }}</button>
+              </div>
+              <sc-if value="{{ sbMontajBusy }}" hint-placeholder-val="{{ false }}">
+                <div style="height: 8px; border-radius: 5px; background: rgba(255,255,255,.08); overflow: hidden;"><div style="{{ sbMontajBarStyle }}"></div></div>
+                <p style="margin: 0; color: #a4a9b5; font-size: 12px;">{{ sbMontajMsg }}</p>
+              </sc-if>
+              <sc-if value="{{ sbHasMontaj }}" hint-placeholder-val="{{ false }}">
+                <video src="{{ sbMontajUrl }}" controls playsinline style="width: 100%; max-width: 480px; border-radius: 8px; border: 1px solid rgba(193,154,82,.3); box-shadow: 0 10px 34px rgba(0,0,0,.5);"></video>
+                <div><button onClick="{{ sbMontajDl }}" style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.1); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; padding: 10px 16px; cursor: pointer; border-radius: 7px;">⬇ VİDEOYU İNDİR</button></div>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ sbErr }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">{{ sbErr }}</p>
+            </sc-if>
           </div>
         </sc-if>
 
@@ -2710,6 +2795,12 @@ class Component extends DCLogic {
       batchRestored: savedBatchRestored,         // yenileme sonrası "devam eden üretim" bildirimi
       batchTick: 0,                              // canlı "kalan süre" için 1sn'lik re-render sayacı
       vpPlaying: '', vpBusy: '',
+      // SERBEST STÜDYO — hikâye dosyasından bağımsız üretim panosu (sıfırdan
+      // görsel/video/ses + yükleme + sunucu montajı). Klip: {id,type:'img'|'vid',
+      // url, prompt, dur, source:'gen'|'upload'}. Sesler ayrı tek şerit.
+      sbClips: [], sbPrompt: '', sbBusy: '', sbErr: '',
+      sbVoiceText: '', sbVoiceUrl: '', sbVoiceBusy: false,
+      sbMontajUrl: '', sbMontajPct: 0, sbMontajMsg: '', sbMontajBusy: false,
       step: w ? 4 : 1,
       idea: (w && w.idea) || '', ideaWarn: '', ideaChat: '',
       fromArsiv: false, arsivPick: false, chipSeed: this._pickChips(),
@@ -5335,6 +5426,110 @@ class Component extends DCLogic {
       } else { this.dlVideo(url); }
     } catch (e) { /* kullanıcı iptal etti — sessiz */ }
   }
+  // ══════════════════════════════════════════════════════════════════════
+  // SERBEST STÜDYO — hikâye dosyasından bağımsız üretim panosu.
+  // Sıfırdan: prompt→görsel, görsel→video, metin→ses, kendi görsel/video yükle;
+  // sonra sunucu (ffmpeg) montajı ile tek videoya bağla. Üretim mevcut motorları
+  // (makeImage / makeVideo / ttsServer) 'sb<id>' anahtarıyla yeniden kullanır.
+  // ══════════════════════════════════════════════════════════════════════
+  serbestGo() { this.setState({ mode: 'serbest', sbErr: '' }, () => { try { window.scrollTo(0, 0); } catch (e) {} }); }
+  _sbId() { return 'sb' + (Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36)); }
+  // Bir klibin GÜNCEL medya URL'si: üretilmişse video>görsel; yüklenmişse kendi url'si.
+  _sbMedia(clip) {
+    if (!clip) return { url: '', kind: 'img' };
+    if (clip.source === 'upload') return { url: clip.url, kind: clip.type };
+    const si = (this.state.sceneImgs || {})[clip.key] || {};
+    if (si.vidUrl) return { url: si.vidUrl, kind: 'vid' };
+    return { url: si.url || '', kind: 'img' };
+  }
+  // PROMPT → GÖRSEL: mevcut makeImage'ı sb anahtarıyla çağırır (kredi/oran/stil aynı).
+  async sbGenImage() {
+    const prompt = (this.state.sbPrompt || '').trim();
+    if (!prompt) { this.setState({ sbErr: 'Önce bir görsel promptu yaz.' }); return; }
+    const gen = this.resolveImageGenerationSettings('');
+    if (!gen.valid) { this.setState({ sbErr: gen.err || 'Görsel ayarlarını tamamla (oran + stil).' }); return; }
+    if (this.state.sbBusy) return;
+    const id = this._sbId(), key = id;   // sb<...> zaten benzersiz → doğrudan anahtar
+    this.setState({ sbBusy: 'img', sbErr: '' });
+    try {
+      const r = await this.makeImage(prompt, 0, key, gen.arKey, undefined, undefined, gen.styleId);
+      if (r && r.ok !== false && (this.state.sceneImgs || {})[key] && this.state.sceneImgs[key].url) {
+        this.setState(st => ({ sbClips: [...st.sbClips, { id, key, type: 'img', source: 'gen', prompt }], sbBusy: '', sbPrompt: '' }), () => this.persist());
+      } else {
+        this.setState({ sbBusy: '', sbErr: (r && r.err) === 'YETERSIZ_KREDI' ? '' : 'Görsel üretilemedi, tekrar dene.' });
+      }
+    } catch (e) { this.setState({ sbBusy: '', sbErr: 'Görsel üretilemedi: ' + (e.message || 'hata') }); }
+  }
+  // GÖRSEL → VİDEO: mevcut video modalını sb anahtarıyla açar (kredi akışı aynı).
+  sbToVideo(id) {
+    const clip = (this.state.sbClips || []).find(c => c.id === id); if (!clip) return;
+    if (clip.source === 'upload') { this.setState({ sbErr: 'Video, yalnız ÜRETİLEN görselden çıkarılır (yüklenen görsel sunucuya erişemez). Prompttan üret, sonra videoya çevir.' }); return; }
+    const si = (this.state.sceneImgs || {})[clip.key] || {};
+    if (!si.url) return;
+    this.openVideoModal({ kind: 'scene', key: clip.key, url: si.url });
+  }
+  // KENDİ GÖRSEL/VİDEO YÜKLE → klip (dataURL). Montajda kullanılır; büyük dosya uyarısı.
+  sbUpload(e) {
+    const files = Array.from((e.target && e.target.files) || []);
+    if (!files.length) return;
+    files.forEach(f => {
+      if (f.size > 40 * 1024 * 1024) { this.setState({ sbErr: f.name + ' çok büyük (40MB üstü) — atlandı.' }); return; }
+      const rd = new FileReader();
+      rd.onload = () => {
+        const url = rd.result, type = /^video\//.test(f.type) ? 'vid' : 'img';
+        this.setState(st => ({ sbClips: [...st.sbClips, { id: this._sbId(), type, source: 'upload', url, name: f.name }] }));
+      };
+      rd.readAsDataURL(f);
+    });
+    try { e.target.value = ''; } catch (_e) {}
+  }
+  sbRemove(id) { this.setState(st => ({ sbClips: st.sbClips.filter(c => c.id !== id) }), () => this.persist()); }
+  sbMove(id, dir) {
+    this.setState(st => {
+      const a = [...st.sbClips], i = a.findIndex(c => c.id === id); if (i < 0) return {};
+      const j = i + dir; if (j < 0 || j >= a.length) return {};
+      [a[i], a[j]] = [a[j], a[i]]; return { sbClips: a };
+    }, () => this.persist());
+  }
+  // METİN → SES: mevcut ttsServer (kredi sunucuda). Tek seslendirme şeridi.
+  async sbVoice() {
+    const t = (this.state.sbVoiceText || '').trim();
+    if (!t) { this.setState({ sbErr: 'Seslendirilecek metni yaz.' }); return; }
+    if (this.state.sbVoiceBusy) return;
+    this.setState({ sbVoiceBusy: true, sbErr: '' });
+    try {
+      const tts = await this.ttsServer(t);
+      this.setState({ sbVoiceBusy: false, sbVoiceUrl: tts.url }, () => this.persist());
+    } catch (e) {
+      this.setState({ sbVoiceBusy: false, sbErr: e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Ses üretilemedi: ' + e.message) });
+    }
+  }
+  // SUNUCU MONTAJI: klip manifesti + ses → ffmpeg edge fonksiyonu (studio-montage).
+  // Manifest: sıralı [{url, kind, dur}] + voiceUrl + oran. Sunucu tek MP4 döner.
+  async sbMontage() {
+    const clips = (this.state.sbClips || []).map(c => { const m = this._sbMedia(c); return { url: m.url, kind: m.kind, dur: c.dur || 4 }; }).filter(c => c.url);
+    if (clips.length < 1) { this.setState({ sbErr: 'Montaj için en az bir görsel/video ekle.' }); return; }
+    if (this.state.sbMontajBusy) return;
+    // Yüklenen dataURL klipleri sunucuya gönderilemez (çok büyük / erişilemez) → yalnız
+    // sunucu-barındırmalı (üretilmiş) medya montajlanır; yükleme sunucu tarafında desteklenince açılır.
+    const remote = clips.filter(c => /^https?:/.test(c.url));
+    if (!remote.length) { this.setState({ sbErr: 'Sunucu montajı şimdilik ÜRETİLEN (bulutta barındırılan) medyayı birleştirir. Prompttan görsel/video üret, sonra montajla.' }); return; }
+    this.setState({ sbMontajBusy: true, sbMontajPct: 5, sbMontajMsg: 'Montaj sunucuya gönderiliyor…', sbErr: '', sbMontajUrl: '' });
+    try {
+      const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+      const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+      const token = this._token() || SB_KEY;
+      const body = { action: 'montage', clips: remote, voiceUrl: /^https?:/.test(this.state.sbVoiceUrl || '') ? this.state.sbVoiceUrl : '', aspect: this.state.aspect || '9:16' };
+      const r = await fetch(SB_URL + '/functions/v1/studio-montage', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(body) });
+      if (r.status === 404) { this.setState({ sbMontajBusy: false, sbMontajPct: 0, sbErr: 'Sunucu montaj motoru henüz yayında değil (studio-montage). Kredi düşülmedi — birazdan aktif olacak.' }); return; }
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.ok || !d.url) throw new Error(d.error || ('montaj hatası (' + r.status + ')'));
+      this.setState({ sbMontajBusy: false, sbMontajPct: 100, sbMontajMsg: '', sbMontajUrl: d.url });
+    } catch (e) {
+      this.setState({ sbMontajBusy: false, sbMontajPct: 0, sbMontajMsg: '', sbErr: e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Montaj başarısız: ' + (e.message || 'hata')) });
+    }
+  }
+
   async buildDocVideo(opts, onProg) {
     opts = opts || {};
     // Altyazı stili: 'minimal' (öneri) / 'serit' / 'vurgu' / 'none'. Konum güvenli
@@ -6966,6 +7161,51 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       sideVideoActive: (s.mode === 'wizard' && s.step === 4 && s.tab === 'video') ? SIDE_ON : {},
       sideSesActive: (s.mode === 'wizard' && s.step === 4 && s.tab === 'ses') ? SIDE_ON : {},
       sideMontajActive: s.mode === 'montaj' ? SIDE_ON : {},
+      // ── SERBEST STÜDYO ──
+      modeSerbest: () => this.serbestGo(),
+      isSerbest: s.mode === 'serbest',
+      sideSerbestActive: s.mode === 'serbest' ? SIDE_ON : {},
+      sbAspectLabel: ({ yatay: '16:9', dikey: '9:16', kare: '1:1' }[s.aspect] || (s.aspect || '9:16')),
+      sbStyleLabel: (this.find('style', s.style) || {}).name || (s.style || 'sinematik'),
+      sbPrompt: s.sbPrompt || '',
+      onSbPrompt: e => this.setState({ sbPrompt: e.target.value }),
+      sbGoImage: () => this.sbGenImage(),
+      sbImgBusy: s.sbBusy === 'img',
+      sbImgLabel: s.sbBusy === 'img' ? 'ÜRETİLİYOR…' : '◈ GÖRSEL ÜRET',
+      sbUpload: e => this.sbUpload(e),
+      sbClipCount: (s.sbClips || []).length,
+      sbHasClips: (s.sbClips || []).length > 0,
+      sbClipsView: (s.sbClips || []).map((c, i) => {
+        const m = this._sbMedia(c);
+        const isVid = m.kind === 'vid';
+        return {
+          no: (i + 1) + '.', url: m.url, isVid, isImg: !isVid,
+          label: c.source === 'gen' ? (c.prompt || 'Üretilen görsel') : (c.name || 'Yüklenen ' + (c.type === 'vid' ? 'video' : 'görsel')),
+          badge: c.source === 'gen' ? (isVid ? '🎬 video (üretildi)' : '🖼 görsel (üretildi)') : '⬆ yüklendi',
+          canVideo: c.source === 'gen' && !isVid,
+          toVideo: () => this.sbToVideo(c.id),
+          up: () => this.sbMove(c.id, -1),
+          down: () => this.sbMove(c.id, 1),
+          dl: () => { try { const a = document.createElement('a'); a.href = m.url; a.download = (isVid ? 'klip.mp4' : 'gorsel.png'); a.click(); } catch (e) {} },
+          remove: () => this.sbRemove(c.id)
+        };
+      }),
+      sbVoiceText: s.sbVoiceText || '',
+      onSbVoiceText: e => this.setState({ sbVoiceText: e.target.value }),
+      sbVoiceGo: () => this.sbVoice(),
+      sbVoiceBusy: !!s.sbVoiceBusy,
+      sbVoiceLabel: s.sbVoiceBusy ? 'SES ÜRETİLİYOR…' : '🎙 SESLENDİRME ÜRET',
+      sbHasVoice: !!s.sbVoiceUrl,
+      sbVoiceUrl: s.sbVoiceUrl || '',
+      sbMontage: () => this.sbMontage(),
+      sbMontajBusy: !!s.sbMontajBusy,
+      sbMontajLabel: s.sbMontajBusy ? 'MONTAJLANIYOR…' : '🎞 SUNUCUDA MONTAJLA',
+      sbMontajMsg: s.sbMontajMsg || '',
+      sbMontajBarStyle: { width: (s.sbMontajPct || 0) + '%', height: '100%', background: 'linear-gradient(90deg,#7c50d8,#b57bff)', transition: 'width .3s' },
+      sbHasMontaj: !!s.sbMontajUrl,
+      sbMontajUrl: s.sbMontajUrl || '',
+      sbMontajDl: () => this.dlVideo(s.sbMontajUrl),
+      sbErr: s.sbErr || '',
       sideDosyalarActive: (s.mode === 'history' && (s.histTab || 'files') === 'files') ? SIDE_ON : {},
       sideGorsellerActive: (s.mode === 'history' && s.histTab === 'images') ? SIDE_ON : {},
       sideVideolarActive: (s.mode === 'history' && s.histTab === 'videos') ? SIDE_ON : {},
