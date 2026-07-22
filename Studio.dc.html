@@ -2298,7 +2298,18 @@
     <div onClick="{{ videoModalClose }}" style="position: fixed; inset: 0; z-index: 1300; display: grid; place-items: center; background: rgba(2,3,8,.9); padding: 20px;">
       <div onClick="{{ videoModalStop }}" style="width: 100%; max-width: 440px; background: #0a0e18; border: 1px solid rgba(193,154,82,.35); box-shadow: 0 30px 90px rgba(0,0,0,.7); padding: 22px;">
         <p style="margin: 0 0 4px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 13px; letter-spacing: .12em;">🎬 VİDEO ÜRET</p>
-        <p style="margin: 0 0 16px; color: #818797; font-size: 12px; line-height: 1.55;">Sağlayıcıyı ve süreyi seç. Maliyet sağlayıcıya göre sunucuda kesinleşir; hata olursa kredin iade edilir ve başka sağlayıcıyla deneyebilirsin.</p>
+        <p style="margin: 0 0 14px; color: #818797; font-size: 12px; line-height: 1.55;">Sağlayıcıyı ve süreyi seç. Maliyet sağlayıcıya göre sunucuda kesinleşir; hata olursa kredin iade edilir ve başka sağlayıcıyla deneyebilirsin.</p>
+        <sc-if value="{{ videoModalHasMotion }}" hint-placeholder-val="{{ false }}">
+          <div style="margin: 0 0 16px; border: 1px solid rgba(146,87,238,.3); background: rgba(146,87,238,.07); border-radius: 8px; padding: 10px 12px;">
+            <p style="margin: 0 0 5px; color: #c4a7ff; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">🎥 UYGULANACAK KAMERA HAREKETİ</p>
+            <p style="margin: 0; color: #c8cfdd; font-size: 11.5px; line-height: 1.5; max-height: 76px; overflow: auto;">{{ videoModalMotion }}</p>
+          </div>
+        </sc-if>
+        <sc-if value="{{ videoModalNoMotion }}" hint-placeholder-val="{{ false }}">
+          <div style="margin: 0 0 16px; border: 1px solid rgba(230,196,120,.35); background: rgba(230,196,120,.08); border-radius: 8px; padding: 10px 12px;">
+            <p style="margin: 0; color: #e6c478; font-size: 11.5px; line-height: 1.5;">⚠ Bu sahnenin video promptu boş — hareket jenerik (hafif zoom) olur. Dilersen önce sahnede "Ajanla Düzenle" ile hareket promptu ekleyebilirsin.</p>
+          </div>
+        </sc-if>
         <p style="margin: 0 0 8px; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">SÜRE</p>
         <div style="display: flex; gap: 8px; margin-bottom: 16px;">
           <sc-for list="{{ videoModalDurations }}" as="vd" hint-placeholder-count="2">
@@ -4613,6 +4624,16 @@ class Component extends DCLogic {
   // İstemci maliyet AYNASI (yalnız gösterim/ön kontrol; kesin ücret sunucuda videoCost ile hesaplanır)
   VID_COST(sec, prov) { const s = Math.round(Math.min(15, Math.max(3, sec || 5))); const k = prov === 'kling'; return Math.max(k ? 300 : 120, s * (k ? 60 : 24)); }
   openVideoModal(desc) { this.setState({ videoModal: Object.assign({ provider: 'kling', sec: 5, audio: 'silent' }, desc) }); }
+  // Video modalında gösterilecek HAREKET promptu (sahnenin video_promptu, yoksa görsel promptu)
+  _videoModalMotion() {
+    const vm = this.state.videoModal || {};
+    if (vm.kind !== 'scene') return '';
+    const m = /^([a-z]+)(\d+)$/.exec(vm.key || '');
+    if (!m) return '';
+    const i = +m[2], r = this.state.result || {};
+    const vp = r.video_promptlar || [], gp = r.gorsel_promptlar || [];
+    return ((vp[i] && vp[i].prompt) || (gp[i] && gp[i].prompt) || '').trim();
+  }
   submitVideoModal() {
     const vm = this.state.videoModal; if (!vm) return;
     const prov = (vm.provider === 'kling') ? 'kling' : 'grok';   // yalnız çalışan sağlayıcılar; veo/higgs modalda pasif
@@ -5295,6 +5316,16 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   // TEK bölüm için k sahnelik görsel+video promptu — 2 deneme, sonra
   // deterministik geri dönüş (asla boş dönmez). Çağrılar küçük olduğu için
   // truncation/zaman aşımı olmaz; her biri ücretsiz ('scenes' aksiyonu).
+  // SİSTEM SARMALAYICI: AI yalnız sahne İÇERİĞİ verir; stil öneki + oran + anti-artifact
+  // burada eklenir (deterministik → asla kesilmez, tüm sahnelerde birebir tutarlı).
+  // AI kuralı unutup stil önekini yine de yazdıysa çift eklemeyi önler.
+  _wrapScenePrompt(content, cfg) {
+    let c = String(content || '').trim().replace(/^[\s,.:;–-]+/, '').replace(/[\s,.]+$/, '');
+    if (!c) return c;
+    const head = (cfg.stilStr || '').trim().slice(0, 14).toLowerCase();
+    if (head && c.toLowerCase().startsWith(head)) return c;   // zaten tam prompt (nadir) → dokunma
+    return (cfg.stilStr || '') + ', ' + (cfg.oran || '') + ', ' + c + '. ' + (cfg.anti || '');
+  }
   async sceneBatch(section, k, idx, totalSecs, cfg, labelBase) {
     const bolum = (section && section.bolum) || (idx + '. bölüm');
     const metin = ((section && section.metin) || '').slice(0, 1800);
@@ -5305,10 +5336,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       '🎥 YÖNETMEN GÖRSEL DİLİ — TÜM SAHNELER bu tek dili paylaşır (film tek parça gibi tutarlı olsun; palet, ışık, lens ve atmosfer sahneden sahneye AYNI kalır): ' + cfg.treatment + '\n' +
       '🎬 BEAT YÖNETİMİ (bir yönetmen gibi düşün): her sahnenin duygusal beat\'ini anlatımdan çıkar ve çekimi ONA göre seç — açılış anlarında atmosferik geniş KURULUŞ çekimi (mekânı ve bağlamı kur), gelişimde artan gerilimle çeşitli açı ve mesafeler, en kritik/dönüm anında dramatik yakın ya da alçak açı, kapanışta çözülme veya geri çekilme. Kompozisyonu duyguya HİZMET ettir (rule of thirds, leading lines, foreground/midground/background katmanları, negatif alan).\n' +
       bibleLine +
-      'GÖRSEL PROMPT: İngilizce, "' + cfg.stilStr + '" ile BAŞLAR, "' + cfg.oran + '" içerir; ana özne+aksiyon, dönem-doğru mekân/kıyafet/nesne (anakronizm YOK), yönetmen dilindeki ışık/palet/atmosfer, o beat\'e uygun kompozisyon/kamera açısı, renk/duygu, doku katmanları (~55-85 kelime), şu satırla BİTER: "' + cfg.anti + '". Tanınmış tarihî kişi geçiyorsa jenerik yazma: belgelenmiş görünümünü (yüz şekli, burun, sakal/bıyık, yaş, başlık/kıyafet) portre kaynaklarına göre tarif et.\n' +
+      'GÖRSEL PROMPT: İngilizce, YALNIZCA sahnenin İÇERİĞİNİ yaz (~45-70 kelime): ana özne+aksiyon, dönem-doğru mekân/kıyafet/nesne (anakronizm YOK), yönetmen dilindeki ışık/palet/atmosfer, o beat\'e uygun kadraj/kamera açısı/mesafe, renk/duygu, doku katmanları. ÖNEMLİ: stil önekini ("ultra-photorealistic…" gibi), en-boy oranını ve "No modern text…" anti-artifact satırını YAZMA — sistem bunları otomatik ekleyecek; sen tekrar yazarsan prompt şişer ve KESİLİR. Tanınmış tarihî kişi geçiyorsa jenerik yazma: belgelenmiş görünümünü (yüz şekli, burun, sakal/bıyık, yaş, başlık/kıyafet) portre kaynaklarına göre tarif et.\n' +
       '🎬 ÇEŞİTLİLİK (EN ÖNEMLİ KURAL — görseller BİRBİRİNİN AYNISI olmasın): Bu bölümdeki ' + k + ' sahnenin HER BİRİ FARKLI bir çekim türü + kadraj + açı + mesafe kullanır. Şu çekim türlerini sahneler arasında DÖNDÜR, arka arkaya aynısını KULLANMA: wide establishing shot (mekânı/kalabalığı göster, insanlar küçük), over-the-shoulder, low-angle kahraman çekimi, extreme close-up (eller / bir belge / bir nesne / bir detay), profil ya da üç-çeyrek açı, hareket hâlinde aksiyon çekimi (yürürken/dövüşürken/at üstünde), high-angle kuşbakışı, insansız atmosferik mekân/manzara çekimi. HEPSİ ortada duran, göğüsten yukarı, karşıya bakan portre OLMAYACAK — en çok BİR sahne yakın portre olabilir.\n' +
       '👁 BAKIŞ KURALI: Özneler kameraya/lense BAKMAZ. Anın içinde, kendi eylemine dalmış, doğal biçimde yakalanır (candid documentary moment, subject NOT looking at the camera, no eye contact with the lens, gaze directed within the scene). Tek istisna: anlatım doğrudan bir hitap/meydan okumaysa. Aynı kişi birden çok sahnede geçse bile HER SEFERİNDE farklı an, farklı açı, farklı mesafe, farklı eylem.\n' +
-      'VİDEO PROMPT: o sahnenin GÖRSELİYLE ve beat\'iyle UYUMLU tek, ölçülü bir kamera hareketi 5-8 sn (~30-50 kelime). Hareketi kompozisyona göre seç: yakın portre/duygu anında yavaş push-in + hafif rack focus; geniş manzara/epik anda yavaş crane ya da yatay kaydırma (parallax\'la derinlik); gerilim/dönüm anında yavaş dolly-in ile sıkışma; huzurlu anda çok hafif drift/parallax. Hareket görseldeki mevcut çizgileri ve derinliği TAKİP etsin, özneyi ve kompozisyonu BOZMADAN canlandırsın; abartılı/hızlı hareket YOK. Şu satırla biter: "' + cfg.vidTail + '". Bir karakter sahnede geçiyorsa yukarıdaki SABİT kimlik tarifini promptun başında birebir tekrarla (tutarlı yüz için).\n' +
+      'VİDEO PROMPT: o sahnenin GÖRSELİYLE ve beat\'iyle UYUMLU tek, ölçülü bir kamera hareketi 5-8 sn (~25-40 kelime). Hareketi kompozisyona göre seç: yakın portre/duygu anında yavaş push-in + hafif rack focus; geniş manzara/epik anda yavaş crane ya da yatay kaydırma (parallax\'la derinlik); gerilim/dönüm anında yavaş dolly-in ile sıkışma; huzurlu anda çok hafif drift/parallax. Hareket görseldeki mevcut çizgileri ve derinliği TAKİP etsin, özneyi ve kompozisyonu BOZMADAN canlandırsın; abartılı/hızlı hareket YOK. Yalnız kamera hareketini yaz — stil öneki/anti-artifact tekrar YAZMA (sistem ekler).\n' +
       'ÇIKTI: SADECE geçerli tek JSON, ilk karakter { son karakter }. Şema: {"gorsel_promptlar":[{"sahne":"kısa Türkçe sahne adı","anlatim":"bu görselin anlattığı Türkçe seslendirme cümlesi","prompt":"İngilizce görsel"}],"video_promptlar":[{"sahne":"aynı sahne adı","prompt":"İngilizce video"}]}. Her dizi TAM ' + k + ' öğe.\n\nBÖLÜM METNİ:\n' + (metin || bolum);
     const maxTok = Math.min(4000, 800 + k * 260);
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -5316,17 +5347,22 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const txt = await this.askAI(prompt, maxTok, 'scenes');
         const j = this.parseGenJson(txt);
         if (!j) throw new Error('parse');
-        const g = (Array.isArray(j.gorsel_promptlar) ? j.gorsel_promptlar : []).filter(x => x && x.prompt);
+        const gRaw = (Array.isArray(j.gorsel_promptlar) ? j.gorsel_promptlar : []).filter(x => x && x.prompt);
         const v = (Array.isArray(j.video_promptlar) ? j.video_promptlar : []).filter(x => x && x.prompt);
-        if (g.length) {
+        if (gRaw.length) {
+          // STİL + ORAN + ANTI-ARTIFACT sistem tarafından sarılır (AI sadece sahne
+          // içeriğini yazar → prompt KESİLMEZ, yönetmen çeşitlilik kuralları hayatta kalır).
+          const g = gRaw.map(x => ({ ...x, prompt: this._wrapScenePrompt(x.prompt, cfg) }));
           // Her GÖRSEL sahnesi mutlaka dolu bir VİDEO promptu alır (boş kalmaz):
           // LLM o sahne için video verdiyse onu, vermediyse sahneyi canlandıran
           // deterministik bir kamera-hareketi promptu kullan. Görselle birebir eşleşir.
           const camTpl = 'One slow cinematic camera move over 6 seconds — gentle push-in with subtle parallax — bringing this exact scene to life while keeping its composition, subject and lighting. ' + cfg.vidTail;
-          const video = g.map((x, n) => ({
-            sahne: (v[n] && v[n].sahne) || x.sahne,
-            prompt: (v[n] && (v[n].prompt || '').trim()) ? v[n].prompt : camTpl
-          }));
+          const video = g.map((x, n) => {
+            const vp = (v[n] && (v[n].prompt || '').trim()) ? v[n].prompt.trim() : '';
+            // video promptu vidTail ile bitsin (AI unutmuş olabilir); boşsa deterministik
+            const withTail = vp ? (/no (warping|morphing|flicker)/i.test(vp) ? vp : vp.replace(/[.\s]+$/, '') + '. ' + cfg.vidTail) : camTpl;
+            return { sahne: (v[n] && v[n].sahne) || x.sahne, prompt: withTail };
+          });
           return { gorsel: g, video: video };
         }
       } catch (e) { /* dene tekrar → sonra geri dönüş */ }
@@ -6631,6 +6667,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       goImgStudio: () => this.goImgStudio(),
       // ── VİDEO SAĞLAYICI/SÜRE/MALİYET MODALI (Video Üret'e basınca açılır) ──
       videoModalOpen: !!s.videoModal,
+      // ŞEFFAFLIK: bu sahnede video için hangi HAREKET promptu gönderilecek — göster.
+      videoModalMotion: this._videoModalMotion(),
+      videoModalHasMotion: !!this._videoModalMotion(),
+      videoModalNoMotion: (s.videoModal && s.videoModal.kind === 'scene' && !this._videoModalMotion()),
       videoModalStop: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
       videoModalClose: () => this.setState({ videoModal: null }),
       videoModalDurations: (() => {
