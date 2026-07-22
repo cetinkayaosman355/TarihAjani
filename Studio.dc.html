@@ -1960,6 +1960,8 @@
                             <img src="{{ ds.img }}" alt="" style="{{ ds.thumbStyle }}">
                             <span style="flex: 1; min-width: 0; color: #cfd3dc; font-size: 11.5px; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{ ds.text }}</span>
                             <span style="flex: 0 0 auto; display: flex; gap: 3px; align-items: center;">
+                              <button onClick="{{ ds.voice }}" disabled="{{ ds.voiceBusy }}" title="{{ ds.voiceTitle }}" style="border: 1px solid rgba(146,87,238,.4); background: rgba(146,87,238,.08); color: #d9c8ff; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;" style-hover="background: rgba(146,87,238,.2);">{{ ds.voiceIcon }}</button>
+                              <button onClick="{{ ds.vid }}" title="{{ ds.vidTitle }}" style="border: 1px solid rgba(146,87,238,.4); background: rgba(146,87,238,.08); color: #d9c8ff; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;" style-hover="background: rgba(146,87,238,.2);">🎬</button>
                               <button onClick="{{ ds.up }}" disabled="{{ ds.first }}" title="Yukarı" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">▲</button>
                               <button onClick="{{ ds.down }}" disabled="{{ ds.last }}" title="Aşağı" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">▼</button>
                               <button onClick="{{ ds.toggle }}" title="{{ ds.toggleTitle }}" style="{{ ds.toggleStyle }}">{{ ds.toggleIcon }}</button>
@@ -1970,7 +1972,7 @@
                       <sc-if value="{{ docMontageMsg }}" hint-placeholder-val="{{ false }}">
                         <p style="margin: 6px 0 0; color: #e6c478; font-size: 11px;">{{ docMontageMsg }}</p>
                       </sc-if>
-                      <p style="margin: 7px 0 0; color: #676d7c; font-size: 11px; line-height: 1.5;">Sahneleri yukarı/aşağı taşı, gereksizleri gözden çıkar (👁). Videoya yalnız <strong style="color: #c4b3ff;">dahil</strong> sahneler, bu sırayla girer.</p>
+                      <p style="margin: 7px 0 0; color: #676d7c; font-size: 11px; line-height: 1.5;">Sahneleri yukarı/aşağı taşı, gereksizleri gözden çıkar (👁). Videoya yalnız <strong style="color: #c4b3ff;">dahil</strong> sahneler, bu sırayla girer. <strong style="color: #c4b3ff;">🎙</strong> o sahnenin seslendirmesini tek başına üretir (▶ ile dinlersin; montaj aynı sesi <strong style="color: #c4b3ff;">kredisiz</strong> kullanır), <strong style="color: #c4b3ff;">🎬</strong> o sahneden tek AI video çıkarır.</p>
                     </sc-if>
                   </div>
                 </div>
@@ -2444,6 +2446,10 @@ class Component extends DCLogic {
       shortBusy: false, suggestBusy: false,
       reportBusy: false, reportRef: '', reportCtx: null,   // sorun bildirimi durumu (kayıt + mail) + ajan jest bağlamı
       imgPrompt: '', imgQueue: [], sceneImgs: (w && w.sceneImgs) || {}, sceneOpts: (w && w.sceneOpts) || {}, promptHist: (w && w.promptHist) || {}, savedImgs: [], srvImages: [], belgeselVids: [], vidFilter: 'all', imgSel: {},
+      // MONTAJ kalıcılığı: sahne sırası/çıkarılanlar + sahne-başına seslendirme önbelleği
+      // (tek tek üretilen sesler yenilemede kaybolmaz; montaj bunları KREDİSİZ kullanır)
+      docOrder: (w && w.docOrder) || null, docExcl: (w && w.docExcl) || null, docMontageFile: (w && w.docMontageFile) || '',
+      docAud: (w && w.docAud) || {}, docAudFile: (w && w.docAudFile) || '', docAudBusy: '',
       // Panel seçimleri dosyayla geri yüklenir (UI seçimi yenilemede kaybolmaz/geri dönmez)
       imgStyle: (w && w.imgStyle) || null, imgStyleCat: (w && w.imgStyleCat) || '', imgPlatform: (w && w.imgPlatform) || '',
       imgAspect: (w && w.imgAspect) || null, imgAspectManual: !!(w && w.imgAspectManual), imgValErr: '', imgZoom: '',
@@ -2625,7 +2631,10 @@ class Component extends DCLogic {
       imgAspect: s.imgAspect || null, imgAspectManual: !!s.imgAspectManual,
       imgStyle: s.imgStyle || null, imgStyleCat: s.imgStyleCat || '', imgPlatform: s.imgPlatform || '',
       genCreatedPreset: s.genCreatedPreset || '', genUpdatedAt: s.genUpdatedAt || 0,
-      duration: s.duration, model: s.model, format: s.format || 'belgesel', sysAudioUrl: s.sysAudioUrl || '', ts: Date.now()
+      duration: s.duration, model: s.model, format: s.format || 'belgesel', sysAudioUrl: s.sysAudioUrl || '', ts: Date.now(),
+      // Montaj düzeni + sahne seslendirme önbelleği dosyayla yaşar (yenilemede korunur)
+      docOrder: s.docOrder || null, docExcl: s.docExcl || null, docMontageFile: s.docMontageFile || '',
+      docAud: s.docAud || {}, docAudFile: s.docAudFile || ''
     } : null;
     // Aktif dosyanın görsel/video/ses durumunu kendi geçmiş kaydına da işle → dosyayı
     // Geçmiş/Arşiv'ten tekrar açınca üretilenler geri gelir (yalnız aktif kaydı günceller).
@@ -4865,11 +4874,48 @@ class Component extends DCLogic {
       if (excl.has(i)) continue;
       const img = ((si['gp' + i] || {}).url) || '';
       const text = (gp[i] && (gp[i].anlatim || gp[i].sahne)) || '';
-      if (img) out.push({ img, text: String(text || '') });
+      if (img) out.push({ img, text: String(text || ''), gi: i });
     }
     return out;
   }
   _docReady() { return this._docScenes().length >= 2; }
+  // ── SAHNE SESLENDİRME ÖNBELLEĞİ ── montaj panelinde tek tek üretilen sesler
+  // dosya-bazlı saklanır; metin değişirse önbellek kendiliğinden geçersizleşir.
+  // Montaj render'ı önbellekteki sesi KREDİSİZ kullanır (tekrar TTS ücreti yok).
+  _docAudActive() { return (this.state.docAudFile === this.state.fileNo) ? (this.state.docAud || {}) : {}; }
+  _docAudGet(gi, text) {
+    const a = this._docAudActive()['gp' + gi];
+    return (a && a.url && a.text === String(text || '')) ? a.url : '';
+  }
+  _docAudSet(gi, text, url) {
+    const cur = this._docAudActive();
+    this.setState({ docAud: { ...cur, ['gp' + gi]: { url, text: String(text || '') } }, docAudFile: this.state.fileNo }, () => this.persist());
+  }
+  _docSceneText(gi) {
+    const gp = ((this.state.result || {}).gorsel_promptlar || [])[gi] || {};
+    return String(gp.anlatim || gp.sahne || '').trim();
+  }
+  // Montaj satırı 🎙/▶: ses yoksa üret (TTS ücreti, sunucu keser) + önbelleğe al;
+  // varsa doğrudan çal (ücretsiz). Üretilen ses montajda da kullanılır.
+  async docSceneVoice(gi) {
+    const text = this._docSceneText(gi);
+    if (!text) return;
+    const have = this._docAudGet(gi, text);
+    if (have) { try { new Audio(have).play(); } catch (e) {} return; }
+    if (this.state.docAudBusy) return;
+    this.setState({ docAudBusy: 'gp' + gi });
+    try {
+      const tts = await this.ttsServer(text);
+      this._docAudSet(gi, text, tts.url);
+      this.setState({ docAudBusy: '' });
+      try { new Audio(tts.url).play(); } catch (e) {}
+    } catch (e) {
+      const msg = e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Ses üretilemedi: ' + e.message);
+      this.setState({ docAudBusy: '', docMontageMsg: msg });
+      setTimeout(() => this.setState({ docMontageMsg: '' }), 2600);
+      if (e.message === 'YETERSIZ_KREDI') this.setState({ creditModal: true });
+    }
+  }
   // MONTAJ: sahneyi yukarı/aşağı taşı (sıra kullanıcıya ait)
   _docMove(gi, dir) {
     let merged = this._docMergedIndices();
@@ -4893,16 +4939,29 @@ class Component extends DCLogic {
     const merged = this._docMergedIndices();
     const excl = new Set(this._docActiveExcl());
     const r = this.state.result || {}, gp = r.gorsel_promptlar || [], si = this.state.sceneImgs || {};
-    return merged.map((gi, pos) => ({
-      idx: gi,
-      no: pos + 1,
-      img: this._dispSrc((si['gp' + gi] || {}).url || '', 140),
-      text: String((gp[gi] && (gp[gi].anlatim || gp[gi].sahne)) || ('Sahne ' + (gi + 1))).slice(0, 90),
-      included: !excl.has(gi),
-      first: pos === 0, last: pos === merged.length - 1,
-      up: () => this._docMove(gi, -1), down: () => this._docMove(gi, 1),
-      toggle: () => this._docToggleInclude(gi)
-    }));
+    return merged.map((gi, pos) => {
+      const rawImg = (si['gp' + gi] || {}).url || '';
+      const text = this._docSceneText(gi);
+      const hasAud = !!this._docAudGet(gi, text);
+      const voiceBusy = this.state.docAudBusy === 'gp' + gi;
+      return {
+        idx: gi,
+        no: pos + 1,
+        img: this._dispSrc(rawImg, 140),
+        text: String(text || ('Sahne ' + (gi + 1))).slice(0, 90),
+        included: !excl.has(gi),
+        first: pos === 0, last: pos === merged.length - 1,
+        up: () => this._docMove(gi, -1), down: () => this._docMove(gi, 1),
+        toggle: () => this._docToggleInclude(gi),
+        // TEK TEK ÜRETİM: bu sahnenin sesi (üret/dinle) + bu sahneden AI video
+        voiceBusy,
+        voiceIcon: voiceBusy ? '⏳' : (hasAud ? '▶' : '🎙'),
+        voiceTitle: hasAud ? 'Seslendirme hazır — dinle (montaj bunu KREDİSİZ kullanır)' : 'Bu sahnenin seslendirmesini üret (montaj aynı sesi kullanır, iki kez ödemezsin)',
+        voice: () => this.docSceneVoice(gi),
+        vid: () => this.openVideoModal({ kind: 'scene', key: 'gp' + gi, url: rawImg }),
+        vidTitle: 'Bu sahneden AI video üret (sağlayıcı/süre seçimi açılır)'
+      };
+    });
   }
   _loadImg(url) {
     return new Promise((res, rej) => {
@@ -5022,7 +5081,14 @@ class Component extends DCLogic {
     const prep = [];
     for (let i = 0; i < scenes.length; i++) {
       let buf = null;
-      try { const tts = await this.ttsServer(scenes[i].text || ' '); buf = await this._loadAudioBuf(ctx, tts.url); }
+      // ÖNBELLEK: bu sahnenin sesi montaj panelinde (ya da önceki render'da) üretildiyse
+      // TEKRAR TTS ücreti ödenmez — kayıtlı URL doğrudan kullanılır.
+      const cachedUrl = this._docAudGet(scenes[i].gi, scenes[i].text);
+      try {
+        const url = cachedUrl || (await this.ttsServer(scenes[i].text || ' ')).url;
+        if (!cachedUrl && url) this._docAudSet(scenes[i].gi, scenes[i].text, url);
+        buf = await this._loadAudioBuf(ctx, url);
+      }
       catch (e) { if (e && e.message === 'YETERSIZ_KREDI') { try { ctx.close(); } catch (_e) {} throw e; } /* ses yoksa sabit süre */ }
       let img = null; try { img = await this._loadImg(scenes[i].img); } catch (e) { /* görsel atlanır */ }
       if (!img) continue;
