@@ -289,6 +289,10 @@
         "ad": "GÖRSEL & SAHNE PROMPTLARI",
         "bloklar": [
           {
+            "k": "KAPAK / İLK KARE",
+            "t": "Ultra-photorealistic thumbnail, 9:16 vertical, split composition: on the left Tutankhamun’s gleaming golden funerary mask in warm museum light, on the right a fiery meteor streaking down through the night sky; in the center a dark ancient iron dagger glinting. High contrast, dramatic, mobile-first. No text baked in. || Thumbnail notu: köşede ☄️ + “UZAYDAN GELEN BIÇAK” yazısı."
+          },
+          {
             "k": "SAHNE 2 — GERÇEĞI (GÖKTAŞI DÜŞÜŞÜ)",
             "t": "SAHNE 2 — The museum scene dissolves into a vast ancient night desert sky; a brilliant meteor fireball streaks down with a glowing tail and slams into the dark dunes, sparks and dust bursting outward, a smoking metallic rock embedded in a small crater, faint starfield above. Epic, photorealistic, cinematic, dynamic, 9:16 vertical. No modern text or captions, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra fingers or limbs, no warped faces."
           },
@@ -371,6 +375,10 @@
         "ad": "GÖRSEL & SAHNE PROMPTLARI",
         "bloklar": [
           {
+            "k": "KAPAK / İLK KARE",
+            "t": "Ultra-photorealistic macro thumbnail, 9:16 vertical, a curved Damascus steel blade filling the frame, its watery flowing wootz pattern catching golden sparks against a dark forge background, deep contrast, tack-sharp detail, mobile-first. No text baked in. || Thumbnail notu: köşede ⚔️ + “KAYIP NANO SIR” yazısı."
+          },
+          {
             "k": "SAHNE 2 — YAPILIŞI (USTA DÖVÜYOR)",
             "t": "SAHNE 2 — A medieval Middle Eastern blacksmith, weathered hands, in a dim torchlit forge, hammering a glowing orange bar of steel on an anvil, bright sparks flying, the wavy watered pattern beginning to emerge on the cooling metal, smoke and embers. Warm firelight, photorealistic, cinematic, shallow depth of field, 9:16 vertical. No modern text or captions, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra fingers or limbs, no warped faces."
           },
@@ -452,6 +460,10 @@
       {
         "ad": "GÖRSEL & SAHNE PROMPTLARI",
         "bloklar": [
+          {
+            "k": "KAPAK / İLK KARE",
+            "t": "Ultra-photorealistic cinematic thumbnail, 9:16 vertical, dim Roman senate hall with marble columns, in the foreground several hands holding daggers reaching toward a toga-clad figure, dramatic side lighting, tension and shadow, mobile-first. No text baked in. || Thumbnail notu: köşede 🗡️ + “SEN DE Mİ BRUTUS?” yazısı."
+          },
           {
             "k": "SAHNE 1 — SENATOYA GIRIŞ (GERILIM)",
             "t": "SAHNE 1 — A dignified middle-aged Roman dictator in a white toga with a purple border, thinning hair, walking into a sunlit marble Senate hall, rows of senators in white togas rising and watching tensely, a tall marble statue at the far end, columns, shafts of daylight. Tense atmosphere, photorealistic, cinematic, shallow depth of field, 9:16 vertical. No modern text or captions, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra fingers or limbs, no warped faces."
@@ -570,6 +582,10 @@
       {
         "ad": "GÖRSEL & SAHNE PROMPTLARI",
         "bloklar": [
+          {
+            "k": "KAPAK / İLK KARE",
+            "t": "Ultra-photorealistic thumbnail, 9:16 vertical, a metallic golden-coated Akhal-Teke horse shimmering in low desert sunlight, dust and distant nomad silhouettes behind it, rich warm tones, tack-sharp, mobile-first. No text baked in. || Thumbnail notu: köşede 🐎 + “ALTIN AT’IN TRAJEDİSİ” yazısı."
+          },
           {
             "k": "SAHNE 2 — BAĞ (GÖÇEBE VE ATI)",
             "t": "SAHNE 2 — A Turkmen nomad in traditional robes and a tall shaggy black wool hat gently resting his forehead against the muzzle of his golden Akhal-Teke horse beside a desert tent at dusk, tender intimate moment, warm soft light, quiet bond. Photorealistic, cinematic, shallow depth of field, 9:16 vertical. No modern text or captions, no watermark, no logo, no subtitles, no modern objects, no distorted anatomy, no extra limbs, no warped faces."
@@ -692,6 +708,10 @@
       {
         "ad": "GÖRSEL & SAHNE PROMPTLARI",
         "bloklar": [
+          {
+            "k": "KAPAK / İLK KARE",
+            "t": "Ultra-photorealistic thumbnail, 9:16 vertical, a 5000-year-old frozen iceman lying in glacial ice, an arrow wound in his back, cold blue light and frost detail, ominous and grounded, mobile-first. No text baked in. || Thumbnail notu: köşede 🧊 + “EN ESKİ CİNAYET” yazısı."
+          },
           {
             "k": "SAHNE 1 — BUZDAKI CESET (HOOK)",
             "t": "A 5,300-year-old frozen human mummy partially emerging from melting glacier ice high in the snowy Alps, leathery preserved brown skin, the body face-down in the ice, cold blue-grey light, harsh mountain backdrop. Ultra-photorealistic, cinematic, shallow depth of field, high detail. Vertical composition."
@@ -859,6 +879,10 @@
         "ad": "GÖRSEL & SAHNE PROMPTLARI",
         "bloklar": [
           {
+            "k": "KAPAK / İLK KARE",
+            "t": "Ultra-photorealistic thumbnail, 9:16 vertical, split composition: top an ancient Egyptian papyrus beside small linen sacks of wheat and barley, bottom the same seeds sprouting green shoots; warm golden light, museum-grounded, mobile-first. No text baked in. || Thumbnail notu: köşede 🌾 + “3500 YILLIK TEST” yazısı."
+          },
+          {
             "k": "SAHNE 1 — HOOK (GIZEMLI RITÜEL)",
             "t": "An ancient Egyptian woman in a white linen dress kneeling on the floor of a mud-brick home, gently pouring liquid from a clay jug over two small cloth bags filled with grain seeds, warm morning light, intriguing and quiet. Ultra-photorealistic, cinematic, shallow depth of field, high detail. Vertical composition."
           },
@@ -996,6 +1020,10 @@
       {
         "ad": "GÖRSEL & SAHNE PROMPTLARI",
         "bloklar": [
+          {
+            "k": "KAPAK / İLK KARE",
+            "t": "Ultra-photorealistic thumbnail, 9:16 vertical, torch-lit ancient stone stairwell descending deep underground into the Derinkuyu city, layered carved tunnels and a tiny human silhouette for scale, cool depth, mobile-first. No text baked in. || Thumbnail notu: köşede 🕳️ + “18 KAT AŞAĞI” yazısı."
+          },
           {
             "k": "14 SAHNELIK FILM PAKETI",
             "t": "Harika — Derinkuyu, ve evet o \"tavuk\" hikâyesi efsanevi bir açılış olur. Hook'u uzun ve güçlü tuttum.\n\nKüçük not: tavuk versiyonu **halk arasında anlatılan** rivayet; belgelenen kesin gerçek, 1963'te bir adamın **ev tadilatında duvarı yıkınca** tüneli bulması. Hook için tavuğu kullanıyorum, açıklamada nüansı veriyorum — kanal hem vurucu hem güvenilir kalsın."
@@ -1448,6 +1476,10 @@
       {
         "ad": "GÖRSEL & SAHNE PROMPTLARI",
         "bloklar": [
+          {
+            "k": "KAPAK / İLK KARE",
+            "t": "Ultra-photorealistic thumbnail, 9:16 vertical, a moonlit diverted riverbed at night, torch-bearing horsemen lowering a triple nested coffin into the earth, mysterious mist and firelight, epic and grounded, mobile-first. No text baked in. || Thumbnail notu: köşede ⚰️ + “KAYIP MEZAR” yazısı."
+          },
           {
             "k": "TAM PAKET (13 SAHNE, GENIŞLETILMIŞ)",
             "t": "Haklısın, 6 azdı. **13 sahneye** çıkardım — çok daha sinematik ve nefes alan bir akış (~50-55 sn). Önce güncel seslendirme, sonra görsel ve video promptları ayrı ayrı, her biri tek tek kopyalanabilir."
@@ -2908,6 +2940,10 @@
       {
         "ad": "GÖRSEL & SAHNE PROMPTLARI",
         "bloklar": [
+          {
+            "k": "KAPAK / İLK KARE",
+            "t": "Ultra-photorealistic macro thumbnail, 9:16 vertical, an ancient Mesopotamian clay tablet covered in cuneiform filling the frame in warm light, deep incised detail, museum-grounded, mobile-first. No text baked in. || Thumbnail notu: köşede 📉 + “TARİHİN İLK 1★ YORUMU” yazısı."
+          },
           {
             "k": "SAHNE 1 — HOOK (TABLET)",
             "t": "Extreme close-up of an ancient Mesopotamian clay tablet densely covered in tiny cuneiform wedge writing, warm museum spotlight raking across the textured surface, fine cracks, aged baked clay, dark background. Photorealistic, cinematic, shallow depth of field, 9:16 vertical. No modern text, no watermark, no logo."
