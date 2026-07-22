@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../api.dart';
+import '../main.dart' show temaModu;
 import '../tema.dart';
 
-/// PROFİL — hesap + çıkış. Kredi bakiyesi backend'in kredi ucu bağlanınca
-/// buraya işlenecek (README yol haritası).
+/// PROFİL — hesap, tema seçimi (Sistem/Aydınlık/Karanlık), kredi ve çıkış.
 class ProfilEkrani extends StatelessWidget {
   const ProfilEkrani({super.key, required this.api});
   final StudioApi api;
@@ -17,15 +17,18 @@ class ProfilEkrani extends StatelessWidget {
         children: [
           const SizedBox(height: Bosluk.s),
           Text('Profil', style: tema.textTheme.headlineMedium),
-          const SizedBox(height: Bosluk.l),
+          const SizedBox(height: Bosluk.xl),
           Card(
             child: ListTile(
               contentPadding: const EdgeInsets.all(Bosluk.l),
-              leading: CircleAvatar(
-                backgroundColor: tema.colorScheme.primary.withValues(alpha: .16),
-                child: Icon(Icons.person, color: tema.colorScheme.primary),
+              leading: Container(
+                width: 46,
+                height: 46,
+                decoration: const BoxDecoration(gradient: altinGradyan, shape: BoxShape.circle),
+                child: const Icon(Icons.person, color: Color(0xFF171207)),
               ),
-              title: Text(api.eposta ?? 'Ajan'),
+              title: Text(api.eposta ?? 'Ajan',
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
               subtitle: const Text('Tarih Ajanı hesabı — web ile ortak'),
             ),
           ),
@@ -33,16 +36,47 @@ class ProfilEkrani extends StatelessWidget {
           Card(
             child: ListTile(
               contentPadding: const EdgeInsets.all(Bosluk.l),
-              leading: Icon(Icons.toll, color: tema.colorScheme.primary),
-              title: const Text('Kredi'),
-              subtitle: const Text('Bakiye ve satın alma web üzerinden (tarihajani.com/uyelik)'),
+              leading: Icon(Icons.toll, color: context.vurgu),
+              title: const Text('Kredi', style: TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: const Text('Bakiye ve paketler web üzerinden: tarihajani.com/uyelik'),
             ),
           ),
           const SizedBox(height: Bosluk.xl),
+
+          const BolumEtiketi('GÖRÜNÜM'),
+          const SizedBox(height: Bosluk.m),
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: temaModu,
+            builder: (context, mod, _) => Card(
+              child: Column(
+                children: [
+                  RadioListTile<ThemeMode>(
+                    value: ThemeMode.system,
+                    groupValue: mod,
+                    onChanged: (v) => temaModu.value = v ?? ThemeMode.system,
+                    title: const Text('Sistemle aynı'),
+                  ),
+                  RadioListTile<ThemeMode>(
+                    value: ThemeMode.light,
+                    groupValue: mod,
+                    onChanged: (v) => temaModu.value = v ?? ThemeMode.light,
+                    title: const Text('Aydınlık — fildişi & altın'),
+                  ),
+                  RadioListTile<ThemeMode>(
+                    value: ThemeMode.dark,
+                    groupValue: mod,
+                    onChanged: (v) => temaModu.value = v ?? ThemeMode.dark,
+                    title: const Text('Karanlık — gece & altın'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: Bosluk.xl),
+
           OutlinedButton.icon(
             onPressed: api.cikis,
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, size: 18),
             label: const Text('Çıkış yap'),
           ),
         ],
