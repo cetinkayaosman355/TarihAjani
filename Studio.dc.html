@@ -7608,7 +7608,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       // FAZ D: [[DO:...]] üretim direktifi → sistem ilgili aksiyonu yürütür (kullanıcı görmez)
       const raw = reply.trim();
       const gw = raw.match(/\[\[GOODWILL:(refund|retry):([a-zA-Z0-9_-]+)\]\]/);
-      const act = raw.match(/\[\[DO:([a-zçğıöşü]+)(?::([^\]]*))?\]\]/i);
+      const act = raw.match(/\[\[DO:\s*([a-zçğıöşü]+)\s*(?::\s*([^\]]*))?\]\]/i);
       const shown = raw.replace(/\[\[GOODWILL:[^\]]*\]\]/g, '').replace(/\[\[DO:[^\]]*\]\]/g, '').trim();
       this.setState(st => ({ chatMsgs: [...msgs, { role: 'assistant', content: shown || 'Bakıyorum…' }], chatBusy: false }), () => this._scrollChat());
       if (gw) this._applyGoodwill(gw[1], gw[2]);
@@ -7642,38 +7642,45 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const s = this.state, r = s.result;
     const say = (m) => this.setState(st => ({ chatMsgs: [...st.chatMsgs, { role: 'assistant', content: m }] }), () => this._scrollChat());
     const sceneNo = () => { const mm = String(arg || '').match(/\d+/); return mm ? parseInt(mm[0], 10) : 0; };
+    // Görsel ayarları (stil/kadraj) eksikse hata metni; boş = geçerli.
+    const imgErr = () => { const g = this.resolveImageGenerationSettings('') || {}; return g.valid ? '' : (g.err || 'Önce görsel ayarlarını tamamla (stil/kadraj).'); };
+    // Kredi harcayan/modal açan işlemde sohbeti KAPAT: mobilde sohbet paneli
+    // (z-index 1300) kredi modalını (1290) ve sekme çıktısını ÖRTER — kullanıcı
+    // "hiçbir şey olmadı" sanır. Kapatınca modal/sekme/çıktı görünür olur.
+    const go = (patch) => this.setState(Object.assign({ chatOpen: false }, patch || {}));
     if (kind === 'konu') {
       const t = String(arg || '').trim(); if (!t) return;
       this.setState({ idea: t, ideaWarn: '' }, () => this.persist());
       say('✓ Konuyu ayarladım: “' + t + '”. Hazırsan “üret” de, dosyayı çıkarayım.');
-      return;
+      return;   // konu ayarı: sohbet AÇIK kalır (konuşma sürer)
     }
     if (kind === 'uret') {
       if (!this.looksLikeTopic(s.idea || '')) { say('Önce geçerli bir tarih konusu verelim; sonra hemen üretirim.'); return; }
-      this.setState({ chatOpen: false });
+      go({ mode: 'wizard' });
       this.startGenerate();
       return;
     }
-    if (kind === 'gorseller') {
+    if (kind === 'gorseller' || (kind === 'gorsel' && !sceneNo())) {
       if (!r || !(r.gorsel_promptlar || []).length) { say('Önce dosyayı üretmeliyiz; sahne promptları oluşunca tüm görselleri üretebilirim.'); return; }
-      this.setState({ tab: 'gorsel' });
+      const e = imgErr(); if (e) { say('Görsel üretmeden önce: ' + e); return; }
+      go({ tab: 'gorsel' });
       this.genAllScenes();
       return;
     }
     if (kind === 'gorsel') {
       if (!r || !(r.gorsel_promptlar || []).length) { say('Henüz sahne yok — önce dosyayı üretelim.'); return; }
       const n = sceneNo();
-      if (!n) { this.setState({ tab: 'gorsel' }); this.genAllScenes(); return; }   // no belirsiz → hepsi
       const gp = (r.gorsel_promptlar || [])[n - 1];
       if (!gp || !gp.prompt) { say('Sahne ' + n + ' yok; bu dosyada ' + (r.gorsel_promptlar || []).length + ' sahne var.'); return; }
-      this.setState({ tab: 'gorsel' });
+      const e = imgErr(); if (e) { say('Görsel üretmeden önce: ' + e); return; }
+      go({ tab: 'gorsel' });
       this.makeImage(gp.prompt, n - 1, 'gp' + (n - 1));
       say('✓ Sahne ' + n + ' görselini üretiyorum — Görsel sekmesinde belirecek.');
       return;
     }
     if (kind === 'seslendir') {
       if (!this.voiceText().trim()) { say('Seslendirilecek metin yok — önce dosyayı üretelim.'); return; }
-      this.setState({ tab: 'ses' });
+      go({ tab: 'ses' });
       this.makeTts();
       say('✓ Seslendirmeyi üretiyorum — Ses sekmesinde çalınabilir olacak.');
       return;
@@ -7684,7 +7691,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       const key = 'gp' + (n - 1);
       const img = ((s.sceneImgs || {})[key] || {});
       if (!n || !img.url) { say('Video, sahnenin GÖRSELİNDEN üretilir. Önce “sahne ' + (n || 'N') + ' görseli üret” de; görsel gelince videosunu çıkarırım.'); return; }
-      this.setState({ tab: 'gorsel' });
+      go({ tab: 'gorsel' });
       this.openVideoModal({ kind: 'scene', key, url: img.url });
       say('✓ Sahne ' + n + ' için video seçeneklerini açtım — sağlayıcı ve süreyi seç, üretime alayım.');
       return;

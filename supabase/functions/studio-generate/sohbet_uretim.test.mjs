@@ -24,7 +24,7 @@ test("Sohbet promptu ÜRETİM KOMUTLARI + [[DO:...]] direktif sözlüğü içeri
 });
 
 test("sendChat: [[DO:...]] direktifini ayrıştırır, gizler ve yürütür", () => {
-  assert.ok(src.includes("const act = raw.match(/\\[\\[DO:([a-zçğıöşü]+)(?::([^\\]]*))?\\]\\]/i)"), "DO direktif regex");
+  assert.ok(src.includes("const act = raw.match(/\\[\\[DO:\\s*([a-zçğıöşü]+)\\s*(?::\\s*([^\\]]*))?\\]\\]/i)"), "DO direktif regex (boşluk toleranslı)");
   assert.ok(src.includes(".replace(/\\[\\[DO:[^\\]]*\\]\\]/g, '')"), "direktif kullanıcıdan gizlenir");
   assert.ok(src.includes("if (act) this._chatAction(act[1].toLocaleLowerCase('tr'), (act[2] || '').trim())"), "aksiyon dispatch");
 });
@@ -32,7 +32,7 @@ test("sendChat: [[DO:...]] direktifini ayrıştırır, gizler ve yürütür", ()
 test("_chatAction: her direktif doğru metoda bağlanır + ön koşul korumaları", () => {
   assert.ok(src.includes("_chatAction(kind, arg)"), "dispatcher");
   assert.ok(src.includes("if (kind === 'uret')") && src.includes("this.startGenerate()"), "uret → startGenerate");
-  assert.ok(src.includes("if (kind === 'gorseller')") && src.includes("this.genAllScenes()"), "gorseller → genAllScenes");
+  assert.ok(src.includes("if (kind === 'gorseller' || (kind === 'gorsel' && !sceneNo()))") && src.includes("this.genAllScenes()"), "gorseller/belirsiz sahne → genAllScenes");
   assert.ok(src.includes("this.makeImage(gp.prompt, n - 1, 'gp' + (n - 1))"), "gorsel:N → makeImage");
   assert.ok(src.includes("if (kind === 'seslendir')") && src.includes("this.makeTts()"), "seslendir → makeTts");
   assert.ok(src.includes("this.openVideoModal({ kind: 'scene', key, url: img.url })"), "video:N → openVideoModal");
