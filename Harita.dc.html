@@ -41,8 +41,7 @@
   .ta-city:hover circle { r: 8; }
   .ta-storybtn { transition: all .18s; }
   .map-frame { position: relative; }
-  /* Aydınlık tema: parşömen zaten açık — kart metinleri koyu kalsın */
-  html[data-theme="light"] .ta-mapwrap { background: #f4ecd8 !important; }
+  /* Parşömen dokusu her iki temada da geçerli (gerçek doku, açık zeminli). */
 </style>
 <script src="page-transition.js"></script>
 <script src="analytics.js"></script>
@@ -80,15 +79,15 @@
 
     <!-- HARİTA + BİLGİ -->
     <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
-      <div class="ta-mapwrap map-frame" style="position: relative; border: 1px solid rgba(193,154,82,.4); border-radius: 10px; overflow: hidden; background: radial-gradient(120% 120% at 50% 30%, #f3e8c8, #e2cc9c 70%, #d3b981); box-shadow: 0 24px 70px -30px rgba(0,0,0,.7);">
+      <div class="ta-mapwrap map-frame" style="position: relative; border: 1px solid rgba(193,154,82,.4); border-radius: 10px; overflow: hidden; background: url('/assets/parchment-harita.jpg') center/cover no-repeat, radial-gradient(120% 120% at 50% 30%, #f3e8c8, #e2cc9c 70%, #d3b981); box-shadow: 0 24px 70px -30px rgba(0,0,0,.7);">
         <svg viewBox="{{ viewBox }}" preserveAspectRatio="xMidYMid meet" style="width: 100%; display: block;" role="img" aria-label="{{ curAd }} haritası">
           <defs>
             <filter id="paper"><feTurbulence baseFrequency="0.012" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .74  0 0 0 0 .62  0 0 0 0 .42  0 0 0 .18 0"/></filter>
             <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="{{ curRenk }}"/></marker>
           </defs>
-          <rect x="0" y="0" width="9999" height="9999" filter="url(#paper)" opacity=".5"/>
-          <!-- KARA -->
-          <path d="{{ landD }}" fill="#d9c49a" stroke="#b39b6e" stroke-width="0.8" stroke-linejoin="round"/>
+          <!-- KARA — gerçek parşömen dokusu (ta-mapwrap zemininde) altta; kara hafif
+               yarı saydam tonla dokunun üstüne oturur, deniz dokuyu gösterir. -->
+          <path d="{{ landD }}" fill="rgba(198,172,122,.5)" stroke="#a98d5a" stroke-width="0.8" stroke-linejoin="round"/>
           <!-- ROTA (İpek Yolu) -->
           <sc-if value="{{ isRoute }}" hint-placeholder-val="{{ true }}">
             <path d="{{ routeD }}" class="ta-route ta-flow" fill="none" stroke="{{ curRenk }}" stroke-width="2.6" stroke-linecap="round" opacity=".9"/>
