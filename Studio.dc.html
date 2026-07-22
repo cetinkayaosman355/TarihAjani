@@ -5782,22 +5782,27 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const secs = result.senaryo || [];
     const m = this.promptMaps();
     const tonStr = m.ton[this.state.tone] || m.ton.merak;
-    // Bölüm başına kelime = toplam süre bütçesi / GERÇEK bölüm sayısı (süre kilidi korunur)
+    // Bölüm başına kelime = toplam süre bütçesi / GERÇEK bölüm sayısı (süre kilidi korunur).
+    // İKİ YÖNLÜ: alt sınır (wlo) da üst sınır (whi) kadar ciddiye alınır — yoksa model
+    // her bölümü kısa yazıp "90 sn'de 2 cümle" boş bölüm çıkarıyordu (asıl kusur buydu).
     const sec = this.durationSec();
     const n = Math.max(1, secs.length);
-    const words = Math.round(sec * 2.0 / n) + '-' + Math.round(sec * 2.6 / n);
+    const wlo = Math.round(sec * 2.0 / n), whi = Math.round(sec * 2.6 / n);
+    const wtar = Math.round((wlo + whi) / 2);
     const order = secs.map(x => x.bolum).join(' | ');
     // Her bölüm metni bağımsızdır (taslak özetinden yazılır, birbirinin ürettiği
     // metne değil) → paralel yazılabilir. Kalite aynı; bekleme süresi kısalır.
     const total = secs.length || 1;
     const replies = await this.runPool(secs, (secItem) =>
-      this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secItem.bolum || '') + '" bölümünün TAM seslendirme metnini yaz: KESİN ' + words + ' kelime (bu aralığı AŞMA — süre kilidi), akıcı Türkçe, şu tonla: ' + tonStr + '.\n' +
+      this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secItem.bolum || '') + '" bölümünün TAM seslendirme metnini yaz. Akıcı Türkçe, şu tonla: ' + tonStr + '.\n' +
+        '⏱ SÜRE KİLİDİ (İKİ YÖNLÜ — EN KRİTİK): bu bölüm ' + wlo + '-' + whi + ' kelime olmalı (hedef ≈ ' + wtar + '). ' + whi + ' kelimeyi AŞMA (video uzar) AMA ' + wlo + ' kelimenin de ALTINA DÜŞME. Az yazmak bölümü boş bırakır ("' + wlo + ' kelimelik bölümde 2 cümle") ve bu EN AZ fazla yazmak kadar CİDDİ bir HATADIR. Bu aralığı GERÇEK anlatı maddesiyle DOLDUR — bölüm kısacık kalmasın.\n' +
         'YAZIM KURALLARI (profesyonel yayın standardı):\n' +
         '1) SESLİ OKUMA: metin bir anlatıcı tarafından okunacak — tüm sayı ve tarihleri YAZIYLA yaz ("1453" değil "bin dört yüz elli üç", "II. Mehmed" değil "İkinci Mehmed", "%40" değil "yüzde kırk"). Parantez, madde işareti, kısaltma yok.\n' +
         '2) RİTİM: kısa vurucu cümlelerle uzun akan cümleleri dönüşümlü kullan; art arda cümleler aynı kelimeyle başlamasın.\n' +
         '3) GÖSTER, ANLATMA: soyut yargı yerine sahne, ayrıntı, duyu (koku, ses, doku).\n' +
         '4) YASAK KLİŞELER: "adeta", "tarihin tozlu sayfaları", "yolculuğumuz", "asla unutmayacaktı", "günümüzde bile", "kim bilir belki de".\n' +
-        '5) Somut isim/tarih/yer/sayı geçir; dolgu yok. Önceki bölümden doğal devral, sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver.\n' +
+        '5) Somut isim/tarih/yer/sayı geçir. Önceki bölümden doğal devral, sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver.\n' +
+        '6) GÜÇLÜ & İSTİKRARLI DİL (KALİTE, UZUNLUKTAN ÖNCE GELİR): Süre bütçesini DOLGUYLA doldurma. Gevezelik, cümle şişirme, aynı şeyi farklı sözcüklerle TEKRAR YASAK — her cümle YENİ bir bilgi, imge ya da duygu taşısın; taşımıyorsa yazma. Bütçeyi doldurmanın tek meşru yolu DAHA ÇOK GERÇEK MADDE (yeni olay, isim, tarih, yer, tanık, ayrıntı, sahne). Baştan sona TEK, tutarlı, kendinden emin bir anlatıcı sesi kur; bölüm KISA AMA DOLU olsun, stub kalmasın.\n' +
         'YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + order + '\nBu bölümün özeti: ' + (secItem.metin || ''), 2500),
       3,
       (fin) => this.setState({ genMsg: 'BÖLÜM ' + fin + ' / ' + total + ' KALEME ALINIYOR…', genPct: 45 + Math.round((fin / total) * 38) })

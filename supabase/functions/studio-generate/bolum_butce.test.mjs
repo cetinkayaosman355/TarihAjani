@@ -37,6 +37,15 @@ test("SON KONTROL: bölüm başına min kelime + süre tutarlılığı", () => {
   assert.ok(src.includes('her "sure" o bölümün kelime sayısıyla TUTARLI'), "süre tutarlılık kontrolü");
 });
 
+test("expandActs (uzun video bölüm yazımı) İKİ YÖNLÜ kilit + güçlü dil taşır", () => {
+  // Kök neden: 2 dk üstü videolarda bölüm metinleri buildPrompt değil expandActs
+  // ile yazılır. Eskiden yalnız 'AŞMA' (tek yön) diyordu → bölümler kısa kalıyordu.
+  assert.ok(src.includes("const wlo = Math.round(sec * 2.0 / n), whi = Math.round(sec * 2.6 / n)"), "alt+üst sınır ayrı hesaplanır");
+  assert.ok(src.includes("SÜRE KİLİDİ (İKİ YÖNLÜ — EN KRİTİK)") && src.includes("kelimenin de ALTINA DÜŞME"), "expandActs iki yönlü kilit");
+  assert.ok(src.includes("EN AZ fazla yazmak kadar CİDDİ bir HATADIR"), "az yazmak da hata (expandActs)");
+  assert.ok(src.includes("GÜÇLÜ & İSTİKRARLI DİL (KALİTE, UZUNLUKTAN ÖNCE GELİR)") && src.includes("DAHA ÇOK GERÇEK MADDE"), "expandActs güçlü dil + dolgu yasağı");
+});
+
 test("Güçlü & istikrarlı dil: kalite uzunluktan önce, dolgu yasak", () => {
   assert.ok(src.includes("GÜÇLÜ & İSTİKRARLI DİL (KALİTE, UZUNLUKTAN ÖNCE GELİR)"), "kalite önceliği kuralı");
   assert.ok(src.includes("Süre bütçesini DOLGUYLA doldurma"), "dolgu yasağı");
