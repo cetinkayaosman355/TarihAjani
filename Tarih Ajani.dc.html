@@ -163,7 +163,11 @@
     }
     @media (max-width: 600px) {
       [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
-      [style*="padding: 120px"] { padding-top: 130px !important; }
+      /* Hero mobilde: 100vh + dikey ortalama, kısa içeriği ekranın ortasına itip
+         BAŞTA kocaman boşluk bırakıyordu → içeriği ÜSTE hizala; üst dolgu yalnız
+         sabit header'ı (84px) geçecek kadar. Boşluk kapanır, hero premium durur. */
+      section[data-screen-label="Hero"] { align-items: flex-start !important; min-height: 90vh !important; }
+      section[data-screen-label="Hero"] [style*="padding: 120px"] { padding-top: 102px !important; padding-bottom: 40px !important; }
       /* telefonda kartlar 2 dar sütuna sıkışmasın — tablet 2 sütun kalır */
       .steps-grid { grid-template-columns: 1fr !important; }
     }
