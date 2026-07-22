@@ -136,13 +136,13 @@
         </sc-if>
         <!-- DOSYA NOTLARI — harita üzerinde antika kartuş (şehir seçilince gizlenir) -->
         <sc-if value="{{ notlarShow }}" hint-placeholder-val="{{ true }}">
-          <div style="position: absolute; left: 12px; bottom: 12px; max-width: min(330px, 64%); border: 1px solid rgba(193,154,82,.6); background: rgba(20,14,7,.88); backdrop-filter: blur(3px); border-radius: 9px; padding: 11px 14px 12px; box-shadow: 0 12px 32px rgba(0,0,0,.55); animation: ta-rise .4s ease both;">
-            <p style="margin: 0 0 8px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .2em;">◈ {{ curAd }}</p>
-            <div style="display: grid; gap: 7px;">
+          <div style="position: absolute; left: 12px; bottom: 12px; max-width: min(360px, 70%); border: 1px solid rgba(193,154,82,.6); background: rgba(14,9,4,.94); backdrop-filter: blur(3px); border-radius: 9px; padding: 12px 15px 13px; box-shadow: 0 12px 32px rgba(0,0,0,.6); animation: ta-rise .4s ease both;">
+            <p style="margin: 0 0 9px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .18em;">◈ {{ curAd }}</p>
+            <div style="display: grid; gap: 8px;">
               <sc-for list="{{ curNotlar }}" as="n" hint-placeholder-count="3">
-                <div style="display: flex; gap: 8px; align-items: flex-start;">
-                  <span style="color: #d0a955; font-size: 11px; line-height: 1.5; flex-shrink: 0;">▸</span>
-                  <span style="color: #f2ecdb; font-family: 'Special Elite', monospace; font-size: 11.5px; line-height: 1.62;">{{ n }}</span>
+                <div style="display: flex; gap: 9px; align-items: flex-start;">
+                  <span style="color: #d8b25f; font-size: 13px; line-height: 1.5; flex-shrink: 0;">▸</span>
+                  <span style="color: #f6f0e2; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 500; font-size: 13.5px; line-height: 1.55;">{{ n }}</span>
                 </div>
               </sc-for>
             </div>
