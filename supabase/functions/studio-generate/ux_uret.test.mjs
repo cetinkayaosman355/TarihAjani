@@ -125,8 +125,9 @@ test("Yükleniyor durumu: iskelet + 'Görsel hazırlanıyor…' (kahverengi plac
 });
 
 test("UI metinleri kullanıcı dilinde: sade açıklama + ikincil kredi satırı", () => {
-  assert.ok(studioSrc.includes("Seçtiğin platform, oran ve stil tüm sahnelere uygulanır. Sahne bazında istediğin zaman değiştirebilirsin."), "sade açıklama");
-  assert.ok(studioSrc.includes("GPT Image 1.5 · 12 KR, GPT Image 1 · 8 KR, Gemini · 12 KR"), "kredi kuralı MODEL bazlı ikincil satırda");
+  // Premium sadeleşme: uzun açıklama tek kısa satıra indi; model fiyatları seçenek kartlarında
+  assert.ok(studioSrc.includes("Ayarlar tüm sahnelere uygulanır; sahne bazında değiştirebilirsin."), "sade açıklama");
+  assert.ok(studioSrc.includes("Görsel başına 8–12 KR"), "kompakt kredi satırı");
   assert.ok(studioSrc.includes("Elle seçilen oran korunur."), "oran kalıcılığı kısa kullanıcı dilinde (eski ✋ rozet metni kalktı)");
 });
 
