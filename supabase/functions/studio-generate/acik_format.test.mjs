@@ -28,6 +28,22 @@ test("Açık format: 7 içerik formatı seçilebilir + prompt bloğu üretir", (
   assert.ok(src.includes("No separate hooded or cloaked figure standing in for the viewer"), "POV anti-artifact koruması");
 });
 
+test("Her formatın GÖRSEL kuralı var (sadece anlatı değil) + sahne treatment override'ı", () => {
+  // POV: kameraya bakış istisnası (izleyiciyle konuşan kişi lense bakabilir)
+  assert.ok(src.includes("POV\\'de göz teması doğaldır") || src.includes("POV'de göz teması doğaldır"), "POV göz teması istisnası (format bloğu)");
+  assert.ok(src.includes("this overrides the general no-eye-contact rule"), "POV treatment göz-teması istisnası (sahne üreticisi)");
+  // liste: ayrı kahraman imge + yazı basma
+  assert.ok(src.includes("her madde AYRI ve güçlü TEK bir kahraman imge"), "liste görsel kuralı (format bloğu)");
+  assert.ok(src.includes("TOP-LIST OVERRIDE:"), "liste sahne treatment override'ı");
+  // neolurdu: gerçekçi spekülasyon (sürreal/bilimkurgu yok)
+  assert.ok(src.includes("sürreal/fantastik/bilimkurgu/çizgi öge YOK"), "neolurdu görsel kuralı (format bloğu)");
+  assert.ok(src.includes("ALT-HISTORY OVERRIDE:") && src.includes("no surreal, fantasy, sci-fi"), "neolurdu sahne treatment override'ı");
+  // soru: final en güçlü görsel, cevabı erken ele verme
+  assert.ok(src.includes("FİNAL sahnesi (cevap anı) en güçlü"), "soru görsel kuralı");
+  // serbest: görsel dil tutarlı
+  assert.ok(src.includes("görsel dil baştan sona TUTARLI kalsın"), "serbest görsel tutarlılık");
+});
+
 test("Sen Öner: viral stratejist turu (YouTube/Reels/TikTok fikirleri)", () => {
   assert.ok(src.includes("const viralTurn = this._sgIdx % 2 === 1"), "dönüşümlü tur");
   assert.ok(src.includes("viral içerik stratejistisin"), "viral stratejist prompt");
