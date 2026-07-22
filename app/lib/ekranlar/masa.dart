@@ -1,25 +1,53 @@
 import 'package:flutter/material.dart';
 import '../api.dart';
 import '../tema.dart';
+import '../veri.dart';
 import 'sohbet.dart';
+import 'vaka.dart';
+import 'oyun.dart';
+import 'magaza.dart';
 
-/// MASA — açılış: Günün Dosyası + Yeni Dosya CTA + Gizli Arşiv şeridi + Ajanla
-/// Konuş. PWA'daki düzenin premium hâli; iki temada da aynı ızgara.
+/// MASA — açılış: Günün Dosyası + Yeni Dosya CTA + Gizli Arşiv + Oyun Tüneli
+/// + sağ üstte GEZİN/İÇERİK/MAĞAZA menü paneli (PWA kimliğinin premium hâli).
 class MasaEkrani extends StatelessWidget {
   const MasaEkrani({super.key, required this.api, required this.uretAc});
   final StudioApi api;
   final VoidCallback uretAc;
 
-  static const _arsivOrnekleri = [
-    ('TA-ARSIV-022', 'Mısır\'ın 3500 Yıllık Gebelik Testi'),
-    ('TA-ARSIV-023', 'Derinkuyu — Tavukların Bulduğu Yeraltı Şehri'),
-    ('TA-ARSIV-024', 'Loulan Güzeli — Çölün 3800 Yıllık Sırrı'),
-    ('TA-ARSIV-025', 'Attila\'nın Kayıp Mezarı'),
-  ];
+  void _vakaAc(BuildContext context, Vaka v) => Navigator.of(context)
+      .push(MaterialPageRoute(builder: (_) => VakaSayfasi(vaka: v, uretAc: uretAc)));
+
+  void _menuAc(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (sheetContext) => _MenuPaneli(
+        uretAc: () { Navigator.pop(sheetContext); uretAc(); },
+        sohbetAc: () {
+          Navigator.pop(sheetContext);
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => SohbetSayfasi(api: api)));
+        },
+        oyunAc: () {
+          Navigator.pop(sheetContext);
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => const OyunSayfasi()));
+        },
+        magazaAc: () {
+          Navigator.pop(sheetContext);
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => const MagazaSayfasi()));
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final tema = Theme.of(context);
+    final ilkVaka = vakalar.first;
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(Bosluk.kenar),
@@ -30,15 +58,28 @@ class MasaEkrani extends StatelessWidget {
               Icon(Icons.explore, color: context.vurgu, size: 26),
               const SizedBox(width: Bosluk.s),
               Text('Tarih Ajanı', style: tema.textTheme.headlineSmall),
+              const Spacer(),
+              IconButton(
+                onPressed: () => _menuAc(context),
+                icon: Icon(Icons.menu, color: context.vurgu),
+                style: IconButton.styleFrom(
+                  side: BorderSide(color: tema.colorScheme.outline),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(Kose.kart)),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: Bosluk.xl),
 
-          // GÜNÜN DOSYASI — kahraman kart (altın çerçeveli, degrade zemin)
-          _GununDosyasi(vurgu: context.vurgu),
+          // GÜNÜN DOSYASI — tıklayınca vaka dosyası açılır
+          InkWell(
+            borderRadius: BorderRadius.circular(Kose.kart),
+            onTap: () => _vakaAc(context, ilkVaka),
+            child: _GununDosyasi(vaka: ilkVaka),
+          ),
           const SizedBox(height: Bosluk.l),
 
-          // YENİ DOSYA — birincil eylem
           AltinButon(metin: 'YENİ DOSYA ÜRET', ikon: Icons.auto_stories, onTap: uretAc),
           const SizedBox(height: Bosluk.m),
           OutlinedButton.icon(
@@ -49,43 +90,54 @@ class MasaEkrani extends StatelessWidget {
           ),
           const SizedBox(height: Bosluk.xxl),
 
-          // GİZLİ ARŞİV — yatay şerit
+          // GİZLİ ARŞİV — gerçek vakalar, tıklanınca dosya açılır
           BolumEtiketi('GİZLİ ARŞİV',
-              sag: Text('web ile ortak →',
+              sag: Text('${vakalar.length} dosya',
                   style: TextStyle(fontSize: 11, color: context.soluk))),
           const SizedBox(height: Bosluk.m),
           SizedBox(
-            height: 148,
+            height: 156,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: _arsivOrnekleri.length,
+              itemCount: vakalar.length,
               separatorBuilder: (_, __) => const SizedBox(width: Bosluk.m),
               itemBuilder: (context, i) {
-                final (no, ad) = _arsivOrnekleri[i];
+                final v = vakalar[i];
                 return SizedBox(
-                  width: 168,
+                  width: 172,
                   child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(Bosluk.l),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(no,
-                              style: TextStyle(
-                                  fontSize: 9.5,
-                                  letterSpacing: 1.6,
-                                  color: context.vurgu,
-                                  fontWeight: FontWeight.w700)),
-                          const Spacer(),
-                          Text(ad,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w600, height: 1.35)),
-                          const SizedBox(height: Bosluk.s),
-                          Text('TARİH DOSYASI',
-                              style: TextStyle(fontSize: 9, letterSpacing: 1.4, color: context.soluk)),
-                        ],
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(Kose.kart),
+                      onTap: () => _vakaAc(context, v),
+                      child: Padding(
+                        padding: const EdgeInsets.all(Bosluk.l),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(v.no,
+                                style: TextStyle(
+                                    fontSize: 9.5,
+                                    letterSpacing: 1.6,
+                                    color: context.vurgu,
+                                    fontWeight: FontWeight.w700)),
+                            const Spacer(),
+                            Text(v.baslik,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.35)),
+                            const SizedBox(height: Bosluk.s),
+                            Text(v.donem.toUpperCase(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 8.5,
+                                    letterSpacing: 1.2,
+                                    color: context.soluk)),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -93,20 +145,140 @@ class MasaEkrani extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: Bosluk.xl),
-          Text(
-            'Tam arşiv, mağaza ve oyunlar web\'de: tarihajani.com — hesabın ortak, ürettiklerin iki tarafta da görünür.',
-            style: TextStyle(fontSize: 12, color: context.soluk, height: 1.5),
+          const SizedBox(height: Bosluk.xxl),
+
+          // OYUN TÜNELİ — ilk native oyun: Zaman Görevi
+          const BolumEtiketi('OYUN TÜNELİ'),
+          const SizedBox(height: Bosluk.m),
+          Card(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(Kose.kart),
+              onTap: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const OyunSayfasi())),
+              child: Padding(
+                padding: const EdgeInsets.all(Bosluk.l),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(
+                          gradient: altinGradyan, shape: BoxShape.circle),
+                      child: const Icon(Icons.timer_outlined,
+                          color: Color(0xFF171207)),
+                    ),
+                    const SizedBox(width: Bosluk.m),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Zaman Görevi',
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w700)),
+                          Text('${zamanGorevi.length} soru · tarih bilgi oyunu',
+                              style:
+                                  TextStyle(fontSize: 12, color: context.soluk)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: context.soluk),
+                  ],
+                ),
+              ),
+            ),
           ),
+          const SizedBox(height: Bosluk.m),
+          Text('Satranç 1402 ve Mangala native sürümleri yolda — şimdilik web\'de: tarihajani.com',
+              style: TextStyle(fontSize: 12, color: context.soluk, height: 1.5)),
+          const SizedBox(height: Bosluk.xl),
         ],
       ),
     );
   }
 }
 
+/// GEZİN / İÇERİK / MAĞAZA — PWA'daki menü panelinin premium native hâli.
+class _MenuPaneli extends StatelessWidget {
+  const _MenuPaneli(
+      {required this.uretAc,
+      required this.sohbetAc,
+      required this.oyunAc,
+      required this.magazaAc});
+  final VoidCallback uretAc, sohbetAc, oyunAc, magazaAc;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget oge(IconData ikon, String ad, VoidCallback? onTap) => Expanded(
+          child: Card(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(Kose.kart),
+              onTap: onTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: Bosluk.l),
+                child: Column(
+                  children: [
+                    Icon(ikon, color: context.vurgu),
+                    const SizedBox(height: Bosluk.s),
+                    Text(ad,
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(Bosluk.kenar),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                      color: context.cizgi,
+                      borderRadius: BorderRadius.circular(2))),
+            ),
+            const SizedBox(height: Bosluk.l),
+            const BolumEtiketi('GEZİN'),
+            const SizedBox(height: Bosluk.m),
+            Row(children: [
+              oge(Icons.auto_stories, 'Dosya Üret', uretAc),
+              const SizedBox(width: Bosluk.m),
+              oge(Icons.forum_outlined, 'Ajan Masası', sohbetAc),
+            ]),
+            const SizedBox(height: Bosluk.l),
+            const BolumEtiketi('İÇERİK'),
+            const SizedBox(height: Bosluk.m),
+            Row(children: [
+              oge(Icons.videogame_asset_outlined, 'Oyun Tüneli', oyunAc),
+              const SizedBox(width: Bosluk.m),
+              oge(Icons.school_outlined, 'Akademi (web)', null),
+            ]),
+            const SizedBox(height: Bosluk.l),
+            const BolumEtiketi('MAĞAZA'),
+            const SizedBox(height: Bosluk.m),
+            Row(children: [
+              oge(Icons.toll, 'Krediler & Paketler', magazaAc),
+              const SizedBox(width: Bosluk.m),
+              oge(Icons.menu_book_outlined, 'E-Kitaplar (web)', null),
+            ]),
+            const SizedBox(height: Bosluk.l),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _GununDosyasi extends StatelessWidget {
-  const _GununDosyasi({required this.vurgu});
-  final Color vurgu;
+  const _GununDosyasi({required this.vaka});
+  final Vaka vaka;
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +301,8 @@ class _GununDosyasi extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: Bosluk.m, vertical: Bosluk.xs),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: Bosluk.m, vertical: Bosluk.xs),
               decoration: BoxDecoration(
                 gradient: altinGradyan,
                 borderRadius: BorderRadius.circular(Kose.cip),
@@ -142,11 +315,11 @@ class _GununDosyasi extends StatelessWidget {
                       color: Color(0xFF171207))),
             ),
             const Spacer(),
-            Text('Ötzi — Tarihin En Eski Cinayeti',
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(vaka.baslik, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: Bosluk.xs),
             Text('TARİH DOSYASI — dosyayı aç →',
-                style: TextStyle(fontSize: 11, letterSpacing: 1.2, color: vurgu)),
+                style: TextStyle(
+                    fontSize: 11, letterSpacing: 1.2, color: context.vurgu)),
           ],
         ),
       ),

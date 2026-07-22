@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../api.dart';
 import '../tema.dart';
+import '../veri.dart';
 
 /// YENİ DOSYA — premium üretim ekranı: konu + tarz + ton + görsel stil + boyut
 /// + anlatıcı sesi. PWA düzeninin native hâli; iki temada da aynı ızgara.
@@ -16,9 +17,44 @@ class _UretEkraniState extends State<UretEkrani> {
   final _konu = TextEditingController();
   String _tarz = 'belgesel', _ton = 'merak', _stil = 'sinematik', _boyut = '9:16';
   int _ses = 0;
+  double _sure = 60; // saniye (30 sn – 10 dk, web ile aynı aralık)
   bool _mesgul = false;
   String _hata = '';
   Map<String, dynamic>? _sonuc;
+
+  /// Kredi maliyeti — web/sunucu ile AYNI formül: max(30, yuvarla((20+sn/4)/5)*5)
+  int get _kredi => ((20 + _sure / 4) / 5).round() * 5 < 30
+      ? 30
+      : ((20 + _sure / 4) / 5).round() * 5;
+
+  String get _sureEtiket {
+    final dk = _sure ~/ 60, sn = (_sure % 60).round();
+    if (dk == 0) return '$sn sn';
+    return sn == 0 ? '$dk dk' : '$dk dk $sn sn';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Vaka dosyasından "Studio'da üret" → konu buraya taşınır
+    seciliKonu.addListener(_konuAl);
+    _konuAl();
+  }
+
+  void _konuAl() {
+    final k = seciliKonu.value;
+    if (k != null && k.isNotEmpty) {
+      _konu.text = k;
+      seciliKonu.value = null;
+      if (mounted) setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    seciliKonu.removeListener(_konuAl);
+    super.dispose();
+  }
 
   static const _tarzlar = [
     ('belgesel', '🎬 Klasik'),
@@ -57,7 +93,7 @@ class _UretEkraniState extends State<UretEkrani> {
       final d = await widget.api.dosyaUret(
         konu: konu,
         prompt:
-            'Sen "Tarih Ajanı" kanalının baş senaristisin. Şu konuda 60 saniyelik Türkçe video senaryosu üret. '
+            'Sen "Tarih Ajanı" kanalının baş senaristisin. Şu konuda ${_sure.round()} saniyelik Türkçe video senaryosu üret. '
             'Tarz: $_tarz · ton: $_ton · görsel stil: $_stil · kadraj: $_boyut. '
             'SADECE geçerli JSON döndür: {"baslik":"...","logline":"...","senaryo":[{"bolum":"...","metin":"..."}]}. KONU: $konu',
       );
@@ -124,6 +160,30 @@ class _UretEkraniState extends State<UretEkrani> {
           const BolumEtiketi('GÖRSEL BOYUTU'),
           const SizedBox(height: Bosluk.m),
           _cipSatiri(_boyutlar, _boyut, (v) => setState(() => _boyut = v)),
+          const SizedBox(height: Bosluk.xl),
+
+          BolumEtiketi('SÜRE',
+              sag: Text('$_sureEtiket · $_kredi KR',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: context.vurgu))),
+          const SizedBox(height: Bosluk.s),
+          Slider(
+            value: _sure,
+            min: 30,
+            max: 600,
+            divisions: 19,
+            activeColor: tema.colorScheme.primary,
+            onChanged: (v) => setState(() => _sure = v),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('30 sn', style: TextStyle(fontSize: 11, color: context.soluk)),
+              Text('10 dk', style: TextStyle(fontSize: 11, color: context.soluk)),
+            ],
+          ),
           const SizedBox(height: Bosluk.xl),
 
           const BolumEtiketi('ANLATICI SESİ'),
