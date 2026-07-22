@@ -17,16 +17,38 @@ const src = readFileSync(join(REPO, "Studio.dc.html"), "utf8");
 
 test("Sohbet promptu ÜRETİM KOMUTLARI + [[DO:...]] direktif sözlüğü içerir", () => {
   assert.ok(src.includes("SEN AYNI ZAMANDA BİR ÜRETİM AJANISIN"), "üretim ajanı personası");
-  for (const d of ["[[DO:uret]]", "[[DO:konu:", "[[DO:gorseller]]", "[[DO:gorsel:N]]", "[[DO:seslendir]]", "[[DO:video:N]]"]) {
+  for (const d of ["[[DO:uret]]", "[[DO:konu:", "[[DO:gorseller]]", "[[DO:gorsel:N]]", "[[DO:seslendir]]", "[[DO:video:N]]", "[[DO:ayar:ALAN:DEĞER]]"]) {
     assert.ok(src.includes(d), "direktif tanımı: " + d);
   }
-  assert.ok(src.includes("belirsizse direktif EKLEME, tek net soru sor"), "eksik bilgide soru sorma kuralı");
+  // Ajan artık kullanıcıyı panele yönlendirmez — ayarı ve üretimi KENDİSİ yapar.
+  assert.ok(src.includes("Kullanıcıyı ASLA \"üstteki panelden sen seç / sen tıkla\" diye YÖNLENDİRME"), "panele yönlendirme yasağı");
+  assert.ok(src.includes('ÖNEMLİ — "sen ayarla ve üret"'), "sen ayarla ve üret akışı");
+  assert.ok(src.includes("Yalnız konu/işlem gerçekten belirsizse tek net soru sor"), "yalnız belirsizse soru sorma kuralı");
 });
 
-test("sendChat: [[DO:...]] direktifini ayrıştırır, gizler ve yürütür", () => {
-  assert.ok(src.includes("const act = raw.match(/\\[\\[DO:\\s*([a-zçğıöşü]+)\\s*(?::\\s*([^\\]]*))?\\]\\]/i)"), "DO direktif regex (boşluk toleranslı)");
+test("sendChat: [[DO:...]] direktiflerini ayrıştırır (çoklu), gizler ve yürütür", () => {
+  assert.ok(src.includes("[...raw.matchAll(/\\[\\[DO:\\s*([a-zçğıöşü]+)\\s*(?::\\s*([^\\]]*))?\\]\\]/gi)]"), "DO direktif matchAll (çoklu, boşluk toleranslı)");
   assert.ok(src.includes(".replace(/\\[\\[DO:[^\\]]*\\]\\]/g, '')"), "direktif kullanıcıdan gizlenir");
-  assert.ok(src.includes("if (act) this._chatAction(act[1].toLocaleLowerCase('tr'), (act[2] || '').trim())"), "aksiyon dispatch");
+  assert.ok(src.includes("this._runChatActions(acts)"), "aksiyonlar sırayla dispatch");
+});
+
+test("Çoklu direktif: AYARLAR önce uygulanır, sonra üretim (sen ayarla ve üret)", () => {
+  assert.ok(src.includes("_runChatActions(acts)"), "orkestratör");
+  assert.ok(src.includes("const settings = acts.filter(a => a[0] === 'ayar')"), "ayar direktifleri ayrılır");
+  assert.ok(src.includes("if (settings.length) this._applyAyarlar(settings, runRest)"), "önce ayar, sonra üretim");
+  assert.ok(src.includes("_applyAyarlar(settings, done)"), "ayar uygulayıcı");
+  // ayar → state yaması + kaydet + onay, SONRA done() ile üretim
+  assert.ok(src.includes("this.setState(patch, () => {") && src.includes("if (done) done();"), "state oturunca üretim çalışır");
+});
+
+test("_resolveAyar: süre/ton/format/oran/stil/motor/ses fuzzy çözümlenir", () => {
+  assert.ok(src.includes("_resolveAyar(field, val)"), "çözümleyici");
+  assert.ok(src.includes("patch: { duration: 's' + sec }"), "süre → duration state");
+  assert.ok(src.includes("sec = Math.min(600, Math.max(30, sec))"), "süre 30–600 sn'ye kısıtlanır");
+  assert.ok(src.includes("patch: { format: id }"), "format ayarı");
+  assert.ok(src.includes("patch: { aspect: id, imgAspect: id }"), "oran/kadraj ayarı");
+  assert.ok(src.includes("patch: { style: id, imgStyle: id, imgStyleCat"), "stil ayarı");
+  assert.ok(src.includes("patch: { imgProvider: id }"), "görsel motoru ayarı");
 });
 
 test("_chatAction: her direktif doğru metoda bağlanır + ön koşul korumaları", () => {
