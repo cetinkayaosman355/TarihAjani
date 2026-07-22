@@ -1071,6 +1071,21 @@
               <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .16em;">ÖZEL İSTEK · OPSİYONEL</p>
               <textarea value="{{ custom }}" onChange="{{ onCustom }}" rows="2" placeholder="Kendi tarzını serbestçe yaz — ör. 'kare format, gençlere hitap eden esprili dil' ya da sadece '16:9 yatay' ya da sadece 'daha destansı'. Boş bırakırsan seçtiğin ayarlar geçerli." style="width: 100%; resize: vertical; border: 1px solid rgba(129,135,151,.3); background: #060910; color: #e6dfcb; padding: 12px 14px; font-size: 13.5px; line-height: 1.55;"></textarea>
             </div>
+            <!-- BAŞTAN REFERANS GÖRSEL: yüklenen yüz/karakter TÜM sahne üretimlerinde referans alınır -->
+            <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <label style="display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(129,135,151,.35); background: rgba(8,11,19,.6); color: #a4a9b5; padding: 9px 14px; font-size: 12.5px; cursor: pointer; border-radius: 8px;">
+                📷 Referans görsel ekle <span style="color: #676d7c;">(ops.)</span>
+                <input type="file" accept="image/*" onChange="{{ onCharRefUpload }}" style="display: none;">
+              </label>
+              <sc-if value="{{ hasCharRef }}" hint-placeholder-val="{{ false }}">
+                <img src="{{ charRefUrl }}" alt="referans" style="width: 38px; height: 38px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(193,154,82,.5);">
+                <button onClick="{{ clearCharRef }}" title="Referansı kaldır" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #8a8f9c; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; font-size: 12px; line-height: 1;" style-hover="color: #e08a80; border-color: rgba(192,57,43,.5);">✕</button>
+                <span style="color: #9ed3a8; font-size: 11.5px;">✓ Tüm sahnelerde karakter referansı olarak kullanılacak</span>
+              </sc-if>
+              <sc-if value="{{ noCharRef }}" hint-placeholder-val="{{ true }}">
+                <span style="color: #676d7c; font-size: 11.5px;">Yüklediğin yüz/karakter tüm sahnelerde tutarlı kalır</span>
+              </sc-if>
+            </div>
             <sc-if value="{{ arsivPickOpen }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top: 16px; border: 1px solid rgba(193,154,82,.35); background: #070a12;">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid rgba(193,154,82,.2);">
@@ -1168,6 +1183,32 @@
                     </span>
                   </div>
                 </sc-if>
+              </div>
+              <!-- SESLENDİRME — EN ÖNEMLİ SEÇİM: İnce Ayar'dan çıkarıldı, hep görünür -->
+              <div>
+                <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 11px;">
+                  <span style="color: #c19a52; font-size: 8px; letter-spacing: .1em;">◆</span>
+                  <span style="color: #e9dfc8; font-weight: 700; font-size: 15.5px; letter-spacing: .04em;">🎙 Seslendirme</span>
+                  <span style="flex: 1; height: 1px; background: linear-gradient(90deg, rgba(193,154,82,.28), transparent); margin: 0 2px;"></span>
+                  <span style="color: #676d7c; font-size: 12px;">▶ Dinle · ücretsiz önizleme</span>
+                </div>
+                <div style="border: 1px solid rgba(193,154,82,.2); border-radius: 12px; overflow: hidden; background: rgba(8,11,19,.5); box-shadow: 0 16px 42px -34px rgba(0,0,0,.8);">
+                  <sc-for list="{{ voiceCats }}" as="cat" hint-placeholder-count="3">
+                    <div style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .2em; padding: 12px 14px 7px; background: rgba(193,154,82,.05); border-bottom: 1px solid rgba(193,154,82,.12);">{{ cat.label }}</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));">
+                    <sc-for list="{{ cat.items }}" as="opt" hint-placeholder-count="3">
+                      <div style="{{ opt.rowStyle }}">
+                        <button onClick="{{ opt.preview }}" title="Dinle" style="{{ opt.playStyle }}" style-hover="background: rgba(193,154,82,.2);">{{ opt.playIcon }}</button>
+                        <button onClick="{{ opt.pick }}" style="flex: 1; min-width: 0; text-align: left; background: transparent; border: 0; cursor: pointer; padding: 0; color: inherit;">
+                          <span style="{{ opt.nameStyle }}">{{ opt.name }}</span>
+                          <span style="color: #818797; font-size: 11.5px; line-height: 1.4; display: block; margin-top: 2px;">{{ opt.desc }}</span>
+                        </button>
+                        <span style="{{ opt.tickStyle }}">{{ opt.tick }}</span>
+                      </div>
+                    </sc-for>
+                    </div>
+                  </sc-for>
+                </div>
               </div>
               <!-- U-01: ince ayar — mobilde kapalı gelir, tek dokunuşla açılır -->
               <button onClick="{{ toggleFine }}" style="{{ fineBtnStyle }}" style-hover="border-color: rgba(193,154,82,.6);">
@@ -1354,16 +1395,28 @@
             <sc-if value="{{ tabSes }}" hint-placeholder-val="{{ false }}">
               <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; align-items: start;">
                 <div class="ta-card" style="padding: 22px 24px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
                     <span style="font-weight: 700; letter-spacing: .04em;">Seslendirme Metni</span>
-                    <button onClick="{{ copyVoice }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 7px 12px; font-size: 11px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ copyVoiceLabel }}</button>
+                    <span style="display: flex; gap: 8px;">
+                      <button onClick="{{ editVoiceStart }}" title="Ajanla karşılıklı konuşarak metni düzenle" style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); color: #e6c478; padding: 7px 12px; font-size: 11px; letter-spacing: .06em; cursor: pointer;" style-hover="background: rgba(193,154,82,.18);">✎ AJANLA DÜZENLE</button>
+                      <button onClick="{{ copyVoice }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 7px 12px; font-size: 11px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ copyVoiceLabel }}</button>
+                    </span>
                   </div>
                   <p style="margin: 0; color: #cfc8b4; line-height: 1.8; white-space: pre-wrap; font-size: 15px;">{{ resVoiceText }}</p>
                 </div>
                 <div style="display: grid; gap: 14px;">
                   <div style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); padding: 20px 22px;">
                     <p style="margin: 0 0 4px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">◈ SİSTEMDE ÜRET · GERÇEK SES</p>
-                    <p style="margin: 6px 0 12px; color: #a4a9b5; font-size: 13px; line-height: 1.55;">Tek tıkla gerçek MP3 seslendirme · ses: <span style="color: #e6c478; font-weight: 600;">{{ sysVoiceName }}</span></p>
+                    <p style="margin: 6px 0 10px; color: #a4a9b5; font-size: 13px; line-height: 1.55;">Tek tıkla gerçek MP3 seslendirme · ses: <span style="color: #e6c478; font-weight: 600;">{{ sysVoiceName }}</span></p>
+                    <!-- SES DEĞİŞTİRİLEBİLİR: farklı ses seç → tekrar üret (yeni üretim yeni kredi) -->
+                    <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 12px; flex-wrap: wrap;">
+                      <div style="flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 6px; max-height: 96px; overflow-y: auto;">
+                        <sc-for list="{{ sesSwitchOpts }}" as="so" hint-placeholder-count="6">
+                          <button onClick="{{ so.pick }}" style="{{ so.style }}">{{ so.name }}</button>
+                        </sc-for>
+                      </div>
+                      <button onClick="{{ sesSwitchPreview }}" title="Seçili sesi dinle (ücretsiz)" style="flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); color: #e6c478; cursor: pointer; font-size: 13px;" style-hover="background: rgba(193,154,82,.2);">▶</button>
+                    </div>
                     <button onClick="{{ makeTts }}" disabled="{{ sysTtsBusy }}" style="width: 100%; border: 0; background: linear-gradient(110deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; padding: 13px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.35);">{{ sysTtsLabel }}</button>
                     <sc-if value="{{ sysTtsError }}" hint-placeholder-val="{{ false }}">
                       <p style="margin: 10px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">{{ sysTtsError }}</p>
@@ -1395,11 +1448,15 @@
                     <div style="display: grid; gap: 4px; max-width: 62ch;">
                       <p style="margin: 0; color: #cfc8b4; font-size: 13.5px; line-height: 1.55;">Ayarlar tüm sahnelere uygulanır; sahne bazında değiştirebilirsin.</p>
                       <p style="margin: 0; color: #676d7c; font-size: 11.5px; line-height: 1.5;">Görsel başına 8–12 KR · motora göre.</p>
+                      <sc-if value="{{ sbMode }}" hint-placeholder-val="{{ false }}">
+                        <p style="margin: 2px 0 0; color: #e6c478; font-size: 12px; line-height: 1.5;">🎬 Storyboard modu açık: sahneler taslak çizim olarak üretilir (8 KR). Beğendiğin kareyi modu kapatıp tekrar üreterek tam görsele çevir — taslak versiyonlarda saklanır.</p>
+                      </sc-if>
                       <sc-if value="{{ imgGenBlocked }}" hint-placeholder-val="{{ false }}">
                         <p style="margin: 2px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">⚠ {{ imgValMsg }} Üretim bunu seçmeden başlamaz; kredi harcanmaz.</p>
                       </sc-if>
                     </div>
                     <span style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button onClick="{{ toggleSbMode }}" title="Taslak çizim modu: sahneler ucuz storyboard karesi olarak üretilir; beğendiğini sonra tam görsele çevir" style="{{ sbBtnStyle }}" style-hover="border-color: rgba(193,154,82,.6);">{{ sbBtnLabel }}</button>
                     <sc-if value="{{ hasPendingScenes }}" hint-placeholder-val="{{ true }}">
                       <button class="ta-genall" onClick="{{ genAll }}" disabled="{{ genAllDisabled }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-weight: 800; font-size: 12.5px; letter-spacing: .04em; padding: 11px 18px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
                     </sc-if>
@@ -3704,13 +3761,18 @@ class Component extends DCLogic {
   makeImage(promptRaw, idx, sceneKey, arOverride, opIdOverride, providerOverride, styleOverride, regenOpt) {
     const prompt = (promptRaw || '').trim();
     if (!prompt) return Promise.resolve({ ok: false, err: 'boş prompt' });
-    const cost = this.IMG_COST(idx);
+    // STORYBOARD MODU: sahne kareleri ucuz taslak çizim olarak üretilir (gpt1 · 8 KR);
+    // beğenilen kare, mod kapatılıp tekrar üretilerek tam görsele çevrilir (versiyonlar korunur).
+    const sbOn = !!this.state.sbMode && /^gp\d+$/.test(sceneKey || '');
+    const cost = sbOn ? this.IMG_COST(idx, 'gpt1') : this.IMG_COST(idx);
     // Ücretsiz tekrar (şeffaf yedek sonrası) bakiye kontrolüne takılmasın (sunucuda 0 KR)
     if (!(regenOpt && regenOpt.regen) && this.state.credits < cost) { this.setState({ creditModal: true }); return Promise.resolve({ ok: false, err: 'YETERSIZ_KREDI' }); }
     // TEK KAPI: ayarlar merkezi çözümleyiciden gelir (sahne ayarı > panel > dosya).
     // Toplu üretim, batch başında dondurduğu değerleri override olarak geçirir.
     const gen = this.resolveImageGenerationSettings(sceneKey, {
-      arKey: arOverride || undefined, styleId: styleOverride || undefined, provider: providerOverride || undefined
+      arKey: arOverride || undefined, styleId: styleOverride || undefined,
+      // storyboard taslakları hep ucuz motorla — karar yine MERKEZİ çözümleyicide doğrulanır
+      provider: sbOn ? 'gpt1' : (providerOverride || undefined)
     });
     // ÜRETİM KAPISI: geçersiz oran ya da seçilmemiş stil → istek HİÇ atılmaz, kredi düşmez.
     if (!gen.valid) {
@@ -3721,7 +3783,7 @@ class Component extends DCLogic {
     const ar = gen.arKey;
     const sty = gen.styleId;
     const prov = gen.resolvedProvider;   // 'auto' asla sunucuya gitmez
-    const sendPrompt = this.withAspect(prompt, ar);         // kadraj prompta yerleşir; STİL sunucuya anahtar olarak gider
+    const sendPrompt = (sbOn ? 'Rough storyboard sketch panel, loose expressive pencil linework, monochrome gray shading, cinematic staging with clear silhouettes, hand-drawn pre-production frame: ' : '') + this.withAspect(prompt, ar);         // kadraj prompta yerleşir; STİL sunucuya anahtar olarak gider
     const id = opIdOverride || ('img' + Date.now() + Math.floor(Math.random() * 1000));
     // ARŞİV TÜRÜ: kapak → cover, sahne (gp3 gibi) → scene, serbest görsel → standalone (Bağımsız)
     const kind = sceneKey === 'kapak' ? 'cover' : (/^[a-z]+\d+$/.test(sceneKey || '') ? 'scene' : 'standalone');
@@ -6754,7 +6816,36 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         this.setState({ step: 2, ideaWarn: '' });
       },
 
-      optionGroups: groups,
+      // SESLENDİRME EN ÖNEMLİ SEÇİM: İnce Ayar'ın içinden çıkarıldı — her zaman görünür
+      optionGroups: groups.filter(g => !g.isVoice),
+      voiceCats: (groups.find(g => g.isVoice) || { cats: [] }).cats,
+      voiceSelName: this.find('voice', s.voice).name,
+      // ADIM 4 · Seslendirme sekmesinde ses DEĞİŞTİRİLEBİLİR → farklı sesle tekrar üret
+      sesSwitchOpts: optionDefs.voice.map(o => ({
+        id: o.id, name: o.name, sel: s.voice === o.id,
+        pick: () => this.setState({ voice: o.id }, () => this.persist()),
+        style: {
+          border: s.voice === o.id ? '1px solid rgba(230,196,120,.8)' : '1px solid rgba(129,135,151,.3)',
+          background: s.voice === o.id ? 'rgba(193,154,82,.16)' : 'transparent',
+          color: s.voice === o.id ? '#e6c478' : '#a4a9b5',
+          padding: '7px 12px', fontSize: '12px', cursor: 'pointer', borderRadius: '7px', fontWeight: s.voice === o.id ? 700 : 500
+        }
+      })),
+      sesSwitchPreview: () => this.previewVoice(this.find('voice', s.voice)),
+      editVoiceStart: () => this.startEdit('ses', 0, 'Seslendirme Metni'),
+      // STORYBOARD MODU: sahneler ucuz taslak çizim (8 KR) — beğenilen kare sonra tam görsel
+      sbMode: !!s.sbMode,
+      toggleSbMode: () => this.setState({ sbMode: !s.sbMode }, () => this.persist()),
+      sbBtnLabel: s.sbMode ? '🎬 STORYBOARD · AÇIK' : '🎬 STORYBOARD',
+      sbBtnStyle: {
+        border: s.sbMode ? '1px solid rgba(230,196,120,.8)' : '1px solid rgba(129,135,151,.35)',
+        background: s.sbMode ? 'rgba(193,154,82,.16)' : 'transparent',
+        color: s.sbMode ? '#e6c478' : '#a4a9b5',
+        fontFamily: "'Special Elite', monospace", fontWeight: 700, fontSize: '10.5px',
+        letterSpacing: '.1em', padding: '10px 16px', whiteSpace: 'nowrap', cursor: 'pointer'
+      },
+      clearCharRef: () => this.setState({ charRefUrl: '', charLock: false }, () => this.persist()),
+      noCharRef: !s.charRefUrl,
       startGenerate: () => this.startGenerate(),
       genCostLabel: 'Dosyayı Oluştur · ' + this.costOf() + ' kredi →',
       // "BEN HİKAYEMİ YAZACAĞIM" modu — konu kutusundaki metni hikâye sayar
@@ -7160,6 +7251,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     if (t.type === 'yt') return (r.youtube || {}).aciklama || '';
     if (t.type === 'ig') return (r.instagram || {}).aciklama || '';
     if (t.type === 'sec') return ((r.senaryo || [])[t.i] || {}).metin || '';
+    if (t.type === 'ses') return this.voiceText();   // seslendirme metninin TAMAMI (karşılıklı düzenleme)
     return '';
   }
 
@@ -7178,6 +7270,18 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     if (t.type === 'yt' && r.youtube) r.youtube.aciklama = last.content;
     else if (t.type === 'ig' && r.instagram) r.instagram.aciklama = last.content;
     else if (t.type === 'sec' && r.senaryo && r.senaryo[t.i]) r.senaryo[t.i].metin = last.content;
+    else if (t.type === 'ses' && r.senaryo) {
+      // Seslendirmenin TAMAMI düzenlendi: paragraf sayısı bölüm sayısıyla eşleşirse
+      // bölüm yapısı KORUNARAK dağıtılır; eşleşmezse tek anlatım bölümüne yazılır.
+      const parts = String(last.content || '').split(/\n{2,}/).map(x => x.trim()).filter(Boolean);
+      const secs = r.senaryo.filter(x => !/^shorts/i.test((x && x.bolum) || ''));
+      if (parts.length === secs.length && secs.length > 0) {
+        let pi = 0;
+        r.senaryo = r.senaryo.map(x => /^shorts/i.test((x && x.bolum) || '') ? x : Object.assign({}, x, { metin: parts[pi++] }));
+      } else {
+        r.senaryo = [{ bolum: 'Anlatım', sure: '', metin: String(last.content || '').trim() }];
+      }
+    }
     this.setState({ result: r, editTarget: null, editLabel: '', chatOpen: false });
   }
 
