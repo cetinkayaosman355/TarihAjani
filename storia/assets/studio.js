@@ -439,13 +439,13 @@
     if (p === 'kling') return Math.max(250, s * 50);
     return Math.max(150, s * 30);
   }
-  function imgCr() { return S.imgQuality === 'yuksek' ? 45 : S.imgQuality === 'nano' ? 10 : 12; }
+  function imgCr() { return S.imgQuality === 'yuksek' ? 45 : 12; }
   function imgQualHtml() {
+    // Tek motor: OpenAI GPT Image 1.5 — kalite yalnız kademeyi seçer (standart/yüksek).
     return '<div class="veng-pick"><span class="cp-lbl">Görsel motoru</span><div class="cap-seg">' +
-      '<button class="' + (S.imgQuality === 'nano' ? 'on' : '') + '" data-act="imgQual" data-v="nano" title="Google Nano Banana — hızlı, yüksek kalite, iyi yazı">Nano Banana · 10kr</button>' +
-      '<button class="' + (S.imgQuality === 'standart' ? 'on' : '') + '" data-act="imgQual" data-v="standart" title="OpenAI gpt-image — dengeli">Standart · 12kr</button>' +
-      '<button class="' + (S.imgQuality === 'yuksek' ? 'on' : '') + '" data-act="imgQual" data-v="yuksek" title="OpenAI gpt-image high / 4K — en detaylı">Yüksek · 45kr</button>' +
-      '</div></div>';
+      '<button class="' + (S.imgQuality === 'standart' ? 'on' : '') + '" data-act="imgQual" data-v="standart" title="GPT Image 1.5 — dengeli">Standart · 12kr</button>' +
+      '<button class="' + (S.imgQuality === 'yuksek' ? 'on' : '') + '" data-act="imgQual" data-v="yuksek" title="GPT Image 1.5 high / 4K — en detaylı">Yüksek · 45kr</button>' +
+      '</div><div class="engine-note">GPT Image 1.5 · foto-gerçekçi üretim</div></div>';
   }
   var GRADS = [
     'linear-gradient(135deg,#efe6d2,#c2a160)', 'linear-gradient(135deg,#e0c588,#9c7b3b)',
@@ -760,6 +760,7 @@
           '<div id="audioSlot">' + (S.audio ? '<audio controls src="' + esc(S.audio) + '"></audio>' : '') + '</div>' +
           '<div class="pl-controls"><button class="btn btn-gold btn-sm" data-act="tts">▶ Seslendir</button>' +
           (S.audio ? '<button class="btn btn-quiet btn-sm" data-act="dlAudio">↓ İndir</button>' : '') +
+          '<button class="btn btn-quiet btn-sm" data-act="dlSrt">⬇ Altyazı (.srt)</button>' +
           '<button class="btn btn-quiet btn-sm" data-act="copyVo">Metni kopyala</button></div>' +
         '</div>' +
         '<div class="panel panel-compact"><div class="panel-head"><h3>Seslendirme metni</h3></div><p class="p-note">' + esc(r.seslendirme_notu || 'Doğal, akıcı bir anlatıma göre hazırlandı.') + '</p><div class="panel-txt">' + esc(vo) + '</div></div>';
@@ -915,6 +916,35 @@
   function waveBars() { var h = ''; for (var i = 0; i < 48; i++) { var hh = 20 + Math.round(Math.abs(Math.sin(i * 0.7)) * 78); h += '<i style="height:' + hh + '%"></i>'; } return h; }
   function emptyInline() { return '<div class="empty"><h3>İçerik yok</h3><p>Bu sekme için çıktı bulunamadı.</p></div>'; }
   function narrationText() { var r = S.result || {}; if (r.seslendirme_metni) return r.seslendirme_metni; return (r.senaryo || []).map(function (s) { return s.anlatim || s.metin || ''; }).filter(Boolean).join('\n\n'); }
+  // ── Altyazı (.SRT) — seslendirme metninden hesaplanır, ek AI maliyeti yok ──
+  function fmtSrtTime(sec) {
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = Math.floor(sec % 60), ms = Math.round((sec % 1) * 1000);
+    function p(n, w) { return String(n).padStart(w, '0'); }
+    return p(h, 2) + ':' + p(m, 2) + ':' + p(s, 2) + ',' + p(ms, 3);
+  }
+  function srtText() {
+    var text = narrationText(); if (!text.trim()) return '';
+    var sentences = text.replace(/\n+/g, ' ').match(/[^.!?…]+[.!?…]+["'”»)]*|[^.!?…]+$/g) || [text];
+    var t = 0, i = 0, out = [];
+    // Türkçe ~2.4 kelime/sn; her altyazı en az 1.2 sn kalır.
+    sentences.forEach(function (raw) {
+      var s = raw.trim(); if (!s) return;
+      var words = s.split(/\s+/).length, dur = Math.max(1.2, words / 2.4);
+      out.push((++i) + '\n' + fmtSrtTime(t) + ' --> ' + fmtSrtTime(t + dur) + '\n' + s + '\n');
+      t += dur;
+    });
+    return out.join('\n');
+  }
+  function srtSlug() { var b = ((S.result || {}).baslik || 'storia'); return b.toString().toLowerCase().replace(/[çğıöşü]/g, function (c) { return { 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u' }[c]; }).replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 50) || 'storia'; }
+  function dlSrt() {
+    var srt = srtText();
+    if (!srt) { toast('Önce bir dosya üret — altyazı senaryodan hesaplanır.'); return; }
+    var blob = new Blob(['﻿' + srt], { type: 'text/plain;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = srtSlug() + '-altyazi.srt';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+  }
 
   // ── Image studio ─────────────────────────────────────────────────────
   function renderImages() {
@@ -1247,6 +1277,7 @@
         break;
       case 'copyScript': copy((S.result.senaryo || []).map(function (s, i) { return (i + 1) + '. ' + (s.baslik || '') + '\n' + (s.anlatim || ''); }).join('\n\n')); break;
       case 'copyVo': copy(narrationText()); break;
+      case 'dlSrt': dlSrt(); break;
       case 'copyOne': copy(v); break;
       case 'copyVids': var vp = (S.result.video_promptlar && S.result.video_promptlar.length) ? S.result.video_promptlar : (S.result.gorsel_promptlar || []).map(function (x) { return x + ', slow cinematic push-in with subtle parallax, smooth camera move, natural motion'; }); copy(vp.map(function (x, i) { return (i + 1) + '. ' + x; }).join('\n')); break;
       case 'copyYt': var yt = S.result.youtube || {}; copy((yt.baslik || '') + '\n\n' + (yt.aciklama || '') + '\n\n' + (yt.etiketler || []).join(', ')); break;
@@ -1269,7 +1300,7 @@
       case 'exportVid': exportVideo(); break;
       case 'capStyle': S.capStyle = v; refreshTab(); break;
       case 'vengine': S.vengine = v; reRenderTabOrView(); toast(v === 'veo' ? 'Veo · sinema kalitesi · ' + vcost(S.vsec, 'veo') + 'kr' : v === 'kling3' ? 'Kling 3.0 · en sinematik · ' + vcost(S.vsec, 'kling3') + 'kr' : v === 'kling' ? 'Kling 2.6 · sinematik · ' + vcost(S.vsec, 'kling') + 'kr' : 'Grok · hızlı · ' + vcost(S.vsec, 'grok') + 'kr'); break;
-      case 'imgQual': S.imgQuality = v; reRenderTabOrView(); toast(v === 'nano' ? 'Nano Banana · 10kr/görsel' : v === 'yuksek' ? 'Yüksek · 45kr/görsel' : 'Standart · 12kr/görsel'); break;
+      case 'imgQual': if (v === 'nano') v = 'standart'; S.imgQuality = v; reRenderTabOrView(); toast(v === 'yuksek' ? 'Yüksek · 45kr/görsel' : 'Standart · 12kr/görsel'); break;
       case 'vsec': S.vsec = parseInt(v, 10) || 5; reRenderTabOrView(); toast(S.vsec + ' sn klip · ' + vcost(S.vsec) + 'kr'); break;
       case 'brandKit': openBrandModal(); break;
       case 'musicPick': openMusicModal(); break;
@@ -2309,6 +2340,7 @@
     modal.addEventListener('click', function (e) { if (e.target === modal) closeAuth(); });
     document.getElementById('authSwitch').addEventListener('click', switchAuth);
     document.getElementById('authSubmit').addEventListener('click', doAuth);
+    var authReset = document.getElementById('authReset'); if (authReset) authReset.addEventListener('click', doReset);
     // edit image modal
     var editModal = document.getElementById('editModal');
     document.getElementById('editApply').addEventListener('click', applyEdit);
@@ -2541,7 +2573,7 @@
         var g = groups[k], pct = Math.round(g.cr / maxCr * 100);
         html += '<div class="spend-row"><div class="sr-top"><span class="sr-name">' + (SPEND_LABELS[k] || esc(k)) + '</span><span class="sr-cr">' + g.cr + ' kr <em>· ' + g.n + ' kez</em></span></div><div class="sr-bar"><i style="width:' + pct + '%"></i></div></div>';
       });
-      html += '</div><p class="spend-note">Ortalama görsel ' + (groups.gorsel ? Math.round(groups.gorsel.cr / groups.gorsel.n) : '—') + ' kr · Ortalama dosya ' + (groups.uretim ? Math.round(groups.uretim.cr / groups.uretim.n) : '—') + ' kr. Masrafı düşürmek için görsellerde <b>Nano Banana</b> (10 kr) seç.</p>';
+      html += '</div><p class="spend-note">Ortalama görsel ' + (groups.gorsel ? Math.round(groups.gorsel.cr / groups.gorsel.n) : '—') + ' kr · Ortalama dosya ' + (groups.uretim ? Math.round(groups.uretim.cr / groups.uretim.n) : '—') + ' kr. Görseller GPT Image 1.5 ile üretilir; masrafı düşürmek için Standart kaliteyi (12 kr) kullan.</p>';
       body.innerHTML = html;
     }, function () { body.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:12px 0">Harcama kaydı okunamadı. (credit_log erişimi)</p>'; });
   }
@@ -2567,14 +2599,48 @@
       else toast('E-postanı kontrol et');
     }).catch(function () { btn.disabled = false; toast('Bağlantı hatası'); });
   }
-  function loadCredits() { if (!S.user || !sb) return; sb.from('profiles').select('credits,tier,monthly_quota').eq('id', S.user.id).single().then(function (res) { if (res && res.data) { if (typeof res.data.credits === 'number') S.credits = res.data.credits; if (res.data.monthly_quota) S.creditMax = Math.max(res.data.monthly_quota, res.data.credits || 0) || 500; chrome(); } }, function () {}); }
+  function doReset() {
+    if (!sb) { toast('Supabase yüklenemedi'); return; }
+    var email = document.getElementById('authEmail').value.trim();
+    if (!email) { toast('Önce e-posta adresini yaz'); return; }
+    var redirect = location.origin + location.pathname;
+    sb.auth.resetPasswordForEmail(email, { redirectTo: redirect }).then(function (res) {
+      if (res && res.error) { toast(res.error.message || 'Sıfırlama gönderilemedi'); return; }
+      toast('Sıfırlama bağlantısı e-postana gönderildi');
+    }).catch(function () { toast('Bağlantı hatası'); });
+  }
+  function loadCredits() {
+    if (!S.user || !sb) return;
+    // Sunucu 'balance' ucu: refresh_profile_credits ile kotayı/süre bitimini
+    // tazeler, güncel krediyi döner. Başarısızsa doğrudan profiles'a düşer.
+    callFn({ action: 'balance' }).then(function (d) {
+      if (d && d.ok && typeof d.credits === 'number') {
+        S.credits = d.credits;
+        if (d.monthly_quota) S.creditMax = Math.max(d.monthly_quota, d.credits || 0) || 500;
+        chrome();
+      } else { loadCreditsDirect(); }
+    }).catch(loadCreditsDirect);
+  }
+  function loadCreditsDirect() { if (!S.user || !sb) return; sb.from('profiles').select('credits,tier,monthly_quota').eq('id', S.user.id).single().then(function (res) { if (res && res.data) { if (typeof res.data.credits === 'number') S.credits = res.data.credits; if (res.data.monthly_quota) S.creditMax = Math.max(res.data.monthly_quota, res.data.credits || 0) || 500; chrome(); } }, function () {}); }
 
   // ── Boot ─────────────────────────────────────────────────────────────
   function boot() {
     loadHist(); loadBrand(); setupChrome(); render();
     try { if (!localStorage.getItem('storia_tour')) setTimeout(openTour, 600); } catch (e) {}
     if (REAL) {
-      loadSupabase().then(function () { sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey); return sb.auth.getSession(); })
+      loadSupabase().then(function () {
+        sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey);
+        // Oturum değişimlerine tepki ver: token yenileme, çoklu sekme çıkışı, süre bitimi.
+        sb.auth.onAuthStateChange(function (event, session) {
+          var u = session && session.user;
+          if (event === 'SIGNED_OUT' || !u) {
+            if (S.user) { S.user = null; S.credits = REAL ? null : 500; loadHist(); chrome(); render(); }
+          } else if (u && (!S.user || S.user.id !== u.id)) {
+            S.user = u; loadHist(); loadBrand(); loadCredits(); chrome();
+          }
+        });
+        return sb.auth.getSession();
+      })
         .then(function (res) { var s = res && res.data && res.data.session; if (s && s.user) { S.user = s.user; loadHist(); loadBrand(); loadCredits(); if (S.view === 'history' || S.view === 'library') render(); } chrome(); })
         .catch(function () { toast('Sunucuya bağlanılamadı'); });
     }

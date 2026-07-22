@@ -1014,7 +1014,7 @@ Deno.serve(async (req) => {
     const act = String(b.action || "");
     // Action allowlist — bilinmeyen işlemleri reddet. Boş action geriye dönük
     // uyumluluk için "assist" (yardımcı LLM: sohbet/trend/seri/dublaj) sayılır.
-    const ALLOWED = new Set(["generate", "image", "edit", "video", "video_status", "tts", "fetch_result", "regen", "assist", ""]);
+    const ALLOWED = new Set(["generate", "image", "edit", "video", "video_status", "tts", "fetch_result", "regen", "assist", "balance", ""]);
     if (!ALLOWED.has(act)) return json({ ok: false, error: "Geçersiz işlem." }, 400);
     const isAssist = act === "assist" || act === "";
     const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
@@ -1024,7 +1024,33 @@ Deno.serve(async (req) => {
     if (isAssist && rateLimited("assist:" + ip, 40)) return json({ ok: false, error: "Çok fazla istek — bir dakika sonra tekrar dene." }, 429);
     const isEdit = act === "edit";
     const prompt = (b.prompt && String(b.prompt).trim()) ? String(b.prompt) : (b.topic ? buildPrompt(b) : "");
-    if (!prompt && act !== "tts" && act !== "fetch_result" && act !== "video" && act !== "video_status") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
+    if (!prompt && act !== "tts" && act !== "fetch_result" && act !== "video" && act !== "video_status" && act !== "balance") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
+
+    // BAKİYE (ücretsiz) — girişte kota yenilemesi/süre bitimi yansısın diye
+    // refresh_profile_credits'i sunucuda (service role) çağırır ve güncel krediyi döner.
+    if (act === "balance") {
+      const SB_URL = Deno.env.get("SUPABASE_URL");
+      const SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (!SB_URL || !SVC) return json({ ok: false, error: "Sunucu yapılandırması eksik." }, 500);
+      const admin2 = createClient(SB_URL, SVC);
+      const jwt = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+      const { data: ud } = await admin2.auth.getUser(jwt);
+      if (!ud?.user) return json({ ok: false, error: "Giriş gerekli." }, 401);
+      try {
+        const { data: prof } = await admin2.rpc("refresh_profile_credits", { p_user: ud.user.id });
+        const row = Array.isArray(prof) ? prof[0] : prof;
+        return json({
+          ok: true,
+          credits: row && typeof row.credits === "number" ? row.credits : 0,
+          tier: row?.tier ?? null,
+          monthly_quota: row?.monthly_quota ?? null,
+        });
+      } catch (_e) {
+        // RPC yoksa/başarısızsa doğrudan profiles'tan oku (yine de bakiye dönsün).
+        const { data: p2 } = await admin2.from("profiles").select("credits,tier,monthly_quota").eq("id", ud.user.id).single();
+        return json({ ok: true, credits: p2?.credits ?? 0, tier: p2?.tier ?? null, monthly_quota: p2?.monthly_quota ?? null });
+      }
+    }
 
     // VIDEO DURUM SORGUSU (ücretsiz poll) — video zaten submit'te ücretlendi.
     if (act === "video_status") {

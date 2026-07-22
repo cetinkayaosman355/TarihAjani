@@ -594,6 +594,8 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
 .cap-pick .cp-lbl { font-size: 12px; font-weight: 600; color: var(--muted); }
 .veng-pick { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .veng-pick .cp-lbl { font-size: 12px; font-weight: 600; color: var(--muted); }
+.engine-note { flex-basis: 100%; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.engine-note::before { content: "✦ "; color: var(--champ-deep); }
 .cap-seg { display: inline-flex; gap: 5px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--champ-line); border-radius: 999px; padding: 3px; }
 .cap-seg button { font-size: 12px; font-weight: 600; padding: 5px 11px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer; transition: all .18s; }
 .cap-seg button.on { background: var(--gold-sheen); color: #241a08; }
@@ -811,6 +813,7 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 
     <input class="field" type="text" id="authPass" placeholder="Parola" autocomplete="off" autocapitalize="off" autocorrect="off" name="storia_q2" data-1p-ignore data-lpignore="true">
     <button class="btn btn-gold" id="authSubmit">Devam et</button>
     <div class="alt" id="authAlt">Hesabın yok mu? <a id="authSwitch">Kayıt ol</a></div>
+    <div class="alt"><a id="authReset">Şifremi unuttum</a></div>
     <div class="alt"><a id="authClose">Kapat</a></div>
   </div>
 </div>
