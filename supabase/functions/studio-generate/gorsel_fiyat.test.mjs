@@ -47,7 +47,9 @@ test("Frontend: IMG_COST model bazlı (panel/sahne motoru)", () => {
   assert.ok(studioSrc.includes("{ gpt: 12, gpt1: 8, gemini: 12 }"), "istemci fiyat tablosu (birincil GPT Image 1.5 = 12)");
   assert.ok(studioSrc.includes("IMG_COST(idx, prov)"), "IMG_COST motoru dikkate alır");
   assert.ok(studioSrc.includes("(this.resolveImageGenerationSettings(kind + i) || {}).resolvedProvider"), "sahne kartı kendi motorunun fiyatını gösterir");
-  assert.ok(studioSrc.includes("GPT Image 1.5 · 12 KR, GPT Image 1 · 8 KR"), "kullanıcı diliyle fiyat açıklaması");
+  // Fiyat artık karar anında: motor seçenek kartlarının açıklamasında (paragraf değil)
+  assert.ok(studioSrc.includes("En yüksek kalite — 12 KR") && studioSrc.includes("Daha hızlı — 8 KR") && studioSrc.includes("Google görsel motoru — 12 KR"), "model fiyatı seçenek kartında");
+  assert.ok(studioSrc.includes("Görsel başına 8–12 KR"), "kompakt fiyat özeti");
 });
 
 // ── (B) SAF AYNALAR ─────────────────────────────────────────────────────────

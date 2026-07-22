@@ -805,7 +805,7 @@
             <div>
               <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">DOĞRUDAN ÜRETİM</p>
               <h2 style="margin: 8px 0 6px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700;">Görsel Stüdyo</h2>
-              <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 60ch;">Hikâye yazmadan, doğrudan görsel üret. Prompt yaz, kadraj ve stili seç, üret. Ürettiklerin aşağıda birikir; hepsi <strong style="color:#e6c478;">Geçmiş</strong>'te hesabınıza kalıcı bağlı (cihazlar arası).</p>
+              <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 60ch;">Hikâye yazmadan doğrudan görsel üret. Ürettiklerin aşağıda birikir; hepsi <strong style="color:#e6c478;">Geçmiş</strong>'te hesabına kalıcı bağlı.</p>
             </div>
             <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
@@ -1045,7 +1045,8 @@
             <sc-if value="{{ draftErr }}" hint-placeholder-val="{{ false }}">
               <p style="margin: 14px 0 0; color: #e0a58a; font-size: 13px;">⚠ {{ draftErr }}</p>
             </sc-if>
-            <div class="ta-stepnav" style="display: flex; justify-content: flex-end; margin-top: 18px;">
+            <div class="ta-stepnav" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 18px;">
+              <button onClick="{{ findTopic }}" style="border: 0; background: transparent; color: #818797; font-size: 12.5px; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px;" style-hover="color: #e6c478;">Ne yazacağını bilmiyor musun? Ajanla bulalım →</button>
               <sc-if value="{{ isOwnMode }}" hint-placeholder-val="{{ false }}">
                 <button onClick="{{ prepareDraftBase }}" disabled="{{ draftBtnDisabled }}" style="{{ nextBtnStyle }}" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">{{ draftBtnLabel }}</button>
               </sc-if>
@@ -1053,7 +1054,6 @@
                 <button onClick="{{ toStep2 }}" disabled="{{ ideaEmpty }}" style="{{ nextBtnStyle }}" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">Seçeneklere Geç →</button>
               </sc-if>
             </div>
-            <button onClick="{{ findTopic }}" style="margin-top: 16px; border: 0; background: transparent; color: #818797; font-size: 12.5px; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px;" style-hover="color: #e6c478;">Ne yazacağını bilmiyor musun? Ajanla konuş, birlikte bulalım →</button>
             <div class="ta-proof">
               <div><div class="pt">📜 Belgesel senaryo</div><div class="ps">Araştırılmış, akıcı, duygu yüklü anlatım</div></div>
               <div><div class="pt">🎙 Gerçek Türkçe ses</div><div class="ps">ElevenLabs · Kadir Kayışçı ve 11 ses</div></div>
@@ -1347,7 +1347,7 @@
                 <div style="display: grid; gap: 14px;">
                   <div style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); padding: 20px 22px;">
                     <p style="margin: 0 0 4px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">◈ SİSTEMDE ÜRET · GERÇEK SES</p>
-                    <p style="margin: 6px 0 12px; color: #a4a9b5; font-size: 12.5px; line-height: 1.55;">Seslendirme metni tek tıkla MP3 olur — anahtar gerekmez, kredinle üretilir. Ses cinsi sihirbazdaki seçimine göre: <span style="color: #e6c478;">{{ sysVoiceName }}</span></p>
+                    <p style="margin: 6px 0 12px; color: #a4a9b5; font-size: 13px; line-height: 1.55;">Tek tıkla gerçek MP3 seslendirme · ses: <span style="color: #e6c478; font-weight: 600;">{{ sysVoiceName }}</span></p>
                     <button onClick="{{ makeTts }}" disabled="{{ sysTtsBusy }}" style="width: 100%; border: 0; background: linear-gradient(110deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; padding: 13px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.35);">{{ sysTtsLabel }}</button>
                     <sc-if value="{{ sysTtsError }}" hint-placeholder-val="{{ false }}">
                       <p style="margin: 10px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">{{ sysTtsError }}</p>
@@ -1363,7 +1363,6 @@
                     <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">YAYIN YARDIMCILARI · ÜCRETSİZ</p>
                     <button onClick="{{ dlSrt }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 11px; font-size: 12px; letter-spacing: .08em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ ALTYAZI DOSYASI (.SRT) İNDİR</button>
                     <button onClick="{{ copyChapters }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 11px; font-size: 12px; letter-spacing: .08em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ chaptersLabel }}</button>
-                    <p style="margin: 0; color: #676d7c; font-size: 11px; line-height: 1.5;">Altyazı süreleri okuma hızından hesaplanır (~2,4 kelime/sn); zaman damgaları YouTube açıklamasına yapıştırılır.</p>
                   </div>
 
                   <!-- (ElevenLabs kendi-anahtar girişi ve teknik ayarlar kaldırıldı —
@@ -1378,8 +1377,8 @@
                 <div style="border: 1px solid rgba(193,154,82,.25); background: rgba(193,154,82,.05); padding: 12px 16px; display: grid; gap: 10px;">
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                     <div style="display: grid; gap: 4px; max-width: 62ch;">
-                      <p style="margin: 0; color: #cfc8b4; font-size: 13px; line-height: 1.55;">Seçtiğin platform, oran ve stil tüm sahnelere uygulanır. Sahne bazında istediğin zaman değiştirebilirsin.</p>
-                      <p style="margin: 0; color: #676d7c; font-size: 11.5px; line-height: 1.5;">Görsel kredisi motora göre: GPT Image 1.5 · 12 KR, GPT Image 1 · 8 KR, Gemini · 12 KR. Yedeğe düşülürse yalnız üretilen modelin fiyatı alınır. Üretilenler Görsel Stüdyo rafına eklenir.</p>
+                      <p style="margin: 0; color: #cfc8b4; font-size: 13.5px; line-height: 1.55;">Ayarlar tüm sahnelere uygulanır; sahne bazında değiştirebilirsin.</p>
+                      <p style="margin: 0; color: #676d7c; font-size: 11.5px; line-height: 1.5;">Görsel başına 8–12 KR · motora göre.</p>
                       <sc-if value="{{ imgGenBlocked }}" hint-placeholder-val="{{ false }}">
                         <p style="margin: 2px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">⚠ {{ imgValMsg }} Üretim bunu seçmeden başlamaz; kredi harcanmaz.</p>
                       </sc-if>
@@ -1858,7 +1857,7 @@
                   </div>
                   <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cfd3dc; font-size: 12.5px;"><input type="checkbox" checked="{{ docMusic }}" onChange="{{ toggleDocMusic }}"> Fon müziği</label>
-                    <span style="color: #676d7c; font-size: 11.5px;">{{ docSceneInfo }} · altyazı güvenli konumda (alt UI'ye girmez)</span>
+                    <span style="color: #676d7c; font-size: 11.5px;">{{ docSceneInfo }}</span>
                   </div>
                 </div>
                 <sc-if value="{{ docNotReady }}" hint-placeholder-val="{{ false }}">
@@ -1914,7 +1913,7 @@
             <!-- GÖRSEL STÜDYO -->
             <sc-if value="{{ tabImgStudio }}" hint-placeholder-val="{{ false }}">
               <div style="display: grid; gap: 16px; max-width: 760px;">
-                <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 56ch;">Prompt yaz ya da kapak promptunu al; kadraj ve stili seç, görsel üret. Bu hikâyede ürettiklerin aşağıdaki rafta çıkar. Tüm eski üretimlerin <strong style="color:#e6c478;">Geçmiş Görseller</strong> sekmesinde hesabınıza kalıcı bağlı (cihazlar arası).</p>
+                <p style="margin: 0; color: #a4a9b5; font-size: 14px; line-height: 1.6; max-width: 56ch;">Prompt yaz, kadraj ve stili seç, üret. Bu hikâyede ürettiklerin aşağıdaki rafta; eskiler <strong style="color:#e6c478;">Geçmiş Görseller</strong>'de.</p>
                 <textarea value="{{ imgPrompt }}" onChange="{{ onImgPrompt }}" rows="3" placeholder="ör. Candlelit Ottoman archive room, detective desk with old maps, cinematic noir" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 16px; font-size: 14.5px; line-height: 1.6;"></textarea>
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                   <span style="color: #818797; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">ORAN</span>
@@ -1934,7 +1933,7 @@
                     <button onClick="{{ ip.pick }}" disabled="{{ ip.disabled }}" style="{{ ip.style }}">{{ ip.label }}</button>
                   </sc-for>
                 </div>
-                <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Üretim şununla yapılır: <strong style="color: #e6c478;">{{ imgSelLabel }}</strong>. Kadrajı değiştirip tekrar <strong style="color: #e6c478;">GÖRSEL ÜRET</strong>'e basarsan aynı sahne yeni kadrajla üretilir — hikâye korunur.</p>
+                <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Üretim: <strong style="color: #e6c478;">{{ imgSelLabel }}</strong></p>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                   <button onClick="{{ imgFromKapak }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 12px; letter-spacing: .08em; padding: 12px 18px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">KAPAK PROMPTUNU AL</button>
                   <button onClick="{{ queueImage }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ imgGoLabel }}</button>
@@ -2022,7 +2021,7 @@
                       </div>
                     </sc-for>
                   </div>
-                  <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Görseller OpenAI ile gerçek olarak üretilir; her görsel kredi düşer. Eski üretimlerin tümü <strong style="color: #e6c478;">Geçmiş Görseller</strong> sekmesinde hesabınıza kalıcı bağlı (cihazlar arası).</p>
+                  <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Her görsel kredi düşer; tüm üretimler <strong style="color: #e6c478;">Geçmiş Görseller</strong>'de hesabına kalıcı bağlı.</p>
                 </sc-if>
               </div>
             </sc-if>
@@ -2070,7 +2069,7 @@
                   </div>
                 </sc-if>
                 <sc-if value="{{ noSavedImgs }}" hint-placeholder-val="{{ false }}">
-                  <p style="margin: 0; color: #676d7c; font-size: 12.5px; line-height: 1.6; border: 1px dashed rgba(129,135,151,.3); padding: 14px 16px;">Henüz kalıcı üretim yok. Görsel Stüdyo'da <strong style="color: #e6c478;">GÖRSEL ÜRET</strong>'e bastığın her görsel buraya bu cihazda kalıcı eklenir — sayfayı kapatıp açsan da burada bulursun.</p>
+                  <p style="margin: 0; color: #676d7c; font-size: 12.5px; line-height: 1.6; border: 1px dashed rgba(129,135,151,.3); padding: 14px 16px;">Henüz kalıcı üretim yok — <strong style="color: #e6c478;">GÖRSEL ÜRET</strong>'e bastığın her görsel buraya eklenir.</p>
                 </sc-if>
               </div>
             </sc-if>
@@ -2684,7 +2683,7 @@ class Component extends DCLogic {
         { id: 'auto', name: '⚡ Otomatik', desc: 'Sistem bu üretim için en uygun motoru seçer' },
         { id: 'gpt', name: 'GPT Image 1.5', desc: 'En yüksek kalite — 12 KR' },
         { id: 'gpt1', name: 'GPT Image 1', desc: 'Daha hızlı — 8 KR' },
-        { id: 'gemini', name: 'Gemini', desc: 'Google görsel motoru — elle seçim korunur' }
+        { id: 'gemini', name: 'Gemini', desc: 'Google görsel motoru — 12 KR' }
       ]
     };
   }
@@ -5957,7 +5956,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         border: s.tab === t.id ? '1px solid ' + gold : '1px solid rgba(129,135,151,.25)',
         background: s.tab === t.id ? 'rgba(193,154,82,.12)' : 'transparent',
         color: s.tab === t.id ? '#e6c478' : '#a4a9b5',
-        padding: '10px 18px', fontSize: '13px', letterSpacing: '.05em', cursor: 'pointer'
+        padding: '10px 18px', fontSize: '13.5px', letterSpacing: '.02em', cursor: 'pointer',
+        fontWeight: s.tab === t.id ? 700 : 500
       }
     }));
 
