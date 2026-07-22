@@ -2446,6 +2446,7 @@ class Component extends DCLogic {
       this.loadBalance();
       this._loadHistoryFromServer();   // cihazlar arası: mobil+web geçmişini birleştir
       this.loadServerImages();         // cihazlar arası: hesaba bağlı görsel arşivi (studio_images)
+      this._autoRestoreVideos();       // cihazlar arası: sunucudaki videoları sessizce geri getir (yerel iz silinse de)
     } else {
       // Gerçek oturum yok → eski localStorage kimliğiyle girilmiş olabilir, giriş kapısına düş
       this.setState({ screen: 'login' });
@@ -4188,6 +4189,30 @@ class Component extends DCLogic {
         this.setState({ vidImportBusy: false, vidImportMsg: (d && d.error) ? d.error : 'Getirilemedi' });
       }
     } catch (e) { this.setState({ vidImportBusy: false, vidImportMsg: 'Bağlantı hatası' }); }
+  }
+  // OTOMATİK VİDEO KURTARMA (sessiz): oturum açılışında sunucudaki (video_jobs)
+  // tamamlanmış videoları galeriye geri yükler. Yerel IndexedDB silinse bile
+  // (mobil Safari ~7 gün eviction, önbellek temizliği, PWA güncellemesi, başka cihaz)
+  // Videolarım kendi kendine dolar — "video geçmişi silindi" görünmez. Buton kalır
+  // (elle tazeleme), bu sadece açılışta otomatik çalışan sessiz sürümüdür.
+  async _autoRestoreVideos() {
+    if (this._vidRestored) return;   // oturum başına bir kez
+    this._vidRestored = true;
+    try {
+      const s = this._sbUrlKey();
+      const token = this._token();
+      if (!token) { this._vidRestored = false; return; }   // oturum henüz yoksa sonra tekrar denensin
+      const r = await fetch(s.url + '/functions/v1/studio-generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ action: 'video_list' })
+      });
+      const d = await r.json();
+      if (d && d.ok && Array.isArray(d.videos)) {
+        for (const v of d.videos) {
+          if (v && v.url) await this.saveImg({ id: 'rv_' + v.id, prompt: '🎬 Video', ar: this.state.aspect || '', url: v.url, vidUrl: v.url, vidMeta: { prov: v.provider || '', sec: 0, audio: '' }, ts: v.ts || Date.now() });
+        }
+      }
+    } catch (e) { this._vidRestored = false; }   // ağ hatası → sonraki oturumda tekrar
   }
   // ── GALERİDEN VİDEO ÜRETİMİ ── kalıcı "Geçmiş Görseller" görselinden video üret.
   // Böylece giriş-çıkış / kapat-aç fark etmez: proje görselleri hep burada ve
