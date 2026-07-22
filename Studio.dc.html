@@ -724,6 +724,9 @@
                   <span style="font-size: 34px; opacity: .6;">🎬</span>
                   <strong style="color: #e6c478; font-family: 'Playfair Display', serif; font-size: 20px;">Henüz video üretimi yok.</strong>
                   <p style="margin: 0; color: #8a8f9c; font-size: 13.5px; line-height: 1.7; max-width: 46ch;">Bir sahne ya da galeri görselinden <strong style="color: #c19a52;">Video Üret</strong> aksiyonuyla video oluşturduğunda burada listelenir.</p>
+                  <p style="margin: 4px 0 0; color: #676d7c; font-size: 12px; line-height: 1.6; max-width: 46ch;">Daha önce video ürettiysen ve burada görünmüyorsa (cihaz/tarayıcı değişikliği, önbellek temizliği), sunucudaki videolarını buradan geri getir:</p>
+                  <button onClick="{{ importVideos }}" disabled="{{ vidImportBusy }}" style="border: 1px solid rgba(146,87,238,.5); background: rgba(146,87,238,.12); color: #d9c8ff; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .08em; padding: 10px 16px; cursor: pointer; margin-top: 4px;" style-hover="background: rgba(146,87,238,.24);">{{ vidImportLabel }}</button>
+                  <sc-if value="{{ vidImportMsg }}" hint-placeholder-val="{{ false }}"><span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .06em;">{{ vidImportMsg }}</span></sc-if>
                 </div>
               </sc-if>
               <sc-if value="{{ histVideosAny }}" hint-placeholder-val="{{ false }}">
