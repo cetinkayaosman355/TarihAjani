@@ -33,7 +33,10 @@ jobs:
       # ios/android klasörleri repoda tutulmaz — burada üretilir (tek kaynak: lib/)
       - name: Platform iskeletini üret
         working-directory: app
-        run: flutter create . --org com.tarihajani --project-name tarih_ajani --platforms android
+        run: |
+          flutter create . --org com.tarihajani --project-name tarih_ajani --platforms android
+          # flutter create'in ürettiği örnek test bizim uygulamada olmayan MyApp'i arar → sil
+          rm -f test/widget_test.dart
 
       - name: Bağımlılıklar
         working-directory: app
