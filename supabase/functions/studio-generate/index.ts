@@ -19,7 +19,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 //   POST {action:"version"} → { ok, build, primaryModel, prices }
 // Deploy drift'in (dashboard'a eski/yarım kod yapıştırma) tek panzehiri budur.
 // HER kod değişikliğinde bu damga da güncellenir (test bunu zorlar).
-const BUILD = "sg-2026-07-21-r9";
+const BUILD = "sg-2026-07-22-r11";
 
 // NOT: imagescript'in WASM kodeği Supabase Deno edge arch'ında yüklenmiyor
 // (unsupported arch/platform) → kırpma zaten HİÇ çalışmıyor, sadece her üretimde
@@ -1494,7 +1494,7 @@ Deno.serve(async (req) => {
     // imgreclaim (timeout sonrası kurtarma/iade) prompt GÖNDERMEZ → bu kapıya
     // takılırsa iade HİÇ çalışmaz ve kredi kayıp kalır (canlı timeout vakasının
     // ikinci ayağı buydu). Prompt'suz kurtarma/durum uçları muaf tutulur.
-    if (!prompt && act !== "tts" && act !== "fetch_result" && act !== "video" && act !== "video_status" && act !== "imgreclaim") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
+    if (!prompt && act !== "tts" && act !== "fetch_result" && act !== "video" && act !== "video_status" && act !== "video_list" && act !== "belgesel" && act !== "imgreclaim") return json({ ok: false, error: "Konu veya prompt gir." }, 400);
 
     // VIDEO KURTARMA — kullanıcının TAMAMLANMIŞ tüm videolarını döndürür. İstemci
     // yerelde iz kaybettiyse (başka cihaz / sayfa yenilendi / dosya değişti) buradan

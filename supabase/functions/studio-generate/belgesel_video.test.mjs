@@ -28,6 +28,9 @@ test("Montaj ücreti: süreye göre reserve→finalize/refund (backend belgesel 
   assert.ok(index.includes("TA_BELGESEL_KR_PER_MIN"), "dakika başı KR (env ile ayarlanır)");
   assert.ok(index.includes('Math.ceil(secs / 60)') && index.includes("reserveOp(admin, userId, belCost"), "süreye göre rezerve");
   assert.ok(index.includes('mode === "finalize"') && index.includes('mode === "refund"'), "finalize + iade");
+  // REGRESYON: belgesel montajın prompt'a ihtiyacı yok → prompt kapısından MUAF
+  // (aksi hâlde "Ücret ayrılamadı: Konu veya prompt gir." ile montaj hiç başlamaz)
+  assert.ok(index.includes('act !== "belgesel"') && index.includes('act !== "video_list"'), "belgesel + video_list prompt kapısından muaf");
   // frontend: render öncesi rezerve, başarıda finalize, hatada iade
   assert.ok(src.includes("_belgeselCharge('reserve'") && src.includes("_belgeselCharge('finalize'") && src.includes("_belgeselCharge('refund'"), "istemci reserve/finalize/refund akışı");
   assert.ok(src.includes("_docEstSeconds()"), "süre tahmini (metinden)");
