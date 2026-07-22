@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../api.dart';
 import '../tema.dart';
 import '../veri.dart';
@@ -6,6 +7,7 @@ import 'sohbet.dart';
 import 'vaka.dart';
 import 'oyun.dart';
 import 'magaza.dart';
+import 'oyun2.dart';
 
 /// MASA — açılış: Günün Dosyası + Yeni Dosya CTA + Gizli Arşiv + Oyun Tüneli
 /// + sağ üstte GEZİN/İÇERİK/MAĞAZA menü paneli (PWA kimliğinin premium hâli).
@@ -59,6 +61,10 @@ class MasaEkrani extends StatelessWidget {
               const SizedBox(width: Bosluk.s),
               Text('Tarih Ajanı', style: tema.textTheme.headlineSmall),
               const Spacer(),
+              ValueListenableBuilder<int?>(
+                  valueListenable: sonKredi,
+                  builder: (context, b, _) => KrediRozeti(bakiye: b)),
+              const SizedBox(width: Bosluk.s),
               IconButton(
                 onPressed: () => _menuAc(context),
                 icon: Icon(Icons.menu, color: context.vurgu),
@@ -188,6 +194,44 @@ class MasaEkrani extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Bosluk.m),
+          Card(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(Kose.kart),
+              onTap: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const KronolojiSayfasi())),
+              child: Padding(
+                padding: const EdgeInsets.all(Bosluk.l),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(
+                          gradient: altinGradyan, shape: BoxShape.circle),
+                      child: const Icon(Icons.hourglass_bottom,
+                          color: Color(0xFF171207)),
+                    ),
+                    const SizedBox(width: Bosluk.m),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Kronoloji',
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w700)),
+                          Text('olayları eskiden yeniye sırala',
+                              style:
+                                  TextStyle(fontSize: 12, color: context.soluk)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: context.soluk),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: Bosluk.m),
           Text('Satranç 1402 ve Mangala native sürümleri yolda — şimdilik web\'de: tarihajani.com',
               style: TextStyle(fontSize: 12, color: context.soluk, height: 1.5)),
           const SizedBox(height: Bosluk.xl),
@@ -258,7 +302,7 @@ class _MenuPaneli extends StatelessWidget {
             Row(children: [
               oge(Icons.videogame_asset_outlined, 'Oyun Tüneli', oyunAc),
               const SizedBox(width: Bosluk.m),
-              oge(Icons.school_outlined, 'Akademi (web)', null),
+              oge(Icons.school_outlined, 'Akademi', () { Navigator.pop(context); launchUrl(Uri.parse('https://tarihajani.com/egitim'), mode: LaunchMode.externalApplication); }),
             ]),
             const SizedBox(height: Bosluk.l),
             const BolumEtiketi('MAĞAZA'),
@@ -266,7 +310,7 @@ class _MenuPaneli extends StatelessWidget {
             Row(children: [
               oge(Icons.toll, 'Krediler & Paketler', magazaAc),
               const SizedBox(width: Bosluk.m),
-              oge(Icons.menu_book_outlined, 'E-Kitaplar (web)', null),
+              oge(Icons.menu_book_outlined, 'E-Kitaplar', () { Navigator.pop(context); launchUrl(Uri.parse('https://tarihajani.com/ekitap'), mode: LaunchMode.externalApplication); }),
             ]),
             const SizedBox(height: Bosluk.l),
           ],
