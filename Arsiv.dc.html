@@ -169,7 +169,13 @@
               <a href="{{ uretHref }}" style="text-decoration: none; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px 18px; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.35);">◈ STUDIO'DA ÜRET →</a>
               <button onClick="{{ ekitap }}" style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); color: #e6c478; padding: 11px 18px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="background: rgba(193,154,82,.16);">📖 E-KİTAP / PDF</button>
               <button onClick="{{ copyAllSel }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 11px 18px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ copyAllSelLabel }}</button>
+              <sc-if value="{{ selCanFix }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ agentFix }}" disabled="{{ fixBusy }}" style="border: 1px solid rgba(146,87,238,.5); background: rgba(146,87,238,.12); color: #c4b3ff; padding: 11px 18px; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="background: rgba(146,87,238,.22);">{{ agentFixLabel }}</button>
+              </sc-if>
             </div>
+            <sc-if value="{{ selFixMsg }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: -6px 0 20px; color: {{ selFixColor }}; font-size: 12.5px; line-height: 1.5;">{{ selFixMsg }}</p>
+            </sc-if>
             <div style="display: grid; gap: 26px;">
               <sc-for list="{{ selSections }}" as="sec" hint-placeholder-count="0">
                 <div style="border-left: 2px solid rgba(193,154,82,.5); padding-left: 18px;">
@@ -258,7 +264,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { q: '', all: [], sel: null, mem: false, copied: {} };
+  state = { q: '', all: [], sel: null, mem: false, copied: {}, fix: {}, fixBusy: false, fixErr: '' };
   componentDidMount() {
     const load = () => {
       if (window.__ARSIV__ && window.__ARSIV__.length) this.setState({ all: window.__ARSIV__ });
@@ -288,6 +294,7 @@ class Component extends DCLogic {
       this.setState({ mem: on });
     };
     const check = (session) => {
+      this._tok = (session && session.access_token) || '';   // askAI için hesap jetonu
       if (!session || !session.user) { apply(false); return; }
       // Seviyeyi sunucudan doğrula (yalnız paralı seviye arşivi açar)
       fetch(SB + '/functions/v1/credits', {
@@ -331,11 +338,15 @@ class Component extends DCLogic {
           era: a.era, fileNo: a.fileNo, title: this.dispTitle(a.baslik), teaser: a.teaser,
           readHref: slug ? ('/arsiv/' + slug + '/') : '',
           hasRead: !!slug,
-          open: () => this.setState({ sel: i }),
+          open: () => this.setState({ sel: i, fixErr: '' }),
         };
       });
-    const sel = (this.state.sel != null) ? raw[this.state.sel] : null;
+    const selIdx = this.state.sel;
+    const sel = (selIdx != null) ? raw[selIdx] : null;
     const member = this.isMember();
+    const selSecsLive = sel ? this._secOf(selIdx) : [];
+    const selGaps = (sel && member) ? this._arsivGaps(selIdx) : [];
+    const isFixed = !!(sel && (this.state.fix || {})[selIdx]);
     return {
       list,
       count: raw.length,
@@ -345,7 +356,7 @@ class Component extends DCLogic {
       onSearch: (e) => this.setState({ q: e.target.value }),
       // detay
       selOpen: !!sel,
-      close: () => this.setState({ sel: null }),
+      close: () => this.setState({ sel: null, fixErr: '' }),
       stop: (e) => { e.stopPropagation(); },
       member,
       locked: !!sel && !member,
@@ -356,7 +367,7 @@ class Component extends DCLogic {
       selHasRead: !!(sel && ((window.__ARSIV_SLUGS__ || [])[this.state.sel])),
       selTitle: sel ? this.dispTitle(sel.baslik) : '',
       selOzet: sel ? sel.ozet : '',
-      selSections: sel ? (sel.sections || []).map((sec, si) => ({
+      selSections: sel ? (selSecsLive || []).map((sec, si) => ({
         ad: sec.ad,
         bloklar: (sec.bloklar || []).map((b, bi) => {
           const key = si + '_' + bi;
@@ -367,14 +378,24 @@ class Component extends DCLogic {
           };
         })
       })) : [],
-      selSectionNames: sel ? (sel.sections || []).map(s => s.ad) : [],
-      ekitap: () => sel && this.ekitapOpen(sel),
+      selSectionNames: sel ? (selSecsLive || []).map(s => s.ad) : [],
+      ekitap: () => sel && this.ekitapOpen({ ...sel, sections: selSecsLive }),
       copyAllSel: () => {
         if (!sel) return;
-        const t = (sel.sections || []).map(s => '=== ' + s.ad + ' ===\n\n' + (s.bloklar || []).map(b => (b.k ? b.k + '\n' : '') + b.t).join('\n\n')).join('\n\n\n');
+        const t = (selSecsLive || []).map(s => '=== ' + s.ad + ' ===\n\n' + (s.bloklar || []).map(b => (b.k ? b.k + '\n' : '') + b.t).join('\n\n')).join('\n\n\n');
         this.copyBlok('__all', t);
       },
       copyAllSelLabel: (this.state.copied || {})['__all'] ? '✓ KOPYALANDI' : 'TÜMÜNÜ KOPYALA',
+      // AJANLA TAMAMLA — dosyayı okur, eksikleri tespit eder, üretiyormuş gibi tamamlar
+      selCanFix: !!sel && member && (selGaps.length > 0 || isFixed),
+      fixBusy: !!this.state.fixBusy,
+      agentFix: () => this.agentTamamla(selIdx),
+      agentFixLabel: this.state.fixBusy ? 'AJAN OKUYOR & TAMAMLIYOR…' : (isFixed ? '↻ TEKRAR TAMAMLA' : '◈ AJANLA TAMAMLA'),
+      selFixMsg: this.state.fixErr
+        ? this.state.fixErr
+        : (isFixed ? '✓ Ajan dosyayı okudu ve tamamladı — eksik bölümler dolduruldu.'
+          : (selGaps.length ? ('Ajan bu dosyada eksik gördü: ' + selGaps.map(g => this._gapLabel(g)).join(' · ') + '. “Ajanla Tamamla” ile doldurabilirim.') : '')),
+      selFixColor: this.state.fixErr ? '#e8a9a9' : (isFixed ? '#9ed3a8' : '#b79bff'),
     };
   }
 
@@ -382,6 +403,91 @@ class Component extends DCLogic {
     try { navigator.clipboard.writeText(text || ''); } catch (e) {}
     this.setState({ copied: { ...(this.state.copied || {}), [key]: true } });
     setTimeout(() => this.setState({ copied: { ...(this.state.copied || {}), [key]: false } }), 1600);
+  }
+
+  // Bir dosyanın GÜNCEL bölümleri: ajanla tamamlanmışsa düzeltilmiş sürüm, yoksa orijinal.
+  _secOf(index) {
+    const raw = (this.state.all || [])[index];
+    if (!raw) return [];
+    const fixed = (this.state.fix || {})[index];
+    return fixed || raw.sections || raw.sayfalar || [];
+  }
+  _allText(secs) {
+    return (secs || []).flatMap(s => (s.bloklar || []).map(b => (b.k || '') + ' ' + (b.t || ''))).join('\n');
+  }
+  // Dosya içini OKU → eksikleri tespit et: ince seslendirme, süre etiketi yok,
+  // görsel/sahne yok, yayın paketi (YouTube/Instagram) yok.
+  _arsivGaps(index) {
+    const secs = this._secOf(index);
+    if (!secs.length) return ['seslendirme', 'gorsel', 'yayin'];
+    const blocks = (secs || []).flatMap(s => (s.bloklar || []).map(b => ({ k: (b.k || '').toLocaleUpperCase('tr'), t: b.t || '', ad: (s.ad || '').toLocaleUpperCase('tr') })));
+    const ses = blocks.find(b => /SESLEND/.test(b.k) || /SESLEND/.test(b.ad));
+    const sesW = ses && ses.t.trim() ? ses.t.trim().split(/\s+/).length : 0;
+    const hepsi = this._allText(secs).toLocaleUpperCase('tr');
+    const gaps = [];
+    if (sesW < 90) gaps.push('seslendirme');              // 1–1.5 dk için ~120+ kelime beklenir
+    if (!/\d+\s*(SN|SANİYE|DK|DAKİKA)/.test(hepsi)) gaps.push('sure');
+    if (!/(GÖRSEL|SAHNE|PROMPT|KAPAK)/.test(hepsi)) gaps.push('gorsel');
+    if (!/(YOUTUBE|INSTAGRAM|YAYIN|BAŞLIK|ETİKET|HASHTAG)/.test(hepsi)) gaps.push('yayin');
+    return gaps;
+  }
+  _gapLabel(g) {
+    return ({ seslendirme: 'seslendirme metni kısa', sure: 'sahne süreleri yok', gorsel: 'görsel/sahne promptları yok', yayin: 'yayın paketi (YouTube/Instagram) yok' })[g] || g;
+  }
+  // Ücretsiz metin üretimi (action yok) — Studio.askAI ile aynı uç nokta.
+  async _askAI(prompt, maxTokens) {
+    const SB = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
+    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
+    const token = this._tok || KEY;
+    const r = await fetch(SB + '/functions/v1/studio-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ prompt, provider: 'claude', max_tokens: maxTokens || 5000, action: '' })
+    });
+    if (r.status === 402) throw new Error('YETERSIZ_KREDI');
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || (d && d.ok === false)) throw new Error((d && d.error) || ('sunucu hatası ' + r.status));
+    // studio-generate serbest metni data.text (yedek: result / content / completion)
+    const txt = (d && d.text) || (d && d.result) || (d && d.content && d.content[0] && d.content[0].text) || (d && d.completion) || '';
+    if (!txt) throw new Error('boş yanıt');
+    return txt;
+  }
+  _parseJson(txt) {
+    let s = String(txt || '').trim().replace(/^```(json)?/i, '').replace(/```$/, '').trim();
+    const a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a >= 0 && b > a) s = s.slice(a, b + 1);
+    return JSON.parse(s);
+  }
+  // AJANLA TAMAMLA: dosyayı oku, eksikleri tespit et, üretiyormuş gibi tamamla.
+  async agentTamamla(index) {
+    if (this.state.fixBusy) return;
+    const entry = (this.state.all || [])[index];
+    if (!entry) return;
+    const gaps = this._arsivGaps(index);
+    if (!gaps.length) { this.setState({ fixErr: 'Bu dosya tam görünüyor — eksik bulunamadı ✓' }); setTimeout(() => this.setState({ fixErr: '' }), 2600); return; }
+    this.setState({ fixBusy: true, fixErr: '' });
+    try {
+      const mevcut = { baslik: entry.baslik, era: entry.era, ozet: entry.ozet, teaser: entry.teaser, sections: this._secOf(index) };
+      const iste = [];
+      if (gaps.includes('seslendirme')) iste.push('SESLENDİRME: mevcut cümleleri KORUYARAK 1–1.5 dakikalık (~140–220 kelime) akıcı, TEK anlatıcı ağzından, GERÇEK tarihî olay/isim/tarih içeren metne genişlet. Dolgu değil gerçek bilgi. Sonunu "Tarih saklar, ajan bulur." imzasıyla kapat.');
+      if (gaps.includes('sure')) iste.push('SÜRE: seslendirme bölüm başlığına yaklaşık süreyi yaz (ör. "SESLENDİRME (ELEVENLABS · TÜRKÇE · ~80 SN)") ve her sahne bloğunun başlığına süresini ekle.');
+      if (gaps.includes('gorsel')) iste.push('GÖRSEL & SAHNE PROMPTLARI: yoksa yeni bir bölüm ekle — 4–6 sahne; her sahne için İngilizce fotogerçekçi görsel prompt (kadraj + ışık + stil, 9:16 dikey) + kısa Türkçe sahne açıklaması + ~süre.');
+      if (gaps.includes('yayin')) iste.push('YAYIN PAKETİ: yoksa yeni bir bölüm ekle — YouTube başlığı (≤70 karakter) + 2 paragraf açıklama + 12 etiket; Instagram açıklaması + 5 hashtag.');
+      const prompt = 'Sen "Tarih Ajanı" kanalının baş yapımcısısın. Aşağıda YARIM kalmış bir arşiv vaka dosyası var. Görevin dosyayı UZUN video kalitesinde TAMAMLAMAK: var olan içeriği BOZMA, yalnız eksikleri doldur/derinleştir. Türkçe, akıcı; anlatı metinlerinde sayı/tarih yazıyla. Ton: sinematik, merak uyandıran, kaynak-titiz.\n\nTAMAMLANACAKLAR:\n- ' + iste.join('\n- ') + '\n\nMEVCUT DOSYA (JSON):\n' + JSON.stringify(mevcut) + '\n\nÇIKTI: SADECE tek geçerli JSON — {"sections":[{"ad":"BÖLÜM ADI","bloklar":[{"k":"ALT BAŞLIK","t":"metin"}]}]}. TÜM mevcut bölümleri KORU (gerekiyorsa genişlet), eksik bölümleri EKLE. İlk karakter {, son karakter }.';
+      const txt = await this._askAI(prompt, 6000);
+      const d = this._parseJson(txt);
+      const secs = Array.isArray(d.sections) ? d.sections : (Array.isArray(d.sayfalar) ? d.sayfalar : null);
+      if (!secs || !secs.length) throw new Error('geçerli bölüm üretilemedi');
+      // güvenlik: bloklar boş gelirse orijinali koru
+      const temiz = secs.filter(s => s && s.ad && Array.isArray(s.bloklar) && s.bloklar.length);
+      if (!temiz.length) throw new Error('geçerli bölüm üretilemedi');
+      const kalan = (() => { const t = this._allText(temiz).toLocaleUpperCase('tr'); const g = []; if (!/\d+\s*(SN|SANİYE|DK|DAKİKA)/.test(t)) g.push('sure'); return g; })();
+      this.setState({ fix: { ...(this.state.fix || {}), [index]: temiz }, fixBusy: false,
+        fixErr: kalan.length ? '' : '' });
+    } catch (e) {
+      const msg = e.message === 'YETERSIZ_KREDI' ? 'Yetersiz kredi.' : ('Tamamlanamadı: ' + (e.message || 'hata') + ' — tekrar dener misin?');
+      this.setState({ fixBusy: false, fixErr: msg });
+    }
   }
 
   // Studio ile AYNI e-kitap formatı: kapak + bölümler, baskıya hazır (PDF olarak kaydet)
