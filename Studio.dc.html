@@ -1947,6 +1947,30 @@
                       <button onClick="{{ tr.pick }}" title="{{ tr.title }}" style="{{ tr.style }}">{{ tr.label }}</button>
                     </sc-for>
                   </div>
+                  <!-- MONTAJ ALANI: sahneleri sırala / çıkar (açılır) -->
+                  <div style="border-top: 1px dashed rgba(146,87,238,.25); padding-top: 10px;">
+                    <button onClick="{{ toggleDocMontage }}" style="border: 0; background: transparent; color: #c4b3ff; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; cursor: pointer; padding: 2px 0;" style-hover="color: #d9c8ff;">🎬 MONTAJ SIRASI · {{ docSceneCount }} SAHNE {{ docMontageCaret }}</button>
+                    <sc-if value="{{ docMontageOpen }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top: 8px; display: grid; gap: 6px; max-height: 320px; overflow-y: auto; padding-right: 4px;">
+                        <sc-for list="{{ docSceneRows }}" as="ds" hint-placeholder-count="4">
+                          <div style="{{ ds.rowStyle }}">
+                            <span style="flex: 0 0 auto; width: 20px; text-align: center; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px;">{{ ds.no }}</span>
+                            <img src="{{ ds.img }}" alt="" style="{{ ds.thumbStyle }}">
+                            <span style="flex: 1; min-width: 0; color: #cfd3dc; font-size: 11.5px; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{ ds.text }}</span>
+                            <span style="flex: 0 0 auto; display: flex; gap: 3px; align-items: center;">
+                              <button onClick="{{ ds.up }}" disabled="{{ ds.first }}" title="Yukarı" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">▲</button>
+                              <button onClick="{{ ds.down }}" disabled="{{ ds.last }}" title="Aşağı" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">▼</button>
+                              <button onClick="{{ ds.toggle }}" title="{{ ds.toggleTitle }}" style="{{ ds.toggleStyle }}">{{ ds.toggleIcon }}</button>
+                            </span>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <sc-if value="{{ docMontageMsg }}" hint-placeholder-val="{{ false }}">
+                        <p style="margin: 6px 0 0; color: #e6c478; font-size: 11px;">{{ docMontageMsg }}</p>
+                      </sc-if>
+                      <p style="margin: 7px 0 0; color: #676d7c; font-size: 11px; line-height: 1.5;">Sahneleri yukarı/aşağı taşı, gereksizleri gözden çıkar (👁). Videoya yalnız <strong style="color: #c4b3ff;">dahil</strong> sahneler, bu sırayla girer.</p>
+                    </sc-if>
+                  </div>
                 </div>
                 <sc-if value="{{ docNotReady }}" hint-placeholder-val="{{ false }}">
                   <p style="margin: 0; color: #e0a58a; font-size: 12px;">⚠ En az 2 sahne görseli gerekli — önce Görsel sekmesinden sahneleri üret.</p>
@@ -4759,12 +4783,30 @@ class Component extends DCLogic {
   // sahne başı/sonu yumuşak geçer, altyazı bindirilir; hepsi tek MediaRecorder
   // akışına gerçek zamanlı kaydedilir.
   // ═══════════════════════════════════════════════════════════════════════
+  // Görseli hazır sahnelerin gp index'leri (doğal sıra)
+  _docBaseIndices() {
+    const r = this.state.result || {}, gp = r.gorsel_promptlar || [], si = this.state.sceneImgs || {};
+    const base = [];
+    for (let i = 0; i < gp.length; i++) if (((si['gp' + i] || {}).url)) base.push(i);
+    return base;
+  }
+  // Montaj düzenlemesi YALNIZ düzenlendiği dosyaya ait (başka dosyaya sızmaz)
+  _docActiveOrder() { return (this.state.docMontageFile && this.state.docMontageFile === this.state.fileNo && Array.isArray(this.state.docOrder)) ? this.state.docOrder : []; }
+  _docActiveExcl() { return (this.state.docMontageFile && this.state.docMontageFile === this.state.fileNo && Array.isArray(this.state.docExcl)) ? this.state.docExcl : []; }
+  // Montaj sırası uygulanmış index'ler (kullanıcı düzenlemesi + doğal sıra)
+  _docMergedIndices() {
+    const base = this._docBaseIndices();
+    const ord = this._docActiveOrder().filter(i => base.indexOf(i) >= 0);
+    return ord.concat(base.filter(i => ord.indexOf(i) < 0));   // yeni üretilenler sona eklenir
+  }
   _docScenes() {
     const r = this.state.result || {};
     const gp = r.gorsel_promptlar || [];
     const si = this.state.sceneImgs || {};
+    const excl = new Set(this._docActiveExcl());
     const out = [];
-    for (let i = 0; i < gp.length; i++) {
+    for (const i of this._docMergedIndices()) {
+      if (excl.has(i)) continue;
       const img = ((si['gp' + i] || {}).url) || '';
       const text = (gp[i] && (gp[i].anlatim || gp[i].sahne)) || '';
       if (img) out.push({ img, text: String(text || '') });
@@ -4772,6 +4814,40 @@ class Component extends DCLogic {
     return out;
   }
   _docReady() { return this._docScenes().length >= 2; }
+  // MONTAJ: sahneyi yukarı/aşağı taşı (sıra kullanıcıya ait)
+  _docMove(gi, dir) {
+    let merged = this._docMergedIndices();
+    const pos = merged.indexOf(gi); if (pos < 0) return;
+    const np = pos + dir; if (np < 0 || np >= merged.length) return;
+    const t = merged[pos]; merged[pos] = merged[np]; merged[np] = t;
+    this.setState({ docOrder: merged, docMontageFile: this.state.fileNo }, () => this.persist());
+  }
+  // MONTAJ: sahneyi videoya dahil et / çıkar (en az 2 dahil kalmalı)
+  _docToggleInclude(gi) {
+    const excl = new Set(this._docActiveExcl());
+    if (excl.has(gi)) excl.delete(gi);
+    else {
+      if (this._docBaseIndices().filter(i => !excl.has(i)).length <= 2) { this.setState({ docMontageMsg: 'En az 2 sahne gerekli.' }); setTimeout(() => this.setState({ docMontageMsg: '' }), 1800); return; }
+      excl.add(gi);
+    }
+    this.setState({ docExcl: [...excl], docMontageFile: this.state.fileNo }, () => this.persist());
+  }
+  // MONTAJ satırları (UI): tüm hazır sahneler, sıralı; dahil durumu + taşı/çıkar
+  _docSceneRows() {
+    const merged = this._docMergedIndices();
+    const excl = new Set(this._docActiveExcl());
+    const r = this.state.result || {}, gp = r.gorsel_promptlar || [], si = this.state.sceneImgs || {};
+    return merged.map((gi, pos) => ({
+      idx: gi,
+      no: pos + 1,
+      img: this._dispSrc((si['gp' + gi] || {}).url || '', 140),
+      text: String((gp[gi] && (gp[gi].anlatim || gp[gi].sahne)) || ('Sahne ' + (gi + 1))).slice(0, 90),
+      included: !excl.has(gi),
+      first: pos === 0, last: pos === merged.length - 1,
+      up: () => this._docMove(gi, -1), down: () => this._docMove(gi, 1),
+      toggle: () => this._docToggleInclude(gi)
+    }));
+  }
   _loadImg(url) {
     return new Promise((res, rej) => {
       const im = new Image(); im.crossOrigin = 'anonymous';
@@ -7111,6 +7187,27 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         }));
       })(),
       previewMood: () => this.previewMoodNow(),
+      // MONTAJ ALANI — sahne sırası + dahil/çıkar
+      docMontageOpen: !!s.docMontageOpen,
+      toggleDocMontage: () => this.setState({ docMontageOpen: !s.docMontageOpen }),
+      docMontageCaret: s.docMontageOpen ? '▾' : '▸',
+      docSceneCount: this._docBaseIndices().length,
+      docMontageMsg: s.docMontageMsg || '',
+      docSceneRows: this._docSceneRows().map(r => ({
+        no: r.no, img: r.img, text: r.text, first: r.first, last: r.last, up: r.up, down: r.down, toggle: r.toggle,
+        toggleIcon: r.included ? '👁' : '🚫', toggleTitle: r.included ? 'Videodan çıkar' : 'Videoya dahil et',
+        rowStyle: {
+          display: 'flex', alignItems: 'center', gap: '9px', padding: '7px 9px', borderRadius: '8px',
+          border: '1px solid ' + (r.included ? 'rgba(146,87,238,.28)' : 'rgba(129,135,151,.2)'),
+          background: r.included ? 'rgba(146,87,238,.06)' : 'rgba(129,135,151,.05)', opacity: r.included ? 1 : 0.5
+        },
+        thumbStyle: { flex: '0 0 auto', width: '46px', height: '46px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(129,135,151,.25)' },
+        toggleStyle: {
+          border: '1px solid ' + (r.included ? 'rgba(146,87,238,.5)' : 'rgba(192,57,43,.4)'),
+          background: r.included ? 'rgba(146,87,238,.12)' : 'transparent', color: r.included ? '#c4b3ff' : '#e08a80',
+          width: '26px', height: '26px', borderRadius: '5px', cursor: 'pointer', fontSize: '12px'
+        }
+      })),
       // SAHNE GEÇİŞİ — Yumuşak (crossfade) / Karartma (dip-to-black) / Kesme (hard cut)
       docTransitions: (() => {
         const cur = s.docTransition || 'yumusak';
