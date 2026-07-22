@@ -3783,6 +3783,33 @@ class Component extends DCLogic {
   // KARAKTER TUTARLILIĞI referansı: açıksa referans görsel URL'i döner (kullanıcı yükledi
   // ya da otomatik: ilk üretilmiş sahne). Referans sahnenin KENDİSİ için boş döner (kendini
   // referans almaz). Yalnız Storage URL / data URI → sunucu SSRF koruması geçer.
+  // Bir sahnede geçen karakter(ler)i, karakterler[].ad'ı sahnenin anlatım/ad/prompt
+  // metniyle eşleştirerek bul. "10. sahnede giren karakteri 14. sahnede hatırla" için
+  // temel: aynı karakteri paylaşan sahneler birbirini referans alır.
+  _charsOfScene(sceneKey) {
+    const r = this.state.result || {};
+    const chars = (Array.isArray(r.karakterler) ? r.karakterler : []).filter(c => c && c.ad);
+    if (!chars.length) return [];
+    const m = /^gp(\d+)$/.exec(sceneKey || '');
+    if (!m) return [];
+    const gp = (r.gorsel_promptlar || [])[+m[1]];
+    if (!gp) return [];
+    const hay = ((gp.anlatim || '') + ' ' + (gp.sahne || '') + ' ' + (gp.prompt || '')).toLocaleLowerCase('tr');
+    const stop = { bir: 1, the: 1, ile: 1, using: 1, and: 1, von: 1, and2: 1 };
+    const hit = [];
+    for (const c of chars) {
+      const toks = String(c.ad).toLocaleLowerCase('tr').split(/[^a-zçğıöşü0-9]+/).filter(t => t.length >= 3 && !stop[t]);
+      if (toks.some(t => hay.indexOf(t) >= 0)) hit.push(c.ad);
+    }
+    return hit;
+  }
+  // Bir sahne için karakter tutarlılığı referans görseli. Öncelik:
+  // 1) kullanıcı yüklediği referans → tüm sahneler onu baz alır.
+  // 2) çok karakterli hikâyede: bu sahnenin karakterini paylaşan EN ERKEN üretilmiş
+  //    sahne → o karakter ilk nerede göründüyse orayı hatırla (sahne 14, sahne 10'u
+  //    referans alır). Karakterin İLK görünüşünde referans yok → taze üretilir, sonra
+  //    o görsel bu karakterin sonraki sahnelerine referans olur.
+  // 3) tek/karaktersiz hikâyede (geri uyumluluk): ilk üretilen sahne herkese referans.
   _charRef(sceneKey) {
     if (!this.state.charLock) return '';
     const up = (this.state.charRefUrl || '').trim();
@@ -3791,8 +3818,23 @@ class Component extends DCLogic {
     const keys = Object.keys(si).filter(k => /^gp\d+$/.test(k) && si[k] && si[k].url)
       .sort((a, b) => (+a.slice(2)) - (+b.slice(2)));
     if (!keys.length) return '';
+    const r = this.state.result || {};
+    const charCount = (Array.isArray(r.karakterler) ? r.karakterler : []).filter(c => c && c.ad).length;
+    // ÇOK KARAKTERLİ: karakter-bazlı referans (sahne 10'da giren, sahne 14'te hatırlanır)
+    if (charCount >= 2) {
+      const chars = this._charsOfScene(sceneKey);
+      if (chars.length) {
+        for (const k of keys) {                       // en erken üretilen, aynı karakteri paylaşan sahne
+          if (k === sceneKey) continue;
+          if (this._charsOfScene(k).some(c => chars.indexOf(c) >= 0)) return si[k].url;
+        }
+        return '';   // bu karakterin İLK görünüşü → taze üret (sonrakiler bunu baz alır)
+      }
+      return '';      // karakteri olmayan sahneye (manzara/nesne) yüz dayatma
+    }
+    // TEK/KARAKTERSİZ (geri uyumluluk): ilk üretilen sahne genel referans
     const refKey = keys[0], refUrl = si[refKey].url;
-    if (!refUrl || sceneKey === refKey) return '';   // referans yok ya da bu sahne referansın kendisi
+    if (!refUrl || sceneKey === refKey) return '';
     return refUrl;
   }
   // Kullanıcı referans görseli yükler: istekleri hafif tutmak için ~768px'e küçültülüp

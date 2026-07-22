@@ -42,9 +42,24 @@ test("sceneBatch: mekân + film bağlamı prompta girer", () => {
   assert.ok(src.includes("\\n' + filmLine + 'Bu bölümün seslendirme metnini"), "filmLine prompt başına eklenmiş");
 });
 
-test("Karakter referans görseli TÜM sahnelere taşınır (ilk üretilen baz alınır)", () => {
-  // Kullanıcı referans yüklerse tüm sahneler onu; yüklemezse ilk sahne (gp1) baz alınır.
+test("Karakter referans görseli TÜM sahnelere taşınır (yüklenen/ilk sahne)", () => {
+  // Kullanıcı referans yüklerse tüm sahneler onu; yüklemezse (tek karakter) ilk sahne baz alınır.
   assert.ok(src.includes("if (up) return up;   // kullanıcı referans yükledi → tüm sahneler onu baz alır"), "yüklenen referans tüm sahnelere");
-  assert.ok(src.includes("const refKey = keys[0], refUrl = si[refKey].url"), "ilk sahne referans olur");
+  assert.ok(src.includes("const refKey = keys[0], refUrl = si[refKey].url"), "tek/karaktersiz: ilk sahne referans");
   assert.ok(src.includes("const rf = this._charRef(sceneKey); return rf ? { refImage: rf } : {}"), "referans imageServer'a refImage olarak gider");
+});
+
+test("Karakter-bazlı referans: 10. sahnede giren karakter 14. sahnede hatırlanır", () => {
+  // Çok karakterli hikâyede sahne, karakterini paylaşan EN ERKEN üretilmiş sahneyi referans alır.
+  assert.ok(src.includes("_charsOfScene(sceneKey)"), "sahne→karakter eşlemesi helper'ı");
+  assert.ok(src.includes("if (charCount >= 2)"), "çok karakterli mod ayrı ele alınır");
+  assert.ok(src.includes("this._charsOfScene(k).some(c => chars.indexOf(c) >= 0)) return si[k].url"), "aynı karakteri paylaşan en erken sahne referanslanır");
+  assert.ok(src.includes("bu karakterin İLK görünüşü → taze üret"), "ilk görünüşte taze üretim (sonrakiler baz alır)");
+  assert.ok(src.includes("karakteri olmayan sahneye (manzara/nesne) yüz dayatma"), "karaktersiz sahneye yüz dayatılmaz");
+});
+
+test("_charsOfScene: karakter adını sahne anlatım/ad/promptunda eşler", () => {
+  assert.ok(src.includes("const gp = (r.gorsel_promptlar || [])[+m[1]]"), "gp indeksinden sahne");
+  assert.ok(src.includes("(gp.anlatim || '') + ' ' + (gp.sahne || '') + ' ' + (gp.prompt || '')"), "anlatım+ad+prompt taranır");
+  assert.ok(src.includes("t.length >= 3 && !stop[t]"), "anlamlı ad token'ı (≥3, stopword hariç)");
 });
