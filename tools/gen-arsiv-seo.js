@@ -202,7 +202,7 @@ items.forEach((s, i) => {
         headline: bt, description: desc, inLanguage: 'tr',
         mainEntityOfPage: SITE + canon, url: SITE + canon,
         image: SITE + '/assets/dossier-bundle.jpg',
-        datePublished: TODAY, dateModified: TODAY,
+        datePublished: '__PUB__', dateModified: '__MOD__',
         articleSection: 'Hikâye Arşivi', keywords: (s.era || '') + ', tarih, vaka dosyası, belgesel',
         author: { '@type': 'Organization', name: 'Tarih Ajanı', url: SITE },
         publisher: { '@type': 'Organization', name: 'Tarih Ajanı', url: SITE, logo: { '@type': 'ImageObject', url: SITE + '/assets/logo-mark.png' } },
@@ -242,8 +242,19 @@ ${storyHtml(s)}
 </main>`;
 
   const dir = path.join(ROOT, 'arsiv', s.slug);
+  const file = path.join(dir, 'index.html');
+  const html = shell(title, desc, canon, body, jsonld);
+  // TARİH KORUMA + GEREKSİZ YAZMA YOK: mevcut sayfayı oku; içerik (tarihler hariç)
+  // AYNIYSA dokunma (datePublished/dateModified korunur, git'te churn olmaz). İçerik
+  // DEĞİŞMİŞSE datePublished'ı KORU (ilk yayın tarihi), dateModified'ı bugüne çek.
+  let old = '';
+  try { old = fs.readFileSync(file, 'utf8'); } catch (_e) {}
+  const norm = t => t.replace(/"datePublished":"[^"]*"/, '"datePublished":"X"').replace(/"dateModified":"[^"]*"/, '"dateModified":"X"');
+  if (old && norm(old) === norm(html)) { written++; return; }   // içerik aynı → dokunma
+  const oldPub = (old.match(/"datePublished":"([0-9-]+)"/) || [])[1] || TODAY;
+  const finalHtml = html.replace('__PUB__', oldPub).replace('__MOD__', TODAY);
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, 'index.html'), shell(title, desc, canon, body, jsonld));
+  fs.writeFileSync(file, finalHtml);
   written++;
 });
 
