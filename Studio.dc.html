@@ -447,6 +447,16 @@
     /* Fikir ekranı DİREKT KONUŞMA kutusu — aydınlıkta kâğıt görünümü */
     html[data-theme="light"] .ta-ideachat { background: #fffdf8 !important; border-color: rgba(150,116,52,.45) !important; }
     html[data-theme="light"] .ta-ideachat input { color: #241f16 !important; }
+    /* ── MOBİL RESPONSIVE (yeni ekranlar): sohbet + tahta + montaj + çipler ──
+       iOS odakta zoom yapmasın diye girişler ≥16px; tahta mobilde akışta durur. */
+    @media (max-width: 760px) {
+      .ta-ideachat input, .ta-chatin input { font-size: 16px !important; }
+      .ta-mchip { padding: 12px 14px; font-size: 13.5px; }
+      /* Üretim tahtası: mobilde sohbetin ALTINA tam genişlik iner, sticky olmaz */
+      .ta-sohbet-board { position: static !important; flex: 1 1 100% !important; min-width: 0 !important; }
+      /* Montaj satırı düğmeleri dar ekranda ikinci satıra düzgün sarar */
+      .ta-mont-btns { flex-wrap: wrap; justify-content: flex-end; row-gap: 4px; }
+    }
     /* ═══ PREMIUM CİLA KATMANI (2026) — markup'a dokunmadan çağdaş his ═══
        İlke: köşe yumuşaklığı + derinlik + akıcı mikro-geçişler + net odak hali.
        Inline border-radius (50% avatar/FAB gibi) her zaman kazanır → bozulmaz. */
@@ -721,7 +731,7 @@
           </div>
           <!-- ÜRETİM TAHTASI (YouMind tarzı): konuşurken üretilenler yanda canlı belirir -->
           <sc-if value="{{ sbHasFile }}" hint-placeholder-val="{{ false }}">
-            <aside class="ta-card" style="flex: 0 1 300px; min-width: 260px; position: sticky; top: 92px; padding: 16px 18px; display: grid; gap: 12px;">
+            <aside class="ta-card ta-sohbet-board" style="flex: 0 1 300px; min-width: 260px; position: sticky; top: 92px; padding: 16px 18px; display: grid; gap: 12px;">
               <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em;">🗂 ÜRETİM TAHTASI · CANLI</span>
               <strong style="font-family: 'Playfair Display', serif; font-size: 16px; line-height: 1.3; color: #f2ecd9;">{{ sbTitle }}</strong>
               <sc-if value="{{ sbHasProg }}" hint-placeholder-val="{{ false }}">
@@ -766,7 +776,7 @@
                     <span style="flex: 0 0 auto; width: 20px; text-align: center; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px;">{{ dm.no }}</span>
                     <img src="{{ dm.img }}" alt="" style="{{ dm.thumbStyle }}">
                     <span style="flex: 1; min-width: 0; color: #cfd3dc; font-size: 12px; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{ dm.text }}</span>
-                    <span style="flex: 0 0 auto; display: flex; gap: 3px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+                    <span class="ta-mont-btns" style="flex: 0 0 auto; display: flex; gap: 3px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
                       <button onClick="{{ dm.editStart }}" title="Altyazıyı / anlatımı düzenle" style="border: 1px solid rgba(193,154,82,.4); background: rgba(193,154,82,.08); color: #e6c478; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">✎</button>
                       <button onClick="{{ dm.voice }}" disabled="{{ dm.voiceBusy }}" title="{{ dm.voiceTitle }}" style="border: 1px solid rgba(146,87,238,.4); background: rgba(146,87,238,.08); color: #d9c8ff; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">{{ dm.voiceIcon }}</button>
                       <button onClick="{{ dm.vid }}" title="{{ dm.vidTitle }}" style="border: 1px solid rgba(146,87,238,.4); background: rgba(146,87,238,.08); color: #d9c8ff; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">🎬</button>
