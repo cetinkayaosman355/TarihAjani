@@ -3798,7 +3798,10 @@ class Component extends DCLogic {
     const stop = { bir: 1, the: 1, ile: 1, using: 1, and: 1, von: 1, and2: 1 };
     const hit = [];
     for (const c of chars) {
-      const toks = String(c.ad).toLocaleLowerCase('tr').split(/[^a-zçğıöşü0-9]+/).filter(t => t.length >= 3 && !stop[t]);
+      // LAKAP EŞLEŞMESİ: ad + takma_adlar birlikte taranır — karakterler[].ad
+      // "II. Mehmed" ama anlatımda "Fatih" geçiyorsa da sahne bu karaktere bağlanır.
+      const adlar = String(c.ad) + ' ' + (Array.isArray(c.takma_adlar) ? c.takma_adlar.join(' ') : '');
+      const toks = adlar.toLocaleLowerCase('tr').split(/[^a-zçğıöşü0-9]+/).filter(t => t.length >= 3 && !stop[t]);
       if (toks.some(t => hay.indexOf(t) >= 0)) hit.push(c.ad);
     }
     return hit;
@@ -5431,7 +5434,7 @@ TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan
 {
  "baslik": "çarpıcı Türkçe başlık",
  "logline": "tek cümlelik merak uyandıran özet",
- "karakterler": [{"ad": "Türkçe kişi adı/rolü (ör. II. Rudolf)", "gorunum": "SABİT görsel kimlik — İngilizce: yaş aralığı, vücut yapısı, ten, saç/sakal, yüz hatları, ayırt edici detay (yara izi, gözlük, taç vb.) ve DÖNEME UYGUN kıyafet. Bu tarif bu kişinin geçtiği HER sahnede birebir kullanılacak. Hikâyede tekrar eden HER ana kişiyi buraya ekle (boş BIRAKMA)."}],
+ "karakterler": [{"ad": "Türkçe kişi adı/rolü (ör. II. Rudolf)", "takma_adlar": ["bu kişinin metinde geçebilecek DİĞER ad/lakap/unvanları (ör. Fatih, Sultan Mehmed, Padişah) — yoksa boş dizi"], "gorunum": "SABİT görsel kimlik — İngilizce: yaş aralığı, vücut yapısı, ten, saç/sakal, yüz hatları, ayırt edici detay (yara izi, gözlük, taç vb.) ve DÖNEME UYGUN kıyafet. Bu tarif bu kişinin geçtiği HER sahnede birebir kullanılacak. Hikâyede tekrar eden HER ana kişiyi buraya ekle (boş BIRAKMA)."}],
  "mekanlar": [{"ad": "Türkçe mekân adı (ör. Topkapı Sarayı taht odası)", "gorunum": "SABİT görsel kimlik — İngilizce: mimari üslup ve dönem, ölçek, malzeme ve dokular, karakteristik ışık, renk paleti, ayırt edici öğeler (sütun, kubbe, pencere, mobilya vb.). Bu tarif bu mekânın geçtiği HER sahnede birebir kullanılacak. Hikâyede tekrar eden HER önemli mekânı buraya ekle (aynı yer her sahnede AYNI görünsün; boş BIRAKMA)."}],
  "senaryo": [{"bolum": ${chaptered ? '"1. Bölüm — çarpıcı başlık"' : '"bölüm adı"'}, "sure": "zaman aralığı", "metin": "o bölümün TAM seslendirme metni (kalite barına uygun)"}],
  "seslendirme_notu": "ElevenLabs okuma temposu, vurgu ve duraklama yönergeleri + gerçek/efsane ayrımı (3-4 cümle)",
@@ -5850,7 +5853,12 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     // Her bölüm metni bağımsızdır (taslak özetinden yazılır, birbirinin ürettiği
     // metne değil) → paralel yazılabilir. Kalite aynı; bekleme süresi kısalır.
     const total = secs.length || 1;
-    const replies = await this.runPool(secs, (secItem) =>
+    // TEKRAR SINIRI: her bölüm yazarı diğer bölümlerin özetini görür → aynı olayı
+    // iki bölümün anlatması (paralel yazımın tekrar riski) engellenir.
+    const digerOzet = (si) => secs
+      .map((x, j) => j === si ? null : ((j + 1) + ') ' + (x.bolum || ('Bölüm ' + (j + 1))) + ': ' + String(x.metin || '').slice(0, 220)))
+      .filter(Boolean).join('\n');
+    const replies = await this.runPool(secs, (secItem, si) =>
       this.askAI('Sen "Tarih Ajanı" kanalının kıdemli senaristisin. Aşağıdaki tarih videosunun "' + (secItem.bolum || '') + '" bölümünün TAM seslendirme metnini yaz. Akıcı Türkçe, şu tonla: ' + tonStr + '.\n' +
         '⏱ SÜRE KİLİDİ (İKİ YÖNLÜ — EN KRİTİK): bu bölüm ' + wlo + '-' + whi + ' kelime olmalı (hedef ≈ ' + wtar + '). ' + whi + ' kelimeyi AŞMA (video uzar) AMA ' + wlo + ' kelimenin de ALTINA DÜŞME. Az yazmak bölümü boş bırakır ("' + wlo + ' kelimelik bölümde 2 cümle") ve bu EN AZ fazla yazmak kadar CİDDİ bir HATADIR. Bu aralığı GERÇEK anlatı maddesiyle DOLDUR — bölüm kısacık kalmasın.\n' +
         'YAZIM KURALLARI (profesyonel yayın standardı):\n' +
@@ -5860,7 +5868,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         '4) YASAK KLİŞELER: "adeta", "tarihin tozlu sayfaları", "yolculuğumuz", "asla unutmayacaktı", "günümüzde bile", "kim bilir belki de".\n' +
         '5) Somut isim/tarih/yer/sayı geçir. Önceki bölümden doğal devral, sonraki bölüme merak bırakarak bitir. Tarihî doğruluk esas; emin olmadığını "rivayete göre" çerçevesiyle ver.\n' +
         '6) GÜÇLÜ & İSTİKRARLI DİL (KALİTE, UZUNLUKTAN ÖNCE GELİR): Süre bütçesini DOLGUYLA doldurma. Gevezelik, cümle şişirme, aynı şeyi farklı sözcüklerle TEKRAR YASAK — her cümle YENİ bir bilgi, imge ya da duygu taşısın; taşımıyorsa yazma. Bütçeyi doldurmanın tek meşru yolu DAHA ÇOK GERÇEK MADDE (yeni olay, isim, tarih, yer, tanık, ayrıntı, sahne). Baştan sona TEK, tutarlı, kendinden emin bir anlatıcı sesi kur; bölüm KISA AMA DOLU olsun, stub kalmasın.\n' +
-        'YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + order + '\nBu bölümün özeti: ' + (secItem.metin || ''), 2500),
+        'YALNIZCA seslendirme metnini döndür; başlık veya açıklama ekleme.\n\nVideo başlığı: ' + (result.baslik || '') + '\nLogline: ' + (result.logline || '') + '\nBölüm sırası: ' + order + '\nBu bölümün özeti: ' + (secItem.metin || '') +
+        '\n\nDİĞER BÖLÜMLERİN ÖZETLERİ (SINIR ÇİZGİSİ — bu malzeme O bölümlere aittir: olaylarını/kanıtlarını TEKRAR ANLATMA, kendi bölümünün malzemesini yaz; önceki bölümden tek cümleyle doğal devral, sonraki bölüme merak bırakarak bitir):\n' + digerOzet(si), 2500),
       3,
       (fin) => this.setState({ genMsg: 'BÖLÜM ' + fin + ' / ' + total + ' KALEME ALINIYOR…', genPct: 45 + Math.round((fin / total) * 38) })
     );
@@ -7600,6 +7609,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           '• TEK sahnenin görselini üret (N = sahne no): [[DO:gorsel:N]]\n' +
           '• Seslendirmeyi üret: [[DO:seslendir]]\n' +
           '• Bir sahnenin videosunu çıkar (N = sahne no; o sahnenin görseli üretilmiş olmalı): [[DO:video:N]]\n' +
+          '• Belgesel videoyu montajla (üretilmiş sahne görsellerinden seslendirme+müzikle TEK video; en az 2 sahne görseli gerekir): [[DO:belgesel]]\n' +
+          '• Bir alanı sohbetle DÜZENLE/yeniden yazdır: [[DO:duzenle:HEDEF:kullanıcının isteği]] — HEDEF şunlardan biri: ses (seslendirme metninin tamamı), bolum N (senaryo bölümü N), youtube (YouTube açıklaması), instagram (Instagram açıklaması). Örnek: kullanıcı "seslendirmeyi daha dramatik yap" derse → [[DO:duzenle:ses:daha dramatik yap]]. Sistem yeni metni üretir, kullanıcı ONAYLAYINCA uygulanır.\n' +
           'DİREKTİF KURALLARI: (1) YALNIZ kullanıcı o işlemi NET istediyse ekle; belirsizse direktif EKLEME, tek net soru sor (ör. "hangi sahne?", "önce konuyu netleştirelim mi?"). (2) Ön koşul yoksa (dosya üretilmemişken görsel/seslendirme; görsel yokken video) direktif ekleme, eksik adımı söyle. (3) Her mesaja DEĞİL, yalnız gerçek üretim komutunda ekle. (4) Direktiften ön­ce ne yaptığını kısaca söyle ("Tamam, seslendirmeyi üretiyorum…"). DURUM/AYARLAR bloğundaki sahne sayısı ve mevcut duruma göre konuş.\n\n';
         prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanı VE resmî destek hattısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır; senaryo taslakları, başlıklar, fikirler üretir; konuşarak üretim yaptırır; kredi/hesap/teknik sorunları BURADA çözersin. Türkçe, net, sıcak ve çözüm odaklı cevap ver; gerektiğinde madde kullan.\n\n' + bilgi + komut + durum + sorunBaglam + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
       }
@@ -7634,7 +7645,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const hasSes = !!s.sysAudioUrl;
     return 'DURUM: aktif dosya "' + (r.baslik || '') + '" — ' + (r.logline || '') +
       '. Sahne sayısı=' + nGor + ' · üretilen görsel=' + imgDone + '/' + nGor +
-      ' · seslendirme=' + (hasSes ? 'hazır' : 'yok') + '.\n' + set + '\n\n';
+      ' · seslendirme=' + (hasSes ? 'hazır' : 'yok') +
+      ' · belgesel montajı=' + (this._docReady() ? 'hazır (montajlanabilir)' : 'hazır değil (≥2 sahne görseli gerek)') + '.\n' + set + '\n\n';
   }
   // FAZ D — sohbetten gelen üretim direktifini yürüt. Kredi/ücret onayı ilgili
   // metotların içinde (startGenerate/makeImage/makeTts/openVideoModal) zaten var.
@@ -7695,6 +7707,52 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       this.openVideoModal({ kind: 'scene', key, url: img.url });
       say('✓ Sahne ' + n + ' için video seçeneklerini açtım — sağlayıcı ve süreyi seç, üretime alayım.');
       return;
+    }
+    if (kind === 'belgesel') {
+      if (!r) { say('Önce dosyayı üretelim.'); return; }
+      if (!this._docReady()) { say('Belgesel montajı için en az 2 üretilmiş sahne görseli gerekli. Önce “tüm sahne görsellerini üret” diyebilirsin; görseller hazır olunca montajlarım.'); return; }
+      go({ tab: 'video' });
+      this.startDocVideo();
+      say('✓ Belgesel videoyu montajlıyorum — Video sekmesinde ilerlemeyi görebilirsin. Bittiğinde indirme ve paylaşma düğmeleri orada olacak.');
+      return;
+    }
+    if (kind === 'duzenle') {
+      if (!r) { say('Önce dosyayı üretelim; sonra istediğin alanı birlikte düzenleriz.'); return; }
+      // arg = "HEDEF" ya da "HEDEF:istek" (istek iki nokta içerebilir)
+      const seg = String(arg || '').split(':');
+      const tspec = (seg.shift() || '').trim().toLocaleLowerCase('tr');
+      const instr = seg.join(':').trim();
+      const num = (tspec.match(/\d+/) || [])[0];
+      let t = null;
+      if (/^ses/.test(tspec)) t = { type: 'ses', i: 0, label: 'Seslendirme Metni' };
+      else if (/^b(o|ö)l(u|ü)m|^sec|^senaryo/.test(tspec)) {
+        const i = (num ? +num : 1) - 1;
+        const secs = r.senaryo || [];
+        if (!secs[i]) { say('Bölüm ' + (i + 1) + ' yok; dosyada ' + secs.length + ' bölüm var.'); return; }
+        t = { type: 'sec', i, label: 'Senaryo — ' + (secs[i].bolum || ('Bölüm ' + (i + 1))) };
+      }
+      else if (/^youtube|^yt/.test(tspec)) t = { type: 'yt', i: 0, label: 'YouTube açıklaması' };
+      else if (/^instagram|^ig/.test(tspec)) t = { type: 'ig', i: 0, label: 'Instagram açıklaması' };
+      else { say('Hangi alanı düzenleyelim? “Seslendirme”, “2. bölüm”, “YouTube açıklaması” ya da “Instagram açıklaması” diyebilirsin.'); return; }
+      this.startEdit(t.type, t.i, t.label);   // sohbet açık kalır, düzenleme şeridi görünür
+      if (instr) this._chatEditRun(instr);
+      else say('“' + t.label + '” düzenleme hedefinde. Nasıl değiştirmemi istersin?');
+      return;
+    }
+  }
+  // Sohbet düzenlemesi: hedef seçili; kullanıcının isteğiyle yeni metni hemen üret.
+  // Yanıt SADECE yeni metindir (applyEditNow son ajan mesajını olduğu gibi uygular);
+  // kullanıcı şeritteki SON YANITI UYGULA ile onaylar — onaysız hiçbir şey değişmez.
+  async _chatEditRun(instr) {
+    if (!this.state.editTarget || this.state.chatBusy) return;
+    this.setState({ chatBusy: true });
+    try {
+      const current = this.editCurrentText();
+      const p = 'Sen "Tarih Ajanı" kanalının editörüsün. Aşağıdaki metni kullanıcının isteğine göre yeniden yaz. YALNIZCA yeni metni döndür; açıklama, başlık veya tırnak ekleme.\n\nDÜZENLENEN BÖLÜM: ' + this.state.editLabel + '\nMEVCUT METİN:\n' + current + '\n\nKULLANICI İSTEĞİ: ' + instr;
+      const reply = await this.askAI(p, 4000);
+      this.setState(st => ({ chatMsgs: [...st.chatMsgs, { role: 'assistant', content: (reply || '').trim() || 'Yeni metni üretemedim, tekrar dener misin?' }], chatBusy: false }), () => this._scrollChat());
+    } catch (e) {
+      this.setState(st => ({ chatMsgs: [...st.chatMsgs, { role: 'assistant', content: 'Düzenleme üretilemedi: ' + e.message }], chatBusy: false }), () => this._scrollChat());
     }
   }
   // G-08: sohbet her yeni mesajda en alta kayar

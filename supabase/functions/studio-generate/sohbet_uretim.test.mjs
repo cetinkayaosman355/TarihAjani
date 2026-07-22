@@ -49,6 +49,39 @@ test("_studioCtx: ajana canlı durum (sahne sayısı, üretilen görsel, seslend
   assert.ok(src.includes("const ctx = this._studioCtx();"), "sendChat durum özetini kullanır");
 });
 
+test("Sohbetten BELGESEL montajı: [[DO:belgesel]] → startDocVideo (≥2 görsel şartı)", () => {
+  assert.ok(src.includes("[[DO:belgesel]]"), "belgesel direktif tanımı");
+  assert.ok(src.includes("if (kind === 'belgesel')") && src.includes("this.startDocVideo()"), "belgesel → startDocVideo");
+  assert.ok(src.includes("if (!this._docReady())") && src.includes("en az 2 üretilmiş sahne görseli gerekli"), "hazırlık ön koşulu sohbette söylenir");
+});
+
+test("Sohbetten DÜZENLEME: [[DO:duzenle:HEDEF:istek]] → editTarget + onaylı uygulama", () => {
+  assert.ok(src.includes("[[DO:duzenle:HEDEF:kullanıcının isteği]]"), "duzenle direktif tanımı");
+  assert.ok(src.includes("if (kind === 'duzenle')"), "duzenle aksiyonu");
+  assert.ok(src.includes("this.startEdit(t.type, t.i, t.label)"), "düzenleme hedefi kurulur");
+  assert.ok(src.includes("async _chatEditRun(instr)"), "istekli düzenlemede yeni metin hemen üretilir");
+  assert.ok(src.includes("kullanıcı şeritteki SON YANITI UYGULA ile onaylar — onaysız hiçbir şey değişmez"), "onaysız uygulanmaz");
+  // hedef çözümleme: ses / bölüm N / youtube / instagram
+  assert.ok(src.includes("if (/^ses/.test(tspec))"), "ses hedefi");
+  assert.ok(src.includes("Bölüm ' + (i + 1) + ' yok"), "geçersiz bölüm no yakalanır");
+});
+
+test("Karakter LAKAP eşleşmesi: takma_adlar şemada + _charsOfScene tarar", () => {
+  assert.ok(src.includes('"takma_adlar": ["bu kişinin metinde geçebilecek DİĞER ad/lakap/unvanları'), "şemada takma_adlar");
+  assert.ok(src.includes("(Array.isArray(c.takma_adlar) ? c.takma_adlar.join(' ') : '')"), "_charsOfScene lakapları tarar");
+});
+
+test("expandActs: diğer bölümlerin özetleri SINIR olarak verilir (tekrar yasağı)", () => {
+  assert.ok(src.includes("const digerOzet = (si) => secs"), "diğer özetler hesaplanır");
+  assert.ok(src.includes("DİĞER BÖLÜMLERİN ÖZETLERİ (SINIR ÇİZGİSİ"), "sınır kuralı promptta");
+  assert.ok(src.includes("olaylarını/kanıtlarını TEKRAR ANLATMA"), "tekrar yasağı açık");
+  assert.ok(src.includes("this.runPool(secs, (secItem, si) =>"), "worker bölüm indeksini alır");
+});
+
+test("_studioCtx: belgesel montaj hazırlığı ajana bildirilir", () => {
+  assert.ok(src.includes("belgesel montajı=' + (this._docReady() ? 'hazır (montajlanabilir)'"), "belgesel durumu");
+});
+
 test("Boş sohbet çipleri dosya varken üretim komutlarına döner", () => {
   assert.ok(src.includes("quickChips: (s.result"), "çipler duruma göre");
   assert.ok(src.includes("🎨 Tüm sahne görsellerini üret"), "görsel üret çipi");
