@@ -239,7 +239,10 @@ class Component extends DCLogic {
     const [x1, y1] = this._proj(a[1], a[2]), [x2, y2] = this._proj(b[1], b[2]);
     const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
     const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1;
-    const off = (k == null ? 0.16 : k) * len;
+    // Yay kavisi: kısa oklar için orantılı, uzun oklarda sınırlı (aksi halde
+    // ok denize/çöle kayıp geri dönüyor gibi görünüyordu — İstanbul→Kahire vb.).
+    let off = (k == null ? 0.10 : k) * len;
+    off = Math.max(-16, Math.min(16, off));
     const cx = mx - dy / len * off, cy = my + dx / len * off;
     return 'M' + x1.toFixed(1) + ',' + y1.toFixed(1) + ' Q' + cx.toFixed(1) + ',' + cy.toFixed(1) + ' ' + x2.toFixed(1) + ',' + y2.toFixed(1);
   }
