@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/ta-logo-32.png"><link rel="icon" type="image/png" sizes="64x64" href="/assets/ta-logo-64.png"><link rel="apple-touch-icon" href="/assets/ta-logo-180.png">
+<link rel="canonical" href="https://tarihajani.com/harita">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./support.js"></script>
+<script src="/uye-nav.js" defer></script>
+<script src="/canli-sohbet.js" defer></script>
+<script src="/mobil-nav.js" defer></script>
+<script src="/ara.js" defer></script>
+<script src="/tema.js" defer></script>
+<script src="/alt-bilgi.js" defer></script>
+<script src="/hos-geldin.js" defer></script>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#06070d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script src="/pwa.js" defer></script>
+<link rel="stylesheet" href="/premium-mobil.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta charset="utf-8">
+<title>İnteraktif Tarih Haritaları · Tarih Ajanı</title>
+<meta name="description" content="İpek Yolu, Moğol İmparatorluğu ve İslam'ın Yayılışı — çözülmemiş sırların coğrafyasını parşömen üstünde, şehir şehir keşfet.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400&family=Hanken+Grotesk:wght@400;600;700;800&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #06070d; }
+  * { box-sizing: border-box; }
+  a { color: #e6c478; } a:hover { color: #f2ecd9; }
+  @keyframes ta-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes ta-draw { from { stroke-dashoffset: var(--len, 4000); } to { stroke-dashoffset: 0; } }
+  @keyframes ta-pop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+  .ta-route { stroke-dasharray: 10 7; }
+  .ta-flow { stroke-dasharray: 3200; stroke-dashoffset: 3200; animation: ta-draw 2.6s .2s ease forwards; }
+  .ta-city { cursor: pointer; }
+  .ta-city:hover circle { r: 8; }
+  .ta-storybtn { transition: all .18s; }
+  .map-frame { position: relative; }
+  /* Aydınlık tema: parşömen zaten açık — kart metinleri koyu kalsın */
+  html[data-theme="light"] .ta-mapwrap { background: #f4ecd8 !important; }
+</style>
+<script src="page-transition.js"></script>
+<script src="analytics.js"></script>
+<script src="/harita-veri.js"></script>
+</helmet>
+
+<div style="min-height: 100vh; background: #06070d; color: #e9dfc8; font-family: 'Hanken Grotesk', sans-serif;" data-screen-label="Tarih Haritaları">
+
+  <!-- HEADER -->
+  <header style="position: sticky; top: 0; z-index: 20; height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(18px, 4vw, 48px); background: rgba(4,6,12,.92); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(193,154,82,.22);">
+    <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #e9dfc8;">
+      <img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 42px; width: auto;">
+      <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">HARİTALAR</span>
+    </a>
+    <nav style="display: flex; align-items: center; gap: 6px;">
+      <a href="/" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;">ANA SAYFA</a>
+      <a href="/arsiv" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;">ARŞİV</a>
+      <a href="/egitim" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;">AKADEMİ</a>
+      <a href="/studio" style="color: #d6d0c2; font-weight: 600; font-size: 12.5px; letter-spacing: .08em; text-decoration: none; padding: 9px 13px;">STUDIO</a>
+      <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12px; letter-spacing: .12em; text-decoration: none; padding: 10px 18px; border: 1px solid rgba(193,154,82,.55); margin-left: 8px;">AJAN GİRİŞİ</a>
+    </nav>
+  </header>
+
+  <main style="max-width: 1220px; margin: 0 auto; padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 40px) 80px;">
+    <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .28em; animation: ta-rise .6s ease both;">TARİH AJANI · İNTERAKTİF HARİTALAR</p>
+    <h1 style="margin: 8px 0 6px; font-family: 'Playfair Display', serif; font-size: clamp(30px, 5vw, 52px); font-weight: 800; line-height: 1.05; animation: ta-rise .7s .08s ease both;">Sırların <span style="background: linear-gradient(105deg, #b18742, #e6c478 45%, #fff0b1 52%, #9d7536); -webkit-background-clip: text; background-clip: text; color: transparent;">coğrafyası</span></h1>
+    <p style="margin: 0 0 22px; color: #a4a9b5; font-size: 15px; line-height: 1.6; max-width: 60ch; animation: ta-rise .7s .16s ease both;">Bir hikâye seç; rotayı parşömen üstünde canlanırken izle, şehirlere dokun. Aynı coğrafyayı Studio'da videoya da dönüştürebilirsin.</p>
+
+    <!-- HİKÂYE SEÇİCİ -->
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;">
+      <sc-for list="{{ storyBtns }}" as="s" hint-placeholder-count="3">
+        <button onClick="{{ s.pick }}" class="ta-storybtn" style="{{ s.style }}">{{ s.ad }}</button>
+      </sc-for>
+    </div>
+
+    <!-- HARİTA + BİLGİ -->
+    <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+      <div class="ta-mapwrap map-frame" style="position: relative; border: 1px solid rgba(193,154,82,.4); border-radius: 10px; overflow: hidden; background: radial-gradient(120% 120% at 50% 30%, #f3e8c8, #e2cc9c 70%, #d3b981); box-shadow: 0 24px 70px -30px rgba(0,0,0,.7);">
+        <svg viewBox="{{ viewBox }}" preserveAspectRatio="xMidYMid meet" style="width: 100%; display: block;" role="img" aria-label="{{ curAd }} haritası">
+          <defs>
+            <filter id="paper"><feTurbulence baseFrequency="0.012" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .74  0 0 0 0 .62  0 0 0 0 .42  0 0 0 .18 0"/></filter>
+            <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="{{ curRenk }}"/></marker>
+          </defs>
+          <rect x="0" y="0" width="9999" height="9999" filter="url(#paper)" opacity=".5"/>
+          <!-- KARA -->
+          <path d="{{ landD }}" fill="#d9c49a" stroke="#b39b6e" stroke-width="0.8" stroke-linejoin="round"/>
+          <!-- ROTA (İpek Yolu) -->
+          <sc-if value="{{ isRoute }}" hint-placeholder-val="{{ true }}">
+            <path d="{{ routeD }}" class="ta-route ta-flow" fill="none" stroke="{{ curRenk }}" stroke-width="2.6" stroke-linecap="round" opacity=".9"/>
+            <sc-for list="{{ branchD }}" as="bd" hint-placeholder-count="0">
+              <path d="{{ bd.d }}" class="ta-route" fill="none" stroke="{{ curRenk }}" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+            </sc-for>
+          </sc-if>
+          <!-- OKLAR (Moğol / İslam) -->
+          <sc-if value="{{ isArrow }}" hint-placeholder-val="{{ false }}">
+            <sc-for list="{{ arrowD }}" as="ad" hint-placeholder-count="0">
+              <path d="{{ ad.d }}" fill="none" stroke="{{ curRenk }}" stroke-width="2.4" stroke-linecap="round" marker-end="url(#ah)" opacity=".82"/>
+            </sc-for>
+          </sc-if>
+          <!-- ŞEHİRLER -->
+          <sc-for list="{{ cityDots }}" as="c" hint-placeholder-count="0">
+            <g class="ta-city" onClick="{{ c.pick }}" style="transform-origin: center;">
+              <circle cx="{{ c.x }}" cy="{{ c.y }}" r="{{ c.r }}" fill="{{ c.fill }}" stroke="#f4ecd6" stroke-width="1.5"></circle>
+              <text x="{{ c.tx }}" y="{{ c.ty }}" font-family="'Playfair Display', Georgia, serif" font-size="{{ c.fs }}" fill="#4a3418" font-style="italic" style="{{ c.anchor }}">{{ c.ad }}</text>
+            </g>
+          </sc-for>
+          <!-- PUSULA -->
+          <g transform="{{ compassT }}" opacity=".72">
+            <circle r="26" fill="none" stroke="{{ curRenk }}" stroke-width="1"/>
+            <path d="M0,-30 L5,0 L0,30 L-5,0 Z" fill="{{ curRenk }}"/>
+            <path d="M-30,0 L0,5 L30,0 L0,-5 Z" fill="#b08a3e"/>
+            <text x="0" y="-33" text-anchor="middle" font-size="11" fill="{{ curRenk }}" font-family="Georgia">K</text>
+          </g>
+        </svg>
+        <!-- ŞEHİR BİLGİ KARTI -->
+        <sc-if value="{{ selCity }}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; left: 14px; bottom: 14px; right: 14px; max-width: 380px; border: 1px solid rgba(120,60,20,.4); background: rgba(28,20,10,.92); backdrop-filter: blur(4px); border-radius: 10px; padding: 14px 16px; animation: ta-rise .3s ease both;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+              <p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #f2ecd9;">{{ selCity.ad }}</p>
+              <button onClick="{{ clearCity }}" aria-label="Kapat" style="border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-size: 13px; padding: 4px 9px; cursor: pointer; border-radius: 6px;">✕</button>
+            </div>
+            <p style="margin: 6px 0 0; color: #cbd0da; font-size: 13.5px; line-height: 1.6;">{{ selCity.bilgi }}</p>
+          </div>
+        </sc-if>
+      </div>
+
+      <!-- HİKÂYE AÇIKLAMASI + CTA -->
+      <div style="border: 1px solid rgba(193,154,82,.22); background: linear-gradient(120deg, rgba(193,154,82,.06), rgba(8,7,12,.4)); border-radius: 10px; padding: 20px 22px;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: {{ curRenk }}; box-shadow: 0 0 10px {{ curRenk }};"></span>
+          <h2 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: #f2ecd9;">{{ curAd }}</h2>
+          <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em;">{{ curDonem }}</span>
+        </div>
+        <p style="margin: 12px 0 16px; color: #cbd0da; font-size: 14.5px; line-height: 1.7; max-width: 68ch;">{{ curAciklama }}</p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <a href="{{ uretHref }}" style="text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .12em; padding: 12px 18px;">◈ BU KONUYU STUDIO'DA ÜRET →</a>
+          <a href="/arsiv" style="text-decoration: none; border: 1px solid rgba(193,154,82,.5); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; padding: 11px 18px;">ARŞİVE GÖZ AT</a>
+        </div>
+        <p style="margin: 14px 0 0; color: #818797; font-size: 12px;">Haritadaki <strong style="color:#c19a52;">{{ cityCount }} şehre</strong> dokunarak hikâyesini oku.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer style="border-top: 1px solid rgba(193,154,82,.15); background: #06070c; padding: clamp(32px, 4vw, 52px) clamp(20px, 4vw, 40px) 30px;">
+    <div style="width: min(1180px, 92vw); margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px;">
+      <a href="/" style="display: flex; align-items: center; text-decoration: none;"><img src="assets/logo.webp" alt="Tarih Ajanı" style="height: 42px; width: auto;"></a>
+      <div style="display: flex; flex-wrap: wrap; gap: 18px;">
+        <a href="/arsiv" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;">Arşiv</a>
+        <a href="/egitim" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;">Akademi</a>
+        <a href="/studio" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;">Studio</a>
+        <a href="/uyelik" style="color: #a4a9b5; font-size: 13.5px; text-decoration: none;">Üyelik</a>
+      </div>
+    </div>
+    <div style="width: min(1180px, 92vw); margin: 24px auto 0; border-top: 1px solid rgba(129,135,151,.12); padding-top: 16px;">
+      <span style="color: #5a6070; font-size: 12px;">© 2026 Tarih Ajanı · Harita verisi: Natural Earth (kamu malı).</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { data: null, story: 'ipek', sel: null };
+  componentDidMount() {
+    const load = () => {
+      if (window.__HARITA__ && window.__HARITA__.land) this.setState({ data: window.__HARITA__ });
+      else setTimeout(load, 60);
+    };
+    load();
+  }
+  // ── Projeksiyon (equirectangular) ──
+  _W() { return 1000; }
+  _H() { const b = this.state.data.box; return Math.round(this._W() * (b[3] - b[2]) / (b[1] - b[0])); }
+  _proj(lon, lat) {
+    const b = this.state.data.box, W = this._W(), H = this._H();
+    return [(lon - b[0]) / (b[1] - b[0]) * W, (b[3] - lat) / (b[3] - b[2]) * H];
+  }
+  // Kara yolları TEK path string'inde (memoize)
+  _landD() {
+    if (this._land) return this._land;
+    const d = (this.state.data.land || []).map(ring => {
+      let s = '';
+      ring.forEach((p, i) => { const [x, y] = this._proj(p[0], p[1]); s += (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); });
+      return s + 'Z';
+    }).join('');
+    this._land = d; return d;
+  }
+  _city(id) { return (this.state.data.cities || {})[id]; }
+  _curStory() { const d = this.state.data; return (d.stories || []).find(s => s.id === this.state.story) || d.stories[0]; }
+  // Eğri ok yolu (kontrol noktası dikeyde ofset — yay görünümü)
+  _arc(aId, bId, k) {
+    const a = this._city(aId), b = this._city(bId); if (!a || !b) return '';
+    const [x1, y1] = this._proj(a[1], a[2]), [x2, y2] = this._proj(b[1], b[2]);
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1;
+    const off = (k == null ? 0.16 : k) * len;
+    const cx = mx - dy / len * off, cy = my + dx / len * off;
+    return 'M' + x1.toFixed(1) + ',' + y1.toFixed(1) + ' Q' + cx.toFixed(1) + ',' + cy.toFixed(1) + ' ' + x2.toFixed(1) + ',' + y2.toFixed(1);
+  }
+  pick(id) { this.setState({ story: id, sel: null }); this._land = this._land; }
+  selectCity(id) { this.setState({ sel: id }); }
+
+  renderVals() {
+    const d = this.state.data;
+    if (!d) return { loading: true, storyBtns: [], cityDots: [], viewBox: '0 0 1000 500', landD: '', curRenk: '#7c1f16', isRoute: false, isArrow: false, branchD: [], arrowD: [], selCity: null, curAd: '', curDonem: '', curAciklama: '', cityCount: 0, compassT: '', routeD: '', uretHref: '/studio' };
+    const W = this._W(), H = this._H();
+    const cur = this._curStory();
+    const renk = cur.renk || '#7c1f16';
+    // hikâyede geçen şehirler
+    const ids = new Set();
+    (cur.rota || []).forEach(i => ids.add(i));
+    (cur.dal || []).forEach(a => a.forEach(i => ids.add(i)));
+    (cur.oklar || []).forEach(a => a.forEach(i => ids.add(i)));
+    (cur.baskentler || []).forEach(i => ids.add(i));
+    // rota path
+    let routeD = '';
+    if (cur.tur === 'rota' && cur.rota) {
+      routeD = cur.rota.map((id, i) => { const c = this._city(id); const [x, y] = this._proj(c[1], c[2]); return (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); }).join(' ');
+    }
+    const branchD = (cur.dal || []).map(a => ({ d: this._arc(a[0], a[1], 0.05) }));
+    const arrowD = (cur.oklar || []).map(a => ({ d: this._arc(a[0], a[1]) }));
+    // şehir noktaları
+    const cityDots = [...ids].map(id => {
+      const c = this._city(id); if (!c) return null;
+      const [x, y] = this._proj(c[1], c[2]);
+      const cap = (cur.baskentler || []).includes(id);
+      const right = x < W - 150;
+      return {
+        id, x: x.toFixed(1), y: y.toFixed(1), r: cap ? 6 : 4.5,
+        fill: cap ? renk : '#8a5a2e', ad: c[0],
+        tx: (right ? x + 8 : x - 8).toFixed(1), ty: (y - 7).toFixed(1),
+        fs: cap ? 15 : 13, anchor: right ? '' : 'text-anchor: end;',
+        pick: () => this.selectCity(id)
+      };
+    }).filter(Boolean);
+    const selC = this.state.sel ? this._city(this.state.sel) : null;
+    return {
+      loading: false,
+      viewBox: '0 0 ' + W + ' ' + H,
+      landD: this._landD(),
+      curRenk: renk,
+      isRoute: cur.tur === 'rota',
+      isArrow: cur.tur === 'ok',
+      routeD, branchD, arrowD,
+      cityDots,
+      compassT: 'translate(' + (W - 60) + ',' + (H - 60) + ')',
+      curAd: cur.ad, curDonem: cur.donem, curAciklama: cur.aciklama,
+      cityCount: cityDots.length,
+      uretHref: '/studio?konu=' + encodeURIComponent(cur.ad + ' — ' + cur.donem),
+      selCity: selC ? { ad: selC[0], bilgi: selC[3] } : null,
+      clearCity: () => this.setState({ sel: null }),
+      storyBtns: (d.stories || []).map(s => {
+        const on = s.id === this.state.story;
+        return {
+          ad: s.ad, pick: () => this.pick(s.id),
+          style: 'border: 1px solid ' + (on ? 'rgba(193,154,82,.8)' : 'rgba(129,135,151,.35)') + '; cursor: pointer; background: ' + (on ? 'rgba(193,154,82,.16)' : 'transparent') + '; color: ' + (on ? '#f2ecd9' : '#a4a9b5') + "; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; padding: 11px 16px; border-radius: 8px;"
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

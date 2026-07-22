@@ -103,6 +103,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://tarihajani.com/harita</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://tarihajani.com/arsiv/pompeii-son-saat/</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
