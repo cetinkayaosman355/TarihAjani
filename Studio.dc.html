@@ -377,6 +377,13 @@
     /* soluk altın → okunur koyu altın */
     html[data-theme="light"] [style*="color: #9a7d43"],
     html[data-theme="light"] [style*="color: #d9a441"] { color: #8a6417 !important; }
+    /* Aydınlık tema: soluk gri PROMPT metinleri (kod blokları) ivory zeminde
+       okunmuyordu → koyu mürekkep + hafif kâğıt zemin. */
+    html[data-theme="light"] [style*="color: #c8cfdd"],
+    html[data-theme="light"] [style*="color: rgb(200, 207, 221)"],
+    html[data-theme="light"] [style*="color: #a9b0bf"],
+    html[data-theme="light"] [style*="color: rgb(169, 176, 191)"] {
+      color: #33383f !important; background: rgba(120,90,30,.06) !important; }
     /* Aydınlık tema: parlak altın metin (#e6c478) ivory zeminde silikleşiyordu →
        okunur koyu altına çek (ör. ".SRT İNDİR", "BÖLÜMLER" gibi saydam butonlar). */
     html[data-theme="light"] [style*="color: #e6c478"] { color: #8a6417 !important; }
@@ -1152,6 +1159,15 @@
                   <span>30 SN</span><span>2 DK</span><span>4 DK</span><span>6 DK</span><span>8 DK</span><span>10 DK</span>
                 </div>
                 <p style="margin: 12px 0 0; color: #a4a9b5; font-size: 13px; line-height: 1.55;">{{ durInfo }}</p>
+                <sc-if value="{{ durAdviceShow }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border: 1px solid rgba(193,154,82,.3); background: rgba(193,154,82,.06); border-radius: 10px; padding: 11px 14px;">
+                    <span style="color: #d8c9a6; font-size: 13px; line-height: 1.5; flex: 1; min-width: 220px;">💡 {{ durAdviceText }}</span>
+                    <span style="display: flex; gap: 8px;">
+                      <button onClick="{{ durAdvice1dk }}" style="border: 1px solid rgba(193,154,82,.55); background: rgba(193,154,82,.12); color: #e6c478; padding: 8px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer; border-radius: 8px;" style-hover="background: rgba(193,154,82,.22);">1 dk yap</button>
+                      <button onClick="{{ durAdvice2dk }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 8px 14px; font-size: 12.5px; cursor: pointer; border-radius: 8px;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">2 dk</button>
+                    </span>
+                  </div>
+                </sc-if>
               </div>
               <!-- U-01: ince ayar — mobilde kapalı gelir, tek dokunuşla açılır -->
               <button onClick="{{ toggleFine }}" style="{{ fineBtnStyle }}" style-hover="border-color: rgba(193,154,82,.6);">
@@ -2638,6 +2654,17 @@ class Component extends DCLogic {
         { id: 'belgesel', name: 'Belgesel · Ciddi', desc: 'Kaynak odaklı, ölçülü ve otoriter ton' },
         { id: 'destansi', name: 'Destansı', desc: 'Epik ölçek, yükselen ritim, görkemli anlatı' },
         { id: 'duygusal', name: 'Duygusal · İnsani', desc: 'Yaşayanların gözünden, sıcak ve dokunaklı' }
+      ],
+      // AÇIK FORMAT: kanal kalıbına mecbur değilsin — Reels/TikTok/YouTube'un
+      // viral kalıpları dahil, herkes her formatta üretebilsin.
+      format: [
+        { id: 'belgesel', name: '🎬 Belgesel', desc: 'Klasik Tarih Ajanı anlatısı — derin ve sinematik' },
+        { id: 'reels', name: '⚡ Viral Reels', desc: 'Şok kanca + hızlı tempo — Reels/TikTok/Shorts' },
+        { id: 'pov', name: '👁 POV · Sen Oradasın', desc: 'Birinci şahıs: izleyici olayın tam ortasında' },
+        { id: 'liste', name: '🔢 Top Liste', desc: '"En çarpıcı 5…" — geri sayımlı, paylaşılabilir' },
+        { id: 'neolurdu', name: '🔀 Ne Olurdu?', desc: 'Alternatif tarih — tartışma ve yorum getirir' },
+        { id: 'soru', name: '❓ Soru & Cevap', desc: 'Merak sorusuyla açar, cevabı sona saklar' },
+        { id: 'serbest', name: '✍ Serbest', desc: 'Kalıp yok — konuya en uygun anlatıyı ajan kurar' }
       ],
       voice: [
         // HEPSİ ElevenLabs (eleven_multilingual_v2 · Türkçe) — OpenAI sesleri kaldırıldı.
@@ -4933,7 +4960,19 @@ class Component extends DCLogic {
       alert('Ses önizlemesi alınamadı: ' + e.message);
     });
   }
+  // SESLİ OKUMA AKICILIĞI: TTS'e giden HER metni güvenli biçimde yumuşat —
+  // anlatıcı "…", "!!!" ve asılı tirelerde boşlukta kalmasın. İçerik değişmez, yalnız ritim.
+  _ttsSmooth(t) {
+    return String(t || '')
+      .replace(/…|\.{3,}/g, '.')          // … ve "..." → tek nokta (uzun asılı duraklar biter)
+      .replace(/\s+[–—-]\s+/g, ', ')           // boşluklu tire duraksaması → doğal virgül ("1982–83" gibi bitişikler korunur)
+      .replace(/([!?]){2,}/g, '$1')            // "!!!" / "??" → tek işaret
+      .replace(/\.\s*\.(\s|$)/g, '.$1')        // ". ." artıkları
+      .replace(/[ \t]{2,}/g, ' ')
+      .trim();
+  }
   async ttsServer(text) {
+    text = this._ttsSmooth(text);
     const SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
     const token = this._token() || SB_KEY;
@@ -5028,15 +5067,7 @@ BU ÜRETİMİN PARAMETRELERİ:
 - Anlatım tonu: ${tonStr}
 - Seslendirme tarzı: ${sesStr}
 - Görsel stil çekirdeği (her görsel/video promptunun BAŞINA birebir konur): ${stilStr}
-- Kadraj / en-boy oranı: ${oran}${s.format === 'reels' ? `
-- ⚡ VİRAL REELS MODU (ZORUNLU ÜSLUP — bu bir belgesel DEĞİL, viral kısa video; aşağıdaki kurallar diğer üslup kurallarıyla çelişirse BUNLAR kazanır):
-  · KANCA (en kritik): İlk cümle 8-14 kelimelik ŞOK edici iddia, çelişki ya da soru — izleyici İLK 2 SANİYEDE durmalı. "Bugün size ... anlatacağım", "Tarihte bir gün..." tarzı ısınma girişleri KESİNLİKLE YASAK; doğrudan bombayla aç.
-  · TEMPO: Kısa, vurucu cümleler (ortalama 6-12 kelime). Her cümle YENİ bir bilgi ya da kıvrım versin; nefes/dolgu cümlesi YOK. Merak boşluğu bırak: bir sonraki cümleyi dinlemeden duramasın.
-  · YAPI: kanca → tek cümlelik bağlam → 2-3 şaşırtıcı kanıt/kıvrım (her biri bir öncekinden büyük) → payoff (asıl şok) → tek cümlelik organik CTA (ör. devamı/serinin kalanı için takip çağrısı — yalvarma tonu YASAK).
-  · DİL: Akıcı konuşma Türkçesi; izleyiciye doğrudan hitap ("düşün", "bak", "sence") serbest. Her cümle altyazıda TEK BAŞINA anlamlı ve vurucu olsun (kısa videolar sessiz izlenir).
-  · SAHNELER: hızlı kesme hissi — her sahne TEK güçlü an/imge; sahneler arası görsel çeşitlilik yüksek (ölçek/açı zıplasın: makro detay → geniş plan → yüz).
-  · GÖRSEL PROMPTLAR (reels uyarlaması): bold central subject filling the vertical frame, high contrast, punchy saturated color grade, dramatic scale and depth, mobile-first composition with clear focal point.
-  · VİDEO PROMPTLAR (reels uyarlaması): yüksek enerji — fast push-in, whip pan, speed-ramp feel, dramatic reveal; yine 5-8 sn TEK hareket, stabil anatomi.` : ''}
+- Kadraj / en-boy oranı: ${oran}${this.contentFormatBlock(s.format)}
 - Format: ${fmt.etiket} · ${chaptered ? bolumN + ' numaralı bölüm' : fmt.bolum} · toplam seslendirme HEDEFİ ${fmt.kelime} kelime
 - ⏱ SÜRE KİLİDİ (EN ÖNEMLİ KURAL): Bu video ${fmt.etiket} (≈ ${sec} saniye) UZUNLUĞUNDA olacak. Türkçe seslendirme ≈ 2.4 kelime/saniye okunur. Bu yüzden TÜM senaryo[].metin alanlarındaki kelimelerin TOPLAMI ${wmin}-${wmax} kelime olmalı; ÜST SINIR ${wmax} kelimeyi ASLA AŞMA. Daha fazla yazarsan video ${fmt.etiket}'yi aşar — bu KESİN bir HATADIR. Kısa videoda az sözle çok şey anlat, doldurma/tekrar yapma.
 - SAHNE SAYISI (KESİN KURAL): KAPAK HARİÇ tam ${fmt.sahne} sahne. gorsel_promptlar ve video_promptlar dizilerinin HER BİRİ tam ${fmt.sahne} öğe içermeli. Kapak bu sayıya dahil değildir. ÖNEMLİ: Sahneler yalnızca GÖRSEL bölünmedir; sahne sayısı seslendirmeye kelime EKLEMEZ. Aynı ${wmin}-${wmax} kelimelik seslendirmeyi ${fmt.sahne} görsel âna DAĞIT — her sahne için fazladan cümle yazıp süreyi uzatma.${chaptered ? `
@@ -5045,6 +5076,7 @@ BU ÜRETİMİN PARAMETRELERİ:
 
 KALİTE BARI (EN KRİTİK — zayıf çıktı geçersizdir):
 - SESLENDİRME (senaryo[].metin): O bölümün TAM, kelimesi kelimesine okunacak metni. Somut isim/tarih/yer/sayı geçir; duyusal ve sinematik dil kur; her bölüm mikro-kanca ile açılıp merak bırakarak bitsin. Toplam kelime ${wmin}-${wmax} aralığında KALMALI: ${wmin} altına düşme, ${wmax} üstüne ÇIKMA (süre kilidi kesindir). Dolgu, klişe, "tarih boyunca insanlar…" tarzı genel cümle YASAK — kısalık kaliteyi düşürmez, netleştirir.
+- SESLİ OKUMA AKICILIĞI (metin bir SESLİ ANLATICI tarafından okunacak — buna göre yaz): Yalnız TAM ve akıcı cümleler kur; "1982. İstanbul." gibi kesik tarih/yer parçaları YASAK — tarihi ve mekânı cümlenin içine dok ("1982 yılının soğuk bir İstanbul sabahında…"). Üç nokta (…), tire ile yarım bırakma, tek kelimelik dramatik duraklar KULLANMA; dramatik etkiyi kelime seçimiyle ver, noktalama numarasıyla değil. Parantez içi açıklama, yönerge, [köşeli not] koyma. Sesli okununca doğal duran ritim kur: art arda iki kısa parça cümle yerine bağlaçla akan tek cümle tercih et.
 - 🎙 SESLİ OKUMA KURALI (metin bir anlatıcı tarafından OKUNACAK): senaryo[].metin YALNIZCA yüksek sesle okunacak temiz anlatıdır — içine sahne/kamera/müzik yönergesi, zaman damgası, "Bölüm 1" gibi başlık, köşeli/parantez içi teknik not KOYMA (okunmaz, akışı bozar). Tüm sayı, tarih ve rakamları YAZIYLA yaz — "1453" değil "bin dört yüz elli üç", "II. Mehmed" değil "İkinci Mehmed", "%40" değil "yüzde kırk". Parantez, tire içi ara cümle, madde işareti, kısaltma KULLANMA; her cümle yüksek sesle doğal okunabilsin.
 - 💛 DUYGU (EN ÖNEMLİ): kuru ansiklopedi anlatımı DEĞİL. Sahnenin duygusunu (gerilim, hüzün, hayret, öfke, zafer) kelime seçimine ve cümle ritmine işle; dinleyici olayı HİSSETSİN, sadece öğrenmesin. Duyguyu abartma/melodrama kaçmadan, olguya sadık kalarak ver — büyük bir belgeselin insanı içine çeken sıcaklığı.
 - ANLATIM ZANAATİ: Cümle ritmini dönüşümlü kur — kısa vurucu cümlelerle uzun akan cümleleri karıştır; art arda cümleler aynı kelime/kalıpla BAŞLAMASIN. Göster, anlatma: soyut yargı ("çok korkunçtu") yerine sahne ve duyu ("etin yanık kokusu surlara kadar ulaşıyordu"). Şu yapay-zekâ klişeleri KESİNLİKLE YASAK: "adeta", "âdeta", "tarihin tozlu sayfaları", "yolculuğumuz", "asla unutmayacaktı", "hayal edin" (bölüm başına en fazla 1 kez), "günümüzde bile", "kim bilir belki de".
@@ -5120,6 +5152,26 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     };
     return T[tone] || T.merak;
   }
+  // AÇIK FORMAT KURALLARI — seçilen içerik formatının üslup bloğu ana prompta girer.
+  // 'belgesel' kanal varsayılanıdır (ek blok yok); diğerleri kendi viral kalıbını dayatır.
+  contentFormatBlock(f) {
+    const B = {
+      reels: '\n- ⚡ VİRAL REELS MODU (ZORUNLU ÜSLUP — bu bir belgesel DEĞİL, viral kısa video; aşağıdaki kurallar diğer üslup kurallarıyla çelişirse BUNLAR kazanır):' +
+        '\n  · KANCA (en kritik): İlk cümle 8-14 kelimelik ŞOK edici iddia, çelişki ya da soru — izleyici İLK 2 SANİYEDE durmalı. "Bugün size ... anlatacağım", "Tarihte bir gün..." tarzı ısınma girişleri KESİNLİKLE YASAK; doğrudan bombayla aç.' +
+        '\n  · TEMPO: Kısa, vurucu cümleler (ortalama 6-12 kelime). Her cümle YENİ bir bilgi ya da kıvrım versin; nefes/dolgu cümlesi YOK. Merak boşluğu bırak: bir sonraki cümleyi dinlemeden duramasın.' +
+        '\n  · YAPI: kanca → tek cümlelik bağlam → 2-3 şaşırtıcı kanıt/kıvrım (her biri bir öncekinden büyük) → payoff (asıl şok) → tek cümlelik organik CTA (yalvarma tonu YASAK).' +
+        '\n  · DİL: Akıcı konuşma Türkçesi; izleyiciye doğrudan hitap ("düşün", "bak", "sence") serbest. Her cümle altyazıda TEK BAŞINA anlamlı ve vurucu olsun (kısa videolar sessiz izlenir).' +
+        '\n  · SAHNELER: hızlı kesme hissi — her sahne TEK güçlü an/imge; sahneler arası görsel çeşitlilik yüksek (ölçek/açı zıplasın: makro detay → geniş plan → yüz).' +
+        '\n  · GÖRSEL PROMPTLAR (reels uyarlaması): bold central subject filling the vertical frame, high contrast, punchy saturated color grade, dramatic scale and depth, mobile-first composition with clear focal point.' +
+        '\n  · VİDEO PROMPTLAR (reels uyarlaması): yüksek enerji — fast push-in, whip pan, speed-ramp feel, dramatic reveal; yine 5-8 sn TEK hareket, stabil anatomi.',
+      pov: '\n- 👁 POV MODU (ZORUNLU ÜSLUP — "sen oradasın"): Senaryoyu İKİNCİ TEKİL ŞAHIS ve ŞİMDİKİ ZAMANDA yaz — izleyici olayın tam ortasında ("Gözlerini açıyorsun: yıl 1453, surların dibindesin…"). Duyusal detay zorunlu: ne görüyor, ne duyuyor, ne kokluyor. Tarihî gerçekler birebir doğru kalır; yalnız bakış açısı içeriden. İlk cümle izleyiciyi ANINDA sahneye ışınlasın. Görsel promptlar mümkün olan sahnelerde first-person / over-the-shoulder perspektif kullansın.',
+      liste: '\n- 🔢 TOP LİSTE MODU (ZORUNLU YAPI): İçeriği geri sayımlı bir liste olarak kur ("En … N olay/kişi/sır"). Açılışta listeyi vaat eden tek cümlelik kanca; her madde "N." diye net duyurulur, kendi mini kancası ve payoff\'u olur; maddeler ÇARPICILIK SIRASINA göre artar — EN sarsıcı madde EN SONA. Son maddeden sonra tek cümlelik kapanış + izleyiciye "sence listeye ne girmeliydi?" tarzı yorum sorusu.',
+      neolurdu: '\n- 🔀 ALTERNATİF TARİH MODU (ZORUNLU YAPI): Önce GERÇEK dallanma anını kur (tarih/kişi/yer birebir doğru). Sonra "Peki ya … olsaydı?" sorusuyla mantıklı, zincirleme spekülasyona geç — her halka bir öncekinden türesin, keyfî fantezi YASAK. Spekülasyon bölümünde dil bunu belli etsin ("muhtemelen", "büyük olasılıkla"). Sonda gerçeğe dön: "Gerçekte ise…" ile gerçek sonucu vur ve izleyiciye tartışma sorusu bırak.',
+      soru: '\n- ❓ SORU-CEVAP MODU (ZORUNLU YAPI): İçerik TEK büyük merak sorusuyla açılır (ör. "Bir imparatorluk bir gecede nasıl yok olur?"). Cevap SONA saklanır; aradaki her bölüm cevaba yaklaşan bir ipucu/kanıt verir ve merakı BÜYÜTÜR. Erken cevap sızdırmak KESİN HATADIR. Finalde cevap net ve tatmin edici biçimde verilir + tek cümlelik yankı bırakan kapanış.',
+      serbest: '\n- ✍ SERBEST FORMAT: Kalıp dayatma. Konuya ve süreye EN UYGUN anlatı yapısını SEN seç (belgesel, POV, liste, soru-cevap, hibrit…) ve baştan sona tutarlı uygula. Tek kural: ilk cümle güçlü bir kanca olsun ve seçtiğin yapı net hissedilsin.'
+    };
+    return B[f] || '';
+  }
   sceneCfg() {
     const s = this.state;
     const m = this.promptMaps();
@@ -5130,6 +5182,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       // üretildiklerinden ana prompttaki reels bloğunu görmezler — burada verilir).
       treatment: this.treatmentFor(s.tone) + (s.format === 'reels'
         ? ' REELS ENERGY OVERRIDE: bold central subject filling the vertical frame, high contrast punchy saturated grade, dramatic scale, mobile-first single clear focal point per scene; video motion high-energy (fast push-in, whip pan, speed-ramp feel, dramatic reveal) — still one single 5-8s camera move, stable anatomy.'
+        : s.format === 'pov'
+        ? ' POV OVERRIDE: favor first-person point-of-view or over-the-shoulder framing where the scene allows — the viewer IS the protagonist; hands/foreground elements may enter frame naturally; immersive eye-level perspective.'
         : ''),
       anti: s.style === 'gravur'
         ? 'No modern text, no watermark, no logo, consistent engraving style, no modern objects, no transparent or ghostly figures.'
@@ -5760,7 +5814,13 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   }
   // Cümlelere böl, süreyi kelime sayısına göre dağıt (~2.4 kelime/sn, min 1.2 sn)
   srtText() {
-    const text = this.voiceText();
+    // BOŞ DOSYA DÜZELTMESİ: senaryo metni boş/eksikse sahne anlatımlarına
+    // (gorsel_promptlar[].anlatim) düş — belgesel/kısa üretimlerde de altyazı çıksın.
+    let text = this.voiceText();
+    if (!text.trim()) {
+      const gp = ((this.state.result || {}).gorsel_promptlar) || [];
+      text = this.cleanNarration(gp.map(x => (x && (x.anlatim || x.sahne)) || '').filter(Boolean).join('\n\n'));
+    }
     if (!text.trim()) return '';
     const sentences = text.replace(/\n+/g, ' ').match(/[^.!?…]+[.!?…]+["'”»)]*|[^.!?…]+$/g) || [text];
     let t = 0, i = 0, out = [];
@@ -5776,7 +5836,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   }
   dlSrt() {
     const srt = this.srtText();
-    if (!srt) { alert('Önce bir dosya üret — altyazı senaryodan hesaplanır.'); return; }
+    // boş/boşluk-dolu içerik ASLA indirilmez (boş .srt dosyası şikâyeti)
+    if (!srt || !srt.trim()) { alert('Altyazı için önce senaryo gerekli — bir dosya üret, sonra tekrar dene.'); return; }
     const blob = new Blob(['﻿' + srt], { type: 'text/plain;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -5854,6 +5915,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const groups = [
       { key: 'model', title: 'Yapay Zekâ Modeli', hint: 'Senaryoyu kim yazsın?' },
       { key: 'tone', title: 'Anlatım Tonu', hint: 'Dosyanın duygusal rengi' },
+      { key: 'format', title: 'İçerik Formatı', hint: 'Belgeselden Reels\'e — format serbest' },
       { key: 'voice', title: 'Seslendirme', hint: '▶ Dinle · ücretsiz önizleme' },
       { key: 'style', title: 'Görsel Stil', hint: '' },
       { key: 'platform', title: 'Platform', hint: '' },
@@ -5969,9 +6031,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
 
     const elv = this.find('voice', s.voice).el;
     const chips = [
-      'Titanic\'te hayatta kalan Osmanlı yolcusu var mıydı?',
-      'Mimar Sinan\'ın gizli imzaları',
-      'İstanbul\'un kayıp yeraltı şehri'
+      'POV: 1453, Konstantinopolis surlarındasın — son gece',
+      'Tarihin en pahalı 3 hatası',
+      'Mimar Sinan\'ın gizli imzaları'
     ];
 
     const yt = r.youtube || {};
@@ -6750,6 +6812,12 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       durVal: String(this.durationSec()),
       durLabel: this.fmtFor(this.durationSec()).etiket,
       durInfo: (() => { const f = this.fmtFor(this.durationSec()); return f.sahne + ' sahne (kapak hariç) · ' + f.kredi + ' kredi · ~' + f.kelime + ' kelime seslendirme · ' + f.bolum; })(),
+      // SÜRE DANIŞMANI: kapsamlı konu + 30 sn seçimi = sıkışık anlatım. Nazikçe öner,
+      // tek dokunuşla uygula — karar yine kullanıcının.
+      durAdviceShow: this.durationSec() <= 30 && ((s.idea || '').trim().split(/\s+/).length >= 4),
+      durAdviceText: 'Bu konu 30 saniyeye sıkışabilir — 1 dakika, hikâyeye nefes aldırır ve daha akıcı sonuç verir.',
+      durAdvice1dk: () => this.setState({ duration: 's60' }),
+      durAdvice2dk: () => this.setState({ duration: 's120' }),
       onDur: e => this.setState({ duration: 's' + e.target.value }),
       pickSummary: this.find('model', s.model).name + ' · ' + this.find('tone', s.tone).name + ' · ' + this.find('voice', s.voice).name + ' · ' + this.find('style', s.style).name + ' · ' + this.find('aspect', s.aspect).name,
       genMsg: s.genMsg, genError: s.genError, genWarn: s.genWarn,
@@ -7383,7 +7451,12 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     // arka planda havuzu tazele (en çok dakikada bir; sonuç sessizce eklenir)
     if (this._sgBg || (this._sgBgAt && Date.now() - this._sgBgAt < 60000)) return;
     this._sgBg = true; this._sgBgAt = Date.now();
-    this.askAI('Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan kıdemli bir editörsün. GERÇEK, doğrulanabilir, az bilinen, ilk cümlede kilitleyen TEK bir video konusu öner: somut kişi/yer/tarih içersin, klişe olmasın, araştırılabilir olsun. YALNIZCA tek cümlelik konu başlığını döndür.', 200)
+    // VİRAL STRATEJİST: klasik belgesel konusu ile platform-viral fikir dönüşümlü üretilir —
+    // öneriler yalnız "hikâye" değil, YouTube/Reels/TikTok'ta tutacak içerik fikirleri de.
+    const viralTurn = this._sgIdx % 2 === 1;
+    this.askAI(viralTurn
+      ? 'Sen YouTube Shorts / Instagram Reels / TikTok\'ta TARİH içerikleriyle milyonlarca izlenme almış bir viral içerik stratejistisin. Şu an bu platformlarda tutan tarih kalıplarını bilirsin: POV ("sen oradasın"), şok gerçek, top liste, "ne olurdu?", tek soruluk gizem, "tarihin en …" karşılaştırmaları. GERÇEK ve doğrulanabilir bir tarih olayına dayanan, kancası ilk 2 saniyede kilitleyen TEK bir viral video fikri öner. Biçim: fikir tek cümle; başına format etiketi koyabilirsin (ör. "POV: 1453, surlardasın — son gece" ya da "Tarihin en pahalı 3 hatası"). Klişe (Titanik/Hitler/piramit gibi aşınmış) konu SEÇME. YALNIZCA o tek cümleyi döndür.'
+      : 'Sen tarih-gizem kanalı "Tarih Ajanı" için konu bulan kıdemli bir editörsün. GERÇEK, doğrulanabilir, az bilinen, ilk cümlede kilitleyen TEK bir video konusu öner: somut kişi/yer/tarih içersin, klişe olmasın, araştırılabilir olsun. YALNIZCA tek cümlelik konu başlığını döndür.', 200)
       .then(r => {
         const t = (r || '').trim().replace(/^["']|["']$/g, '');
         if (t && t.length > 15 && pool.indexOf(t) === -1) {
