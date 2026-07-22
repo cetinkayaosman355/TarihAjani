@@ -5373,6 +5373,7 @@ GÖRSEL & VİDEO PROMPT KURALLARI (tümü İngilizce — bu promptlar DOĞRUDAN 
 - UZUNLUK: her görsel promptu ~50-80 kelime, her video promptu ~30-50 kelime — yoğun ve katmanlı ama tekrarsız; gereksiz sıfat yığını yapma.
 - Her video promptu tek bir kamera hareketi/aksiyon (5-8 sn) tarif eder (ör. slow push-in, gentle pan left, subtle parallax) ve ŞU satırla biter: "Stable face and anatomy, no warping, no morphing, no flicker."
 - Görsellerde yazı/logo/altyazı YOK. Aynı karakter birden çok sahnede geçiyorsa sabit kimlik tarifini (yaş, ten, saç, yüz, kıyafet, ayırt edici detay) her ilgili promptun başında BİREBİR tekrarla (tutarlı yüz için).
+- 🔗 SÜREKLİLİK (film TEK PARÇA durmalı — dağınık sahneler kolajı DEĞİL): karakterler[] ve mekanlar[] dizilerini DOLU ver; tekrar eden ana kişi ve mekânları SABİT görsel kimlikleriyle oraya yaz. Bir kişi/mekân birden çok sahnede geçiyorsa, o kimlik tarifi ilgili her sahne promptunun içinde BİREBİR aynı tekrarlanır — aynı yüz, aynı kıyafet, aynı mimari/ışık/palet. İzleyici baştan sona AYNI karakteri ve AYNI yeri tanısın; "aynı saray" iki sahnede iki farklı bina gibi görünmesin. Sahneler zaman/mekân olarak birbirini takip etsin (bir sahnede kurulan mekân/ışık bir sonrakinde kopmasın).
 - BENZERLİK KURALI: Tanınmış tarihî bir kişi geçiyorsa (padişah, kral, komutan, bilgin…) jenerik "a sultan" YAZMA — o kişinin BELGELENMİŞ görünümünü portre/minyatür kaynaklarına göre İngilizce tarif et: yüz şekli, burun, sakal/bıyık rengi ve biçimi, yaş, başlık ve kıyafet ayrıntısı (ör. Kanuni yaşlılığında: long gaunt pale face, prominent aquiline nose, thin grey drooping mustache, sparse white beard, enormous rounded white mucevveze turban). Kişi görünümü belgesizse dönem-doğru ama net bir kimlik kurgula ve sabit tut.
 - Tarihî doğruluk görselde de esas: dönem-dışı nesne, modern kıyafet, yanlış coğrafya kullanma.
 
@@ -5388,7 +5389,8 @@ TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan
 {
  "baslik": "çarpıcı Türkçe başlık",
  "logline": "tek cümlelik merak uyandıran özet",
- "karakterler": [{"ad": "Türkçe kişi adı/rolü (ör. II. Rudolf)", "gorunum": "SABİT görsel kimlik — İngilizce: yaş aralığı, vücut yapısı, ten, saç/sakal, yüz hatları, ayırt edici detay (yara izi, gözlük, taç vb.) ve DÖNEME UYGUN kıyafet. Bu tarif bu kişinin geçtiği HER sahnede birebir kullanılacak."}],
+ "karakterler": [{"ad": "Türkçe kişi adı/rolü (ör. II. Rudolf)", "gorunum": "SABİT görsel kimlik — İngilizce: yaş aralığı, vücut yapısı, ten, saç/sakal, yüz hatları, ayırt edici detay (yara izi, gözlük, taç vb.) ve DÖNEME UYGUN kıyafet. Bu tarif bu kişinin geçtiği HER sahnede birebir kullanılacak. Hikâyede tekrar eden HER ana kişiyi buraya ekle (boş BIRAKMA)."}],
+ "mekanlar": [{"ad": "Türkçe mekân adı (ör. Topkapı Sarayı taht odası)", "gorunum": "SABİT görsel kimlik — İngilizce: mimari üslup ve dönem, ölçek, malzeme ve dokular, karakteristik ışık, renk paleti, ayırt edici öğeler (sütun, kubbe, pencere, mobilya vb.). Bu tarif bu mekânın geçtiği HER sahnede birebir kullanılacak. Hikâyede tekrar eden HER önemli mekânı buraya ekle (aynı yer her sahnede AYNI görünsün; boş BIRAKMA)."}],
  "senaryo": [{"bolum": ${chaptered ? '"1. Bölüm — çarpıcı başlık"' : '"bölüm adı"'}, "sure": "zaman aralığı", "metin": "o bölümün TAM seslendirme metni (kalite barına uygun)"}],
  "seslendirme_notu": "ElevenLabs okuma temposu, vurgu ve duraklama yönergeleri + gerçek/efsane ayrımı (3-4 cümle)",
  "youtube": {"baslik": "70 karakteri geçmeyen tıklanabilir başlık", "aciklama": "yukarıdaki yapıda 3+ paragraf + zaman damgaları + anahtar kelimeler", "etiketler": ["TAM 15 etiket"]},
@@ -5527,10 +5529,16 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     const bibleLine = (cfg.bible)
       ? 'TEKRAR EDEN KARAKTERLER (bir sahnede bu kişilerden biri geçiyorsa, görsel tarifini AŞAĞIDAKİYLE BİREBİR AYNI ver — kelimesi kelimesine, promptun başında; tüm sahnelerde aynı yüz/kıyafet için ŞART): ' + cfg.bible + '\n'
       : '';
-    const prompt = 'Sen Oscar\'lık bir YÖNETMEN ve görüntü yönetmenisin (DoP). Bir Türkçe tarih belgeselinin "' + bolum + '" (bölüm ' + idx + '/' + totalSecs + ') kısmı için TAM ' + k + ' sahnelik GÖRSEL ve VİDEO promptu tasarla — bir storyboard titizliğiyle. Bu bölümün seslendirme metnini (aşağıdaki BÖLÜM METNİ) TAM ' + k + ' ardışık parçaya SIRAYLA böl; sahne j, j. parçayı görselleştirir — görseller seslendirmeyle birebir aynı sırada akar. Her sahnede "anlatim" = o parçanın Türkçe seslendirme cümlesi (metinden birebir/kısaltılmış, ≤160 karakter). GÖRSEL PROMPT tam olarak o "anlatim"daki somut kişi + mekân + aksiyonu gösterir; jenerik/dekoratif sahne YASAK — metinde o an ne oluyorsa onu göster.\n' +
+    const locLine = (cfg.locbible)
+      ? 'TEKRAR EDEN MEKÂNLAR (bir sahne bu mekânlardan birinde geçiyorsa, mekânın görsel tarifini AŞAĞIDAKİYLE BİREBİR AYNI ver — aynı mimari, ışık ve palet; aynı yer tüm sahnelerde AYNI görünsün, iki farklı bina gibi olmasın): ' + cfg.locbible + '\n'
+      : '';
+    const filmLine = (cfg.logline)
+      ? 'FİLMİN BÜTÜNÜ (bağlam — bu sahneler tek bir hikâyenin parçası, kopuk ada DEĞİL): "' + cfg.logline + '". Sahneler önceki/sonraki sahnelerle görsel ve anlatı olarak AKSIN; mekân, ışık ve karakter süreklilikleri korunsun.\n'
+      : '';
+    const prompt = 'Sen Oscar\'lık bir YÖNETMEN ve görüntü yönetmenisin (DoP). Bir Türkçe tarih belgeselinin "' + bolum + '" (bölüm ' + idx + '/' + totalSecs + ') kısmı için TAM ' + k + ' sahnelik GÖRSEL ve VİDEO promptu tasarla — bir storyboard titizliğiyle.\n' + filmLine + 'Bu bölümün seslendirme metnini (aşağıdaki BÖLÜM METNİ) TAM ' + k + ' ardışık parçaya SIRAYLA böl; sahne j, j. parçayı görselleştirir — görseller seslendirmeyle birebir aynı sırada akar. Her sahnede "anlatim" = o parçanın Türkçe seslendirme cümlesi (metinden birebir/kısaltılmış, ≤160 karakter). GÖRSEL PROMPT tam olarak o "anlatim"daki somut kişi + mekân + aksiyonu gösterir; jenerik/dekoratif sahne YASAK — metinde o an ne oluyorsa onu göster.\n' +
       '🎥 YÖNETMEN GÖRSEL DİLİ — TÜM SAHNELER bu tek dili paylaşır (film tek parça gibi tutarlı olsun; palet, ışık, lens ve atmosfer sahneden sahneye AYNI kalır): ' + cfg.treatment + '\n' +
       '🎬 BEAT YÖNETİMİ (bir yönetmen gibi düşün): her sahnenin duygusal beat\'ini anlatımdan çıkar ve çekimi ONA göre seç — açılış anlarında atmosferik geniş KURULUŞ çekimi (mekânı ve bağlamı kur), gelişimde artan gerilimle çeşitli açı ve mesafeler, en kritik/dönüm anında dramatik yakın ya da alçak açı, kapanışta çözülme veya geri çekilme. Kompozisyonu duyguya HİZMET ettir (rule of thirds, leading lines, foreground/midground/background katmanları, negatif alan).\n' +
-      bibleLine +
+      bibleLine + locLine +
       'GÖRSEL PROMPT: İngilizce, YALNIZCA sahnenin İÇERİĞİNİ yaz (~45-70 kelime): ana özne+aksiyon, dönem-doğru mekân/kıyafet/nesne (anakronizm YOK), yönetmen dilindeki ışık/palet/atmosfer, o beat\'e uygun kadraj/kamera açısı/mesafe, renk/duygu, doku katmanları. ÖNEMLİ: stil önekini ("ultra-photorealistic…" gibi), en-boy oranını ve "No modern text…" anti-artifact satırını YAZMA — sistem bunları otomatik ekleyecek; sen tekrar yazarsan prompt şişer ve KESİLİR. Tanınmış tarihî kişi geçiyorsa jenerik yazma: belgelenmiş görünümünü (yüz şekli, burun, sakal/bıyık, yaş, başlık/kıyafet) portre kaynaklarına göre tarif et.\n' +
       '🎬 ÇEŞİTLİLİK (EN ÖNEMLİ KURAL — görseller BİRBİRİNİN AYNISI olmasın): Bu bölümdeki ' + k + ' sahnenin HER BİRİ FARKLI bir çekim türü + kadraj + açı + mesafe kullanır. Şu çekim türlerini sahneler arasında DÖNDÜR, arka arkaya aynısını KULLANMA: wide establishing shot (mekânı/kalabalığı göster, insanlar küçük), over-the-shoulder, low-angle kahraman çekimi, extreme close-up (eller / bir belge / bir nesne / bir detay), profil ya da üç-çeyrek açı, hareket hâlinde aksiyon çekimi (yürürken/dövüşürken/at üstünde), high-angle kuşbakışı, insansız atmosferik mekân/manzara çekimi. HEPSİ ortada duran, göğüsten yukarı, karşıya bakan portre OLMAYACAK — en çok BİR sahne yakın portre olabilir.\n' +
       '👁 BAKIŞ KURALI: Özneler kameraya/lense BAKMAZ. Anın içinde, kendi eylemine dalmış, doğal biçimde yakalanır (candid documentary moment, subject NOT looking at the camera, no eye contact with the lens, gaze directed within the scene). Tek istisna: anlatım doğrudan bir hitap/meydan okumaysa. Aynı kişi birden çok sahnede geçse bile HER SEFERİNDE farklı an, farklı açı, farklı mesafe, farklı eylem.\n' +
@@ -5613,6 +5621,13 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     cfg.bible = (Array.isArray(result.karakterler) ? result.karakterler : [])
       .filter(k => k && k.ad && k.gorunum)
       .map(k => k.ad + ': ' + k.gorunum).join(' | ').slice(0, 1400);
+    // MEKÂN SÜREKLİLİĞİ: taslakta üretilen SABİT mekân tarifleri her sahne grubuna
+    // verilir → aynı yer (saray, meydan, oda) tüm sahnelerde birebir aynı görünür.
+    cfg.locbible = (Array.isArray(result.mekanlar) ? result.mekanlar : [])
+      .filter(k => k && k.ad && k.gorunum)
+      .map(k => k.ad + ': ' + k.gorunum).join(' | ').slice(0, 1200);
+    // FİLM BAĞLAMI: sahneler kopuk ada değil, tek hikâyenin parçası — her gruba verilir.
+    cfg.logline = String(result.logline || result.baslik || this.state.idea || '').slice(0, 220);
     const N = this.fmtFor(this.durationSec()).sahne;
     let secs = (result.senaryo || []).filter(x => x && ((x.metin || '').trim() || (x.bolum || '').trim()));
     // Senaryo yoksa tek "bölüm" gibi davran ki yine de N sahne üretilsin
