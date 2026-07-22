@@ -8,6 +8,8 @@ import 'vaka.dart';
 import 'oyun.dart';
 import 'magaza.dart';
 import 'oyun2.dart';
+import 'satranc.dart';
+import 'mangala.dart';
 
 /// MASA — açılış: Günün Dosyası + Yeni Dosya CTA + Gizli Arşiv + Oyun Tüneli
 /// + sağ üstte GEZİN/İÇERİK/MAĞAZA menü paneli (PWA kimliğinin premium hâli).
@@ -232,8 +234,21 @@ class MasaEkrani extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Bosluk.m),
-          Text('Satranç 1402 ve Mangala native sürümleri yolda — şimdilik web\'de: tarihajani.com',
-              style: TextStyle(fontSize: 12, color: context.soluk, height: 1.5)),
+          _OyunKarti(
+            simge: '♞',
+            ad: 'Satranç 1402',
+            alt: 'Timur vs Bayezid — gerçek kurallar',
+            ac: () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => const SatrancSayfasi())),
+          ),
+          const SizedBox(height: Bosluk.m),
+          _OyunKarti(
+            simge: '🏺',
+            ad: 'Mangala',
+            alt: 'Türk taş oyunu — hazineyi doldur',
+            ac: () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => const MangalaSayfasi())),
+          ),
           const SizedBox(height: Bosluk.xl),
         ],
       ),
@@ -365,6 +380,55 @@ class _GununDosyasi extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 11, letterSpacing: 1.2, color: context.vurgu)),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Oyun Tüneli satır kartı — tek kaynak (simetri).
+class _OyunKarti extends StatelessWidget {
+  const _OyunKarti(
+      {required this.simge, required this.ad, required this.alt, required this.ac});
+  final String simge, ad, alt;
+  final VoidCallback ac;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(Kose.kart),
+        onTap: ac,
+        child: Padding(
+          padding: const EdgeInsets.all(Bosluk.l),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                    gradient: altinGradyan, shape: BoxShape.circle),
+                child: Center(
+                    child: Text(simge,
+                        style: const TextStyle(
+                            fontSize: 20, color: Color(0xFF171207)))),
+              ),
+              const SizedBox(width: Bosluk.m),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(ad,
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700)),
+                    Text(alt,
+                        style: TextStyle(fontSize: 12, color: context.soluk)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: context.soluk),
+            ],
+          ),
         ),
       ),
     );
