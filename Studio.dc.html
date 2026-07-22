@@ -2291,7 +2291,7 @@
           <div style="text-align: center; padding: 24px 6px 4px;">
             <div style="width: 66px; height: 66px; margin: 0 auto 14px; border-radius: 50%; border: 1px solid rgba(193,154,82,.5); display: flex; align-items: center; justify-content: center; font-size: 28px; background: radial-gradient(circle at 35% 28%, rgba(230,196,120,.18), transparent 70%); box-shadow: 0 0 26px rgba(201,162,90,.15);">🕵️</div>
             <p style="margin: 0; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 800; color: #f2ecd9;">Ajan seninle.</p>
-            <p style="margin: 7px auto 18px; max-width: 34ch; color: #8a8f9c; font-size: 12.5px; line-height: 1.65;">Konu bulalım, taslak çıkaralım ya da dosyanı birlikte düzenleyelim — sohbet kredi harcamaz.</p>
+            <p style="margin: 7px auto 18px; max-width: 34ch; color: #8a8f9c; font-size: 12.5px; line-height: 1.65;">Konuşarak üretelim: konu bulalım, dosyayı çıkaralım, “3. sahnenin görselini üret”, “seslendir”, “videosunu çıkar” de — ben yaparım. Sohbetin kendisi kredi harcamaz.</p>
             <div style="display: grid; gap: 8px; max-width: 320px; margin: 0 auto;">
               <sc-for list="{{ quickChips }}" as="qc" hint-placeholder-count="4">
                 <button onClick="{{ qc.pick }}" style="border: 1px solid rgba(193,154,82,.35); background: rgba(193,154,82,.06); color: #e6c478; font-size: 12.5px; letter-spacing: .02em; padding: 13px 16px; cursor: pointer; text-align: left; border-radius: 12px;" style-hover="background: rgba(193,154,82,.14);">{{ qc.label }}</button>
@@ -7041,12 +7041,19 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       onChatInput: e => this.setState({ chatInput: e.target.value }),
       onChatKey: e => { if (e.key === 'Enter') this.sendChat(); },
       sendChat: () => this.sendChat(),
-      quickChips: [
-        '🎲 Sürpriz bir vaka öner',
-        '🧭 Konu bulmama yardım et',
-        '📝 30 saniyelik Shorts taslağı yaz',
-        '🎬 Çarpıcı başlık fikirleri ver'
-      ].map(t => ({ label: t, pick: () => this.quickChat(t) })),
+      quickChips: (s.result
+        ? [
+          '🎨 Tüm sahne görsellerini üret',
+          '🖼 1. sahnenin görselini üret',
+          '🎙 Seslendirmeyi üret',
+          '🎬 1. sahnenin videosunu çıkar'
+        ]
+        : [
+          '🎲 Sürpriz bir vaka öner',
+          '🧭 Konu bulmama yardım et',
+          '📝 30 saniyelik Shorts taslağı yaz',
+          '🎬 Çarpıcı başlık fikirleri ver'
+        ]).map(t => ({ label: t, pick: () => this.quickChat(t) })),
       chatBusy: s.chatBusy,
       hasSavedImgs: (s.savedImgs || []).length > 0,
       noSavedImgs: (s.savedImgs || []).length === 0,
@@ -7555,7 +7562,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         const current = this.editCurrentText();
         prompt = 'Sen "Tarih Ajanı" kanalının editörüsün. Aşağıdaki metni kullanıcının isteğine göre yeniden yaz. YALNIZCA yeni metni döndür; açıklama, başlık veya tırnak ekleme.\n\nDÜZENLENEN BÖLÜM: ' + s.editLabel + '\nMEVCUT METİN:\n' + current + '\n\nKULLANICI İSTEĞİ: ' + text;
       } else {
-        const ctx = s.result ? 'Aktif dosya: "' + (s.result.baslik || '') + '" — ' + (s.result.logline || '') + '\n\n' : '';
+        const ctx = this._studioCtx();
         const transcript = msgs.map(m => (m.role === 'user' ? 'KULLANICI: ' : 'AJAN: ') + m.content).join('\n\n');
         // Hesap durumu — asistan somut cevap verebilsin diye
         const durum = 'KULLANICI DURUMU: ' + (this.hasSession() ? 'giriş yapılmış' : 'giriş YAPILMAMIŞ (kredi/geçmiş için giriş şart)') +
@@ -7583,20 +7590,106 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           'OPID yerine AKTİF SORUN BAĞLAMI\'ndaki opId\'yi koy. Sistem senin adına uygular; GÜNLÜK TAVAN (kullanıcı başına 2 işlem / 40 kredi) ve op-başına-tek-kez ile korunur, tavan dolarsa otomatik ekibe iletir — yani cömert olabilirsin, suistimali sistem engeller. Ama direktifi YALNIZ gerçek bir sorun varsa ve opId biliniyorsa ekle; her mesaja ekleme, selamlaşmaya jest yapma.\n\n';
         const rc = s.reportCtx;
         const sorunBaglam = rc ? ('AKTİF SORUN BAĞLAMI (bu üretim için jest yetkin var): opId=' + (rc.opId || '-') + ' · sahne=' + (rc.sceneKey || '-') + ' · üretildi=' + (rc.produced ? 'evet' : 'hayır') + ' · hata kodu=' + (rc.code || '-') + '\n\n') : '';
-        prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanı VE resmî destek hattısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır; senaryo taslakları, başlıklar, fikirler üretir; kredi/hesap/teknik sorunları BURADA çözersin. Türkçe, net, sıcak ve çözüm odaklı cevap ver; gerektiğinde madde kullan.\n\n' + bilgi + durum + sorunBaglam + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
+        // FAZ D — SOHBETLE ÜRETİM: kullanıcı konuşarak üretim yaptırabilir. Ajan
+        // niyeti anlayıp yanıtın SONUNA tek gizli direktif ekler; sistem uygular.
+        const komut =
+          'SEN AYNI ZAMANDA BİR ÜRETİM AJANISIN — kullanıcı SENİNLE KONUŞARAK üretim yaptırabilir. Konu bulmaktan (birlikte beyin fırtınası) tek tek görsel/seslendirme/video üretmeye kadar. Kullanıcı net bir üretim işlemi isterse, gerekli sohbeti yaptıktan sonra yanıtının EN SONUNA TEK satır gizli SİSTEM DİREKTİFİ ekle (kullanıcı bu satırı GÖRMEZ; sistem uygular ve kredi/ücret onayını AYRICA sorar):\n' +
+          '• Dosyayı baştan üret (konu belliyse): [[DO:uret]]\n' +
+          '• Konu kutusunu ayarla (kullanıcı bir fikirde karar kıldıysa): [[DO:konu:seçilen konu metni]]\n' +
+          '• TÜM sahne görsellerini üret: [[DO:gorseller]]\n' +
+          '• TEK sahnenin görselini üret (N = sahne no): [[DO:gorsel:N]]\n' +
+          '• Seslendirmeyi üret: [[DO:seslendir]]\n' +
+          '• Bir sahnenin videosunu çıkar (N = sahne no; o sahnenin görseli üretilmiş olmalı): [[DO:video:N]]\n' +
+          'DİREKTİF KURALLARI: (1) YALNIZ kullanıcı o işlemi NET istediyse ekle; belirsizse direktif EKLEME, tek net soru sor (ör. "hangi sahne?", "önce konuyu netleştirelim mi?"). (2) Ön koşul yoksa (dosya üretilmemişken görsel/seslendirme; görsel yokken video) direktif ekleme, eksik adımı söyle. (3) Her mesaja DEĞİL, yalnız gerçek üretim komutunda ekle. (4) Direktiften ön­ce ne yaptığını kısaca söyle ("Tamam, seslendirmeyi üretiyorum…"). DURUM/AYARLAR bloğundaki sahne sayısı ve mevcut duruma göre konuş.\n\n';
+        prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanı VE resmî destek hattısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır; senaryo taslakları, başlıklar, fikirler üretir; konuşarak üretim yaptırır; kredi/hesap/teknik sorunları BURADA çözersin. Türkçe, net, sıcak ve çözüm odaklı cevap ver; gerektiğinde madde kullan.\n\n' + bilgi + komut + durum + sorunBaglam + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
       }
       const reply = await this.askAI(prompt, 4000);
       // OTONOM DESTEK: ajan direktifi [[GOODWILL:refund|retry:OPID]] → sistem uygular (kullanıcı görmez)
+      // FAZ D: [[DO:...]] üretim direktifi → sistem ilgili aksiyonu yürütür (kullanıcı görmez)
       const raw = reply.trim();
       const gw = raw.match(/\[\[GOODWILL:(refund|retry):([a-zA-Z0-9_-]+)\]\]/);
-      const shown = raw.replace(/\[\[GOODWILL:[^\]]*\]\]/g, '').trim();
+      const act = raw.match(/\[\[DO:([a-zçğıöşü]+)(?::([^\]]*))?\]\]/i);
+      const shown = raw.replace(/\[\[GOODWILL:[^\]]*\]\]/g, '').replace(/\[\[DO:[^\]]*\]\]/g, '').trim();
       this.setState(st => ({ chatMsgs: [...msgs, { role: 'assistant', content: shown || 'Bakıyorum…' }], chatBusy: false }), () => this._scrollChat());
       if (gw) this._applyGoodwill(gw[1], gw[2]);
+      if (act) this._chatAction(act[1].toLocaleLowerCase('tr'), (act[2] || '').trim());
     } catch (e) {
       this.setState({ chatMsgs: [...msgs, { role: 'assistant', content: 'Yanıt alınamadı: ' + e.message }], chatBusy: false }, () => this._scrollChat());
     }
   }
 
+  // FAZ D — sohbet ajanı için CANLI DURUM özeti: konu, aktif dosya, sahne sayısı,
+  // üretilmiş görsel/seslendirme, mevcut ayarlar. Ajan buna göre doğru komut/soru üretir.
+  _studioCtx() {
+    const s = this.state, r = s.result;
+    const set = 'AYARLAR: süre=' + this.fmtFor(this.durationSec()).etiket + ' · ton=' + (s.tone || '-') +
+      ' · ses=' + (s.voice || '-') + ' · stil=' + (s.style || '-') + ' · format=' + (s.format || 'belgesel') +
+      ' · kadraj=' + (s.aspect || '-');
+    if (!r) {
+      return 'DURUM: henüz dosya üretilmedi. Konu kutusu: "' + ((s.idea || '').trim() || '(boş)') + '".\n' + set + '\n\n';
+    }
+    const nGor = (r.gorsel_promptlar || []).length;
+    const si = s.sceneImgs || {};
+    const imgDone = Object.keys(si).filter(k => /^gp\d+$/.test(k) && si[k] && si[k].url).length;
+    const hasSes = !!s.sysAudioUrl;
+    return 'DURUM: aktif dosya "' + (r.baslik || '') + '" — ' + (r.logline || '') +
+      '. Sahne sayısı=' + nGor + ' · üretilen görsel=' + imgDone + '/' + nGor +
+      ' · seslendirme=' + (hasSes ? 'hazır' : 'yok') + '.\n' + set + '\n\n';
+  }
+  // FAZ D — sohbetten gelen üretim direktifini yürüt. Kredi/ücret onayı ilgili
+  // metotların içinde (startGenerate/makeImage/makeTts/openVideoModal) zaten var.
+  _chatAction(kind, arg) {
+    const s = this.state, r = s.result;
+    const say = (m) => this.setState(st => ({ chatMsgs: [...st.chatMsgs, { role: 'assistant', content: m }] }), () => this._scrollChat());
+    const sceneNo = () => { const mm = String(arg || '').match(/\d+/); return mm ? parseInt(mm[0], 10) : 0; };
+    if (kind === 'konu') {
+      const t = String(arg || '').trim(); if (!t) return;
+      this.setState({ idea: t, ideaWarn: '' }, () => this.persist());
+      say('✓ Konuyu ayarladım: “' + t + '”. Hazırsan “üret” de, dosyayı çıkarayım.');
+      return;
+    }
+    if (kind === 'uret') {
+      if (!this.looksLikeTopic(s.idea || '')) { say('Önce geçerli bir tarih konusu verelim; sonra hemen üretirim.'); return; }
+      this.setState({ chatOpen: false });
+      this.startGenerate();
+      return;
+    }
+    if (kind === 'gorseller') {
+      if (!r || !(r.gorsel_promptlar || []).length) { say('Önce dosyayı üretmeliyiz; sahne promptları oluşunca tüm görselleri üretebilirim.'); return; }
+      this.setState({ tab: 'gorsel' });
+      this.genAllScenes();
+      return;
+    }
+    if (kind === 'gorsel') {
+      if (!r || !(r.gorsel_promptlar || []).length) { say('Henüz sahne yok — önce dosyayı üretelim.'); return; }
+      const n = sceneNo();
+      if (!n) { this.setState({ tab: 'gorsel' }); this.genAllScenes(); return; }   // no belirsiz → hepsi
+      const gp = (r.gorsel_promptlar || [])[n - 1];
+      if (!gp || !gp.prompt) { say('Sahne ' + n + ' yok; bu dosyada ' + (r.gorsel_promptlar || []).length + ' sahne var.'); return; }
+      this.setState({ tab: 'gorsel' });
+      this.makeImage(gp.prompt, n - 1, 'gp' + (n - 1));
+      say('✓ Sahne ' + n + ' görselini üretiyorum — Görsel sekmesinde belirecek.');
+      return;
+    }
+    if (kind === 'seslendir') {
+      if (!this.voiceText().trim()) { say('Seslendirilecek metin yok — önce dosyayı üretelim.'); return; }
+      this.setState({ tab: 'ses' });
+      this.makeTts();
+      say('✓ Seslendirmeyi üretiyorum — Ses sekmesinde çalınabilir olacak.');
+      return;
+    }
+    if (kind === 'video') {
+      if (!r) { say('Önce dosyayı üretelim.'); return; }
+      const n = sceneNo();
+      const key = 'gp' + (n - 1);
+      const img = ((s.sceneImgs || {})[key] || {});
+      if (!n || !img.url) { say('Video, sahnenin GÖRSELİNDEN üretilir. Önce “sahne ' + (n || 'N') + ' görseli üret” de; görsel gelince videosunu çıkarırım.'); return; }
+      this.setState({ tab: 'gorsel' });
+      this.openVideoModal({ kind: 'scene', key, url: img.url });
+      say('✓ Sahne ' + n + ' için video seçeneklerini açtım — sağlayıcı ve süreyi seç, üretime alayım.');
+      return;
+    }
+  }
   // G-08: sohbet her yeni mesajda en alta kayar
   _scrollChat() {
     try { const el = document.getElementById('ta-chatlog'); if (el) el.scrollTop = el.scrollHeight; } catch (e) {}
