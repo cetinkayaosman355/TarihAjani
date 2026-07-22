@@ -3,8 +3,8 @@
 // Kapanınca (kapat / kod kopyala / üye ol) localStorage'a işaretlenir, bir daha açılmaz.
 // Girişli kullanıcıya hiç gösterilmez.
 (function () {
-  var LS = 'ta_welcome_v3';    // içerik güncellendi → tekrar bir kez gösterilsin
-  var KOD = 'ILKAJAN10';       // %10 hoş geldin indirimi (Shopier'de tanımlanır)
+  var LS = 'ta_welcome_v4';    // içerik güncellendi (kod AJAN10) → tekrar bir kez gösterilsin
+  var KOD = 'AJAN10';          // %10 hoş geldin indirimi (Shopier'de tanımlanır) — site geneliyle tek tip
   var FONT = "'Special Elite', 'Courier New', monospace";
 
   function seen() { try { return localStorage.getItem(LS) === '1'; } catch (e) { return false; } }
