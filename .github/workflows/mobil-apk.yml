@@ -1,0 +1,66 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# MOBİL APK — Android uygulaması BULUTTA derlenir (yerel kurulum gerekmez).
+# app/ değişince (ya da elle tetiklenince) çalışır; çıktı: indirilebilir APK.
+# İndirme: GitHub → Actions → bu iş → Artifacts → tarih-ajani-apk
+# Telefona kur: APK'yı indir → aç → "bilinmeyen kaynaklara izin ver" → kur.
+# (Play Store yayını için aynı iş 'appbundle' de üretir; imzalama README'de.)
+# ═══════════════════════════════════════════════════════════════════════════
+name: Mobil APK (Android)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["app/**", ".github/workflows/mobil-apk.yml"]
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # ios/android klasörleri repoda tutulmaz — burada üretilir (tek kaynak: lib/)
+      - name: Platform iskeletini üret
+        working-directory: app
+        run: flutter create . --org com.tarihajani --project-name tarih_ajani --platforms android
+
+      - name: Bağımlılıklar
+        working-directory: app
+        run: flutter pub get
+
+      - name: Çözümle (hata varsa burada yakala)
+        working-directory: app
+        run: flutter analyze --no-fatal-infos
+
+      - name: APK derle (release)
+        working-directory: app
+        run: flutter build apk --release
+
+      - name: Android App Bundle derle (Play Store için)
+        working-directory: app
+        run: flutter build appbundle --release
+
+      - name: APK'yı yükle (indirilebilir çıktı)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tarih-ajani-apk
+          path: app/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: AAB'yi yükle (Play Store paketi)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tarih-ajani-appbundle
+          path: app/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
