@@ -43,3 +43,11 @@ test("Paylaş butonu: indirmenin yanında, dosya paylaşımı + link yedeği", (
   assert.ok(src.includes("docShare:") && src.includes(">↗ PAYLAŞ<"), "belgeselde paylaş butonu");
   assert.ok(src.includes("share: () => this.shareMedia(x.vidUrl"), "Videolarım kartında paylaş");
 });
+
+test("Sahne geçişleri: crossfade/karartma/kesme + montaja geçer", () => {
+  assert.ok(src.includes("const paintScene = (p, lp, imgA, subA, idx)"), "sahne çizici (ayrı görsel/altyazı alfa)");
+  assert.ok(src.includes("const trans = opts.transition || 'yumusak'"), "geçiş stili");
+  assert.ok(src.includes("yumuşak crossfade") && src.includes("dip-to-black"), "crossfade + karartma");
+  assert.ok(src.includes("transition: this.state.docTransition"), "seçilen geçiş montaja gider");
+  assert.ok(src.includes("docTransitions:") && src.includes("['yumusak', 'Yumuşak'"), "geçiş seçici UI");
+});
