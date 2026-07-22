@@ -1436,7 +1436,7 @@ Deno.serve(async (req) => {
     // action + prompt eskiden ücretsiz metin üretimine (gen) düşüp endpoint'i genel
     // amaçlı AI servisi gibi kullandırabiliyordu. "" = uygulama içi ücretsiz metin
     // yardımcıları (sohbet, konu önerisi, Shorts, bölüm metni) — izinli kalır.
-    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate", "imgreclaim", "support", "version", "belgesel"]);
+    const ALLOWED_ACTIONS = new Set(["", "generate", "scenes", "image", "edit", "tts", "video", "video_status", "video_list", "fetch_result", "estimate", "imgreclaim", "support", "version", "belgesel", "montage"]);
     if (!ALLOWED_ACTIONS.has(act)) return json({ ok: false, error: "Geçersiz işlem." }, 400);
     // TOPLU MALİYET TAHMİNİ — SUNUCU-TARAFLI (istemci fiyatına güvenilmez). Kredi düşmez,
     // rezervasyon yok. scenes: 0-tabanlı imgIndex dizisi VEYA count. "Tüm sahneleri üret"
@@ -1464,6 +1464,60 @@ Deno.serve(async (req) => {
         // Kling kimlik modu: v3 = tek Bearer API anahtarı (yeni), legacy = JWT (eski)
         klingMode: has("KLING_API_KEY") ? "v3" : (has("KLING_ACCESS_KEY") ? "legacy" : "none"),
       });
+    }
+    // ── SERBEST STÜDYO MONTAJI (fal.ai ffmpeg-api/compose) ──────────────────
+    // İstemci sıralı bulut medya kliplerini + opsiyonel seslendirmeyi gönderir;
+    // sunucu tek video track (ardışık keyframe) + bir audio track kurup fal'a
+    // yollar, tamamlanınca video_url döner. Kredi: v1'de ücretsiz (stabilizasyon).
+    if (act === "montage") {
+      const key = falKey();
+      if (!key) return json({ ok: false, error: "Sunucu montaj motoru için FAL_KEY secret gerekli (henüz eklenmedi). Kredi düşülmedi." }, 400);
+      const clips = (Array.isArray(b.clips) ? b.clips : [])
+        .filter((c: any) => c && typeof c.url === "string" && /^https?:\/\//.test(c.url))
+        .slice(0, 40);
+      if (!clips.length) return json({ ok: false, error: "Montaj için en az bir bulut (üretilmiş) medya klibi gerekli." }, 400);
+      // Video track: her klip ardışık; timestamp/duration MİLİSANİYE. Görseller de
+      // keyframe olarak süre boyunca tutulur (fal image→segment destekler).
+      let tRun = 0;
+      const vKf = clips.map((c: any) => {
+        const durMs = Math.round(Math.max(1, Math.min(30, Number(c.dur) || 4)) * 1000);
+        const kf = { url: String(c.url), timestamp: tRun, duration: durMs };
+        tRun += durMs;
+        return kf;
+      });
+      const tracks: any[] = [{ id: "video", type: "video", keyframes: vKf }];
+      if (typeof b.voiceUrl === "string" && /^https?:\/\//.test(b.voiceUrl)) {
+        tracks.push({ id: "audio", type: "audio", keyframes: [{ url: String(b.voiceUrl), timestamp: 0, duration: tRun }] });
+      }
+      const model = "fal-ai/ffmpeg-api/compose";
+      try {
+        const sr = await fetchT("https://queue.fal.run/" + model, {
+          method: "POST", headers: { Authorization: "Key " + key, "Content-Type": "application/json" }, body: JSON.stringify({ tracks }),
+        }, 60_000);
+        const sd = await sr.json().catch(() => ({} as any));
+        if (!sr.ok) return json({ ok: false, error: "fal montaj " + sr.status + (sd && sd.detail ? ": " + String(typeof sd.detail === "string" ? sd.detail : JSON.stringify(sd.detail)).slice(0, 140) : "") }, 502);
+        const statusUrl = sd.status_url || (sd.request_id ? ("https://queue.fal.run/" + model + "/requests/" + sd.request_id + "/status") : "");
+        if (!statusUrl) return json({ ok: false, error: "fal montaj istek kimliği alınamadı." }, 502);
+        const resultUrl = statusUrl.replace(/\/status(\?.*)?$/, "");
+        const deadline = Date.now() + 110_000;
+        while (Date.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 3000));
+          const pr = await fetchT(statusUrl, { headers: { Authorization: "Key " + key } }, 30_000);
+          const pd = await pr.json().catch(() => ({} as any));
+          const st = String(pd.status || "").toUpperCase();
+          if (st === "FAILED" || st === "ERROR") return json({ ok: false, error: "Montaj başarısız (fal)." }, 502);
+          if (st === "COMPLETED" || st === "OK") {
+            const rr = await fetchT(resultUrl, { headers: { Authorization: "Key " + key } }, 30_000);
+            const rd = await rr.json().catch(() => ({} as any));
+            const url = rd.video_url || (rd.video && rd.video.url) || (rd.output && (rd.output.video_url || rd.output.url)) || rd.url || "";
+            if (url) return json({ ok: true, url: String(url), thumb: rd.thumbnail_url || "" });
+            return json({ ok: false, error: "Montaj videosu URL'si dönmedi." }, 502);
+          }
+        }
+        return json({ ok: false, error: "Montaj çok uzun sürdü — az sonra tekrar dene." }, 504);
+      } catch (e) {
+        return json({ ok: false, error: "Montaj hatası: " + String(e).slice(0, 140) }, 502);
+      }
     }
     if (act === "estimate") {
       const idxs: number[] = Array.isArray(b.scenes)

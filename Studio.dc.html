@@ -5520,8 +5520,8 @@ class Component extends DCLogic {
       const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkeXVvcHFjdnB6YXlzbmZhdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzAxMjAsImV4cCI6MjA5ODkwNjEyMH0.0nTnXFFrPNlxWC_MIeRwqBCqgdYX_tG7WVUbsj0B6Cc';
       const token = this._token() || SB_KEY;
       const body = { action: 'montage', clips: remote, voiceUrl: /^https?:/.test(this.state.sbVoiceUrl || '') ? this.state.sbVoiceUrl : '', aspect: this.state.aspect || '9:16' };
-      const r = await fetch(SB_URL + '/functions/v1/studio-montage', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(body) });
-      if (r.status === 404) { this.setState({ sbMontajBusy: false, sbMontajPct: 0, sbErr: 'Sunucu montaj motoru henüz yayında değil (studio-montage). Kredi düşülmedi — birazdan aktif olacak.' }); return; }
+      this.setState({ sbMontajPct: 35, sbMontajMsg: 'Sunucu klipleri birleştiriyor (ffmpeg)…' });
+      const r = await fetch(SB_URL + '/functions/v1/studio-generate', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(body) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok || !d.url) throw new Error(d.error || ('montaj hatası (' + r.status + ')'));
       this.setState({ sbMontajBusy: false, sbMontajPct: 100, sbMontajMsg: '', sbMontajUrl: d.url });
