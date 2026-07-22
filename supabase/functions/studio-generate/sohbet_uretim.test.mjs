@@ -87,3 +87,25 @@ test("Boş sohbet çipleri dosya varken üretim komutlarına döner", () => {
   assert.ok(src.includes("🎨 Tüm sahne görsellerini üret"), "görsel üret çipi");
   assert.ok(src.includes("🎙 Seslendirmeyi üret"), "seslendir çipi");
 });
+
+test("Konsept seç + sen öner: sohbet çipleri fikir ekranındaki akışı taşır", () => {
+  assert.ok(src.includes("GİZEM konsepti seçtim — sen öner"), "gizem konsept çipi");
+  assert.ok(src.includes("KİŞİ konsepti seçtim — sen öner"), "kişi konsept çipi");
+  assert.ok(src.includes("OLAY/DÖNEM konsepti seçtim — sen öner"), "olay/dönem konsept çipi");
+  assert.ok(src.includes("KONSEPT → ÖNERİ AKIŞI"), "ajan konseptte 3 vaka önerir");
+  assert.ok(src.includes("[[DO:konu:seçilen konu]] ile konu kutusuna yaz"), "beğenilen öneri konuya yazılır");
+});
+
+test("Aydınlık tema: sohbet paneli okunur (koyu balon → sıcak kâğıt)", () => {
+  assert.ok(src.includes('html[data-theme="light"] .ta-cbub-a'), "ajan balonu light kuralı");
+  assert.ok(src.includes('html[data-theme="light"] .ta-cbub-u'), "kullanıcı balonu light kuralı");
+  assert.ok(src.includes('html[data-theme="light"] .ta-chatpanel'), "panel zemini light kuralı");
+  assert.ok(src.includes('html[data-theme="light"] .ta-chatin input'), "giriş kutusu light kuralı");
+  assert.ok(src.includes("bubbleClass: m.role === 'user' ? 'ta-cbub-u' : 'ta-cbub-a'"), "balonlar sınıf taşır");
+});
+
+test("Sol menü ÜRET: Video / Ses / Montaj aktif çalışma alanlarına gider", () => {
+  assert.ok(src.includes('onClick="{{ modeVideo }}"') && src.includes('onClick="{{ modeSes }}"') && src.includes('onClick="{{ modeMontaj }}"'), "üç öğe tıklanır");
+  assert.ok(src.includes("modeMontaj: () => this._goProduce('video', true)"), "montaj = video sekmesi + liste açık");
+  assert.ok(src.includes("sideMontajActive"), "montaj aktif-durum vurgusu");
+});

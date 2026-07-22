@@ -23,10 +23,13 @@ test("Sol menü: ÜRET / ÇALIŞMALARIM / KEŞFET bilgi mimarisi", () => {
   for (const item of ["Hikâye", "Görsel", "Dosyalarım", "Görsellerim", "Videolarım", "Seslerim", "Hazır Hikâye Arşivi"]) {
     assert.ok(studioSrc.includes(item), "menü öğesi: " + item);
   }
-  // ÜRET: Video/Ses "Yakında" ERİŞİLEBİLİR DISABLED (tıklanır görünmez); Hazır Hikâye Arşivi KEŞFET'te
-  assert.ok(studioSrc.includes("soonDisabled: true") && studioSrc.includes('disabled="{{ soonDisabled }}"') && studioSrc.includes('aria-disabled="{{ soonDisabled }}"'), "Video/Ses erişilebilir disabled (Yakında)");
-  assert.ok(studioSrc.includes(".ta-navbtn:disabled") && studioSrc.includes(".ta-navbtn:disabled:hover"), "disabled hover affordance kaldırıldı");
-  assert.ok(!studioSrc.includes("uretYakinda"), "pasif öğede tıklama handler'ı yok");
+  // ÜRET: Video / Ses / Montaj artık AKTİF menü öğeleri — aktif dosyanın ilgili
+  // çalışma alanına götürür (dosya yoksa Dosyalarım'a düşer).
+  assert.ok(studioSrc.includes('onClick="{{ modeVideo }}"') && studioSrc.includes('onClick="{{ modeSes }}"') && studioSrc.includes('onClick="{{ modeMontaj }}"'), "Video/Ses/Montaj aktif ve tıklanır");
+  assert.ok(studioSrc.includes("_goProduce(tab, montaj)"), "ortak yönlendirici");
+  assert.ok(studioSrc.includes("mode: 'wizard', step: 4, tab, docMontageOpen: montaj ? true : this.state.docMontageOpen"), "dosya varsa ilgili sekme (montajda liste açık)");
+  assert.ok(studioSrc.includes("this.setState({ mode: 'history', histTab: 'files' }, () => { try { window.scrollTo(0, 0); } catch (e) {} });\n    }\n  }\n  _docScenes()"), "dosya yoksa Dosyalarım");
+  assert.ok(!studioSrc.includes("soonDisabled"), "Yakında pasifliği kaldırıldı");
   assert.ok(studioSrc.includes("goHistFiles") && studioSrc.includes("goHistImages") && studioSrc.includes("goHistVideos") && studioSrc.includes("goHistSounds"), "çalışmalarım sekmelerine gidiş");
 });
 test("Senkron: sol menü aktif-durumu ve in-page sekme AYNI state'ten (histTab)", () => {

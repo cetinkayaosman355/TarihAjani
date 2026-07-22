@@ -426,6 +426,18 @@
     /* tema düğmesi aydınlıkta da görünür dursun */
     html[data-theme="light"] #ta-tema-btn { background: #fbf6ea !important; color: #8a6417 !important;
       border-color: rgba(150,116,52,.4) !important; box-shadow: 0 8px 24px rgba(120,90,30,.22) !important; }
+    /* ── AJAN MASASI (sohbet paneli) — aydınlık tema: koyu gece stilleri sıcak
+       kâğıda döner; balonlar sınıfla boyanır (inline gece stilini !important yener).
+       Karanlık temada bu blok hiç devreye girmez, gece görünümü aynen kalır. */
+    html[data-theme="light"] .ta-chatpanel { background: #f7f1e3 !important; border-left-color: rgba(150,116,52,.35) !important; box-shadow: -30px 0 80px rgba(90,70,30,.2) !important; }
+    html[data-theme="light"] .ta-chathead { background: #fbf6ea !important; border-bottom-color: rgba(150,116,52,.28) !important; }
+    html[data-theme="light"] .ta-chatin { background: #fbf6ea !important; border-top-color: rgba(150,116,52,.28) !important; }
+    html[data-theme="light"] .ta-chatin input { background: #fffdf8 !important; color: #241f16 !important; border-color: rgba(150,116,52,.4) !important; }
+    html[data-theme="light"] .ta-cbub-a { background: #fffdf8 !important; border-color: rgba(150,116,52,.28) !important; color: #2a2620 !important; }
+    html[data-theme="light"] .ta-cbub-u { background: rgba(193,154,82,.18) !important; border-color: rgba(160,120,45,.45) !important; color: #241f16 !important; }
+    html[data-theme="light"] .ta-chatpanel [style*="color: #f2ecd9"] { color: #241f16 !important; }
+    html[data-theme="light"] .ta-chatback { background: rgba(150,116,52,.1) !important; color: #8a6417 !important; border-color: rgba(150,116,52,.45) !important; }
+    html[data-theme="light"] .ta-chatfab { background: #fbf6ea !important; color: #8a6417 !important; border-color: rgba(150,116,52,.55) !important; box-shadow: 0 10px 32px rgba(120,90,30,.28) !important; }
     /* ═══ PREMIUM CİLA KATMANI (2026) — markup'a dokunmadan çağdaş his ═══
        İlke: köşe yumuşaklığı + derinlik + akıcı mikro-geçişler + net odak hali.
        Inline border-radius (50% avatar/FAB gibi) her zaman kazanır → bozulmaz. */
@@ -612,8 +624,9 @@
           <div class="ta-side-head" style="margin-top: 4px;">ÜRET</div>
           <button class="ta-navbtn" onClick="{{ modeWizard }}" style="{{ sideWizActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span> Hikâye</button>
           <button class="ta-navbtn" onClick="{{ modeGorsel }}" style="{{ sideGorActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M4 17l5-5 4 4 3-3 4 4"/></svg></span> Görsel</button>
-          <button class="ta-navbtn" disabled="{{ soonDisabled }}" aria-disabled="{{ soonDisabled }}" title="Video stüdyosu yakında" style="{{ navSoonStyle }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg></span> Video <span style="{{ soonTag }}">Yakında</span></button>
-          <button class="ta-navbtn" disabled="{{ soonDisabled }}" aria-disabled="{{ soonDisabled }}" title="Ses stüdyosu yakında" style="{{ navSoonStyle }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg></span> Ses <span style="{{ soonTag }}">Yakında</span></button>
+          <button class="ta-navbtn" onClick="{{ modeVideo }}" title="Aktif dosyanın video çalışma alanı (sahne videoları + belgesel)" style="{{ sideVideoActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg></span> Video</button>
+          <button class="ta-navbtn" onClick="{{ modeSes }}" title="Aktif dosyanın seslendirme çalışma alanı" style="{{ sideSesActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg></span> Ses</button>
+          <button class="ta-navbtn" onClick="{{ modeMontaj }}" title="Belgesel montaj masası: sahne sırala, tek tek seslendir, videoya bağla" style="{{ sideMontajActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 6v12M17 6v12M3 10h4M3 14h4M17 10h4M17 14h4"/></svg></span> Montaj</button>
           <div class="ta-side-head">ÇALIŞMALARIM</div>
           <button class="ta-navbtn" onClick="{{ goHistFiles }}" style="{{ sideDosyalarActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span> Dosyalarım</button>
           <button class="ta-navbtn" onClick="{{ goHistImages }}" style="{{ sideGorsellerActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M4 17l5-5 4 4 3-3 4 4"/></svg></span> Görsellerim</button>
@@ -2268,7 +2281,7 @@
   <sc-if value="{{ showStudio }}" hint-placeholder-val="{{ false }}">
     <button onClick="{{ toggleChat }}" class="ta-chatfab" style="position: fixed; z-index: 55; bottom: 24px; right: 24px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(193,154,82,.55); background: rgba(10,15,26,.92); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 13px 18px; cursor: pointer; box-shadow: 0 10px 32px rgba(0,0,0,.55);" style-hover="background: rgba(193,154,82,.14); box-shadow: 0 12px 44px rgba(230,196,120,.3);">◈<span class="ta-fablabel">&nbsp;AJANLA DÜZENLE</span></button>
     <div class="ta-chatpanel" style="{{ chatPanelStyle }}">
-      <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid rgba(193,154,82,.25); background: rgba(5,7,13,.92);">
+      <div class="ta-chathead" style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-bottom: 1px solid rgba(193,154,82,.25); background: rgba(5,7,13,.92);">
         <button onClick="{{ toggleChat }}" aria-label="Geri dön" class="ta-chatback" style="flex: none; border: 1px solid rgba(193,154,82,.45); background: rgba(193,154,82,.08); color: #e6c478; width: 40px; height: 40px; border-radius: 50%; font-size: 21px; line-height: 1; cursor: pointer; padding-bottom: 3px;" style-hover="background: rgba(193,154,82,.18);">‹</button>
         <img src="/assets/studio-mark.svg" alt="" style="flex: none; width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(193,154,82,.5); object-fit: cover; background: rgba(11,14,22,.6);">
         <div style="flex: 1; min-width: 0;">
@@ -2303,14 +2316,14 @@
         </sc-if>
         <sc-for list="{{ chatMsgs }}" as="cm" hint-placeholder-count="0">
           <div style="{{ cm.rowStyle }}">
-            <div style="{{ cm.bubbleStyle }}">{{ cm.content }}</div>
+            <div class="{{ cm.bubbleClass }}" style="{{ cm.bubbleStyle }}">{{ cm.content }}</div>
           </div>
         </sc-for>
         <sc-if value="{{ chatBusy }}" hint-placeholder-val="{{ false }}">
           <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; animation: ta-pulse 1.4s infinite;">AJAN YAZIYOR…</p>
         </sc-if>
       </div>
-      <div style="display: flex; align-items: center; gap: 9px; padding: 12px 14px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid rgba(193,154,82,.25); background: rgba(5,7,13,.95);">
+      <div class="ta-chatin" style="display: flex; align-items: center; gap: 9px; padding: 12px 14px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid rgba(193,154,82,.25); background: rgba(5,7,13,.95);">
         <input value="{{ chatInput }}" onChange="{{ onChatInput }}" onKeyDown="{{ onChatKey }}" placeholder="Ajana yaz…" style="flex: 1; min-width: 0; border: 1px solid rgba(193,154,82,.32); background: #02040a; color: #f2ecd9; padding: 13px 17px; font-size: 15px; border-radius: 24px;">
         <button onClick="{{ sendChat }}" aria-label="Gönder" style="flex: none; border: 0; cursor: pointer; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #a77d35, #e9c87e 55%, #c19a52); color: #171207; font-size: 20px; font-weight: 800; box-shadow: 0 6px 20px rgba(201,162,90,.35);">↑</button>
       </div>
@@ -4864,6 +4877,16 @@ class Component extends DCLogic {
     const ord = this._docActiveOrder().filter(i => base.indexOf(i) >= 0);
     return ord.concat(base.filter(i => ord.indexOf(i) < 0));   // yeni üretilenler sona eklenir
   }
+  // Sol menü ÜRET → Video / Ses / Montaj: aktif dosyanın ilgili çalışma alanına
+  // götürür. Montaj = Video sekmesi + montaj listesi AÇIK. Dosya yoksa Dosyalarım
+  // açılır (kullanıcı bir dosya seçince aynı alanlara buradan tekrar gelebilir).
+  _goProduce(tab, montaj) {
+    if (this.state.result) {
+      this.setState({ mode: 'wizard', step: 4, tab, docMontageOpen: montaj ? true : this.state.docMontageOpen }, () => { try { window.scrollTo(0, 0); } catch (e) {} });
+    } else {
+      this.setState({ mode: 'history', histTab: 'files' }, () => { try { window.scrollTo(0, 0); } catch (e) {} });
+    }
+  }
   _docScenes() {
     const r = this.state.result || {};
     const gp = r.gorsel_promptlar || [];
@@ -6555,13 +6578,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       sideArsActive: s.mode === 'arsiv' ? SIDE_ON : {},
       sideGecActive: s.mode === 'history' ? SIDE_ON : {},
       // ── BİLGİ MİMARİSİ: ÜRET / ÇALIŞMALARIM / KEŞFET ──
-      // ÜRET: Video/Ses ayrı stüdyoları henüz yok → "Yakında" pasif (yanlış route açma).
-      // GELECEK GENİŞLEME NOKTALARI (ayrı PR): Video Studio ve Ses Studio; ayrıca üretim
-      // girişleri — Referans Görsel, Başlangıç Görseli, (ops.) Bitiş Görseli, Karakter/
-      // Stil/Mekân Referansı. Bu PR yalnız bilgi mimarisi + metin; backend/route yok.
-      soonDisabled: true,   // Video/Ses stüdyoları yakında → erişilebilir disabled (tıklanmaz)
-      navSoonStyle: { cursor: 'not-allowed' },
-      soonTag: { marginLeft: 'auto', border: '1px solid rgba(193,154,82,.4)', color: '#c19a52', fontFamily: "'Special Elite', monospace", fontSize: '8.5px', letterSpacing: '.1em', padding: '2px 7px', borderRadius: '999px' },
+      // ÜRET: Video / Ses / Montaj artık AKTİF — aktif dosyanın ilgili çalışma
+      // alanını açar (Video sekmesi / Ses sekmesi / Video sekmesi + montaj listesi
+      // açık). Dosya yoksa Dosyalarım'a götürür (kullanıcı dosya seçip döner).
+      modeVideo: () => this._goProduce('video', false),
+      modeSes: () => this._goProduce('ses', false),
+      modeMontaj: () => this._goProduce('video', true),
+      sideVideoActive: (s.mode === 'wizard' && s.step === 4 && s.tab === 'video' && !s.docMontageOpen) ? SIDE_ON : {},
+      sideSesActive: (s.mode === 'wizard' && s.step === 4 && s.tab === 'ses') ? SIDE_ON : {},
+      sideMontajActive: (s.mode === 'wizard' && s.step === 4 && s.tab === 'video' && !!s.docMontageOpen) ? SIDE_ON : {},
       sideDosyalarActive: (s.mode === 'history' && (s.histTab || 'files') === 'files') ? SIDE_ON : {},
       sideGorsellerActive: (s.mode === 'history' && s.histTab === 'images') ? SIDE_ON : {},
       sideVideolarActive: (s.mode === 'history' && s.histTab === 'videos') ? SIDE_ON : {},
@@ -7103,6 +7128,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       })),
       chatMsgs: s.chatMsgs.map(m => ({
         content: m.content,
+        bubbleClass: m.role === 'user' ? 'ta-cbub-u' : 'ta-cbub-a',   // aydınlık tema CSS'i sınıfla boyar
         rowStyle: { display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' },
         bubbleStyle: {
           maxWidth: '85%', padding: '13px 16px', fontSize: '14px', lineHeight: 1.65, whiteSpace: 'pre-wrap',
@@ -7124,10 +7150,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           '🎬 1. sahnenin videosunu çıkar'
         ]
         : [
-          '🎲 Sürpriz bir vaka öner',
-          '🧭 Konu bulmama yardım et',
-          '📝 30 saniyelik Shorts taslağı yaz',
-          '🎬 Çarpıcı başlık fikirleri ver'
+          '🕵 GİZEM konsepti seçtim — sen öner (çözülmemiş vaka, kayıp hazine, sır)',
+          '👑 KİŞİ konsepti seçtim — sen öner (hükümdar, kâşif, bilim insanı, casus)',
+          '⚔ OLAY/DÖNEM konsepti seçtim — sen öner (savaş, icat, keşif, çöküş)',
+          '🎲 Sürpriz yap — konsepti de sen seç, 3 çarpıcı vaka öner'
         ]).map(t => ({ label: t, pick: () => this.quickChat(t) })),
       chatBusy: s.chatBusy,
       hasSavedImgs: (s.savedImgs || []).length > 0,
@@ -7677,6 +7703,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
           '• Bir sahnenin videosunu çıkar (N = sahne no; o sahnenin görseli üretilmiş olmalı): [[DO:video:N]]\n' +
           '• Belgesel videoyu montajla (üretilmiş sahne görsellerinden seslendirme+müzikle TEK video; en az 2 sahne görseli gerekir): [[DO:belgesel]]\n' +
           '• Bir alanı sohbetle DÜZENLE/yeniden yazdır: [[DO:duzenle:HEDEF:kullanıcının isteği]] — HEDEF şunlardan biri: ses (seslendirme metninin tamamı), bolum N (senaryo bölümü N), youtube (YouTube açıklaması), instagram (Instagram açıklaması). Örnek: kullanıcı "seslendirmeyi daha dramatik yap" derse → [[DO:duzenle:ses:daha dramatik yap]]. Sistem yeni metni üretir, kullanıcı ONAYLAYINCA uygulanır.\n' +
+          'KONSEPT → ÖNERİ AKIŞI: Kullanıcı bir konsept seçip öneri isterse (gizem / kişi / olay-dönem / sürpriz), o konseptte 3 ÇARPICI ve az bilinen vaka öner — her biri 1-2 cümle + neden ilgi çeker. Kullanıcı birini beğendiğini söyleyince [[DO:konu:seçilen konu]] ile konu kutusuna yaz ve "üret" komutunu bekle.\n' +
           'DİREKTİF KURALLARI: (1) YALNIZ kullanıcı o işlemi NET istediyse ekle; belirsizse direktif EKLEME, tek net soru sor (ör. "hangi sahne?", "önce konuyu netleştirelim mi?"). (2) Ön koşul yoksa (dosya üretilmemişken görsel/seslendirme; görsel yokken video) direktif ekleme, eksik adımı söyle. (3) Her mesaja DEĞİL, yalnız gerçek üretim komutunda ekle. (4) Direktiften ön­ce ne yaptığını kısaca söyle ("Tamam, seslendirmeyi üretiyorum…"). DURUM/AYARLAR bloğundaki sahne sayısı ve mevcut duruma göre konuş.\n\n';
         prompt = 'Sen "Tarih Ajanı" kanalının yapay zekâ üretim asistanı VE resmî destek hattısın (seçili model: ' + modelName + '). Tarihi dedektif titizliğiyle araştırır; senaryo taslakları, başlıklar, fikirler üretir; konuşarak üretim yaptırır; kredi/hesap/teknik sorunları BURADA çözersin. Türkçe, net, sıcak ve çözüm odaklı cevap ver; gerektiğinde madde kullan.\n\n' + bilgi + komut + durum + sorunBaglam + ctx + 'Konuşma:\n' + transcript + '\n\nAJAN:';
       }
