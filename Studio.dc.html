@@ -153,11 +153,12 @@
     /* "Yakında" pasif menü öğeleri: erişilebilir disabled — tıklanır görünmez, hover affordance yok */
     .ta-side .ta-navbtn:disabled { opacity: .45; cursor: not-allowed; }
     .ta-side .ta-navbtn:disabled:hover { color: inherit; background: transparent; box-shadow: none; }
-    .ta-side .ta-navbtn:disabled .ic { background: rgba(193,154,82,.05); color: #7c6a3e; }
-    .ta-side .ta-navbtn .ic { font-size: 14px; width: 30px; height: 30px; flex-shrink: 0;
-      display: grid; place-items: center; border-radius: 8px; color: #c19a52;
-      background: rgba(193,154,82,.08); border: 1px solid rgba(193,154,82,.16); transition: all .18s; }
-    .ta-side .ta-navbtn:hover .ic { background: rgba(193,154,82,.18); color: #e6c478; box-shadow: 0 0 16px rgba(201,162,90,.25); }
+    .ta-side .ta-navbtn:disabled .ic { background: none; color: #7c6a3e; }
+    /* STORIA-benzeri: kutusuz temiz çizgi ikonlar */
+    .ta-side .ta-navbtn .ic { width: 22px; height: 22px; flex-shrink: 0;
+      display: grid; place-items: center; color: #b8975a; transition: color .18s; }
+    .ta-side .ta-navbtn .ic svg { width: 19px; height: 19px; display: block; }
+    .ta-side .ta-navbtn:hover .ic { color: #e6c478; background: none; box-shadow: none; }
     .ta-side .ta-sublink { display: flex; align-items: center; gap: 12px; padding: 9px 12px; color: #969cab; font-size: 13.5px;
       letter-spacing: .02em; text-decoration: none; border-radius: 10px; transition: background .18s, color .18s; }
     .ta-side .ta-sublink::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: .5; margin-left: 13px; }
@@ -304,18 +305,18 @@
     html[data-theme="light"] .ta-studio-wrap header [style*="background:#05070d"] { background: #fbf6ea !important; border-color: rgba(150,116,52,.3) !important; }
     /* ── Sol yan menü ── */
     html[data-theme="light"] .ta-side {
-      background: linear-gradient(177deg, rgba(246,239,223,.95), rgba(237,228,209,.9)) !important;
-      border-right-color: rgba(150,116,52,.24) !important;
-      box-shadow: inset -1px 0 0 rgba(150,116,52,.1), 34px 0 60px -46px rgba(120,90,30,.2) !important; }
+      background: linear-gradient(177deg, rgba(250,246,236,.72), rgba(247,241,229,.62)) !important;
+      border-right-color: rgba(150,116,52,.16) !important;
+      box-shadow: none !important; }
     html[data-theme="light"] .ta-brand { border-bottom-color: rgba(150,116,52,.2) !important; }
     html[data-theme="light"] .ta-brand .bn { color: #2a2419 !important; }
     html[data-theme="light"] .ta-brand .bs { color: #8a6417 !important; }
     html[data-theme="light"] .ta-side .ta-navbtn { color: #4a4234 !important; }
     html[data-theme="light"] .ta-side .ta-navbtn:hover { color: #241f16 !important;
       background: rgba(150,116,52,.12) !important; box-shadow: inset 2px 0 0 rgba(160,120,40,.6) !important; }
-    html[data-theme="light"] .ta-side .ta-navbtn .ic { color: #8a6417 !important;
-      background: rgba(193,154,82,.14) !important; border-color: rgba(150,116,52,.28) !important; }
-    html[data-theme="light"] .ta-side .ta-navbtn:hover .ic { background: rgba(193,154,82,.24) !important; color: #6f4f12 !important; }
+    html[data-theme="light"] .ta-side .ta-navbtn .ic { color: #a17a2e !important;
+      background: none !important; border: 0 !important; }
+    html[data-theme="light"] .ta-side .ta-navbtn:hover .ic { background: none !important; color: #6f4f12 !important; }
     html[data-theme="light"] .ta-side .ta-sublink { color: #6b6454 !important; }
     html[data-theme="light"] .ta-side .ta-sublink:hover { color: #6f4f12 !important; background: rgba(150,116,52,.09) !important; }
     html[data-theme="light"] .ta-side-head { color: #8a8168 !important; }
@@ -399,9 +400,9 @@
        özgüllük, böylece zengin degrade kazanır.) */
     :root[data-theme="light"] body {
       background:
-        radial-gradient(1100px 520px at 80% -10%, rgba(201,162,90,.13), transparent 62%),
-        radial-gradient(880px 480px at 0% 6%, rgba(150,120,60,.07), transparent 55%),
-        linear-gradient(180deg, #f4eede 0%, #eae0cd 100%) !important;
+        radial-gradient(1200px 560px at 82% -12%, rgba(201,162,90,.10), transparent 60%),
+        radial-gradient(900px 500px at 2% 4%, rgba(150,120,60,.05), transparent 55%),
+        linear-gradient(180deg, #faf6ec 0%, #f5efe1 100%) !important;
       background-attachment: fixed !important; }
     /* Seçenek kartları (model/ton/stil/oran) + ses paneli koyu camı → sıcak fildişi */
     html[data-theme="light"] [style*="rgba(8, 11, 19"],
@@ -609,17 +610,17 @@
           <!-- Logo YALNIZ üstteki header'da (satır ~433). Sidebar'da tekrarı
                "iki logo alt alta" görünümüne yol açıyordu → kaldırıldı. -->
           <div class="ta-side-head" style="margin-top: 4px;">ÜRET</div>
-          <button class="ta-navbtn" onClick="{{ modeWizard }}" style="{{ sideWizActive }}"><span class="ic">◈</span> Hikâye</button>
-          <button class="ta-navbtn" onClick="{{ modeGorsel }}" style="{{ sideGorActive }}"><span class="ic">✦</span> Görsel</button>
-          <button class="ta-navbtn" disabled="{{ soonDisabled }}" aria-disabled="{{ soonDisabled }}" title="Video stüdyosu yakında" style="{{ navSoonStyle }}"><span class="ic">🎬</span> Video <span style="{{ soonTag }}">Yakında</span></button>
-          <button class="ta-navbtn" disabled="{{ soonDisabled }}" aria-disabled="{{ soonDisabled }}" title="Ses stüdyosu yakında" style="{{ navSoonStyle }}"><span class="ic">🎙</span> Ses <span style="{{ soonTag }}">Yakında</span></button>
+          <button class="ta-navbtn" onClick="{{ modeWizard }}" style="{{ sideWizActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></span> Hikâye</button>
+          <button class="ta-navbtn" onClick="{{ modeGorsel }}" style="{{ sideGorActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M4 17l5-5 4 4 3-3 4 4"/></svg></span> Görsel</button>
+          <button class="ta-navbtn" disabled="{{ soonDisabled }}" aria-disabled="{{ soonDisabled }}" title="Video stüdyosu yakında" style="{{ navSoonStyle }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg></span> Video <span style="{{ soonTag }}">Yakında</span></button>
+          <button class="ta-navbtn" disabled="{{ soonDisabled }}" aria-disabled="{{ soonDisabled }}" title="Ses stüdyosu yakında" style="{{ navSoonStyle }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg></span> Ses <span style="{{ soonTag }}">Yakında</span></button>
           <div class="ta-side-head">ÇALIŞMALARIM</div>
-          <button class="ta-navbtn" onClick="{{ goHistFiles }}" style="{{ sideDosyalarActive }}"><span class="ic">🗂</span> Dosyalarım</button>
-          <button class="ta-navbtn" onClick="{{ goHistImages }}" style="{{ sideGorsellerActive }}"><span class="ic">✦</span> Görsellerim</button>
-          <button class="ta-navbtn" onClick="{{ goHistVideos }}" style="{{ sideVideolarActive }}"><span class="ic">🎬</span> Videolarım</button>
-          <button class="ta-navbtn" onClick="{{ goHistSounds }}" style="{{ sideSeslerimActive }}"><span class="ic">🎙</span> Seslerim</button>
+          <button class="ta-navbtn" onClick="{{ goHistFiles }}" style="{{ sideDosyalarActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span> Dosyalarım</button>
+          <button class="ta-navbtn" onClick="{{ goHistImages }}" style="{{ sideGorsellerActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M4 17l5-5 4 4 3-3 4 4"/></svg></span> Görsellerim</button>
+          <button class="ta-navbtn" onClick="{{ goHistVideos }}" style="{{ sideVideolarActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg></span> Videolarım</button>
+          <button class="ta-navbtn" onClick="{{ goHistSounds }}" style="{{ sideSeslerimActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/></svg></span> Seslerim</button>
           <div class="ta-side-head">KEŞFET</div>
-          <button class="ta-navbtn" onClick="{{ modeArsiv }}" style="{{ sideArsActive }}"><span class="ic">❖</span> Hazır Hikâye Arşivi</button>
+          <button class="ta-navbtn" onClick="{{ modeArsiv }}" style="{{ sideArsActive }}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.2"/><rect x="13" y="4" width="7" height="7" rx="1.2"/><rect x="4" y="13" width="7" height="7" rx="1.2"/><rect x="13" y="13" width="7" height="7" rx="1.2"/></svg></span> Hazır Hikâye Arşivi</button>
           <a class="ta-sublink" href="/">Ana Sayfa</a>
           <a class="ta-sublink" href="/egitim">Eğitim Akademisi</a>
           <a class="ta-sublink" href="/uyelik">Üyelik</a>
