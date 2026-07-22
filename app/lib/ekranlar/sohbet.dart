@@ -111,7 +111,7 @@ class _SohbetEkraniState extends State<SohbetEkrani> {
                     controller: _kaydirma,
                     padding: const EdgeInsets.all(Bosluk.kenar),
                     itemCount: _mesajlar.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: Bosluk.m),
+                    separatorBuilder: (_, __) => const SizedBox(height: Bosluk.m),
                     itemBuilder: (context, i) {
                       final m = _mesajlar[i];
                       return Align(
