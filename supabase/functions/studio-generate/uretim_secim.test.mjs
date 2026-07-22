@@ -65,8 +65,10 @@ test("Sahne aşaması gating: görsel/video istendiyse çalışır; video prompt
 });
 
 test("KURAL KORUNDU: seslendirme SESİ bu ekranda üretilmez (TTS hep sonra, kullanıcı tetikler)", () => {
-  assert.ok(studioSrc.includes("Seslendirmeyi Üret"), "seslendirme sesi ayrı, kullanıcı tetikli");
-  assert.ok(studioSrc.includes('Seslendirme sesi burada üretilmez'), "ekranda açık uyarı");
+  assert.ok(studioSrc.includes("SESLENDİRME ÜRET") && studioSrc.includes("makeTts"), "seslendirme sesi ayrı, kullanıcı tetikli (makeTts butonu)");
+  // (uzun ekran uyarısı premium sadeleşmede kaldırıldı; kural davranışta sürüyor —
+  //  seslendirme yalnız dosya açıldıktan sonra makeTts ile, otomatik TTS yok)
+  assert.ok(studioSrc.includes("Yalnız seçtiklerin üretilir."), "kısa çıktı-seçimi notu");
   // Bu değişiklik backend üretim/kredi akışına dokunmadı
   assert.ok(indexSrc.includes("const outs = (b.outputs && b.outputs.length"), "backend outputs desteği zaten mevcut (değişmedi)");
 });
