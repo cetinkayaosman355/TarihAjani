@@ -2783,6 +2783,14 @@ class Component extends DCLogic {
         if (this._pendingUret) setTimeout(() => this._tryPendingUret(), 400);  // veri geç yüklendiyse
       }
     } catch (e) {}
+    // /studio?konu=<serbest metin> ile gelen hazır konu (ör. Tarih Haritaları sayfası) → konu kutusuna yaz
+    try {
+      const konu = new URLSearchParams(location.search).get('konu');
+      if (konu) {
+        history.replaceState(null, '', location.pathname);
+        this.setState({ idea: (konu || '').slice(0, 200), ideaWarn: '' }, () => { try { this.persist(); } catch (e) {} });
+      }
+    } catch (e) {}
   }
 
   // Üyelik sayfasında açılan oturum aynı origin'de olduğu için burada da görünür

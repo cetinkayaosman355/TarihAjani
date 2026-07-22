@@ -47,6 +47,7 @@
     ['ÜYELİK', '/uyelik'],
     ['AKADEMİ', '/egitim'],
     ['HİKÂYE ARŞİVİ', '/arsiv'],
+    ['TARİH HARİTALARI', '/harita'],
     ['HABER', '/haber'],
     ['STUDIO', '/studio'],
     ['OYUN TÜNELİ', '/zaman-tuneli']
