@@ -1941,6 +1941,12 @@
                       <button onClick="{{ previewMood }}" title="Seçili mizacı dinle (~4 sn)" style="border: 1px solid rgba(146,87,238,.5); background: rgba(146,87,238,.12); color: #d9c8ff; border-radius: 6px; width: 30px; height: 28px; cursor: pointer; font-size: 12px;" style-hover="background: rgba(146,87,238,.24);">▶</button>
                     </div>
                   </sc-if>
+                  <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                    <span style="font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em; color: #818797;">GEÇİŞ</span>
+                    <sc-for list="{{ docTransitions }}" as="tr" hint-placeholder-count="3">
+                      <button onClick="{{ tr.pick }}" title="{{ tr.title }}" style="{{ tr.style }}">{{ tr.label }}</button>
+                    </sc-for>
+                  </div>
                 </div>
                 <sc-if value="{{ docNotReady }}" hint-placeholder-val="{{ false }}">
                   <p style="margin: 0; color: #e0a58a; font-size: 12px;">⚠ En az 2 sahne görseli gerekli — önce Görsel sekmesinden sahneleri üret.</p>
@@ -4921,27 +4927,21 @@ class Component extends DCLogic {
       rec.onerror = () => { if (!done) { done = true; try { ctx.close(); } catch (e) {} reject(new Error('kayıt hatası (tarayıcı)')); } };
       try { rec.start(250); } catch (e) { try { ctx.close(); } catch (_e) {} reject(new Error('kayıt başlatılamadı: ' + e.message)); return; }
       const wall0 = performance.now();
-      const draw = () => {
-        const el = (performance.now() - wall0) / 1000;
-        if (el >= total) { try { rec.stop(); } catch (e) {} return; }
-        // geçerli sahne + yerel ilerleme
-        let a = 0, idx = 0; for (let i = 0; i < prep.length; i++) { if (el < a + prep[i].dur) { idx = i; break; } a += prep[i].dur; }
-        const p = prep[idx], le = el - a, d = p.dur, lp = d ? le / d : 0;
-        // fade in/out (0.45 sn)
-        const fd = 0.45; let alpha = Math.min(le / fd, (d - le) / fd, 1); if (alpha < 0) alpha = 0;
-        g.fillStyle = '#05060a'; g.fillRect(0, 0, W, H);
-        // Ken Burns: cover-fit + yavaş zoom + hafif pan (yön sahneye göre değişir)
-        const iw = p.img.naturalWidth || p.img.width, ih = p.img.naturalHeight || p.img.height;
-        const cover = Math.max(W / iw, H / ih);
-        const scale = cover * (1.05 + 0.10 * lp);
-        const dw = iw * scale, dh = ih * scale;
-        const dir = (idx % 2 === 0) ? 1 : -1;
-        const dx = (W - dw) / 2 + dir * (dw - W) * 0.10 * (lp - 0.5);
-        const dy = (H - dh) / 2 - (dh - H) * 0.06 * (lp - 0.5);
-        g.globalAlpha = alpha;
-        try { g.drawImage(p.img, dx, dy, dw, dh); } catch (e) {}
-        // Altyazı — stil + GÜVENLİ konum (dikeyde alt UI'nin üstünde, %78-80 bandı)
-        if (subStyle !== 'none' && p.text) {
+      // Tek sahne çizer (Ken Burns görsel + altyazı); görsel ve altyazı için AYRI
+      // alfa alır → crossfade'de görsel tam kalırken altyazı sönebilir.
+      const paintScene = (p, lp, imgA, subA, idx) => {
+        if (imgA > 0) {
+          const iw = p.img.naturalWidth || p.img.width, ih = p.img.naturalHeight || p.img.height;
+          const cover = Math.max(W / iw, H / ih);
+          const scale = cover * (1.05 + 0.10 * lp);   // Ken Burns yavaş zoom
+          const dw = iw * scale, dh = ih * scale;
+          const dir = (idx % 2 === 0) ? 1 : -1;
+          const dx = (W - dw) / 2 + dir * (dw - W) * 0.10 * (lp - 0.5);
+          const dy = (H - dh) / 2 - (dh - H) * 0.06 * (lp - 0.5);
+          g.globalAlpha = imgA;
+          try { g.drawImage(p.img, dx, dy, dw, dh); } catch (e) {}
+        }
+        if (subStyle !== 'none' && p.text && subA > 0.01) {
           const conf = ({
             minimal: { fs: 0.0225, weight: 600, band: false, yPos: 0.80 },
             serit:   { fs: 0.0250, weight: 600, band: true,  yPos: 0.80 },
@@ -4953,7 +4953,7 @@ class Component extends DCLogic {
           const lines = this._wrapLines(g, p.text, W * 0.84);
           const lh = fs * 1.34;
           const yBase = Math.round(H * conf.yPos);   // dikey videoda alt ~%20 UI'ye girmez
-          g.globalAlpha = alpha;
+          g.globalAlpha = subA;
           for (let li = 0; li < lines.length; li++) {
             const y = yBase - (lines.length - 1 - li) * lh;
             if (conf.band) {
@@ -4967,7 +4967,6 @@ class Component extends DCLogic {
               g.arcTo(bx, by + bh, bx, by, rr); g.arcTo(bx, by, bx + bw, by, rr); g.closePath(); g.fill();
               g.fillStyle = '#f6f0e0'; g.fillText(lines[li], W / 2, y);
             } else {
-              // minimal: bant YOK — ince kontur + hafif gölge, temiz
               g.lineJoin = 'round'; g.lineWidth = Math.max(2, fs * 0.16); g.strokeStyle = 'rgba(0,0,0,0.72)';
               g.strokeText(lines[li], W / 2, y);
               g.fillStyle = '#f6f0e0'; g.fillText(lines[li], W / 2, y);
@@ -4976,6 +4975,31 @@ class Component extends DCLogic {
           g.textAlign = 'left';
         }
         g.globalAlpha = 1;
+      };
+      const TR = 0.6;                               // sahne geçiş süresi (sn)
+      const trans = opts.transition || 'yumusak';   // yumusak(crossfade) | karartma | kesme
+      const draw = () => {
+        const el = (performance.now() - wall0) / 1000;
+        if (el >= total) { try { rec.stop(); } catch (e) {} return; }
+        let a = 0, idx = 0; for (let i = 0; i < prep.length; i++) { if (el < a + prep[i].dur) { idx = i; break; } a += prep[i].dur; }
+        const p = prep[idx], le = el - a, d = p.dur, lp = d ? le / d : 0;
+        g.fillStyle = '#05060a'; g.fillRect(0, 0, W, H);
+        // tüm videonun başında karadan aç, sonunda karaya kapan
+        const gfd = 0.5; const gA = Math.max(0, Math.min(el / gfd, (total - el) / gfd, 1));
+        if (trans === 'karartma') {
+          // her sahne karadan açılıp karaya kapanır (dip-to-black)
+          const fd = 0.45; let al = Math.min(le / fd, (d - le) / fd, 1); if (al < 0) al = 0;
+          const A = Math.min(al, gA); paintScene(p, lp, A, A, idx);
+        } else if (trans === 'kesme') {
+          // sert kesme — geçiş yok, yalnız global aç/kapa
+          paintScene(p, lp, gA, gA, idx);
+        } else {
+          // yumuşak crossfade: çıkan sahne tam kalır, son TR sn'de gelen sahne üstte yükselir
+          const next = prep[idx + 1];
+          const bf = (next && le > d - TR) ? Math.min(1, (le - (d - TR)) / TR) : 0;
+          paintScene(p, lp, gA, gA * (1 - bf), idx);
+          if (next && bf > 0) paintScene(next, 0, gA * bf, gA * bf, idx + 1);
+        }
         prog(48 + (el / total) * 50, 'Video oluşuyor · %' + Math.round(el / total * 100) + ' (' + (idx + 1) + '/' + prep.length + ')');
         requestAnimationFrame(draw);
       };
@@ -5019,7 +5043,7 @@ class Component extends DCLogic {
       return;
     }
     // 2) Tarayıcıda montaj
-    const opts = { subStyle: this.state.docSubStyle || 'minimal', music: !!this.state.docMusic, mood: this.state.docMusicMood || 'dramatik' };
+    const opts = { subStyle: this.state.docSubStyle || 'minimal', music: !!this.state.docMusic, mood: this.state.docMusicMood || 'dramatik', transition: this.state.docTransition || 'yumusak' };
     this.buildDocVideo(opts, (pct, msg) => this.setState({ docPct: pct, docMsg: msg }))
       .then(async blob => {
         if (job) { try { await this._belgeselCharge('finalize', { job }); } catch (er) {} }   // ücret kesinleşir
@@ -7087,6 +7111,22 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
         }));
       })(),
       previewMood: () => this.previewMoodNow(),
+      // SAHNE GEÇİŞİ — Yumuşak (crossfade) / Karartma (dip-to-black) / Kesme (hard cut)
+      docTransitions: (() => {
+        const cur = s.docTransition || 'yumusak';
+        return [
+          ['yumusak', 'Yumuşak', 'Sahneler birbirine erir (crossfade)'],
+          ['karartma', 'Karartma', 'Her sahne karadan açılır/kapanır'],
+          ['kesme', 'Kesme', 'Sert kesme — geçiş yok']
+        ].map(([id, label, title]) => ({
+          label, title, pick: () => this.setState({ docTransition: id }, () => this.persist()),
+          style: {
+            cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.06em', padding: '6px 11px', borderRadius: '5px',
+            border: cur === id ? '1px solid #b79bff' : '1px solid rgba(129,135,151,.3)',
+            background: cur === id ? 'rgba(146,87,238,.16)' : 'transparent', color: cur === id ? '#c4b3ff' : '#a4a9b5'
+          }
+        }));
+      })(),
       // Altyazı stili: Minimal (öneri) / Şerit / Vurgu / Yok — küçük, güvenli konumlu
       docSubStyles: (() => {
         const cur = s.docSubStyle || 'minimal';
