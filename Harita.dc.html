@@ -134,17 +134,23 @@
             <p style="margin: 6px 0 0; color: #cbd0da; font-size: 13.5px; line-height: 1.6;">{{ selCity.bilgi }}</p>
           </div>
         </sc-if>
-        <!-- DOSYA NOTLARI — harita üzerinde antika kartuş (şehir seçilince gizlenir) -->
+        <!-- DOSYA NOTLARI — haritanın BOŞ tarafında süslü dikey kartuş (şehir seçilince gizlenir) -->
         <sc-if value="{{ notlarShow }}" hint-placeholder-val="{{ true }}">
-          <div style="position: absolute; left: 12px; bottom: 12px; max-width: min(360px, 70%); border: 1px solid rgba(193,154,82,.6); background: rgba(14,9,4,.94); backdrop-filter: blur(3px); border-radius: 9px; padding: 12px 15px 13px; box-shadow: 0 12px 32px rgba(0,0,0,.6); animation: ta-rise .4s ease both;">
-            <p style="margin: 0 0 9px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .18em;">◈ {{ curAd }}</p>
-            <div style="display: grid; gap: 8px;">
-              <sc-for list="{{ curNotlar }}" as="n" hint-placeholder-count="3">
-                <div style="display: flex; gap: 9px; align-items: flex-start;">
-                  <span style="color: #d8b25f; font-size: 13px; line-height: 1.5; flex-shrink: 0;">▸</span>
-                  <span style="color: #f6f0e2; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 500; font-size: 13.5px; line-height: 1.55;">{{ n }}</span>
-                </div>
-              </sc-for>
+          <div style="position: absolute; top: 14px; {{ notlarPos }} width: min(250px, 44%); border: 1px solid rgba(193,154,82,.65); background: rgba(13,8,3,.95); backdrop-filter: blur(3px); border-radius: 6px; box-shadow: 0 14px 36px rgba(0,0,0,.62), inset 0 0 0 3px rgba(193,154,82,.13); animation: ta-rise .45s ease both;">
+            <div style="padding: 14px 16px 15px;">
+              <div style="text-align: center; color: #c19a52; font-size: 13px; letter-spacing: .3em; line-height: 1;">❧</div>
+              <p style="margin: 7px 0 0; text-align: center; font-family: 'Playfair Display', serif; font-size: 16.5px; font-weight: 800; color: #f2e4c0; line-height: 1.18;">{{ curAd }}</p>
+              <p style="margin: 4px 0 0; text-align: center; color: #b7a06a; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">{{ curDonem }}</p>
+              <div style="display: flex; align-items: center; gap: 8px; margin: 11px 0 12px;"><span style="flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(193,154,82,.55));"></span><span style="color: #c19a52; font-size: 9px;">◆</span><span style="flex: 1; height: 1px; background: linear-gradient(90deg, rgba(193,154,82,.55), transparent);"></span></div>
+              <div style="display: grid; gap: 9px;">
+                <sc-for list="{{ curNotlar }}" as="n" hint-placeholder-count="3">
+                  <div style="display: flex; gap: 8px; align-items: flex-start;">
+                    <span style="color: #d8b25f; font-size: 12px; line-height: 1.5; flex-shrink: 0;">▸</span>
+                    <span style="color: #f6f0e2; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 500; font-size: 12.5px; line-height: 1.5;">{{ n }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <p style="margin: 13px 0 0; text-align: center; color: #806f4b; font-family: 'Special Elite', monospace; font-size: 8px; letter-spacing: .24em;">◈ TARİH AJANI ◈</p>
             </div>
           </div>
         </sc-if>
@@ -310,7 +316,7 @@ class Component extends DCLogic {
 
   renderVals() {
     const d = this.state.data;
-    if (!d) return { loading: true, storyBtns: [], cityDots: [], regionsD: [], viewBox: '0 0 1000 500', landD: '', curRenk: '#7c1f16', isRoute: false, isArrow: false, branchD: [], arrowD: [], selCity: null, curAd: '', curDonem: '', curAciklama: '', cityCount: 0, compassT: '', routeD: '', uretHref: '/studio', exportPng: () => {}, pngBusy: false, pngLabel: '◇ HARİTAYI İNDİR (PNG)', curNotlar: [], hasNotlar: false, notlarShow: false };
+    if (!d) return { loading: true, storyBtns: [], cityDots: [], regionsD: [], viewBox: '0 0 1000 500', landD: '', curRenk: '#7c1f16', isRoute: false, isArrow: false, branchD: [], arrowD: [], selCity: null, curAd: '', curDonem: '', curAciklama: '', cityCount: 0, compassT: '', routeD: '', uretHref: '/studio', exportPng: () => {}, pngBusy: false, pngLabel: '◇ HARİTAYI İNDİR (PNG)', curNotlar: [], hasNotlar: false, notlarShow: false, notlarPos: 'left: 14px;' };
     const W = this._W(), H = this._H();
     const cur = this._curStory();
     const renk = cur.renk || '#7c1f16';
@@ -353,6 +359,8 @@ class Component extends DCLogic {
       curNotlar: cur.maddeler || [],
       hasNotlar: !!(cur.maddeler && cur.maddeler.length),
       notlarShow: !!(cur.maddeler && cur.maddeler.length) && !selC,
+      // İçerik nerede yoğunsa kartuş KARŞI (boş) tarafa: şehir ortalaması solda → sağ, sağda → sol
+      notlarPos: ((cityItems.length ? cityItems.reduce((a, it) => a + it.x, 0) / cityItems.length : W / 2) < W * 0.52) ? 'right: 14px;' : 'left: 14px;',
       compassT: 'translate(' + (W - 60) + ',' + (H - 60) + ')',
       curAd: cur.ad, curDonem: cur.donem, curAciklama: cur.aciklama,
       cityCount: cityDots.length,
