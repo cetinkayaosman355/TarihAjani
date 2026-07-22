@@ -80,7 +80,7 @@
     <!-- HARİTA + BİLGİ -->
     <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
       <div class="ta-mapwrap map-frame" style="position: relative; border: 1px solid rgba(193,154,82,.4); border-radius: 10px; overflow: hidden; background: url('/assets/parchment-harita.jpg') center/cover no-repeat, radial-gradient(120% 120% at 50% 30%, #f3e8c8, #e2cc9c 70%, #d3b981); box-shadow: 0 24px 70px -30px rgba(0,0,0,.7);">
-        <svg viewBox="{{ viewBox }}" preserveAspectRatio="xMidYMid meet" style="width: 100%; display: block;" role="img" aria-label="{{ curAd }} haritası">
+        <svg id="ta-map-svg" viewBox="{{ viewBox }}" preserveAspectRatio="xMidYMid meet" style="width: 100%; display: block;" role="img" aria-label="{{ curAd }} haritası">
           <defs>
             <filter id="paper"><feTurbulence baseFrequency="0.012" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .74  0 0 0 0 .62  0 0 0 0 .42  0 0 0 .18 0"/></filter>
             <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="{{ curRenk }}"/></marker>
@@ -90,9 +90,9 @@
           <path d="{{ landD }}" fill="rgba(198,172,122,.5)" stroke="#a98d5a" stroke-width="0.8" stroke-linejoin="round"/>
           <!-- ROTA (İpek Yolu) -->
           <sc-if value="{{ isRoute }}" hint-placeholder-val="{{ true }}">
-            <path d="{{ routeD }}" class="ta-route ta-flow" fill="none" stroke="{{ curRenk }}" stroke-width="2.6" stroke-linecap="round" opacity=".9"/>
+            <path d="{{ routeD }}" class="ta-route ta-flow" fill="none" stroke="{{ curRenk }}" stroke-width="2.6" stroke-dasharray="10 7" stroke-linecap="round" opacity=".9"/>
             <sc-for list="{{ branchD }}" as="bd" hint-placeholder-count="0">
-              <path d="{{ bd.d }}" class="ta-route" fill="none" stroke="{{ curRenk }}" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+              <path d="{{ bd.d }}" class="ta-route" fill="none" stroke="{{ curRenk }}" stroke-width="1.8" stroke-dasharray="10 7" stroke-linecap="round" opacity=".55"/>
             </sc-for>
           </sc-if>
           <!-- OKLAR (Moğol / İslam) -->
@@ -139,6 +139,7 @@
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
           <a href="{{ uretHref }}" style="text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .12em; padding: 12px 18px;">◈ BU KONUYU STUDIO'DA ÜRET →</a>
           <a href="/arsiv" style="text-decoration: none; border: 1px solid rgba(193,154,82,.5); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; padding: 11px 18px;">ARŞİVE GÖZ AT</a>
+          <button onClick="{{ exportPng }}" disabled="{{ pngBusy }}" style="border: 1px solid rgba(129,135,151,.4); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; padding: 11px 18px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">{{ pngLabel }}</button>
         </div>
         <p style="margin: 14px 0 0; color: #818797; font-size: 12px;">Haritadaki <strong style="color:#c19a52;">{{ cityCount }} şehre</strong> dokunarak hikâyesini oku.</p>
       </div>
@@ -164,7 +165,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { data: null, story: 'ipek', sel: null };
+  state = { data: null, story: 'ipek', sel: null, pngBusy: false };
   componentDidMount() {
     const load = () => {
       if (window.__HARITA__ && window.__HARITA__.land) this.setState({ data: window.__HARITA__ });
@@ -201,12 +202,92 @@ class Component extends DCLogic {
     const cx = mx - dy / len * off, cy = my + dx / len * off;
     return 'M' + x1.toFixed(1) + ',' + y1.toFixed(1) + ' Q' + cx.toFixed(1) + ',' + cy.toFixed(1) + ' ' + x2.toFixed(1) + ',' + y2.toFixed(1);
   }
+  // Etiket yerleşimi: her şehir için 6 aday konum dener, önceki etiket/noktalarla
+  // en az çakışanı seçer → yoğun kümelerde isimler üst üste binmez. items'a
+  // tx/ty/anchor yazar (yerinde).
+  _placeLabels(items, W, H) {
+    const overlap = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
+    const dotBoxes = items.map(it => ({ x1: it.x - it.r, y1: it.y - it.r, x2: it.x + it.r, y2: it.y + it.r }));
+    const placed = [];
+    const order = [...items].sort((a, b) => (b.cap - a.cap) || (a.y - b.y));
+    for (const it of order) {
+      const w = Math.max(8, it.ad.length * it.fs * 0.52), h = it.fs * 1.05;
+      const cands = [
+        { tx: it.x + it.r + 4, ty: it.y - 5, a: 'start' },
+        { tx: it.x - it.r - 4, ty: it.y - 5, a: 'end' },
+        { tx: it.x + it.r + 4, ty: it.y + it.fs, a: 'start' },
+        { tx: it.x - it.r - 4, ty: it.y + it.fs, a: 'end' },
+        { tx: it.x, ty: it.y - it.r - 6, a: 'middle' },
+        { tx: it.x, ty: it.y + it.r + it.fs + 1, a: 'middle' },
+      ];
+      const boxOf = (cd) => {
+        let x1, x2;
+        if (cd.a === 'start') { x1 = cd.tx; x2 = cd.tx + w; }
+        else if (cd.a === 'end') { x1 = cd.tx - w; x2 = cd.tx; }
+        else { x1 = cd.tx - w / 2; x2 = cd.tx + w / 2; }
+        return { x1, y1: cd.ty - h, x2, y2: cd.ty + 2 };
+      };
+      let chosen = cands[0], best = Infinity;
+      for (const cd of cands) {
+        const box = boxOf(cd);
+        let pen = 0;
+        for (const p of placed) if (overlap(box, p)) pen += 10;
+        for (const d of dotBoxes) if (overlap(box, d)) pen += 1;
+        if (box.x1 < 2 || box.x2 > W - 2 || box.y1 < 2 || box.y2 > H - 2) pen += 6;
+        if (pen < best) { best = pen; chosen = cd; if (pen === 0) break; }
+      }
+      it.tx = chosen.tx; it.ty = chosen.ty;
+      it.anchor = chosen.a === 'middle' ? 'text-anchor: middle;' : (chosen.a === 'end' ? 'text-anchor: end;' : '');
+      placed.push(boxOf(chosen));
+    }
+    return items;
+  }
   pick(id) { this.setState({ story: id, sel: null }); this._land = this._land; }
   selectCity(id) { this.setState({ sel: id }); }
+  _loadImage(src) { return new Promise((res) => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => res(im); im.onerror = () => res(null); im.src = src; }); }
+  // FAZ 2 — HARİTAYI PNG İNDİR: parşömen zemini + SVG'yi 2× tuvale bindirir, başlık
+  // ve Tarih Ajanı damgasını basar, PNG olarak indirir. (Videolarda/arşivde kullanılır.)
+  async exportMapPng() {
+    if (this.state.pngBusy) return;
+    const svg = document.getElementById('ta-map-svg'); if (!svg) return;
+    this.setState({ pngBusy: true });
+    try {
+      const vb = (svg.getAttribute('viewBox') || '0 0 1000 500').split(/\s+/).map(Number);
+      const W = vb[2] || 1000, H = vb[3] || 500, scale = 2;
+      const cw = Math.round(W * scale), ch = Math.round(H * scale);
+      let xml = new XMLSerializer().serializeToString(svg);
+      if (!/xmlns=/.test(xml)) xml = xml.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+      const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+      const [bg, fg] = await Promise.all([this._loadImage('/assets/parchment-harita.jpg'), this._loadImage(svgUrl)]);
+      const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+      const g = cv.getContext('2d');
+      if (bg) { const cover = Math.max(cw / bg.width, ch / bg.height); const dw = bg.width * cover, dh = bg.height * cover; g.drawImage(bg, (cw - dw) / 2, (ch - dh) / 2, dw, dh); }
+      else { g.fillStyle = '#e7d3a8'; g.fillRect(0, 0, cw, ch); }
+      if (fg) g.drawImage(fg, 0, 0, cw, ch);
+      const cur = this._curStory();
+      // Başlık (sol üst)
+      g.fillStyle = '#5a3d1a'; g.textBaseline = 'alphabetic';
+      g.font = '700 ' + Math.round(30 * scale) + "px 'Playfair Display', Georgia, serif";
+      g.fillText((cur.ad || '').toLocaleUpperCase('tr'), 24 * scale, 46 * scale);
+      g.fillStyle = '#7a5a2e'; g.font = 'italic ' + Math.round(14 * scale) + "px Georgia, serif";
+      g.fillText(cur.donem || '', 25 * scale, 66 * scale);
+      // Damga (sağ alt)
+      g.font = '700 ' + Math.round(12 * scale) + "px 'Courier New', monospace";
+      g.textAlign = 'right'; g.fillStyle = 'rgba(90,61,26,.72)';
+      g.fillText('TARİH AJANI · tarihajani.com', cw - 22 * scale, ch - 20 * scale);
+      g.textAlign = 'left';
+      const blob = await new Promise((r) => cv.toBlob(r, 'image/png', 0.92));
+      if (!blob) throw new Error('tuval dışa aktarılamadı');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'tarih-haritasi-' + (cur.id || 'harita') + '.png'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => { try { URL.revokeObjectURL(a.href); } catch (e) {} }, 4000);
+      this.setState({ pngBusy: false });
+    } catch (e) { this.setState({ pngBusy: false }); try { alert('PNG üretilemedi: ' + (e.message || 'hata')); } catch (_e) {} }
+  }
 
   renderVals() {
     const d = this.state.data;
-    if (!d) return { loading: true, storyBtns: [], cityDots: [], viewBox: '0 0 1000 500', landD: '', curRenk: '#7c1f16', isRoute: false, isArrow: false, branchD: [], arrowD: [], selCity: null, curAd: '', curDonem: '', curAciklama: '', cityCount: 0, compassT: '', routeD: '', uretHref: '/studio' };
+    if (!d) return { loading: true, storyBtns: [], cityDots: [], viewBox: '0 0 1000 500', landD: '', curRenk: '#7c1f16', isRoute: false, isArrow: false, branchD: [], arrowD: [], selCity: null, curAd: '', curDonem: '', curAciklama: '', cityCount: 0, compassT: '', routeD: '', uretHref: '/studio', exportPng: () => {}, pngBusy: false, pngLabel: '◇ HARİTAYI İNDİR (PNG)' };
     const W = this._W(), H = this._H();
     const cur = this._curStory();
     const renk = cur.renk || '#7c1f16';
@@ -223,20 +304,18 @@ class Component extends DCLogic {
     }
     const branchD = (cur.dal || []).map(a => ({ d: this._arc(a[0], a[1], 0.05) }));
     const arrowD = (cur.oklar || []).map(a => ({ d: this._arc(a[0], a[1]) }));
-    // şehir noktaları
-    const cityDots = [...ids].map(id => {
+    // şehir noktaları — etiketler çakışmayı önleyen yerleşimden geçer
+    let cityItems = [...ids].map(id => {
       const c = this._city(id); if (!c) return null;
       const [x, y] = this._proj(c[1], c[2]);
       const cap = (cur.baskentler || []).includes(id);
-      const right = x < W - 150;
-      return {
-        id, x: x.toFixed(1), y: y.toFixed(1), r: cap ? 6 : 4.5,
-        fill: cap ? renk : '#8a5a2e', ad: c[0],
-        tx: (right ? x + 8 : x - 8).toFixed(1), ty: (y - 7).toFixed(1),
-        fs: cap ? 15 : 13, anchor: right ? '' : 'text-anchor: end;',
-        pick: () => this.selectCity(id)
-      };
+      return { id, x, y, cap, r: cap ? 6 : 4.5, fill: cap ? renk : '#8a5a2e', ad: c[0], fs: cap ? 15 : 13, pick: () => this.selectCity(id) };
     }).filter(Boolean);
+    this._placeLabels(cityItems, W, H);
+    const cityDots = cityItems.map(it => ({
+      id: it.id, x: it.x.toFixed(1), y: it.y.toFixed(1), r: it.r, fill: it.fill, ad: it.ad, fs: it.fs,
+      tx: it.tx.toFixed(1), ty: it.ty.toFixed(1), anchor: it.anchor, pick: it.pick
+    }));
     const selC = this.state.sel ? this._city(this.state.sel) : null;
     return {
       loading: false,
@@ -253,6 +332,9 @@ class Component extends DCLogic {
       uretHref: '/studio?konu=' + encodeURIComponent(cur.ad + ' — ' + cur.donem),
       selCity: selC ? { ad: selC[0], bilgi: selC[3] } : null,
       clearCity: () => this.setState({ sel: null }),
+      exportPng: () => this.exportMapPng(),
+      pngBusy: !!this.state.pngBusy,
+      pngLabel: this.state.pngBusy ? 'HAZIRLANIYOR…' : '◇ HARİTAYI İNDİR (PNG)',
       storyBtns: (d.stories || []).map(s => {
         const on = s.id === this.state.story;
         return {
