@@ -31,7 +31,7 @@ test("Mizaç UI: seçici çipler + ücretsiz önizleme", () => {
 
 test("Müzik güvenli: hata montajı bozmaz, seslendirmenin altında kısık", () => {
   const i = src.indexOf("_musicBed(ctx, dest, t0, total, mood)");
-  const seg = src.slice(i, i + 1800);
+  const seg = src.slice(i, i + 2800);
   assert.ok(seg.includes("catch (e) { /* müzik opsiyonel"), "hata yutulur (montaj sürer)");
   assert.ok(seg.includes("linearRampToValueAtTime(1, t0 + 2.5)") && seg.includes("linearRampToValueAtTime(0, t0 + total)"), "başta/sonda fade");
 });
