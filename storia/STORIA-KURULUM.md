@@ -87,3 +87,23 @@ Kaydettiğin an DEMO modu kapanır, gerçek üretim başlar.
 - `storia-generate` promptları konu-bağımsızdır (tarih temalı değildir).
 - Fiyat/kota değiştirmek için `tier_defs` tablosunu güncelle; landing sayfasındaki
   fiyatları da `storia/index.html` içinden elle eşitle.
+
+---
+
+## ADIM 6 — Yönetim paneli (IBAN ödemesi sonrası kredi yükleme)
+
+STORIA'nın kendi yönetim paneli `storia/admin.html`'dir. IBAN/EFT ile ödeme
+gelince kullanıcıya krediyi buradan tek tıkla yüklersin (elle SQL gerekmez).
+
+1. **Fonksiyonu yayınla:** Dashboard → Edge Functions → yeni fonksiyon
+   **storia-admin** → repodaki `supabase/functions/storia-admin/index.ts`
+   içeriğini yapıştır → Deploy.
+2. **Şifre secret'ı ekle:** Edge Functions → Manage secrets →
+   `STORIA_ADMIN_PASSWORD` = güçlü bir yönetici şifresi.
+3. **Panele gir:** `https://siten/storia/admin.html` → şifreni yaz.
+   - **Kredi yükle:** kullanıcı satırında miktar yaz → “＋ Yükle”.
+   - **Paket ata:** açılır menüden paket seç → “Paket ata” (kota + kredi + 30 gün süre).
+   - **Son kredi hareketleri** ve toplam istatistikler panelde görünür.
+
+> `admin.html` `noindex`'tir ve tüm işlemler şifreyle korunur; şifre yalnız
+> sunucudaki secret'ta tutulur, sayfada saklanmaz.
