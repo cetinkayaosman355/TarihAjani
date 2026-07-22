@@ -36,3 +36,11 @@ test("SON KONTROL: bölüm başına min kelime + süre tutarlılığı", () => {
   assert.ok(src.includes('HER bölümün "metin"i ≥ \' + perChapMin + \' kelime'), "bölüm min kontrolü");
   assert.ok(src.includes('her "sure" o bölümün kelime sayısıyla TUTARLI'), "süre tutarlılık kontrolü");
 });
+
+test("Güçlü & istikrarlı dil: kalite uzunluktan önce, dolgu yasak", () => {
+  assert.ok(src.includes("GÜÇLÜ & İSTİKRARLI DİL (KALİTE, UZUNLUKTAN ÖNCE GELİR)"), "kalite önceliği kuralı");
+  assert.ok(src.includes("Süre bütçesini DOLGUYLA doldurma"), "dolgu yasağı");
+  assert.ok(src.includes("Bütçeyi doldurmanın tek meşru yolu DAHA ÇOK GERÇEK MADDE"), "uzunluk = daha çok gerçek madde");
+  assert.ok(src.includes("TEK ve TUTARLI bir anlatıcı sesi"), "istikrarlı ses");
+  assert.ok(src.includes("KISA AMA DOLU"), "denge + stub yasağı");
+});
