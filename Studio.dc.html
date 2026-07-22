@@ -5322,6 +5322,10 @@ class Component extends DCLogic {
     const wmin = Math.round(sec * 2.0), wmax = Math.round(sec * 2.6);   // Türkçe ≈ 2.4 kelime/sn
     const bolumN = Math.max(3, Math.min(7, Math.round(sec / 90)));      // 2 dk üstü: numaralı bölüm sayısı
     const chaptered = sec >= 120;
+    // BÖLÜM BAŞINA kelime bütçesi (dengeli dağıtım): her bölüm ≈ perChap kelime.
+    // Böylece "2. bölüm 90 sn ama 2 cümle" gibi boş bölüm oluşmaz.
+    const perChap = chaptered ? Math.round((wmin + wmax) / 2 / bolumN) : 0;
+    const perChapMin = chaptered ? Math.round(perChap * 0.8) : 0;
     const oran = { yatay: '16:9 horizontal', dikey: '9:16 vertical', kare: '1:1 square' }[s.aspect] || '16:9 horizontal';
     // Tarihî Gravür fotogerçekçi değildir; anti-artifact satırı stile göre değişir
     const antiArtifact = s.style === 'gravur'
@@ -5339,9 +5343,12 @@ BU ÜRETİMİN PARAMETRELERİ:
 - Görsel stil çekirdeği (her görsel/video promptunun BAŞINA birebir konur): ${stilStr}
 - Kadraj / en-boy oranı: ${oran}${this.contentFormatBlock(s.format)}
 - Format: ${fmt.etiket} · ${chaptered ? bolumN + ' numaralı bölüm' : fmt.bolum} · toplam seslendirme HEDEFİ ${fmt.kelime} kelime
-- ⏱ SÜRE KİLİDİ (EN ÖNEMLİ KURAL): Bu video ${fmt.etiket} (≈ ${sec} saniye) UZUNLUĞUNDA olacak. Türkçe seslendirme ≈ 2.4 kelime/saniye okunur. Bu yüzden TÜM senaryo[].metin alanlarındaki kelimelerin TOPLAMI ${wmin}-${wmax} kelime olmalı; ÜST SINIR ${wmax} kelimeyi ASLA AŞMA. Daha fazla yazarsan video ${fmt.etiket}'yi aşar — bu KESİN bir HATADIR. Kısa videoda az sözle çok şey anlat, doldurma/tekrar yapma.
+- ⏱ SÜRE KİLİDİ (EN ÖNEMLİ KURAL — İKİ YÖNLÜ): Bu video ${fmt.etiket} (≈ ${sec} saniye) UZUNLUĞUNDA olacak. Türkçe seslendirme ≈ 2.4 kelime/saniye okunur. TÜM senaryo[].metin alanlarındaki kelimelerin TOPLAMI ${wmin}-${wmax} kelime olmalı. BU BİR ARALIK, HEDEF DEĞİL EŞİK: hem ${wmax} ÜSTÜNE ÇIKMA (video uzar) HEM DE ${wmin} ALTINA DÜŞME — az yazarsan video hedef süreden KISA olur, bölümler boş kalır (ör. "90 saniyelik bölümde 2 cümle"), bu da EN AZ fazla yazmak kadar CİDDİ bir HATADIR. Doğru davranış: ${wmin}-${wmax} aralığını DOLDUR; her bölüme yeterince somut anlatı yaz.
 - SAHNE SAYISI (KESİN KURAL): KAPAK HARİÇ tam ${fmt.sahne} sahne. gorsel_promptlar ve video_promptlar dizilerinin HER BİRİ tam ${fmt.sahne} öğe içermeli. Kapak bu sayıya dahil değildir. ÖNEMLİ: Sahneler yalnızca GÖRSEL bölünmedir; sahne sayısı seslendirmeye kelime EKLEMEZ. Aynı ${wmin}-${wmax} kelimelik seslendirmeyi ${fmt.sahne} görsel âna DAĞIT — her sahne için fazladan cümle yazıp süreyi uzatma.${chaptered ? `
-- 📚 BÖLÜM YAPISI (2 dk üstü — ZORUNLU): senaryo dizisini TAM ${bolumN} BÖLÜME ayır. Her öğenin "bolum" alanı KESİNLİKLE şu biçimde olsun: "1. Bölüm — [kısa, çarpıcı Türkçe başlık]", "2. Bölüm — …" (numara + " — " + başlık). "sure" alanına o bölümün zaman aralığını yaz (ör. "0:00–1:30", "1:30–3:40" — toplam ${fmt.etiket}'yi bölüştür). Bölümler net bir yay izlesin: 1. Bölüm güçlü kanca/kurulum → orta bölümler kanıt ve gerilim tırmanışı → SON bölüm çözüm/hüküm + izleyiciye açık soru. Her bölüm kendi mikro-kancasıyla açılıp bir sonrakine merak bırakarak bitsin.
+- 📚 BÖLÜM YAPISI (2 dk üstü — ZORUNLU): senaryo dizisini TAM ${bolumN} BÖLÜME ayır. Her öğenin "bolum" alanı KESİNLİKLE şu biçimde olsun: "1. Bölüm — [kısa, çarpıcı Türkçe başlık]", "2. Bölüm — …" (numara + " — " + başlık).
+- ⚖️ BÖLÜM BAŞINA KELİME BÜTÇESİ (DENGE — EN KRİTİK): Her bölümün "metin"i ≈ ${perChap} kelime olmalı (en az ${perChapMin}). HİÇBİR bölüm bu bütçenin çok altında kalamaz — kısacık bir bölüm ("2 cümle") KESİN HATADIR. Kelimeleri bölümlere DENGELİ dağıt; bir bölüme yığıp diğerini boş bırakma. Bir bölüm için yeterince olay/kanıt/detay yoksa, o konuyu daha derin araştırıp somutlaştır (yeni gerçek ayrıntı, isim, tarih, sahne) — dolgu/tekrar DEĞİL.
+- ⏲ DÜRÜST SÜRE: "sure" alanına o bölümün GERÇEK süresini yaz = (bölümün kelime sayısı ÷ 2.4) saniye. Bölümler ardışık olsun ve TOPLAM ${fmt.etiket} etsin. Süre etiketini metne UYDUR — 90 sn yazıp 2 cümle koyma; ya metni büyüt ya süreyi küçült. Süre metinle TUTARLI olmalı.
+- Bölümler net bir yay izlesin: 1. Bölüm güçlü kanca/kurulum → orta bölümler kanıt ve gerilim tırmanışı → SON bölüm çözüm/hüküm + izleyiciye açık soru. Her bölüm kendi mikro-kancasıyla açılıp bir sonrakine merak bırakarak bitsin.
 - ÖRNEK BÖLÜM BAŞLIKLARI (yalnız BİÇİM ve üslup için — KOPYALAMA, kendi konuna uyarla): "1. Bölüm — Silinen Borç", "2. Bölüm — Toprağın Tanıklığı", "3. Bölüm — Çelişen Tanıklar", "${bolumN}. Bölüm — Ajanın Hükmü".` : ''}
 
 KALİTE BARI (EN KRİTİK — zayıf çıktı geçersizdir):
@@ -5391,7 +5398,7 @@ TARİHSEL DÜRÜSTLÜK: Efsane/abartı için "rivayete göre" çerçevesi kullan
  "uretim_notu": "kurgu, müzik ve ritim önerisi (3-4 cümle)"
 }
 
-SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].metin toplam kelime = ${wmin}-${wmax} arası (${wmax} AŞILMAMIŞ — aşıldıysa kısalt)${chaptered ? ' · senaryo TAM ' + bolumN + ' bölüm ve her "bolum" alanı "N. Bölüm — başlık" biçiminde' : ''} · gorsel_promptlar = TAM ${fmt.sahne} öğe · video_promptlar = TAM ${fmt.sahne} öğe · youtube.etiketler = 15 · instagram.hashtagler = 5 · her senaryo[].metin dolu ve akıcı · youtube.aciklama 3+ paragraf ve zaman damgalı. Eksik/fazla varsa düzelt, öyle gönder.`;
+SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].metin toplam kelime = ${wmin}-${wmax} arası (hem ${wmax} AŞILMAMIŞ hem ${wmin} ALTINA DÜŞMEMİŞ — aralığın DIŞINDAYSA düzelt)${chaptered ? ' · senaryo TAM ' + bolumN + ' bölüm ve her "bolum" alanı "N. Bölüm — başlık" biçiminde · HER bölümün "metin"i ≥ ' + perChapMin + ' kelime (kısa bölüm YOK) · her "sure" o bölümün kelime sayısıyla TUTARLI (kelime÷2.4 sn)' : ''} · gorsel_promptlar = TAM ${fmt.sahne} öğe · video_promptlar = TAM ${fmt.sahne} öğe · youtube.etiketler = 15 · instagram.hashtagler = 5 · her senaryo[].metin dolu ve akıcı · youtube.aciklama 3+ paragraf ve zaman damgalı. Eksik/fazla varsa düzelt, öyle gönder.`;
     // Sahne promptları HER süre için AYRI, dayanıklı bir aşamada (bölüm bölüm,
     // yeniden deneme + geri dönüşle) üretilir. Tek dev çağrıda 24 görsel + 24
     // video promptu istemek uzun videoda ya token tavanında kesiliyor (JSON
