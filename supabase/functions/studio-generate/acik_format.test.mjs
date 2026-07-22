@@ -23,7 +23,9 @@ test("Açık format: 7 içerik formatı seçilebilir + prompt bloğu üretir", (
   assert.ok(src.includes("contentFormatBlock(f)"), "format kural bloğu yardımcı");
   assert.ok(src.includes("${this.contentFormatBlock(s.format)}"), "ana prompta enjekte");
   assert.ok(src.includes("POV MODU") && src.includes("TOP LİSTE MODU") && src.includes("ALTERNATİF TARİH MODU") && src.includes("SORU-CEVAP MODU") && src.includes("SERBEST FORMAT"), "her formatın kuralı");
-  assert.ok(src.includes("POV OVERRIDE:"), "POV sahne kamerası (first-person) sceneCfg'de");
+  assert.ok(src.includes("POV OVERRIDE (STRICT FIRST-PERSON"), "POV katı birinci-şahıs sceneCfg'de");
+  assert.ok(src.includes("Do NOT place any separate cloaked, hooded, or standing figure"), "POV'de izleyiciyi temsil eden üçüncü kişi yasak");
+  assert.ok(src.includes("No separate hooded or cloaked figure standing in for the viewer"), "POV anti-artifact koruması");
 });
 
 test("Sen Öner: viral stratejist turu (YouTube/Reels/TikTok fikirleri)", () => {
