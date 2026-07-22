@@ -27,8 +27,8 @@ test("Mod geçişi: tek bağlamsal düğme (eski çalışmayan '◈ Sen Öner' k
 });
 
 test("CTA moda göre: own → 'Taslağı Hazırla', suggest → 'SEÇENEKLERE GEÇ'", () => {
-  assert.ok(studioSrc.includes("TASLAĞI HAZIRLA"), "own modu CTA'sı");
-  assert.ok(studioSrc.includes("SEÇENEKLERE GEÇ"), "suggest modu CTA'sı korunur");
+  assert.ok(studioSrc.includes("Taslağı Hazırla"), "own modu CTA'sı");
+  assert.ok(studioSrc.includes("Seçeneklere Geç"), "suggest modu CTA'sı korunur");
   assert.ok(studioSrc.includes("prepareDraftBase: () => this.prepareDraft('base')"), "own CTA prepareDraft çağırır");
   assert.ok(studioSrc.includes('onClick="{{ toStep2 }}"'), "suggest CTA doğrudan adım 2'ye geçer (değişmedi)");
 });
