@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../api.dart';
 import '../tema.dart';
 
-/// ÜRET — web fikir ekranının native karşılığı: konu + tarz çipleri + üret.
-/// Simetri: çipler eşit yükseklik, kart aralıkları hep Bosluk.m, kenar payı 16.
+/// YENİ DOSYA — premium üretim ekranı: konu + tarz + ton + görsel stil + boyut
+/// + anlatıcı sesi. PWA düzeninin native hâli; iki temada da aynı ızgara.
 class UretEkrani extends StatefulWidget {
   const UretEkrani({super.key, required this.api});
   final StudioApi api;
@@ -14,9 +14,10 @@ class UretEkrani extends StatefulWidget {
 
 class _UretEkraniState extends State<UretEkrani> {
   final _konu = TextEditingController();
-  String _tarz = 'belgesel';
+  String _tarz = 'belgesel', _ton = 'merak', _stil = 'sinematik', _boyut = '9:16';
+  int _ses = 0;
   bool _mesgul = false;
-  String _durum = '', _hata = '';
+  String _hata = '';
   Map<String, dynamic>? _sonuc;
 
   static const _tarzlar = [
@@ -27,18 +28,37 @@ class _UretEkraniState extends State<UretEkrani> {
     ('neolurdu', '🔀 Ne olurdu?'),
     ('reels', '⚡ Viral Reels'),
   ];
+  static const _tonlar = [
+    ('merak', '🔍 Merak'),
+    ('dramatik', '⚡ Dramatik'),
+    ('belgesel', '📜 Belgesel'),
+    ('destansi', '🏛 Destansı'),
+    ('duygusal', '💛 Duygusal'),
+  ];
+  static const _stiller = [
+    ('gercekci', '🎞 Gerçekçi'),
+    ('sinematik', '🌒 Sinematik'),
+    ('belgeselfoto', '📷 Belgesel Foto'),
+    ('gravur', '🖋 Gravür'),
+    ('minyatur', '🎨 Minyatür'),
+    ('animasyon', '✨ Animasyon'),
+  ];
+  static const _boyutlar = [('9:16', '📱 Dikey 9:16'), ('16:9', '🖥 Yatay 16:9'), ('1:1', '⬛ Kare 1:1')];
+  static const _sesler = [
+    ('Kadir Kayışçı', 'İmza Anlatıcı'),
+    ('Seyfullah Kartal', 'Ajans Sesi'),
+  ];
 
   Future<void> _uret() async {
     final konu = _konu.text.trim();
     if (konu.isEmpty) { setState(() => _hata = 'Önce bir konu yaz.'); return; }
-    setState(() { _mesgul = true; _hata = ''; _durum = 'Arşiv bağlantısı kuruluyor…'; _sonuc = null; });
+    setState(() { _mesgul = true; _hata = ''; _sonuc = null; });
     try {
-      // Not: tam prompt web'dekiyle ortaklaştırılacak (buildPrompt paylaşımı — yol
-      // haritası README'de). Şimdilik kısa üretim: başlık + senaryo taslağı.
       final d = await widget.api.dosyaUret(
         konu: konu,
         prompt:
-            'Sen "Tarih Ajanı" kanalının baş senaristisin. Şu konuda 60 saniyelik Türkçe video senaryosu üret (tarz: $_tarz). '
+            'Sen "Tarih Ajanı" kanalının baş senaristisin. Şu konuda 60 saniyelik Türkçe video senaryosu üret. '
+            'Tarz: $_tarz · ton: $_ton · görsel stil: $_stil · kadraj: $_boyut. '
             'SADECE geçerli JSON döndür: {"baslik":"...","logline":"...","senaryo":[{"bolum":"...","metin":"..."}]}. KONU: $konu',
       );
       if (d['ok'] == false) throw Exception(d['error'] ?? 'Üretilemedi');
@@ -46,8 +66,22 @@ class _UretEkraniState extends State<UretEkrani> {
     } catch (e) {
       setState(() => _hata = e.toString().replaceFirst('Exception: ', ''));
     } finally {
-      if (mounted) setState(() { _mesgul = false; _durum = ''; });
+      if (mounted) setState(() => _mesgul = false);
     }
+  }
+
+  Widget _cipSatiri(List<(String, String)> ogeler, String secili, ValueChanged<String> sec) {
+    return Wrap(
+      spacing: Bosluk.s,
+      runSpacing: Bosluk.s,
+      children: ogeler.map((t) {
+        return ChoiceChip(
+          label: Text(t.$2),
+          selected: secili == t.$1,
+          onSelected: (_) => sec(t.$1),
+        );
+      }).toList(),
+    );
   }
 
   @override
@@ -58,38 +92,72 @@ class _UretEkraniState extends State<UretEkrani> {
         padding: const EdgeInsets.all(Bosluk.kenar),
         children: [
           const SizedBox(height: Bosluk.s),
-          Text('Hangi tarih sırrını çözelim?', style: tema.textTheme.headlineMedium),
-          const SizedBox(height: Bosluk.s),
-          Text('Bir olay, kişi, dönem ya da soru yaz — gerisini Ajan devralsın.',
-              style: tema.textTheme.bodyMedium?.copyWith(color: tema.colorScheme.onSurface.withValues(alpha: .65))),
+          Text('Yeni Dosya', style: tema.textTheme.headlineMedium),
+          const SizedBox(height: Bosluk.xs),
+          Text('KONU YAZ · TARZI SEÇ · ÜRET', style: tema.textTheme.labelSmall),
           const SizedBox(height: Bosluk.xl),
+
           TextField(
             controller: _konu,
             minLines: 3,
             maxLines: 5,
             decoration: const InputDecoration(
-              hintText: 'ör. Fatih\'in ölümünün ardındaki zehir şüphesi…',
-            ),
+                hintText: 'ör. Yeniçeriler isyan ederken neden kazan devirirdi?'),
           ),
           const SizedBox(height: Bosluk.l),
-          // TARZ — web'deki tarz çipleriyle birebir aynı seçenek seti
-          Wrap(
-            spacing: Bosluk.s,
-            runSpacing: Bosluk.s,
-            children: _tarzlar.map((t) {
-              final secili = _tarz == t.$1;
-              return ChoiceChip(
-                label: Text(t.$2),
-                selected: secili,
-                onSelected: (_) => setState(() => _tarz = t.$1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Kose.cip)),
-              );
-            }).toList(),
-          ),
+
+          const BolumEtiketi('TARZ'),
+          const SizedBox(height: Bosluk.m),
+          _cipSatiri(_tarzlar, _tarz, (v) => setState(() => _tarz = v)),
           const SizedBox(height: Bosluk.xl),
-          FilledButton(
-            onPressed: _mesgul ? null : _uret,
-            child: Text(_mesgul ? (_durum.isEmpty ? 'ÜRETİLİYOR…' : _durum) : '◈ DOSYAYI ÜRET'),
+
+          const BolumEtiketi('ANLATIM TONU'),
+          const SizedBox(height: Bosluk.m),
+          _cipSatiri(_tonlar, _ton, (v) => setState(() => _ton = v)),
+          const SizedBox(height: Bosluk.xl),
+
+          const BolumEtiketi('GÖRSEL STİL'),
+          const SizedBox(height: Bosluk.m),
+          _cipSatiri(_stiller, _stil, (v) => setState(() => _stil = v)),
+          const SizedBox(height: Bosluk.xl),
+
+          const BolumEtiketi('GÖRSEL BOYUTU'),
+          const SizedBox(height: Bosluk.m),
+          _cipSatiri(_boyutlar, _boyut, (v) => setState(() => _boyut = v)),
+          const SizedBox(height: Bosluk.xl),
+
+          const BolumEtiketi('ANLATICI SESİ'),
+          const SizedBox(height: Bosluk.m),
+          for (var i = 0; i < _sesler.length; i++) ...[
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(Kose.kart),
+                side: BorderSide(
+                    color: _ses == i ? tema.colorScheme.primary : tema.colorScheme.outline,
+                    width: _ses == i ? 1.4 : 1),
+              ),
+              child: ListTile(
+                onTap: () => setState(() => _ses = i),
+                leading: Icon(Icons.play_circle_outline, color: context.vurgu),
+                title: Text(_sesler[i].$1,
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: Text(_sesler[i].$2),
+                trailing: _ses == i
+                    ? Text('● SEÇİLİ',
+                        style: TextStyle(
+                            fontSize: 10, letterSpacing: 1.2, color: context.vurgu,
+                            fontWeight: FontWeight.w700))
+                    : null,
+              ),
+            ),
+            const SizedBox(height: Bosluk.s),
+          ],
+          const SizedBox(height: Bosluk.l),
+
+          AltinButon(
+            metin: _mesgul ? 'ÜRETİLİYOR…' : '◈ DOSYAYI ÜRET',
+            ikon: _mesgul ? null : Icons.auto_awesome,
+            onTap: _mesgul ? null : _uret,
           ),
           if (_hata.isNotEmpty) ...[
             const SizedBox(height: Bosluk.m),
@@ -99,6 +167,7 @@ class _UretEkraniState extends State<UretEkrani> {
             const SizedBox(height: Bosluk.xl),
             _SonucKarti(sonuc: _sonuc!),
           ],
+          const SizedBox(height: Bosluk.xxl),
         ],
       ),
     );
@@ -119,6 +188,8 @@ class _SonucKarti extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const BolumEtiketi('DOSYA HAZIR'),
+            const SizedBox(height: Bosluk.m),
             Text((sonuc['baslik'] ?? '').toString(), style: tema.textTheme.titleLarge),
             const SizedBox(height: Bosluk.s),
             Text((sonuc['logline'] ?? '').toString(),
@@ -128,7 +199,7 @@ class _SonucKarti extends StatelessWidget {
               Text((b['bolum'] ?? '').toString(),
                   style: tema.textTheme.labelLarge?.copyWith(color: tema.colorScheme.primary)),
               const SizedBox(height: Bosluk.xs),
-              Text((b['metin'] ?? '').toString()),
+              Text((b['metin'] ?? '').toString(), style: const TextStyle(height: 1.55)),
               const SizedBox(height: Bosluk.m),
             ],
           ],

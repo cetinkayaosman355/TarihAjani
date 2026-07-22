@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import '../api.dart';
 import '../tema.dart';
 
-/// DOSYALAR — hesaba bağlı üretimler (web ile ortak arşiv: video_list).
-/// Görseller/dosyalar için de aynı desen genişletilecek (README yol haritası).
-class DosyalarEkrani extends StatefulWidget {
-  const DosyalarEkrani({super.key, required this.api});
+/// ARŞİV — hesaba bağlı üretimler (web ile ortak: video_list) + hazır dosyalar.
+class ArsivEkrani extends StatefulWidget {
+  const ArsivEkrani({super.key, required this.api});
   final StudioApi api;
 
   @override
-  State<DosyalarEkrani> createState() => _DosyalarEkraniState();
+  State<ArsivEkrani> createState() => _ArsivEkraniState();
 }
 
-class _DosyalarEkraniState extends State<DosyalarEkrani> {
+class _ArsivEkraniState extends State<ArsivEkrani> {
   late Future<List<Map<String, dynamic>>> _videolar;
 
   @override
@@ -35,21 +34,30 @@ class _DosyalarEkraniState extends State<DosyalarEkrani> {
               padding: const EdgeInsets.all(Bosluk.kenar),
               children: [
                 const SizedBox(height: Bosluk.s),
-                Text('Çalışmalarım', style: tema.textTheme.headlineMedium),
-                const SizedBox(height: Bosluk.l),
+                Text('Arşiv', style: tema.textTheme.headlineMedium),
+                const SizedBox(height: Bosluk.xs),
+                Text('ÇALIŞMALARIN — WEB İLE ORTAK', style: tema.textTheme.labelSmall),
+                const SizedBox(height: Bosluk.xl),
                 if (snap.connectionState == ConnectionState.waiting)
-                  const Center(child: Padding(
-                    padding: EdgeInsets.all(Bosluk.xxl),
-                    child: CircularProgressIndicator(),
-                  ))
+                  const Center(
+                      child: Padding(
+                          padding: EdgeInsets.all(Bosluk.xxl),
+                          child: CircularProgressIndicator()))
                 else if (liste.isEmpty)
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(Bosluk.xl),
-                      child: Text(
-                        'Henüz hesabına bağlı video üretimi yok.\nÜret sekmesinden ilk dosyanı çıkar — web ve uygulama aynı arşivi paylaşır.',
-                        textAlign: TextAlign.center,
-                        style: tema.textTheme.bodyMedium,
+                      child: Column(
+                        children: [
+                          Icon(Icons.inventory_2_outlined,
+                              size: 34, color: context.vurgu),
+                          const SizedBox(height: Bosluk.m),
+                          const Text(
+                            'Henüz hesabına bağlı video yok.\nÜret sekmesinden ilk dosyanı çıkar — webde ürettiklerin de burada görünür.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(height: 1.55),
+                          ),
+                        ],
                       ),
                     ),
                   )
@@ -59,9 +67,10 @@ class _DosyalarEkraniState extends State<DosyalarEkrani> {
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: Bosluk.l, vertical: Bosluk.s),
-                        leading: Icon(Icons.movie_outlined, color: tema.colorScheme.primary),
+                        leading: Icon(Icons.movie_outlined, color: context.vurgu),
                         title: Text((v['title'] ?? v['prompt'] ?? 'Video').toString(),
-                            maxLines: 2, overflow: TextOverflow.ellipsis),
+                            maxLines: 2, overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w600)),
                         subtitle: Text((v['status'] ?? '').toString()),
                       ),
                     ),
