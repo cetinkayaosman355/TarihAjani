@@ -35,6 +35,10 @@
   @keyframes ta-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   @keyframes ta-draw { from { stroke-dashoffset: var(--len, 4000); } to { stroke-dashoffset: 0; } }
   @keyframes ta-pop { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+  @keyframes ta-grow { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
+  /* Renkli imparatorluk bölgeleri: merkezinden büyüyerek belirir (antik atlas hissi) */
+  .ta-region { transform-box: fill-box; transform-origin: center; animation: ta-grow .95s cubic-bezier(.2,.7,.3,1) both; }
+  .ta-city { transform-box: fill-box; transform-origin: center; animation: ta-pop .45s ease both; }
   .ta-route { stroke-dasharray: 10 7; }
   .ta-flow { stroke-dasharray: 3200; stroke-dashoffset: 3200; animation: ta-draw 2.6s .2s ease forwards; }
   .ta-city { cursor: pointer; }
@@ -88,6 +92,10 @@
           <!-- KARA — gerçek parşömen dokusu (ta-mapwrap zemininde) altta; kara hafif
                yarı saydam tonla dokunun üstüne oturur, deniz dokuyu gösterir. -->
           <path d="{{ landD }}" fill="rgba(198,172,122,.5)" stroke="#a98d5a" stroke-width="0.8" stroke-linejoin="round"/>
+          <!-- RENKLİ İMPARATORLUK BÖLGELERİ (büyüyerek belirir) -->
+          <sc-for list="{{ regionsD }}" as="rg" hint-placeholder-count="0">
+            <path d="{{ rg.d }}" class="ta-region" fill="{{ rg.renk }}" fill-opacity="0.28" stroke="{{ rg.renk }}" stroke-opacity="0.6" stroke-width="1.3" stroke-linejoin="round" style="{{ rg.style }}"></path>
+          </sc-for>
           <!-- ROTA (İpek Yolu) -->
           <sc-if value="{{ isRoute }}" hint-placeholder-val="{{ true }}">
             <path d="{{ routeD }}" class="ta-route ta-flow" fill="none" stroke="{{ curRenk }}" stroke-width="2.6" stroke-dasharray="10 7" stroke-linecap="round" opacity=".9"/>
@@ -191,6 +199,7 @@ class Component extends DCLogic {
     this._land = d; return d;
   }
   _city(id) { return (this.state.data.cities || {})[id]; }
+  _ringD(ring) { return (ring || []).map((p, i) => { const [x, y] = this._proj(p[0], p[1]); return (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); }).join(' ') + 'Z'; }
   _curStory() { const d = this.state.data; return (d.stories || []).find(s => s.id === this.state.story) || d.stories[0]; }
   // Eğri ok yolu (kontrol noktası dikeyde ofset — yay görünümü)
   _arc(aId, bId, k) {
@@ -287,7 +296,7 @@ class Component extends DCLogic {
 
   renderVals() {
     const d = this.state.data;
-    if (!d) return { loading: true, storyBtns: [], cityDots: [], viewBox: '0 0 1000 500', landD: '', curRenk: '#7c1f16', isRoute: false, isArrow: false, branchD: [], arrowD: [], selCity: null, curAd: '', curDonem: '', curAciklama: '', cityCount: 0, compassT: '', routeD: '', uretHref: '/studio', exportPng: () => {}, pngBusy: false, pngLabel: '◇ HARİTAYI İNDİR (PNG)' };
+    if (!d) return { loading: true, storyBtns: [], cityDots: [], regionsD: [], viewBox: '0 0 1000 500', landD: '', curRenk: '#7c1f16', isRoute: false, isArrow: false, branchD: [], arrowD: [], selCity: null, curAd: '', curDonem: '', curAciklama: '', cityCount: 0, compassT: '', routeD: '', uretHref: '/studio', exportPng: () => {}, pngBusy: false, pngLabel: '◇ HARİTAYI İNDİR (PNG)' };
     const W = this._W(), H = this._H();
     const cur = this._curStory();
     const renk = cur.renk || '#7c1f16';
@@ -302,6 +311,7 @@ class Component extends DCLogic {
     if (cur.tur === 'rota' && cur.rota) {
       routeD = cur.rota.map((id, i) => { const c = this._city(id); const [x, y] = this._proj(c[1], c[2]); return (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); }).join(' ');
     }
+    const regionsD = (cur.bolgeler || []).map((r, i) => ({ d: this._ringD(r.ring), renk: r.renk, style: 'animation-delay:' + (i * 0.14).toFixed(2) + 's;' }));
     const branchD = (cur.dal || []).map(a => ({ d: this._arc(a[0], a[1], 0.05) }));
     const arrowD = (cur.oklar || []).map(a => ({ d: this._arc(a[0], a[1]) }));
     // şehir noktaları — etiketler çakışmayı önleyen yerleşimden geçer
@@ -325,7 +335,7 @@ class Component extends DCLogic {
       isRoute: cur.tur === 'rota',
       isArrow: cur.tur === 'ok',
       routeD, branchD, arrowD,
-      cityDots,
+      cityDots, regionsD,
       compassT: 'translate(' + (W - 60) + ',' + (H - 60) + ')',
       curAd: cur.ad, curDonem: cur.donem, curAciklama: cur.aciklama,
       cityCount: cityDots.length,
