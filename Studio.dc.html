@@ -284,19 +284,24 @@
        karanlık moddaki NORMAL haliyle görünür — kutu/hâle yok. Header içi metinler
        açık (koyu-mod) değerine sabitlenir. .ta-studio-wrap ile yüksek özgüllük →
        tema.js'in header'ı açığa çevirmesini geçersiz kılar. */
+    /* BÜTÜNCÜL AYDINLIK HEADER (STORIA gibi): yeni SVG logo her zeminde çalıştığı
+       için header artık koyu bar DEĞİL — fildişi, gövdeyle tek parça. */
     html[data-theme="light"] .ta-studio-wrap header {
-      background: rgba(3,5,11,.94) !important;
-      border-bottom-color: rgba(193,154,82,.2) !important; }
-    html[data-theme="light"] .ta-studio-wrap header a,
-    html[data-theme="light"] .ta-studio-wrap header button,
+      background: rgba(246,239,223,.92) !important;
+      border-bottom-color: rgba(150,116,52,.20) !important; }
+    html[data-theme="light"] .ta-studio-wrap header,
     html[data-theme="light"] .ta-studio-wrap header div,
-    html[data-theme="light"] .ta-studio-wrap header span { color: #cfc8b4 !important; }
-    html[data-theme="light"] .ta-studio-wrap header [style*="818797"] { color: #818797 !important; }
+    html[data-theme="light"] .ta-studio-wrap header span { color: #2a2419 !important; }
+    html[data-theme="light"] .ta-studio-wrap header a,
+    html[data-theme="light"] .ta-studio-wrap header [style*="a4a9b5"],
+    html[data-theme="light"] .ta-studio-wrap header [style*="818797"],
+    html[data-theme="light"] .ta-studio-wrap header [style*="676d7c"] { color: #6b6454 !important; }
     html[data-theme="light"] .ta-studio-wrap header [style*="e6c478"],
     html[data-theme="light"] .ta-studio-wrap header [style*="e6c478"] span,
-    html[data-theme="light"] .ta-studio-wrap header [style*="c19a52"] { color: #e6c478 !important; }
+    html[data-theme="light"] .ta-studio-wrap header [style*="c19a52"] { color: #8a6417 !important; }
+    /* hesap menüsü açılır paneli → aydınlıkta fildişi kart */
     html[data-theme="light"] .ta-studio-wrap header [style*="background: #05070d"],
-    html[data-theme="light"] .ta-studio-wrap header [style*="background:#05070d"] { background: #05070d !important; }
+    html[data-theme="light"] .ta-studio-wrap header [style*="background:#05070d"] { background: #fbf6ea !important; border-color: rgba(150,116,52,.3) !important; }
     /* ── Sol yan menü ── */
     html[data-theme="light"] .ta-side {
       background: linear-gradient(177deg, rgba(246,239,223,.95), rgba(237,228,209,.9)) !important;
@@ -552,9 +557,7 @@
                nav'ı gizlese de bu butonlar görünür kalır. -->
           <button onClick="{{ toggleTheme }}" title="{{ themeTitle }}" aria-label="Tema değiştir" style="width: 38px; height: 38px; flex: none; display: grid; place-items: center; border: 1px solid rgba(129,135,151,.25); background: transparent; color: #e6c478; font-size: 16px; line-height: 1; cursor: pointer; font-family: inherit;" style-hover="border-color: rgba(193,154,82,.4);">{{ themeIcon }}</button>
           <nav style="display: flex; align-items: center; gap: 10px;">
-          <a href="/" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ANA SAYFA</a>
-          <a href="/egitim" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">EĞİTİM</a>
-          <a href="/uyelik" style="color: #a4a9b5; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent;" style-hover="color: #e6c478;">ÜYELİK</a>
+          <a href="/" title="Tarih Ajanı ana sayfası" style="color: #a4a9b5; font-size: 12px; letter-spacing: .06em; text-decoration: none; padding: 9px 12px; border: 1px solid transparent; white-space: nowrap;" style-hover="color: #e6c478;">← Tarih Ajanı</a>
           <button onClick="{{ openCredits }}" title="Kredi paketleri" style="display: flex; align-items: center; gap: 8px; border: 1px solid rgba(193,154,82,.4); background: rgba(193,154,82,.08); color: #e6c478; padding: 9px 14px; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .12em; cursor: pointer;" style-hover="background: rgba(193,154,82,.18);">
             <span style="width: 7px; height: 7px; border-radius: 50%; background: #c19a52; animation: ta-pulse 2s infinite;"></span>
             <span>KREDİ {{ credits }}</span><span style="opacity:.6;">+</span>
@@ -2487,6 +2490,15 @@ class Component extends DCLogic {
       .then(r => r.ok ? r.json() : [])
       .then(list => { if (Array.isArray(list) && list.length) this.setState({ arsivEk: list }); })
       .catch(() => {});
+    // STORIA-benzeri: Studio, kullanıcı bir tema SEÇMEDİYSE AYDINLIK açılır (temiz,
+    // platform hissi). Ana Tarih Ajanı sitesi koyu kimliğinde kalır (ta_tema yazılmaz).
+    // Kullanıcı toggle'a basınca tercih kalıcı olur ve site geneliyle senkronlanır.
+    try {
+      if (!localStorage.getItem('ta_tema')) {
+        document.documentElement.setAttribute('data-theme', 'light');
+        if (!this.state.lightTheme) this.setState({ lightTheme: true });
+      }
+    } catch (e) {}
     this.initSupabase();
     // Admin'in güncel fiyatlarını çek → kredi modalı asla eskide kalmaz
     if (window.TAFiyat) window.TAFiyat.refresh(m => this.setState({ prices: m }));
@@ -6360,9 +6372,10 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       themeIcon: s.lightTheme ? '🌙' : '☀',
       themeTitle: s.lightTheme ? 'Karanlık moda geç' : 'Aydınlık moda geç',
       toggleTheme: () => {
-        let next = null;
-        try { if (window.__taThemeToggle) next = window.__taThemeToggle(); } catch (e) {}
-        if (next === null) { try { const cur = localStorage.getItem('ta_tema') === 'light' ? 'light' : 'dark'; next = cur === 'light' ? 'dark' : 'light'; localStorage.setItem('ta_tema', next); document.documentElement.setAttribute('data-theme', next); } catch (e) {} }
+        // Görünen duruma göre çevir (Studio aydınlık-varsayılan olabilir; ta_tema henüz boş).
+        // Tercih artık kalıcı yazılır → site geneliyle senkron.
+        const next = this.state.lightTheme ? 'dark' : 'light';
+        try { localStorage.setItem('ta_tema', next); document.documentElement.setAttribute('data-theme', next); } catch (e) {}
         this.setState({ lightTheme: next === 'light' });
       },
       scrollTop: () => { try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); } },
