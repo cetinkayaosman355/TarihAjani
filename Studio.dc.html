@@ -184,31 +184,31 @@
        Zorla açık sağ ray kaldırıldı.) */
 
     /* ── PREMIUM ÇALIŞMA MASASI: kart / dosya bandı / giriş / kalite kanıtı ── */
-    .ta-dossier { position: relative; overflow: hidden; border: 1px solid rgba(193,154,82,.28);
-      border-radius: 16px; padding: 26px 28px;
-      background: linear-gradient(118deg, rgba(193,154,82,.11), rgba(9,12,20,.55) 56%);
-      box-shadow: 0 28px 72px -48px rgba(0,0,0,.9), inset 0 1px 0 rgba(230,196,120,.06); }
-    .ta-dossier::after { content: ''; position: absolute; right: -50px; top: -50px; width: 240px; height: 240px;
-      background: radial-gradient(circle, rgba(201,162,90,.16), transparent 66%); pointer-events: none; }
+    .ta-dossier { position: relative; overflow: hidden; border: 1px solid rgba(193,154,82,.17);
+      border-radius: 18px; padding: 32px 34px;
+      background: linear-gradient(118deg, rgba(193,154,82,.075), rgba(9,12,20,.5) 60%);
+      box-shadow: 0 34px 80px -52px rgba(0,0,0,.9), inset 0 1px 0 rgba(230,196,120,.05); }
+    .ta-dossier::after { content: ''; position: absolute; right: -60px; top: -60px; width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(201,162,90,.10), transparent 68%); pointer-events: none; }
     .ta-stats { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 15px; position: relative; z-index: 1; }
     .ta-stats .st { display: inline-flex; align-items: center; gap: 7px; color: #9aa0ac; font-size: 12px; }
     .ta-stats .st b { color: #e6c478; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .08em; }
     .ta-stats .st .ic { color: #c19a52; font-size: 13px; }
-    .ta-entry { border: 1px solid rgba(193,154,82,.22); border-radius: 16px; padding: 24px;
-      background: linear-gradient(168deg, rgba(13,17,28,.7), rgba(6,9,16,.5));
-      box-shadow: 0 30px 84px -54px rgba(0,0,0,.9), inset 0 1px 0 rgba(230,196,120,.05); }
+    .ta-entry { border: 1px solid rgba(193,154,82,.15); border-radius: 18px; padding: 28px;
+      background: linear-gradient(168deg, rgba(13,17,28,.62), rgba(6,9,16,.46));
+      box-shadow: 0 34px 90px -58px rgba(0,0,0,.9), inset 0 1px 0 rgba(230,196,120,.045); }
     .ta-entry textarea { transition: border-color .2s, box-shadow .2s; }
     .ta-entry textarea:focus { outline: none; border-color: rgba(230,196,120,.6) !important;
       box-shadow: 0 0 0 3px rgba(193,154,82,.12), 0 0 44px -12px rgba(201,162,90,.35); }
     .ta-proof { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
-    .ta-proof > div { flex: 1; min-width: 158px; border: 1px solid rgba(193,154,82,.18); border-radius: 12px;
-      padding: 13px 15px; background: linear-gradient(160deg, rgba(193,154,82,.06), rgba(193,154,82,.01)); }
+    .ta-proof > div { flex: 1; min-width: 158px; border: 1px solid rgba(193,154,82,.12); border-radius: 13px;
+      padding: 15px 17px; background: linear-gradient(160deg, rgba(193,154,82,.045), rgba(193,154,82,.008)); }
     .ta-proof .pt { color: #e6c478; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
     .ta-proof .ps { color: #7f858f; font-size: 11.5px; margin-top: 4px; line-height: 1.5; }
     /* İçerik kartı — altın-cam, yumuşak gölge, hover derinliği (bütünlük) */
-    .ta-card { border: 1px solid rgba(193,154,82,.2); border-radius: 13px;
-      background: linear-gradient(168deg, rgba(13,17,27,.72), rgba(7,10,17,.6));
-      box-shadow: 0 20px 50px -38px rgba(0,0,0,.85), inset 0 1px 0 rgba(230,196,120,.045);
+    .ta-card { border: 1px solid rgba(193,154,82,.13); border-radius: 14px;
+      background: linear-gradient(168deg, rgba(13,17,27,.66), rgba(7,10,17,.56));
+      box-shadow: 0 22px 56px -40px rgba(0,0,0,.85), inset 0 1px 0 rgba(230,196,120,.04);
       transition: border-color .2s, box-shadow .2s; }
     .ta-card:hover { border-color: rgba(193,154,82,.38);
       box-shadow: 0 26px 60px -38px rgba(0,0,0,.9), 0 0 42px -22px rgba(201,162,90,.22); }
@@ -492,7 +492,7 @@
           <sc-if value="{{ regError }}" hint-placeholder-val="{{ false }}">
             <p style="margin: 12px 0 0; color: #e8a9a9; font-size: 13px; text-align: left;">{{ regError }}</p>
           </sc-if>
-          <a href="/uyelik?next=%2Fstudio" style="margin-top: 18px; width: 100%; box-sizing: border-box; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 16px; font-weight: 800; font-size: 13px; letter-spacing: .13em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35); transform: translateY(-1px);">
+          <a href="/uyelik?next=%2Fstudio" style="margin-top: 18px; width: 100%; box-sizing: border-box; border: 0; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; padding: 16px; font-weight: 800; font-size: 13px; letter-spacing: .13em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.35); transform: translateY(-1px);">
           <span>GİRİŞ YAP / ÜYE OL</span><span style="font-family: 'Special Elite', monospace;">→</span>
           </a>
           <small style="display: block; margin-top: 14px; color: #676d7c; line-height: 1.5;">Yeni üyelikte Gözlemci seviyesi ve aylık kredi kotası hesabına tanımlanır.</small>
@@ -669,7 +669,7 @@
                       <p style="margin: 0; color: #a4a9b5; font-size: 13px;">{{ h.sceneInfo }}<span style="color: #c19a52;"> {{ h.provInfo }}</span></p>
                       <div style="display: flex; gap: 8px; margin-top: 6px; align-items: center;">
                         <sc-if value="{{ h.canOpen }}" hint-placeholder-val="{{ true }}">
-                          <button onClick="{{ h.openFile }}" style="flex: 1; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .1em; padding: 11px 16px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.3);">DOSYAYI AÇ</button>
+                          <button onClick="{{ h.openFile }}" style="flex: 1; border: 0; cursor: pointer; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .1em; padding: 11px 16px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.3);">DOSYAYI AÇ</button>
                         </sc-if>
                         <button onClick="{{ h.del }}" title="Sil" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #8a8f9c; cursor: pointer; font-size: 14px; padding: 10px 13px;" style-hover="border-color: rgba(192,57,43,.55); color: #e08a80; background: rgba(192,57,43,.1);">🗑</button>
                       </div>
@@ -821,7 +821,7 @@
               </sc-for>
             </div>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-              <button onClick="{{ queueImage }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 13px 26px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ imgGoLabel }}</button>
+              <button onClick="{{ queueImage }}" style="border: 0; cursor: pointer; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 13px 26px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ imgGoLabel }}</button>
               <span style="color: #676d7c; font-size: 12px;">Üretim: <strong style="color: #e6c478;">{{ imgSelLabel }}</strong></span>
             </div>
             <sc-if value="{{ hasImgQueue }}" hint-placeholder-val="{{ false }}">
@@ -879,7 +879,7 @@
                       <div style="display: grid; gap: 8px; padding: 0 10px 12px;">
                         <textarea value="{{ iq.editText }}" onChange="{{ iq.onEditText }}" rows="2" placeholder="Ne değiştireyim? ör. arka planı gece yap · kılıcı daha büyük" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 10px; font-size: 12.5px; line-height: 1.5;"></textarea>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                          <button onClick="{{ iq.runEdit }}" disabled="{{ iq.editBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .08em; padding: 9px 14px;">{{ iq.editRunLabel }}</button>
+                          <button onClick="{{ iq.runEdit }}" disabled="{{ iq.editBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .08em; padding: 9px 14px;">{{ iq.editRunLabel }}</button>
                           <span style="color: #676d7c; font-size: 10.5px;">{{ iq.editHint }}</span>
                         </div>
                         <sc-if value="{{ iq.editErr }}" hint-placeholder-val="{{ false }}">
@@ -982,7 +982,7 @@
                   <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: #f2ecd9; line-height: 1.3;">{{ af.title }}</h3>
                   <p style="margin: 0; color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em;">{{ af.era }}</p>
                   <p style="margin: 0; color: #a4a9b5; font-size: 13.5px; line-height: 1.6; flex: 1;">{{ af.teaser }}</p>
-                  <button onClick="{{ af.uret }}" style="margin-top: 6px; border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 14px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">◈ STUDIO'DA ÜRET →</button>
+                  <button onClick="{{ af.uret }}" style="margin-top: 6px; border: 0; cursor: pointer; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 14px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">◈ STUDIO'DA ÜRET →</button>
                   <button onClick="{{ af.openFile }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; cursor: pointer; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .12em; padding: 9px;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">DOSYAYI OKU / E-KİTAP</button>
                 </div>
               </sc-for>
@@ -1000,7 +1000,7 @@
             <h2 style="margin: 10px 0 10px; font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700;">Bu arşiv paralı üyeliğe özel</h2>
             <p style="margin: 0 0 26px; color: #a4a9b5; line-height: 1.7;">Yayınladığımız vakaların eksiksiz üretim dosyaları (senaryo, seslendirme, sahne &amp; video promptları, yayın paketi) <strong style="color: #e6c478;">Gözlemci seviyesinden itibaren</strong> açılır. Ücretsiz üye olarak Sihirbaz'dan deneme kredinle kendi dosyanı üretebilirsin.</p>
             <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-              <a href="/uyelik#seviyeler" style="text-decoration: none; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 14px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">ÜYELİĞE GEÇ →</a>
+              <a href="/uyelik#seviyeler" style="text-decoration: none; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 14px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">ÜYELİĞE GEÇ →</a>
               <button onClick="{{ modeWizard }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .14em; padding: 14px 24px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">SİHİRBAZ'A DÖN</button>
             </div>
           </div>
@@ -1090,7 +1090,7 @@
               </sc-for>
             </div>
             <div style="display: flex; gap: 9px; flex-wrap: wrap; margin-top: 22px;">
-              <button onClick="{{ approveDraft }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px 20px; font-weight: 800; font-size: 13px; letter-spacing: .04em; cursor: pointer; border-radius: 8px;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.3);">✓ Bu taslak doğru →</button>
+              <button onClick="{{ approveDraft }}" style="border: 0; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; padding: 12px 20px; font-weight: 800; font-size: 13px; letter-spacing: .04em; cursor: pointer; border-radius: 8px;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.3);">✓ Bu taslak doğru →</button>
               <button onClick="{{ draftDetailToggle }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 13px; cursor: pointer; border-radius: 8px;" style-hover="background: rgba(193,154,82,.12);">＋ Ayrıntı ekle</button>
               <button onClick="{{ draftEnrich }}" disabled="{{ draftBusy }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 13px; cursor: pointer; border-radius: 8px;" style-hover="background: rgba(193,154,82,.12);">{{ draftEnrichLabel }}</button>
               <button onClick="{{ draftVariant }}" disabled="{{ draftBusy }}" style="border: 1px solid rgba(129,135,151,.4); background: transparent; color: #a4a9b5; padding: 12px 18px; font-size: 13px; cursor: pointer; border-radius: 8px;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">↻ Farklı taslak üret</button>
@@ -1235,7 +1235,7 @@
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 18px;">
               <button onClick="{{ toStep1 }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; padding: 14px 22px; font-size: 13px; letter-spacing: .1em; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">← FİKRE DÖN</button>
-              <button onClick="{{ startGenerate }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 14px 26px; font-weight: 800; font-size: 13px; letter-spacing: .12em; cursor: pointer;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">{{ genCostLabel }}</button>
+              <button onClick="{{ startGenerate }}" style="border: 0; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; padding: 14px 26px; font-weight: 800; font-size: 13px; letter-spacing: .12em; cursor: pointer;" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">{{ genCostLabel }}</button>
             </div>
           </div>
         </sc-if>
@@ -1285,7 +1285,7 @@
                 </sc-if>
                 <button onClick="{{ ekitapResult }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">📖 E-KİTAP / PDF</button>
                 <button onClick="{{ copyAll }}" style="border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; padding: 12px 18px; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">{{ copyAllLabel }}</button>
-                <button onClick="{{ newFile }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px 18px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;">+ YENİ DOSYA</button>
+                <button onClick="{{ newFile }}" style="border: 0; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; padding: 12px 18px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;">+ YENİ DOSYA</button>
               </div>
               <!-- Mobil: dosya aksiyonları kompakt "Dosya İşlemleri" açılır alanında (masaüstünde gizli) -->
               <details class="ta-fileacts-mob">
@@ -1341,13 +1341,13 @@
                   <div style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); padding: 20px 22px;">
                     <p style="margin: 0 0 4px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .16em;">◈ SİSTEMDE ÜRET · GERÇEK SES</p>
                     <p style="margin: 6px 0 12px; color: #a4a9b5; font-size: 12.5px; line-height: 1.55;">Seslendirme metni tek tıkla MP3 olur — anahtar gerekmez, kredinle üretilir. Ses cinsi sihirbazdaki seçimine göre: <span style="color: #e6c478;">{{ sysVoiceName }}</span></p>
-                    <button onClick="{{ makeTts }}" disabled="{{ sysTtsBusy }}" style="width: 100%; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 13px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.35);">{{ sysTtsLabel }}</button>
+                    <button onClick="{{ makeTts }}" disabled="{{ sysTtsBusy }}" style="width: 100%; border: 0; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; padding: 13px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.35);">{{ sysTtsLabel }}</button>
                     <sc-if value="{{ sysTtsError }}" hint-placeholder-val="{{ false }}">
                       <p style="margin: 10px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">{{ sysTtsError }}</p>
                     </sc-if>
                     <sc-if value="{{ hasSysAudio }}" hint-placeholder-val="{{ false }}">
                       <audio controls="{{ true }}" preload="none" src="{{ sysAudioUrl }}" style="width: 100%; margin-top: 12px;"></audio>
-                      <button onClick="{{ dlAudio }}" disabled="{{ audioDl }}" style="display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 10px; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; border: 0; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12px; letter-spacing: .12em; padding: 14px;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.35); transform: translateY(-1px);"><span style="font-size: 15px; line-height: 1;">⬇</span> {{ audioDlLabel }}</button>
+                      <button onClick="{{ dlAudio }}" disabled="{{ audioDl }}" style="display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 10px; cursor: pointer; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; border: 0; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12px; letter-spacing: .12em; padding: 14px;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.35); transform: translateY(-1px);"><span style="font-size: 15px; line-height: 1;">⬇</span> {{ audioDlLabel }}</button>
                       <p style="margin: 7px 0 0; text-align: center; color: #676d7c; font-size: 11px;">{{ audioFileHint }}</p>
                     </sc-if>
                   </div>
@@ -1377,7 +1377,7 @@
                     <p style="margin: 0 0 6px; font-weight: 700; font-size: 14px;">ElevenLabs ile üret <span style="color: #676d7c; font-weight: 400;">(alternatif — kendi anahtarınla)</span></p>
                     <p style="margin: 0 0 12px; color: #818797; font-size: 12.5px; line-height: 1.5;">ElevenLabs API anahtarını gir; seslendirme doğrudan burada üretilsin. Anahtar yalnızca bu tarayıcıda saklanır.</p>
                     <input type="password" value="{{ elKey }}" onChange="{{ onElKey }}" placeholder="xi-api-key" style="width: 100%; border: 1px solid rgba(129,135,151,.3); background: #02040a; color: #fff; padding: 11px; font-size: 13px;">
-                    <button onClick="{{ genAudio }}" disabled="{{ ttsBusy }}" style="margin-top: 10px; width: 100%; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 12px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;">{{ ttsLabel }}</button>
+                    <button onClick="{{ genAudio }}" disabled="{{ ttsBusy }}" style="margin-top: 10px; width: 100%; border: 0; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; padding: 12px; font-weight: 800; font-size: 12px; letter-spacing: .1em; cursor: pointer;">{{ ttsLabel }}</button>
                     <sc-if value="{{ ttsError }}" hint-placeholder-val="{{ false }}">
                       <p style="margin: 10px 0 0; color: #e8a9a9; font-size: 12.5px; line-height: 1.5;">{{ ttsError }}</p>
                     </sc-if>
@@ -1404,7 +1404,7 @@
                     </div>
                     <span style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <sc-if value="{{ hasPendingScenes }}" hint-placeholder-val="{{ true }}">
-                      <button class="ta-genall" onClick="{{ genAll }}" disabled="{{ genAllDisabled }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-weight: 800; font-size: 12.5px; letter-spacing: .04em; padding: 11px 18px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
+                      <button class="ta-genall" onClick="{{ genAll }}" disabled="{{ genAllDisabled }}" style="border: 0; cursor: pointer; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-weight: 800; font-size: 12.5px; letter-spacing: .04em; padding: 11px 18px; white-space: nowrap;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">{{ genAllLabel }}</button>
                     </sc-if>
                     <sc-if value="{{ batchPauseBtn }}" hint-placeholder-val="{{ false }}">
                       <button onClick="{{ pauseBatch }}" style="border: 1px solid rgba(230,196,120,.6); cursor: pointer; background: rgba(230,196,120,.1); color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; padding: 10px 16px; white-space: nowrap;" style-hover="background: rgba(230,196,120,.2);">⏸ DURAKLAT</button>
@@ -1534,7 +1534,7 @@
                           </div>
                           <span style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                             <sc-if value="{{ ch.img.notDone }}" hint-placeholder-val="{{ true }}">
-                              <button onClick="{{ ch.makeImg }}" disabled="{{ ch.imgBlocked }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer; white-space: nowrap;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ ch.imgBtnLabel }}</button>
+                              <button onClick="{{ ch.makeImg }}" disabled="{{ ch.imgBlocked }}" style="border: 0; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer; white-space: nowrap;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ ch.imgBtnLabel }}</button>
                             </sc-if>
                             <sc-if value="{{ ch.img.done }}" hint-placeholder-val="{{ false }}">
                               <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ · {{ ch.img.count }}</span>
@@ -1558,7 +1558,7 @@
                           <span style="font-weight: 700; font-size: 14px; color: #e6c478;">{{ kp.ad }}</span>
                           <span style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                             <sc-if value="{{ kp.img.notDone }}" hint-placeholder-val="{{ true }}">
-                              <button onClick="{{ kp.makeImg }}" disabled="{{ kp.imgBlocked }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ kp.imgBtnLabel }}</button>
+                              <button onClick="{{ kp.makeImg }}" disabled="{{ kp.imgBlocked }}" style="border: 0; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ kp.imgBtnLabel }}</button>
                             </sc-if>
                             <sc-if value="{{ kp.img.done }}" hint-placeholder-val="{{ false }}">
                               <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ GÖRSEL HAZIR · {{ kp.img.count }}</span>
@@ -1587,7 +1587,7 @@
                   <div style="border: 1px dashed rgba(193,154,82,.4); background: rgba(193,154,82,.05); padding: 18px 22px; display: grid; gap: 12px; text-align: center;">
                     <p style="margin: 0; color: #cfc8b4; font-size: 13.5px; line-height: 1.6;">Bu dosyada henüz <strong style="color:#e6c478;">sahne promptu</strong> yok. Senaryodan bölüm bölüm, sinematik <strong style="color:#e6c478;">{{ sceneTargetCount }} sahne</strong> görsel + video promptu üretelim.</p>
                     <div style="display: flex; justify-content: center;">
-                      <button onClick="{{ makeScenePrompts }}" disabled="{{ scenesBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12px; letter-spacing: .12em; padding: 13px 26px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ scenesBtnLabel }}</button>
+                      <button onClick="{{ makeScenePrompts }}" disabled="{{ scenesBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12px; letter-spacing: .12em; padding: 13px 26px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ scenesBtnLabel }}</button>
                     </div>
                     <sc-if value="{{ scenesErr }}" hint-placeholder-val="{{ false }}">
                       <p style="margin: 0; color: #e8a9a9; font-size: 12px; line-height: 1.5;">{{ scenesErr }}</p>
@@ -1649,7 +1649,7 @@
                       </div>
                       <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                         <sc-if value="{{ gp.img.notDone }}" hint-placeholder-val="{{ true }}">
-                          <button onClick="{{ gp.makeImg }}" disabled="{{ gp.imgBlocked }}" style="border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ gp.imgCostLabel }}</button>
+                          <button onClick="{{ gp.makeImg }}" disabled="{{ gp.imgBlocked }}" style="border: 0; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; padding: 6px 12px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; cursor: pointer;" style-hover="box-shadow: 0 6px 22px rgba(230,196,120,.3);">{{ gp.imgCostLabel }}</button>
                         </sc-if>
                         <sc-if value="{{ gp.img.done }}" hint-placeholder-val="{{ false }}">
                           <span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .1em;">✓ GÖRSEL HAZIR · {{ gp.img.count }}</span>
@@ -1955,7 +1955,7 @@
                 <p style="margin: 0; color: #676d7c; font-size: 12px; line-height: 1.6;">Üretim şununla yapılır: <strong style="color: #e6c478;">{{ imgSelLabel }}</strong>. Kadrajı değiştirip tekrar <strong style="color: #e6c478;">GÖRSEL ÜRET</strong>'e basarsan aynı sahne yeni kadrajla üretilir — hikâye korunur.</p>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                   <button onClick="{{ imgFromKapak }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 12px; letter-spacing: .08em; padding: 12px 18px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">KAPAK PROMPTUNU AL</button>
-                  <button onClick="{{ queueImage }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ imgGoLabel }}</button>
+                  <button onClick="{{ queueImage }}" style="border: 0; cursor: pointer; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .16em; padding: 12px 24px;" style-hover="box-shadow: 0 8px 34px rgba(230,196,120,.35);">{{ imgGoLabel }}</button>
                 </div>
                 <sc-if value="{{ hasImgQueue }}" hint-placeholder-val="{{ false }}">
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-top: 1px solid rgba(193,154,82,.18); padding-top: 14px;">
@@ -2029,7 +2029,7 @@
                           <div style="display: grid; gap: 8px; padding: 0 10px 12px;">
                             <textarea value="{{ iq.editText }}" onChange="{{ iq.onEditText }}" rows="2" placeholder="Ne değiştireyim? ör. arka planı gece yap · kılıcı daha büyük · yüz ifadesini sertleştir" style="width: 100%; resize: vertical; border: 1px solid rgba(193,154,82,.3); background: #060910; color: #f2ecd9; padding: 10px; font-size: 12.5px; line-height: 1.5;"></textarea>
                             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                              <button onClick="{{ iq.runEdit }}" disabled="{{ iq.editBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .08em; padding: 9px 14px;">{{ iq.editRunLabel }}</button>
+                              <button onClick="{{ iq.runEdit }}" disabled="{{ iq.editBusy }}" style="border: 0; cursor: pointer; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 10.5px; letter-spacing: .08em; padding: 9px 14px;">{{ iq.editRunLabel }}</button>
                               <span style="color: #676d7c; font-size: 10.5px;">{{ iq.editHint }}</span>
                             </div>
                             <sc-if value="{{ iq.editErr }}" hint-placeholder-val="{{ false }}">
@@ -2233,7 +2233,7 @@
         <div style="font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .14em; color: #a4a9b5;">{{ zoomCounter }}</div>
       </sc-if>
       <div style="display: flex; gap: 10px;">
-        <button onClick="{{ zoomDl }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 11px; letter-spacing: .1em; padding: 12px 20px;">⬇ İNDİR</button>
+        <button onClick="{{ zoomDl }}" style="border: 0; cursor: pointer; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 11px; letter-spacing: .1em; padding: 12px 20px;">⬇ İNDİR</button>
         <button onClick="{{ closeZoom }}" style="border: 1px solid rgba(129,135,151,.4); cursor: pointer; background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; padding: 12px 20px;">KAPAT ✕</button>
       </div>
     </div>
@@ -2295,7 +2295,7 @@
               <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .14em;">{{ pk.tier }}</p>
               <p style="margin: 8px 0 2px; font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700;">{{ pk.credits }}</p>
               <p style="margin: 0 0 12px; color: #818797; font-size: 12.5px; line-height: 1.5;">{{ pk.desc }}</p>
-              <a href="{{ pk.mail }}" style="display: block; text-align: center; border: 0; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; padding: 11px; font-size: 11px; letter-spacing: .14em; text-decoration: none;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.3);">SATIN AL</a>
+              <a href="{{ pk.mail }}" style="display: block; text-align: center; border: 0; background: linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; padding: 11px; font-size: 11px; letter-spacing: .14em; text-decoration: none;" style-hover="box-shadow: 0 8px 30px rgba(230,196,120,.3);">SATIN AL</a>
             </div>
           </sc-for>
         </div>
@@ -6696,7 +6696,7 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       nextBtnStyle: {
         border: 0, padding: '14px 26px', fontWeight: 800, fontSize: '13px', letterSpacing: '.12em',
         cursor: s.idea.trim() ? 'pointer' : 'not-allowed',
-        background: s.idea.trim() ? 'linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52)' : 'rgba(129,135,151,.2)',
+        background: s.idea.trim() ? 'linear-gradient(112deg, #9c7733, #d0ac68 52%, #bb9850)' : 'rgba(129,135,151,.2)',
         color: s.idea.trim() ? '#171207' : '#676d7c'
       },
       toStep1: () => this.setState({ step: 1 }),
