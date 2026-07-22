@@ -1061,15 +1061,12 @@
                 <button onClick="{{ toStep2 }}" disabled="{{ ideaEmpty }}" style="{{ nextBtnStyle }}" style-hover="box-shadow: 0 8px 40px rgba(230,196,120,.3);">Seçeneklere Geç →</button>
               </sc-if>
             </div>
-            <div class="ta-proof">
-              <div><div class="pt">📜 Belgesel senaryo</div><div class="ps">Araştırılmış, akıcı, duygu yüklü anlatım</div></div>
-              <div><div class="pt">🎙 Gerçek Türkçe ses</div><div class="ps">ElevenLabs · Kadir Kayışçı ve 11 ses</div></div>
-              <div><div class="pt">✦ Sinematik sahneler</div><div class="ps">Tutarlı karakter, yayına hazır kadraj</div></div>
-            </div>
-            <button onClick="{{ modeArsiv }}" style="margin-top: 12px; border: 0; background: transparent; color: #c19a52; font-size: 12.5px; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px;" style-hover="color: #e6c478;">Gerçek Ajan çıktılarını gör — Hazır Arşiv'deki dosyalara bak →</button>
-            <div style="margin-top: 18px;">
-              <p style="margin: 0 0 6px; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .16em;">ÖZEL İSTEK · OPSİYONEL</p>
-              <textarea value="{{ custom }}" onChange="{{ onCustom }}" rows="2" placeholder="Kendi tarzını serbestçe yaz — ör. 'kare format, gençlere hitap eden esprili dil' ya da sadece '16:9 yatay' ya da sadece 'daha destansı'. Boş bırakırsan seçtiğin ayarlar geçerli." style="width: 100%; resize: vertical; border: 1px solid rgba(129,135,151,.3); background: #060910; color: #e6dfcb; padding: 12px 14px; font-size: 13.5px; line-height: 1.55;"></textarea>
+            <!-- OPSİYONEL AYRINTILAR (özel istek + referans görsel) tek açılır satırda —
+                 ilk ekranı sadeleştirir; isteyen açar, çoğu kişi hiç dokunmaz. -->
+            <button onClick="{{ toggleIdeaExtras }}" style="margin-top: 16px; border: 0; background: transparent; color: #818797; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .14em; cursor: pointer; padding: 2px 0;" style-hover="color: #e6c478;">＋ ÖZEL İSTEK & REFERANS GÖRSEL {{ ideaExtrasCaret }}</button>
+            <sc-if value="{{ ideaExtrasOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top: 10px;">
+              <textarea value="{{ custom }}" onChange="{{ onCustom }}" rows="2" placeholder="Kendi tarzını serbestçe yaz — ör. 'kare format, gençlere hitap eden esprili dil' ya da 'daha destansı'. Boş bırakırsan seçtiğin ayarlar geçerli." style="width: 100%; resize: vertical; border: 1px solid rgba(129,135,151,.3); background: #060910; color: #e6dfcb; padding: 12px 14px; font-size: 13.5px; line-height: 1.55;"></textarea>
             </div>
             <!-- BAŞTAN REFERANS GÖRSEL: yüklenen yüz/karakter TÜM sahne üretimlerinde referans alınır -->
             <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -1086,6 +1083,7 @@
                 <span style="color: #676d7c; font-size: 11.5px;">Yüklediğin yüz/karakter tüm sahnelerde tutarlı kalır</span>
               </sc-if>
             </div>
+            </sc-if>
             <sc-if value="{{ arsivPickOpen }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top: 16px; border: 1px solid rgba(193,154,82,.35); background: #070a12;">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid rgba(193,154,82,.2);">
@@ -7062,6 +7060,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       },
       clearCharRef: () => this.setState({ charRefUrl: '', charLock: false }, () => this.persist()),
       noCharRef: !s.charRefUrl,
+      ideaExtrasOpen: !!s.ideaExtrasOpen || !!s.custom || !!s.charRefUrl,
+      ideaExtrasCaret: (s.ideaExtrasOpen || s.custom || s.charRefUrl) ? '▾' : '▸',
+      toggleIdeaExtras: () => this.setState({ ideaExtrasOpen: !s.ideaExtrasOpen }),
       startGenerate: () => this.startGenerate(),
       genCostLabel: 'Dosyayı Oluştur · ' + this.costOf() + ' kredi →',
       // "BEN HİKAYEMİ YAZACAĞIM" modu — konu kutusundaki metni hikâye sayar
