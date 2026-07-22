@@ -768,7 +768,7 @@
                         <p style="margin: 0; color: #818797; font-size: 11.5px;">{{ vd.date }}</p>
                         <div style="display: flex; gap: 8px; margin-top: 4px;">
                           <button onClick="{{ vd.dl }}" style="flex: 1; border: 1px solid rgba(193,154,82,.4); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px; cursor: pointer;" style-hover="background: rgba(193,154,82,.12);">⬇ İNDİR</button>
-                          <button onClick="{{ vd.openTab }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px 10px; cursor: pointer;" style-hover="color: #e6c478; border-color: rgba(193,154,82,.5);">↗ AÇ</button>
+                          <button onClick="{{ vd.share }}" title="Paylaş" style="border: 1px solid rgba(146,87,238,.5); background: rgba(146,87,238,.1); color: #d9c8ff; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em; padding: 8px 10px; cursor: pointer;" style-hover="background: rgba(146,87,238,.22);">↗ PAYLAŞ</button>
                           <sc-if value="{{ vd.canDel }}" hint-placeholder-val="{{ false }}">
                             <button onClick="{{ vd.del }}" title="Sil" aria-label="Sil" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; font-size: 12px; padding: 8px 9px; cursor: pointer;" style-hover="color: #e08a80; border-color: rgba(192,57,43,.5);">🗑</button>
                           </sc-if>
@@ -1932,6 +1932,15 @@
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cfd3dc; font-size: 12.5px;"><input type="checkbox" checked="{{ docMusic }}" onChange="{{ toggleDocMusic }}"> Fon müziği</label>
                     <span style="color: #676d7c; font-size: 11.5px;">{{ docSceneInfo }}</span>
                   </div>
+                  <sc-if value="{{ docMusic }}" hint-placeholder-val="{{ true }}">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                      <span style="font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em; color: #818797;">MÜZİK</span>
+                      <sc-for list="{{ docMoods }}" as="mo" hint-placeholder-count="5">
+                        <button onClick="{{ mo.pick }}" title="{{ mo.title }}" style="{{ mo.style }}">{{ mo.label }}</button>
+                      </sc-for>
+                      <button onClick="{{ previewMood }}" title="Seçili mizacı dinle (~4 sn)" style="border: 1px solid rgba(146,87,238,.5); background: rgba(146,87,238,.12); color: #d9c8ff; border-radius: 6px; width: 30px; height: 28px; cursor: pointer; font-size: 12px;" style-hover="background: rgba(146,87,238,.24);">▶</button>
+                    </div>
+                  </sc-if>
                 </div>
                 <sc-if value="{{ docNotReady }}" hint-placeholder-val="{{ false }}">
                   <p style="margin: 0; color: #e0a58a; font-size: 12px;">⚠ En az 2 sahne görseli gerekli — önce Görsel sekmesinden sahneleri üret.</p>
@@ -1947,9 +1956,11 @@
                   <div style="display: grid; gap: 9px;">
                     <video src="{{ docUrl }}" controls playsinline style="width: 100%; max-width: 360px; border-radius: 8px; border: 1px solid rgba(146,87,238,.35); box-shadow: 0 12px 34px rgba(0,0,0,.5);"></video>
                     <p style="margin: 0; color: #e6c478; font-size: 12px; line-height: 1.5;">✅ Belgesel hazır. <strong>Tarayıcıda üretildi</strong> — kaydetmek için <strong>İNDİR</strong>'e bas (sayfayı yenilersen bellekteki kopya gider). Kalıcı bulut kaydı yakında.</p>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                       <button onClick="{{ docDownload }}" style="border: 0; cursor: pointer; color: #fff; border-radius: 7px; padding: 10px 18px; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; background: linear-gradient(115deg, #5b32b8, #7c50d8 55%, #9a72ee);">⬇ BELGESELİ İNDİR</button>
+                      <button onClick="{{ docShare }}" style="border: 1px solid rgba(146,87,238,.55); cursor: pointer; color: #d9c8ff; background: rgba(146,87,238,.12); border-radius: 7px; padding: 10px 16px; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em;" style-hover="background: rgba(146,87,238,.24);">↗ PAYLAŞ</button>
                       <button onClick="{{ startDocVideo }}" style="border: 1px solid rgba(129,135,151,.4); background: transparent; color: #a4a9b5; border-radius: 7px; padding: 10px 16px; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .08em; cursor: pointer;">↻ TEKRAR OLUŞTUR</button>
+                      <sc-if value="{{ shareMsg }}" hint-placeholder-val="{{ false }}"><span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .06em;">{{ shareMsg }}</span></sc-if>
                     </div>
                   </div>
                 </sc-if>
@@ -4226,7 +4237,8 @@ class Component extends DCLogic {
       title: x.story || 'Belgesel', metaLabel: '🎞 Belgesel · Ken Burns', hasMeta: true,
       belgesel: true, fav: !!x.fav, favIcon: x.fav ? '★' : '☆', favTitle: x.fav ? 'Favoriden çıkar' : 'Favorilere ekle',
       favToggle: () => this._belgFav(x.id), canDel: true, del: () => this._belgDel(x.id),
-      date: this._fmtDate(x.ts), dl: () => this.dlVideo(x.vidUrl), openTab: () => window.open(x.vidUrl, '_blank')
+      date: this._fmtDate(x.ts), dl: () => this.dlVideo(x.vidUrl), openTab: () => window.open(x.vidUrl, '_blank'),
+      share: () => this.shareMedia(x.vidUrl, 'belgesel-' + this.slugTr(x.story, 'tarih-ajani') + '.mp4', x.story || 'Tarih Ajanı belgeseli')
     }));
     // 2) Sahne/galeri videoları
     const gal = this._galleryItems().filter(x => x && x.vidUrl).slice(0, 120).map(x => ({
@@ -4235,7 +4247,8 @@ class Component extends DCLogic {
       metaLabel: this._vidMetaLabel(x.vidMeta), hasMeta: !!this._vidMetaLabel(x.vidMeta),
       belgesel: false, fav: !!x.fav, favIcon: x.fav ? '★' : '☆', favTitle: x.fav ? 'Favoriden çıkar' : 'Favorilere ekle',
       favToggle: () => (x.opId ? this._imgFlag(x.opId, { is_favorite: !x.fav }) : null), canDel: false, del: () => {},
-      date: this._fmtDate(x.ts), dl: () => this.dlVideo(x.vidUrl), openTab: () => window.open(x.vidUrl, '_blank')
+      date: this._fmtDate(x.ts), dl: () => this.dlVideo(x.vidUrl), openTab: () => window.open(x.vidUrl, '_blank'),
+      share: () => this.shareMedia(x.vidUrl, this.slugTr(x.story || x.prompt, 'tarih-ajani') + '.mp4', x.story || 'Tarih Ajanı videosu')
     }));
     let all = [...belg, ...gal];
     if (filt === 'belgesel') all = all.filter(v => v.belgesel);
@@ -4780,6 +4793,73 @@ class Component extends DCLogic {
     return lines.slice(0, 3);
   }
   // Ana montaj — Promise<Blob>. onProg(pct, msg) ilerleme bildirir.
+  // FON MÜZİĞİ — prosedürel (WebAudio), telifsiz, 5 mizaç. Seslendirmenin ALTINDA
+  // kısık çalar; başta/sonda yumuşak fade. Bir drone (sürekli taban) + tekrarlayan
+  // motif. Hata montajı bozmaz (opsiyonel katman).
+  _musicBed(ctx, dest, t0, total, mood) {
+    try {
+      const M = {
+        gerilim:  { drone: [55, 82.41],    wave: 'sawtooth', cutoff: 360,  vol: 0.05,  motif: [110, 116.54],              type: 'sine',     step: 3.2, mv: 0.028, mdur: 2.6 },
+        dramatik: { drone: [65.41, 98],    wave: 'sine',     cutoff: 650,  vol: 0.06,  motif: [130.81, 155.56, 196],      type: 'triangle', step: 3.8, mv: 0.045, mdur: 3.2 },
+        korku:    { drone: [43.65, 46.25], wave: 'sawtooth', cutoff: 300,  vol: 0.055, motif: [880, 932.33, 1046.5],      type: 'sine',     step: 5.5, mv: 0.018, mdur: 0.6 },
+        neseli:   { drone: [130.81],       wave: 'sine',     cutoff: 1700, vol: 0.038, motif: [261.63, 329.63, 392, 523.25], type: 'triangle', step: 0.55, mv: 0.03, mdur: 0.5 },
+        duygusal: { drone: [98, 146.83],   wave: 'sine',     cutoff: 850,  vol: 0.05,  motif: [293.66, 369.99, 440, 587.33], type: 'sine',   step: 4.4, mv: 0.033, mdur: 3.4 }
+      };
+      const cfg = M[mood] || M.dramatik;
+      const master = ctx.createGain(); master.gain.value = 0; master.connect(dest);
+      master.gain.setValueAtTime(0, t0);
+      master.gain.linearRampToValueAtTime(1, t0 + 2.5);
+      master.gain.setValueAtTime(1, Math.max(t0 + 2.6, t0 + total - 2.5));
+      master.gain.linearRampToValueAtTime(0, t0 + total);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = cfg.cutoff; lp.connect(master);
+      const droneG = ctx.createGain(); droneG.gain.value = cfg.vol; droneG.connect(lp);
+      cfg.drone.forEach(f => { const o = ctx.createOscillator(); o.type = cfg.wave; o.frequency.value = f; o.connect(droneG); o.start(t0); try { o.stop(t0 + total + 0.3); } catch (e) {} });
+      const playNote = (freq, start, dur, vol) => {
+        const o = ctx.createOscillator(); o.type = cfg.type; o.frequency.value = freq;
+        const gn = ctx.createGain(); gn.gain.value = 0;
+        gn.gain.setValueAtTime(0, start);
+        gn.gain.linearRampToValueAtTime(vol, start + Math.min(0.3, dur * 0.25));
+        gn.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+        o.connect(gn); gn.connect(lp);
+        o.start(start); try { o.stop(start + dur + 0.05); } catch (e) {}
+      };
+      let n = 0;
+      for (let tt = 1.8; tt < total - 0.6; tt += cfg.step) { playNote(cfg.motif[n % cfg.motif.length], t0 + tt, cfg.mdur, cfg.mv); n++; }
+    } catch (e) { /* müzik opsiyonel — montajı bozmaz */ }
+  }
+  // Seçili fon müziği mizacını ~4 sn dinlet (ücretsiz önizleme, montajdan bağımsız).
+  previewMoodNow() {
+    try {
+      if (this._moodCtx) { try { this._moodCtx.close(); } catch (e) {} this._moodCtx = null; }
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      const ctx = new AC(); this._moodCtx = ctx;
+      const dest = ctx.destination; const t0 = ctx.currentTime + 0.05;
+      this._musicBed(ctx, dest, t0, 4, this.state.docMusicMood || 'dramatik');
+      setTimeout(() => { try { ctx.close(); } catch (e) {} if (this._moodCtx === ctx) this._moodCtx = null; }, 4600);
+    } catch (e) {}
+  }
+  // PAYLAŞ — mobil/Safari'de dosyayı sistem paylaşımıyla gönderir; olmazsa bağlantı
+  // kopyalar ya da indirir. url http ise link, blob/data ise dosya paylaşılır.
+  async shareMedia(url, filename, title) {
+    if (!url) return;
+    try {
+      const nav = window.navigator;
+      // 1) Dosya paylaşımı (en iyi — WhatsApp/Instagram/AirDrop'a gider)
+      if (nav.share) {
+        try {
+          const r = await fetch(url); const blob = await r.blob();
+          const file = new File([blob], filename || 'tarih-ajani', { type: blob.type || 'application/octet-stream' });
+          if (nav.canShare && nav.canShare({ files: [file] })) { await nav.share({ files: [file], title: title || 'Tarih Ajanı' }); return; }
+        } catch (e) { /* dosya paylaşımı olmadı → link/dene */ }
+        try { await nav.share({ title: title || 'Tarih Ajanı', text: title || 'Tarih Ajanı Studio', url: /^https?:/.test(url) ? url : location.href }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+      // 2) Paylaşım API yok → http link kopyala, değilse indir
+      if (/^https?:/.test(url) && nav.clipboard && nav.clipboard.writeText) {
+        await nav.clipboard.writeText(url);
+        this.setState({ shareMsg: 'Bağlantı kopyalandı ✓' }); setTimeout(() => this.setState({ shareMsg: '' }), 2200);
+      } else { this.dlVideo(url); }
+    } catch (e) { /* kullanıcı iptal etti — sessiz */ }
+  }
   async buildDocVideo(opts, onProg) {
     opts = opts || {};
     // Altyazı stili: 'minimal' (öneri) / 'serit' / 'vurgu' / 'none'. Konum güvenli
@@ -4825,11 +4905,7 @@ class Component extends DCLogic {
     // 3) Ses zamanlaması: her klip sırayla; opsiyonel hafif ambient
     const t0 = ctx.currentTime + 0.2; let acc = t0;
     prep.forEach(p => { if (p.buf) { const s = ctx.createBufferSource(); s.buffer = p.buf; s.connect(dest); s.start(acc); } acc += p.dur; });
-    if (withMusic) {
-      const gain = ctx.createGain(); gain.gain.value = 0.045; gain.connect(dest);
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; lp.connect(gain);
-      [110, 164.81].forEach(f => { const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f; o.connect(lp); o.start(t0); try { o.stop(t0 + total + 0.3); } catch (e) {} });
-    }
+    if (withMusic) this._musicBed(ctx, dest, t0, total, opts.mood || 'dramatik');
 
     // 4) Kayıt
     const mime = this._recorderMime();
@@ -4943,7 +5019,7 @@ class Component extends DCLogic {
       return;
     }
     // 2) Tarayıcıda montaj
-    const opts = { subStyle: this.state.docSubStyle || 'minimal', music: !!this.state.docMusic };
+    const opts = { subStyle: this.state.docSubStyle || 'minimal', music: !!this.state.docMusic, mood: this.state.docMusicMood || 'dramatik' };
     this.buildDocVideo(opts, (pct, msg) => this.setState({ docPct: pct, docMsg: msg }))
       .then(async blob => {
         if (job) { try { await this._belgeselCharge('finalize', { job }); } catch (er) {} }   // ücret kesinleşir
@@ -6992,6 +7068,25 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       docNotReady: !this._docReady(),
       docMusic: !!s.docMusic,
       toggleDocMusic: () => this.setState({ docMusic: !s.docMusic }),
+      // FON MÜZİĞİ MİZACI — 5 seçenek; seçili mizaç montaja geçer, ▶ ile önizlenir
+      docMoods: (() => {
+        const cur = s.docMusicMood || 'dramatik';
+        return [
+          ['dramatik', 'Dramatik', 'Yükselen, sinematik gerilim'],
+          ['gerilim', 'Gerilim', 'Düşük, tedirgin, nabız gibi'],
+          ['korku', 'Korku', 'Karanlık uğultu + seyrek tiz'],
+          ['neseli', 'Neşeli', 'Hafif, hareketli, majör'],
+          ['duygusal', 'Duygusal', 'Sıcak, yumuşak, dokunaklı']
+        ].map(([id, label, title]) => ({
+          label, title, pick: () => this.setState({ docMusicMood: id }, () => this.persist()),
+          style: {
+            cursor: 'pointer', fontFamily: "'Special Elite', monospace", fontSize: '10px', letterSpacing: '.06em', padding: '6px 11px', borderRadius: '5px',
+            border: cur === id ? '1px solid #b79bff' : '1px solid rgba(129,135,151,.3)',
+            background: cur === id ? 'rgba(146,87,238,.16)' : 'transparent', color: cur === id ? '#c4b3ff' : '#a4a9b5'
+          }
+        }));
+      })(),
+      previewMood: () => this.previewMoodNow(),
       // Altyazı stili: Minimal (öneri) / Şerit / Vurgu / Yok — küçük, güvenli konumlu
       docSubStyles: (() => {
         const cur = s.docSubStyle || 'minimal';
@@ -7011,6 +7106,8 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       docBtnStyle: { border: 0, cursor: this._docReady() ? 'pointer' : 'not-allowed', color: '#fff', borderRadius: '8px', padding: '13px 22px', fontFamily: "'Special Elite', monospace", fontSize: '11.5px', letterSpacing: '.1em', opacity: this._docReady() ? '1' : '.5', background: 'linear-gradient(115deg,#5b32b8,#7c50d8 55%,#9a72ee)', boxShadow: '0 8px 22px rgba(110,70,210,.32)', justifySelf: 'start' },
       startDocVideo: () => this.startDocVideo(),
       docDownload: () => this.dlVideo(s.docUrl),
+      docShare: () => this.shareMedia(s.docUrl, 'belgesel-' + (this.slugTr((s.result || {}).baslik, 'tarih-ajani')) + '.mp4', (s.result || {}).baslik || 'Tarih Ajanı belgeseli'),
+      shareMsg: s.shareMsg || '',
       ttsError: s.ttsError,
       hasAudio: !!s.audioUrl, audioUrl: s.audioUrl,
 
