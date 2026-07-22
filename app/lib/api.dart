@@ -4,7 +4,12 @@
 // Aksiyonlar sunucudakiyle birebir: generate / scenes / tts / video_list …
 // ═══════════════════════════════════════════════════════════════════════════
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Bilinen son kredi bakiyesi — sunucu yanıtlarından yakalanır (web ile aynı
+/// kaynak: her ücretli işlem güncel bakiyeyi döndürür). null = henüz bilinmiyor.
+final sonKredi = ValueNotifier<int?>(null);
 
 const sbUrl = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
 const sbAnonKey =
@@ -34,9 +39,24 @@ class StudioApi {
   Future<Map<String, dynamic>> _cagri(Map<String, dynamic> govde) async {
     final res = await _sb.functions.invoke('studio-generate', body: govde);
     final data = res.data;
-    if (data is Map<String, dynamic>) return data;
-    if (data is String) return jsonDecode(data) as Map<String, dynamic>;
-    return {'ok': false, 'error': 'Beklenmeyen yanıt'};
+    Map<String, dynamic> d;
+    if (data is Map<String, dynamic>) {
+      d = data;
+    } else if (data is String) {
+      d = jsonDecode(data) as Map<String, dynamic>;
+    } else {
+      d = {'ok': false, 'error': 'Beklenmeyen yanıt'};
+    }
+    final k = d['credits'];
+    if (k is num) sonKredi.value = k.round();
+    return d;
+  }
+
+  /// Ücretsiz ses önizlemesi (~4 sn) — web'in preview akışıyla aynı; url döner.
+  Future<String> sesOnizle(String voice) async {
+    final d = await _cagri({'action': 'tts', 'preview': true, 'voice': voice});
+    if (d['ok'] == true && d['url'] != null) return d['url'] as String;
+    throw Exception(d['error'] ?? 'Önizleme üretilemedi');
   }
 
   /// Tam dosya üretimi (kredi sunucuda düşer; web ile aynı 'generate' aksiyonu).

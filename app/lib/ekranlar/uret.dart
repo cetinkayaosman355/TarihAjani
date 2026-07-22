@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import '../api.dart';
 import '../tema.dart';
 import '../veri.dart';
@@ -53,6 +54,7 @@ class _UretEkraniState extends State<UretEkrani> {
   @override
   void dispose() {
     seciliKonu.removeListener(_konuAl);
+    _calar.dispose();
     super.dispose();
   }
 
@@ -81,9 +83,23 @@ class _UretEkraniState extends State<UretEkrani> {
   ];
   static const _boyutlar = [('9:16', '📱 Dikey 9:16'), ('16:9', '🖥 Yatay 16:9'), ('1:1', '⬛ Kare 1:1')];
   static const _sesler = [
-    ('Kadir Kayışçı', 'İmza Anlatıcı'),
-    ('Seyfullah Kartal', 'Ajans Sesi'),
+    ('Kadir Kayışçı', 'İmza Anlatıcı', 'onyx'),
+    ('Seyfullah Kartal', 'Ajans Sesi', 'echo'),
   ];
+  final _calar = AudioPlayer();
+  int? _dinlenen; // şu an önizlenen ses (satır no)
+
+  Future<void> _dinle(int i) async {
+    if (_dinlenen != null) return;
+    setState(() => _dinlenen = i);
+    try {
+      final url = await widget.api.sesOnizle(_sesler[i].$3);
+      await _calar.setUrl(url);
+      await _calar.play();
+    } catch (_) {/* önizleme gelmezse sessiz geç */} finally {
+      if (mounted) setState(() => _dinlenen = null);
+    }
+  }
 
   Future<void> _uret() async {
     final konu = _konu.text.trim();
@@ -128,7 +144,14 @@ class _UretEkraniState extends State<UretEkrani> {
         padding: const EdgeInsets.all(Bosluk.kenar),
         children: [
           const SizedBox(height: Bosluk.s),
-          Text('Yeni Dosya', style: tema.textTheme.headlineMedium),
+          Row(
+            children: [
+              Expanded(child: Text('Yeni Dosya', style: tema.textTheme.headlineMedium)),
+              ValueListenableBuilder<int?>(
+                  valueListenable: sonKredi,
+                  builder: (context, b, _) => KrediRozeti(bakiye: b)),
+            ],
+          ),
           const SizedBox(height: Bosluk.xs),
           Text('KONU YAZ · TARZI SEÇ · ÜRET', style: tema.textTheme.labelSmall),
           const SizedBox(height: Bosluk.xl),
@@ -198,7 +221,16 @@ class _UretEkraniState extends State<UretEkrani> {
               ),
               child: ListTile(
                 onTap: () => setState(() => _ses = i),
-                leading: Icon(Icons.play_circle_outline, color: context.vurgu),
+                leading: IconButton(
+                  onPressed: () => _dinle(i),
+                  icon: _dinlenen == i
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: context.vurgu))
+                      : Icon(Icons.play_circle_outline, color: context.vurgu),
+                ),
                 title: Text(_sesler[i].$1,
                     style: const TextStyle(fontWeight: FontWeight.w600)),
                 subtitle: Text(_sesler[i].$2),

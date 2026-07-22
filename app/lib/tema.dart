@@ -140,6 +140,36 @@ ThemeData ajanTema(Brightness b) {
   );
 }
 
+/// Kredi rozeti — bilinen son bakiye (sunucu yanıtlarından). PWA'daki "11490 KR".
+class KrediRozeti extends StatelessWidget {
+  const KrediRozeti({super.key, required this.bakiye});
+  final int? bakiye;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Bosluk.m, vertical: 6),
+      decoration: BoxDecoration(
+        border: Border.all(color: context.cizgi),
+        borderRadius: BorderRadius.circular(Kose.cip),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.toll, size: 14, color: context.vurgu),
+          const SizedBox(width: 6),
+          Text(bakiye == null ? 'KR' : '$bakiye KR',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: .5,
+                  color: context.vurgu)),
+        ],
+      ),
+    );
+  }
+}
+
 /// Bölüm başlığı etiketi — "GİZLİ ARŞİV" gibi harf aralıklı altın eyebrow.
 class BolumEtiketi extends StatelessWidget {
   const BolumEtiketi(this.metin, {super.key, this.sag});

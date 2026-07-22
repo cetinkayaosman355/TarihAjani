@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import '../api.dart';
 import '../tema.dart';
+import '../veri.dart';
+import 'vaka.dart';
 
 /// ARŞİV — hesaba bağlı üretimler (web ile ortak: video_list) + hazır dosyalar.
 class ArsivEkrani extends StatefulWidget {
-  const ArsivEkrani({super.key, required this.api});
+  const ArsivEkrani({super.key, required this.api, this.uretAc});
   final StudioApi api;
+  final VoidCallback? uretAc;
 
   @override
   State<ArsivEkrani> createState() => _ArsivEkraniState();
@@ -76,6 +79,33 @@ class _ArsivEkraniState extends State<ArsivEkrani> {
                     ),
                     const SizedBox(height: Bosluk.m),
                   ],
+                const SizedBox(height: Bosluk.xl),
+                const BolumEtiketi('HAZIR VAKA DOSYALARI'),
+                const SizedBox(height: Bosluk.m),
+                for (final v in vakalar) ...[
+                  Card(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(Kose.kart),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) =>
+                              VakaSayfasi(vaka: v, uretAc: widget.uretAc ?? () {}))),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: Bosluk.l, vertical: Bosluk.xs),
+                        leading:
+                            Icon(Icons.folder_special_outlined, color: context.vurgu),
+                        title: Text(v.baslik,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text(v.donem,
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                        trailing: Icon(Icons.chevron_right, color: context.soluk),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: Bosluk.s),
+                ],
               ],
             );
           },

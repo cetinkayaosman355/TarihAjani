@@ -26,7 +26,7 @@ class _KabukEkraniState extends State<KabukEkrani> {
   Widget build(BuildContext context) {
     final ekranlar = [
       MasaEkrani(api: widget.api, uretAc: () => _sekmeSec(2)),
-      ArsivEkrani(api: widget.api),
+      ArsivEkrani(api: widget.api, uretAc: () => _sekmeSec(2)),
       UretEkrani(api: widget.api),
       HaberEkrani(api: widget.api),
       ProfilEkrani(api: widget.api),

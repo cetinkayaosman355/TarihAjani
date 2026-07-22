@@ -13,6 +13,9 @@ class HaberEkrani extends StatelessWidget {
     ('KEŞİF', 'Piri Reis haritasının kayıp kaynağına dair yeni iddia'),
     ('SERGİ', 'Topkapı\'da "Sarayın Gizli Defterleri" sergisi açıldı'),
     ('ARŞİV', 'Yıldız istihbarat arşivinden yeni belgeler dijitalleşti'),
+    ('RESTORASYON', 'Ayasofya\'nın alt katmanlarında yeni mozaik izleri'),
+    ('BULUNTU', 'Karadeniz\'de sağlam durumda antik gemi enkazı tespit edildi'),
+    ('MÜZAYEDE', 'Kanuni dönemine ait ferman rekor fiyata alıcı buldu'),
   ];
 
   @override
