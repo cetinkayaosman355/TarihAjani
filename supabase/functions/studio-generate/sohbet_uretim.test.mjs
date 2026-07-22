@@ -109,13 +109,40 @@ test("Ana ekran sohbeti: 'Ajanla bulalım' geniş sohbete açılır, yan panel b
   assert.ok(src.includes('sc-if value="{{ isSohbet }}"'), "ana ekran sohbet görünümü");
   assert.ok(src.includes('id="ta-mainchatlog"'), "ana sohbet günlüğü");
   assert.ok(src.includes("mode: 'sohbet',\n      chatOpen: false"), "findTopic ana sohbete açar (panel değil)");
-  assert.ok(src.includes("Object.assign({ chatOpen: false, mode: 'wizard' }, patch || {})"), "üretim aksiyonu stüdyoya döner");
+  assert.ok(src.includes("const stay = this.state.mode === 'sohbet'"), "sohbetteyse aksiyonda SOHBETTE KALIR (YouMind akışı)");
   assert.ok(src.includes("← STÜDYOYA DÖN"), "geri dönüş düğmesi");
   assert.ok(src.includes(".ta-mchip") && src.includes('html[data-theme="light"] .ta-mchip'), "çipler iki temada da stilli");
 });
 
+test("YouMind tarzı ÜRETİM TAHTASI: sohbetin yanında canlı üretim durumu", () => {
+  assert.ok(src.includes("ÜRETİM TAHTASI · CANLI"), "tahta başlığı");
+  assert.ok(src.includes("sbHasFile") && src.includes("sbImgs") && src.includes("sbProg"), "tahta VM alanları");
+  assert.ok(src.includes('sc-if value="{{ sbHasDoc }}"') && src.includes('sc-if value="{{ sbHasAudio }}"'), "video + ses tahtada");
+  assert.ok(src.includes("s.generating ? ((s.genMsg || 'ÜRETİLİYOR…')"), "dosya üretimi ilerlemesi tahtada");
+});
+
+test("Fikir ekranı: DİREKT KONUŞMA kutusu + TARZ çipleri (SEN ÖNER tarza uyar)", () => {
+  assert.ok(src.includes('class="ta-ideachat"'), "direkt konuşma kutusu");
+  assert.ok(src.includes("_ideaChatGo()"), "yaz → sohbet başlar");
+  assert.ok(src.includes("chatInput: t }, () => this.sendChat())"), "ilk mesaj olarak gönderilir");
+  assert.ok(src.includes("ideaFormatChips"), "tarz çipleri");
+  assert.ok(src.includes("if (fmt !== 'belgesel') return this._suggestForFormat(fmt)"), "tarz seçiliyse öneri o tarzda");
+  assert.ok(src.includes("_suggestForFormat(f)"), "tarza özel öneri üretici");
+  assert.ok(src.includes("👁 Kendi gözünden"), "POV çipi");
+});
+
+test("Montaj Masası ayrı sayfa: düzenle + ses seviyeleri + render", () => {
+  assert.ok(src.includes("isMontaj: s.mode === 'montaj'") && src.includes('sc-if value="{{ isMontaj }}"'), "ayrı montaj sayfası");
+  assert.ok(src.includes("Montaj Masası"), "sayfa başlığı");
+  assert.ok(src.includes("_docEditSave(gi)") && src.includes("ALTYAZI / ANLATIM"), "sahne altyazı/anlatım düzenleme");
+  assert.ok(src.includes("onVoiceVol") && src.includes("onMusicVol"), "ses seviyesi kaydırıcıları");
+  assert.ok(src.includes("const vGain = ctx.createGain()") && src.includes("s.connect(vGain)"), "seslendirme gain'i render'a işlenir");
+  assert.ok(src.includes("if (withMusic && mGain.gain.value > 0) this._musicBed(ctx, mGain"), "müzik gain'den geçer");
+  assert.ok(src.includes("voiceVol: (this.state.docVoiceVol == null ? 100 : this.state.docVoiceVol) / 100"), "seviye render opts'a gider");
+});
+
 test("Sol menü ÜRET: Video / Ses / Montaj aktif çalışma alanlarına gider", () => {
   assert.ok(src.includes('onClick="{{ modeVideo }}"') && src.includes('onClick="{{ modeSes }}"') && src.includes('onClick="{{ modeMontaj }}"'), "üç öğe tıklanır");
-  assert.ok(src.includes("modeMontaj: () => this._goProduce('video', true)"), "montaj = video sekmesi + liste açık");
+  assert.ok(src.includes("? this.setState({ mode: 'montaj' }"), "montaj kendi sayfasını açar");
   assert.ok(src.includes("sideMontajActive"), "montaj aktif-durum vurgusu");
 });

@@ -18,7 +18,7 @@ test("Fon müziği: 5 mizaç prosedürel motor + montaja geçer", () => {
   assert.ok(src.includes("_musicBed(ctx, dest, t0, total, mood)"), "müzik motoru");
   for (const m of ["gerilim:", "dramatik:", "korku:", "neseli:", "duygusal:"])
     assert.ok(src.includes(m), "mizaç: " + m);
-  assert.ok(src.includes("this._musicBed(ctx, dest, t0, total, opts.mood"), "montaja bağlı");
+  assert.ok(src.includes("this._musicBed(ctx, mGain, t0, total, opts.mood"), "montaja bağlı (müzik gain üzerinden)");
   assert.ok(src.includes("mood: this.state.docMusicMood"), "seçili mizaç montaja gider");
 });
 

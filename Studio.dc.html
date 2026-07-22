@@ -444,6 +444,9 @@
     .ta-mchip:hover { background: rgba(193,154,82,.14); }
     html[data-theme="light"] .ta-mchip { color: #8a6417 !important; background: rgba(150,116,52,.07) !important; border-color: rgba(150,116,52,.4) !important; }
     html[data-theme="light"] .ta-mchip:hover { background: rgba(150,116,52,.14) !important; }
+    /* Fikir ekranı DİREKT KONUŞMA kutusu — aydınlıkta kâğıt görünümü */
+    html[data-theme="light"] .ta-ideachat { background: #fffdf8 !important; border-color: rgba(150,116,52,.45) !important; }
+    html[data-theme="light"] .ta-ideachat input { color: #241f16 !important; }
     /* ═══ PREMIUM CİLA KATMANI (2026) — markup'a dokunmadan çağdaş his ═══
        İlke: köşe yumuşaklığı + derinlik + akıcı mikro-geçişler + net odak hali.
        Inline border-radius (50% avatar/FAB gibi) her zaman kazanır → bozulmaz. */
@@ -675,7 +678,8 @@
         <!-- AJAN SOHBETİ — ANA EKRAN (STORIA tarzı geniş üretim sohbeti; sağdaki
              Ajan Masası paneli basit kalır — hızlı soru/düzenleme için) -->
         <sc-if value="{{ isSohbet }}" hint-placeholder-val="{{ false }}">
-          <div style="animation: ta-rise .5s ease both; max-width: 780px; margin: 0 auto; display: grid; gap: 18px;">
+          <div style="animation: ta-rise .5s ease both; max-width: 1150px; margin: 0 auto; display: flex; gap: 26px; align-items: flex-start; flex-wrap: wrap;">
+          <div style="flex: 1 1 460px; min-width: 0; max-width: 780px; margin: 0 auto; display: grid; gap: 18px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <button onClick="{{ modeWizard }}" style="border: 1px solid rgba(193,154,82,.35); background: transparent; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .12em; padding: 8px 14px; cursor: pointer; border-radius: 8px;" style-hover="border-color: #c19a52;">← STÜDYOYA DÖN</button>
             </div>
@@ -714,6 +718,140 @@
               <input value="{{ chatInput }}" onChange="{{ onChatInput }}" onKeyDown="{{ onChatKey }}" placeholder="Ajana yaz — konuş, üret…" style="flex: 1; min-width: 0; border: 0; background: transparent; color: #f2ecd9; padding: 10px 12px; font-size: 15px;">
               <button onClick="{{ sendChat }}" aria-label="Gönder" style="flex: none; border: 0; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #a77d35, #e9c87e 55%, #c19a52); color: #171207; font-size: 19px; font-weight: 800;">↑</button>
             </div>
+          </div>
+          <!-- ÜRETİM TAHTASI (YouMind tarzı): konuşurken üretilenler yanda canlı belirir -->
+          <sc-if value="{{ sbHasFile }}" hint-placeholder-val="{{ false }}">
+            <aside class="ta-card" style="flex: 0 1 300px; min-width: 260px; position: sticky; top: 92px; padding: 16px 18px; display: grid; gap: 12px;">
+              <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em;">🗂 ÜRETİM TAHTASI · CANLI</span>
+              <strong style="font-family: 'Playfair Display', serif; font-size: 16px; line-height: 1.3; color: #f2ecd9;">{{ sbTitle }}</strong>
+              <sc-if value="{{ sbHasProg }}" hint-placeholder-val="{{ false }}">
+                <p style="margin: 0; color: #c4b3ff; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .08em; animation: ta-pulse 1.4s infinite;">{{ sbProg }}</p>
+              </sc-if>
+              <sc-if value="{{ sbHasImgs }}" hint-placeholder-val="{{ false }}">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                  <sc-for list="{{ sbImgs }}" as="bi" hint-placeholder-count="3">
+                    <img src="{{ bi.u }}" alt="" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; border: 1px solid rgba(193,154,82,.3);">
+                  </sc-for>
+                </div>
+                <span style="color: #818797; font-size: 11px;">{{ sbImgInfo }}</span>
+              </sc-if>
+              <sc-if value="{{ sbHasAudio }}" hint-placeholder-val="{{ false }}">
+                <audio controls src="{{ sbAudio }}" style="width: 100%; height: 34px;"></audio>
+              </sc-if>
+              <sc-if value="{{ sbHasDoc }}" hint-placeholder-val="{{ false }}">
+                <video controls playsinline src="{{ sbDoc }}" style="width: 100%; border-radius: 8px; border: 1px solid rgba(146,87,238,.35);"></video>
+              </sc-if>
+              <button onClick="{{ modeWizard }}" style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.1); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .12em; padding: 10px; cursor: pointer; border-radius: 8px;" style-hover="background: rgba(193,154,82,.2);">STÜDYODA AÇ →</button>
+            </aside>
+          </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- MONTAJ MASASI — ayrı sayfa: sahne ekle/çıkar/sırala + altyazı düzenle
+             + sahne sesi tek tek + ses seviyeleri + belgesel render -->
+        <sc-if value="{{ isMontaj }}" hint-placeholder-val="{{ false }}">
+          <div style="animation: ta-rise .5s ease both; max-width: 860px; margin: 0 auto; display: grid; gap: 16px;">
+            <div>
+              <p style="margin: 0; color: #c19a52; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .18em;">ÜRET · MONTAJ</p>
+              <h2 style="margin: 8px 0 4px; font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700;">Montaj Masası</h2>
+              <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.6;">Sahneleri sırala, çıkar, geri ekle; altyazısını düzenle (✎); sesini tek tek üret (🎙) ya da videosunu çıkar (🎬). Ayarları kur, belgeseli oluştur — tek tek ürettiğin sesler render'da <strong style="color: #c4b3ff;">kredisiz</strong> kullanılır.</p>
+            </div>
+            <sc-if value="{{ docNotReady }}" hint-placeholder-val="{{ false }}">
+              <div class="ta-card" style="padding: 16px 18px;"><p style="margin: 0; color: #e0a58a; font-size: 13px;">⚠ Montaj için en az 2 sahne görseli gerekli. Önce <strong>Görsel</strong> bölümünden sahneleri üret; burada otomatik listelenir.</p></div>
+            </sc-if>
+            <div style="display: grid; gap: 7px;">
+              <sc-for list="{{ docSceneRows }}" as="dm" hint-placeholder-count="4">
+                <div style="display: grid; gap: 7px;">
+                  <div style="{{ dm.rowStyle }}">
+                    <span style="flex: 0 0 auto; width: 20px; text-align: center; color: #818797; font-family: 'Special Elite', monospace; font-size: 10px;">{{ dm.no }}</span>
+                    <img src="{{ dm.img }}" alt="" style="{{ dm.thumbStyle }}">
+                    <span style="flex: 1; min-width: 0; color: #cfd3dc; font-size: 12px; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{ dm.text }}</span>
+                    <span style="flex: 0 0 auto; display: flex; gap: 3px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+                      <button onClick="{{ dm.editStart }}" title="Altyazıyı / anlatımı düzenle" style="border: 1px solid rgba(193,154,82,.4); background: rgba(193,154,82,.08); color: #e6c478; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">✎</button>
+                      <button onClick="{{ dm.voice }}" disabled="{{ dm.voiceBusy }}" title="{{ dm.voiceTitle }}" style="border: 1px solid rgba(146,87,238,.4); background: rgba(146,87,238,.08); color: #d9c8ff; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">{{ dm.voiceIcon }}</button>
+                      <button onClick="{{ dm.vid }}" title="{{ dm.vidTitle }}" style="border: 1px solid rgba(146,87,238,.4); background: rgba(146,87,238,.08); color: #d9c8ff; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">🎬</button>
+                      <button onClick="{{ dm.up }}" disabled="{{ dm.first }}" title="Yukarı" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">▲</button>
+                      <button onClick="{{ dm.down }}" disabled="{{ dm.last }}" title="Aşağı" style="border: 1px solid rgba(129,135,151,.3); background: transparent; color: #a4a9b5; width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 12px;">▼</button>
+                      <button onClick="{{ dm.toggle }}" title="{{ dm.toggleTitle }}" style="{{ dm.toggleStyle }}">{{ dm.toggleIcon }}</button>
+                    </span>
+                  </div>
+                  <sc-if value="{{ dm.editing }}" hint-placeholder-val="{{ false }}">
+                    <div class="ta-card" style="padding: 12px 14px; display: grid; gap: 8px; border-color: rgba(193,154,82,.4);">
+                      <span style="color: #c19a52; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .12em;">ALTYAZI / ANLATIM — kaydedince altyazı ve yeni seslendirme bu metni kullanır</span>
+                      <textarea value="{{ docEditText }}" onChange="{{ onDocEditText }}" rows="2" style="width: 100%; border: 1px solid rgba(193,154,82,.35); background: rgba(2,4,10,.5); color: #f2ecd9; padding: 10px 12px; font-size: 13px; line-height: 1.5; border-radius: 8px; resize: vertical;"></textarea>
+                      <span style="display: flex; gap: 8px;">
+                        <button onClick="{{ dm.editSave }}" style="border: 0; background: #c19a52; color: #171207; font-weight: 800; font-size: 10.5px; letter-spacing: .08em; padding: 8px 14px; cursor: pointer; border-radius: 6px;">KAYDET</button>
+                        <button onClick="{{ dm.editCancel }}" style="border: 1px solid rgba(129,135,151,.35); background: transparent; color: #a4a9b5; font-size: 10.5px; padding: 8px 12px; cursor: pointer; border-radius: 6px;">VAZGEÇ</button>
+                      </span>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ docMontageMsg }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 0; color: #e6c478; font-size: 12px;">{{ docMontageMsg }}</p>
+            </sc-if>
+            <!-- AYARLAR: altyazı · geçiş · müzik · ses seviyeleri -->
+            <div class="ta-card" style="padding: 16px 18px; display: grid; gap: 11px;">
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <span style="font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em; color: #818797;">ALTYAZI</span>
+                <sc-for list="{{ docSubStyles }}" as="ms" hint-placeholder-count="4"><button onClick="{{ ms.pick }}" style="{{ ms.style }}">{{ ms.label }}</button></sc-for>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span style="font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .14em; color: #818797;">GEÇİŞ</span>
+                <sc-for list="{{ docTransitions }}" as="mt" hint-placeholder-count="3"><button onClick="{{ mt.pick }}" title="{{ mt.title }}" style="{{ mt.style }}">{{ mt.label }}</button></sc-for>
+              </div>
+              <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #cfd3dc; font-size: 12.5px;"><input type="checkbox" checked="{{ docMusic }}" onChange="{{ toggleDocMusic }}"> Fon müziği</label>
+                <sc-if value="{{ docMusic }}" hint-placeholder-val="{{ true }}">
+                  <span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                    <sc-for list="{{ docMoods }}" as="mo2" hint-placeholder-count="5"><button onClick="{{ mo2.pick }}" title="{{ mo2.title }}" style="{{ mo2.style }}">{{ mo2.label }}</button></sc-for>
+                    <button onClick="{{ previewMood }}" title="Seçili mizacı dinle (~4 sn)" style="border: 1px solid rgba(146,87,238,.5); background: rgba(146,87,238,.12); color: #d9c8ff; border-radius: 6px; width: 30px; height: 28px; cursor: pointer; font-size: 12px;">▶</button>
+                  </span>
+                </sc-if>
+              </div>
+              <div style="display: grid; gap: 8px; max-width: 460px;">
+                <label style="display: grid; grid-template-columns: 120px 1fr 44px; gap: 10px; align-items: center; color: #cfd3dc; font-size: 12px;">
+                  <span>🎙 Seslendirme</span>
+                  <input type="range" min="0" max="100" value="{{ docVoiceVol }}" onChange="{{ onVoiceVol }}" style="width: 100%; accent-color: #c19a52;">
+                  <span style="text-align: right; color: #818797; font-variant-numeric: tabular-nums;">%{{ docVoiceVol }}</span>
+                </label>
+                <label style="display: grid; grid-template-columns: 120px 1fr 44px; gap: 10px; align-items: center; color: #cfd3dc; font-size: 12px;">
+                  <span>🎵 Müzik</span>
+                  <input type="range" min="0" max="100" value="{{ docMusicVol }}" onChange="{{ onMusicVol }}" style="width: 100%; accent-color: #9a72ee;">
+                  <span style="text-align: right; color: #818797; font-variant-numeric: tabular-nums;">%{{ docMusicVol }}</span>
+                </label>
+                <span style="color: #676d7c; font-size: 11px;">%0 = tamamen kapalı. Seviyeler videoya işlenir.</span>
+              </div>
+            </div>
+            <!-- RENDER -->
+            <sc-if value="{{ docBusy }}" hint-placeholder-val="{{ false }}">
+              <div class="ta-card" style="padding: 16px 18px; display: grid; gap: 7px;">
+                <div style="height: 6px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden;"><div style="{{ docBarStyle }}"></div></div>
+                <p style="margin: 0; color: #c4b3ff; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .06em;">{{ docMsg }}</p>
+                <p style="margin: 0; color: #676d7c; font-size: 11px;">Video gerçek zamanlı kaydediliyor — sekmeyi kapatma.</p>
+              </div>
+            </sc-if>
+            <sc-if value="{{ docHasUrl }}" hint-placeholder-val="{{ false }}">
+              <div class="ta-card" style="padding: 16px 18px; display: grid; gap: 9px;">
+                <video src="{{ docUrl }}" controls playsinline style="width: 100%; max-width: 380px; border-radius: 8px; border: 1px solid rgba(146,87,238,.35);"></video>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                  <button onClick="{{ docDownload }}" style="border: 0; cursor: pointer; color: #fff; border-radius: 7px; padding: 10px 18px; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em; background: linear-gradient(115deg, #5b32b8, #7c50d8 55%, #9a72ee);">⬇ İNDİR</button>
+                  <button onClick="{{ docShare }}" style="border: 1px solid rgba(146,87,238,.55); cursor: pointer; color: #d9c8ff; background: rgba(146,87,238,.12); border-radius: 7px; padding: 10px 16px; font-family: 'Special Elite', monospace; font-size: 10.5px; letter-spacing: .1em;">↗ PAYLAŞ</button>
+                  <button onClick="{{ startDocVideo }}" style="border: 1px solid rgba(129,135,151,.4); background: transparent; color: #a4a9b5; border-radius: 7px; padding: 10px 16px; font-family: 'Special Elite', monospace; font-size: 10.5px; cursor: pointer;">↻ TEKRAR OLUŞTUR</button>
+                  <sc-if value="{{ shareMsg }}" hint-placeholder-val="{{ false }}"><span style="color: #9ed3a8; font-family: 'Special Elite', monospace; font-size: 10px;">{{ shareMsg }}</span></sc-if>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ docErr }}" hint-placeholder-val="{{ false }}">
+              <p style="margin: 0; color: #e0a58a; font-size: 12.5px;">⚠ {{ docErr }}</p>
+            </sc-if>
+            <sc-if value="{{ docIdle }}" hint-placeholder-val="{{ true }}">
+              <div style="display: grid; gap: 6px; justify-items: start;">
+                <button onClick="{{ startDocVideo }}" disabled="{{ docNotReady }}" style="{{ docBtnStyle }}">🎞 BELGESELİ OLUŞTUR</button>
+                <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 10px;">{{ docCostHint }}</span>
+              </div>
+            </sc-if>
           </div>
         </sc-if>
 
@@ -1110,6 +1248,14 @@
                 <button onClick="{{ chip.use }}" style="border: 1px solid rgba(129,135,151,.3); background: rgba(8,11,19,.8); color: #a4a9b5; padding: 8px 14px; font-size: 12.5px; cursor: pointer;" style-hover="border-color: rgba(193,154,82,.6); color: #e6c478;">{{ chip.text }}</button>
               </sc-for>
             </div>
+            <!-- TARZ SEÇİMİ (opsiyonel): SEN ÖNER'e basmadan tıklarsan öneriler ve
+                 üretim O TARZDA olur; tıklamazsan şimdiki gibi klasik hikâyeden gider. -->
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 12px;">
+              <span style="color: #676d7c; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .14em;">TARZ (OPS.)</span>
+              <sc-for list="{{ ideaFormatChips }}" as="fc" hint-placeholder-count="6">
+                <button onClick="{{ fc.pick }}" title="{{ fc.title }}" style="{{ fc.style }}">{{ fc.label }}</button>
+              </sc-for>
+            </div>
             <!-- BİRİNCİL EYLEM yukarı alındı: konu + öneri satırının hemen altında, kaydırmadan görünür -->
             <sc-if value="{{ ideaWarn }}" hint-placeholder-val="{{ '' }}">
               <div style="margin: 16px 0 0; padding: 12px 14px; border: 1px solid rgba(201,120,90,.4); background: rgba(201,120,90,.08);">
@@ -1120,6 +1266,13 @@
             <sc-if value="{{ draftErr }}" hint-placeholder-val="{{ false }}">
               <p style="margin: 14px 0 0; color: #e0a58a; font-size: 13px;">⚠ {{ draftErr }}</p>
             </sc-if>
+            <!-- DİREKT KONUŞMA: buraya yaz → ana ekran sohbeti açılır, ajan hemen cevaplar
+                 (boş bırakıp ok'a basarsan konu bulma sohbeti açılır) -->
+            <div class="ta-ideachat" style="display: flex; gap: 8px; margin-top: 16px; max-width: 600px; align-items: center; border: 1px solid rgba(193,154,82,.32); border-radius: 26px; background: rgba(6,9,16,.85); padding: 6px 6px 6px 16px;">
+              <span style="flex: none; font-size: 15px;">💬</span>
+              <input value="{{ ideaChat }}" onChange="{{ onIdeaChat }}" onKeyDown="{{ onIdeaChatKey }}" placeholder="Ajana yaz — konuşarak bulalım, üretelim…" style="flex: 1; min-width: 0; border: 0; background: transparent; color: #f2ecd9; font-size: 14.5px; padding: 9px 0;">
+              <button onClick="{{ ideaChatGo }}" aria-label="Konuşmayı başlat" style="flex: none; border: 0; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #a77d35, #e9c87e 55%, #c19a52); color: #171207; font-size: 18px; font-weight: 800;">↑</button>
+            </div>
             <div class="ta-stepnav" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 18px;">
               <button onClick="{{ findTopic }}" style="border: 0; background: transparent; color: #818797; font-size: 12.5px; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px;" style-hover="color: #e6c478;">Ne yazacağını bilmiyor musun? Ajanla bulalım →</button>
               <sc-if value="{{ isOwnMode }}" hint-placeholder-val="{{ false }}">
@@ -1739,7 +1892,7 @@
                       <span style="color: #f2ecd9; font-size: 13.5px; font-weight: 600;">🔗 Karakter tutarlılığı</span>
                       <span style="color: #b79bff; font-family: 'Special Elite', monospace; font-size: 8.5px; letter-spacing: .12em; border: 1px solid rgba(183,155,255,.35); border-radius: 20px; padding: 2px 8px;">REFERANS GÖRSEL</span>
                     </label>
-                    <p style="margin: 0; color: #a4a9b5; font-size: 12px; line-height: 1.6;">Açıkken: <strong style="color:#c4b3ff;">ilk ürettiğin sahne</strong> referans olur, sonraki sahneler aynı yüz/kıyafeti korur. En iyi sonuç için sağlayıcıyı <strong style="color:#e6c478;">Gemini</strong> seç (referans görselde en tutarlısı). İstersen kendi referansını da yükleyebilirsin.</p>
+                    <p style="margin: 0; color: #a4a9b5; font-size: 12px; line-height: 1.6;">Sorun şu: yapay zekâ her görseli sıfırdan çizer — aynı kişi her sahnede <strong style="color:#c4b3ff;">farklı bir yüzle</strong> çıkabilir. Bu anahtar açıkken sistem, karakterin daha önce üretilmiş görselini sonraki sahnelere <strong style="color:#c4b3ff;">örnek (referans)</strong> olarak verir → aynı yüz, aynı kıyafet devam eder. Birden çok karakter varsa her biri <strong style="color:#c4b3ff;">kendi</strong> ilk görünüşünü hatırlar. Kendi fotoğrafını/karakterini yüklersen tüm sahneler onu baz alır. İpucu: motor olarak <strong style="color:#e6c478;">Gemini</strong> referansa en sadık olandır.</p>
                     <sc-if value="{{ charLock }}" hint-placeholder-val="{{ false }}">
                       <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                         <label style="border: 1px solid rgba(193,154,82,.5); background: rgba(193,154,82,.08); color: #e6c478; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: .08em; padding: 7px 13px; cursor: pointer; border-radius: 6px;">⬆ REFERANS YÜKLE<input type="file" accept="image/*" onChange="{{ onCharRefUpload }}" style="display: none;"></label>
@@ -2514,6 +2667,9 @@ class Component extends DCLogic {
       // (tek tek üretilen sesler yenilemede kaybolmaz; montaj bunları KREDİSİZ kullanır)
       docOrder: (w && w.docOrder) || null, docExcl: (w && w.docExcl) || null, docMontageFile: (w && w.docMontageFile) || '',
       docAud: (w && w.docAud) || {}, docAudFile: (w && w.docAudFile) || '', docAudBusy: '',
+      docEditKey: '', docEditText: '',
+      docVoiceVol: (w && w.docVoiceVol != null) ? w.docVoiceVol : 100,
+      docMusicVol: (w && w.docMusicVol != null) ? w.docMusicVol : 100,
       // Panel seçimleri dosyayla geri yüklenir (UI seçimi yenilemede kaybolmaz/geri dönmez)
       imgStyle: (w && w.imgStyle) || null, imgStyleCat: (w && w.imgStyleCat) || '', imgPlatform: (w && w.imgPlatform) || '',
       imgAspect: (w && w.imgAspect) || null, imgAspectManual: !!(w && w.imgAspectManual), imgValErr: '', imgZoom: '',
@@ -2533,7 +2689,7 @@ class Component extends DCLogic {
       batchTick: 0,                              // canlı "kalan süre" için 1sn'lik re-render sayacı
       vpPlaying: '', vpBusy: '',
       step: w ? 4 : 1,
-      idea: (w && w.idea) || '', ideaWarn: '',
+      idea: (w && w.idea) || '', ideaWarn: '', ideaChat: '',
       fromArsiv: false, arsivPick: false, chipSeed: this._pickChips(),
       tone: (w && w.tone) || 'merak', voice: (w && w.voice) || 'kadir', style: (w && w.style) || 'sinematik', duration: (w && w.duration) || 'dk4', model: (w && w.model) || 'claude', aspect: (w && w.aspect) || 'yatay', format: (w && w.format) || 'belgesel', regenKey: null,
       fineOpen: (typeof window === 'undefined') || window.innerWidth > 840,   // U-01: ince ayar mobilde kapalı gelir
@@ -2698,7 +2854,8 @@ class Component extends DCLogic {
       duration: s.duration, model: s.model, format: s.format || 'belgesel', sysAudioUrl: s.sysAudioUrl || '', ts: Date.now(),
       // Montaj düzeni + sahne seslendirme önbelleği dosyayla yaşar (yenilemede korunur)
       docOrder: s.docOrder || null, docExcl: s.docExcl || null, docMontageFile: s.docMontageFile || '',
-      docAud: s.docAud || {}, docAudFile: s.docAudFile || ''
+      docAud: s.docAud || {}, docAudFile: s.docAudFile || '',
+      docVoiceVol: (s.docVoiceVol == null ? 100 : s.docVoiceVol), docMusicVol: (s.docMusicVol == null ? 100 : s.docMusicVol)
     } : null;
     // Aktif dosyanın görsel/video/ses durumunu kendi geçmiş kaydına da işle → dosyayı
     // Geçmiş/Arşiv'ten tekrar açınca üretilenler geri gelir (yalnız aktif kaydı günceller).
@@ -3797,11 +3954,12 @@ class Component extends DCLogic {
     } catch (e) { this._imgXformOk = false; }
   }
   thumbBox(ar) {
-    const arCss = { yatay: '16/9', dikey: '9/16', kare: '1/1' }[ar] || '16/9';
-    // Daha kompakt + premium: dev 9:16 görseller artık ekranı kaplamıyor; ilki düzenli
-    // durur, büyütmek için tıklanır. (Kullanıcı geri bildirimi: "çok yer kaplıyor".)
+    // Daha kompakt + premium: dev 9:16 görseller ekranı kaplamıyor; büyütmek için tıklanır.
+    // YAN BOŞLUK YOK ("yanlar beyaz olmasın"): kutu görselin KENDİ oranını alır
+    // (width:auto + max sınırlar). Eski sabit aspectRatio + zemin dolgusu, oran
+    // uyuşmazlığında yanlarda beyaz/koyu şeritler bırakıyordu; çerçeve artık görsele yapışır.
     const box = { yatay: { mw: 'min(100%, 540px)', mh: '38vh' }, dikey: { mw: '256px', mh: '44vh' }, kare: { mw: '336px', mh: '42vh' } }[ar] || { mw: 'min(100%, 540px)', mh: '38vh' };
-    return { width: '100%', aspectRatio: arCss, maxWidth: box.mw, maxHeight: box.mh, objectFit: 'contain', background: '#05070d', display: 'block', margin: '0 auto', cursor: 'zoom-in', borderRadius: '8px', border: '1px solid rgba(193,154,82,.18)', boxShadow: '0 10px 30px rgba(0,0,0,.4)' };
+    return { width: 'auto', height: 'auto', maxWidth: box.mw, maxHeight: box.mh, objectFit: 'contain', background: 'transparent', display: 'block', margin: '0 auto', cursor: 'zoom-in', borderRadius: '8px', border: '1px solid rgba(193,154,82,.18)', boxShadow: '0 10px 30px rgba(0,0,0,.4)' };
   }
   // Lightbox galerisi: açık ekrandaki büyütülebilir görselleri sırayla topla,
   // ← → ile gez. DOM'dan okur — her raf (sahne/kapak/üretilen) otomatik dahil.
@@ -5033,9 +5191,25 @@ class Component extends DCLogic {
         voiceTitle: hasAud ? 'Seslendirme hazır — dinle (montaj bunu KREDİSİZ kullanır)' : 'Bu sahnenin seslendirmesini üret (montaj aynı sesi kullanır, iki kez ödemezsin)',
         voice: () => this.docSceneVoice(gi),
         vid: () => this.openVideoModal({ kind: 'scene', key: 'gp' + gi, url: rawImg }),
-        vidTitle: 'Bu sahneden AI video üret (sağlayıcı/süre seçimi açılır)'
+        vidTitle: 'Bu sahneden AI video üret (sağlayıcı/süre seçimi açılır)',
+        // ALTYAZI/ANLATIM DÜZENLE (montaj sayfası): kaydedince altyazı + gelecek
+        // seslendirme bu metni kullanır; ses önbelleği metin değiştiği için
+        // kendiliğinden geçersizleşir (yeni ses istenince yeniden üretilir).
+        editing: this.state.docEditKey === 'gp' + gi,
+        editStart: () => this.setState({ docEditKey: 'gp' + gi, docEditText: text }),
+        editSave: () => this._docEditSave(gi),
+        editCancel: () => this.setState({ docEditKey: '', docEditText: '' })
       };
     });
+  }
+  // Montaj: sahnenin altyazı/anlatım metnini kaydet (altyazı + TTS bunu okur)
+  _docEditSave(gi) {
+    const t = String(this.state.docEditText || '').trim();
+    if (!t) { this.setState({ docEditKey: '', docEditText: '' }); return; }
+    const r = JSON.parse(JSON.stringify(this.state.result || {}));
+    if (!r.gorsel_promptlar || !r.gorsel_promptlar[gi]) return;
+    r.gorsel_promptlar[gi].anlatim = t;
+    this.setState({ result: r, docEditKey: '', docEditText: '' }, () => this.persist());
   }
   _loadImg(url) {
     return new Promise((res, rej) => {
@@ -5180,10 +5354,14 @@ class Component extends DCLogic {
     const vStream = canvas.captureStream(30);
     const dest = ctx.createMediaStreamDestination();
 
-    // 3) Ses zamanlaması: her klip sırayla; opsiyonel hafif ambient
+    // 3) Ses zamanlaması: her klip sırayla; opsiyonel hafif ambient.
+    // SES SEVİYELERİ (montaj masası): seslendirme ve müzik ayrı gain'den geçer —
+    // kullanıcı %0-100 kısar/açar; %0 = o kanal videoya hiç girmez.
+    const vGain = ctx.createGain(); vGain.gain.value = (opts.voiceVol == null ? 1 : Math.max(0, opts.voiceVol)); vGain.connect(dest);
+    const mGain = ctx.createGain(); mGain.gain.value = (opts.musicVol == null ? 1 : Math.max(0, opts.musicVol)); mGain.connect(dest);
     const t0 = ctx.currentTime + 0.2; let acc = t0;
-    prep.forEach(p => { if (p.buf) { const s = ctx.createBufferSource(); s.buffer = p.buf; s.connect(dest); s.start(acc); } acc += p.dur; });
-    if (withMusic) this._musicBed(ctx, dest, t0, total, opts.mood || 'dramatik');
+    prep.forEach(p => { if (p.buf) { const s = ctx.createBufferSource(); s.buffer = p.buf; s.connect(vGain); s.start(acc); } acc += p.dur; });
+    if (withMusic && mGain.gain.value > 0) this._musicBed(ctx, mGain, t0, total, opts.mood || 'dramatik');
 
     // 4) Kayıt
     const mime = this._recorderMime();
@@ -5315,7 +5493,10 @@ class Component extends DCLogic {
       return;
     }
     // 2) Tarayıcıda montaj
-    const opts = { subStyle: this.state.docSubStyle || 'minimal', music: !!this.state.docMusic, mood: this.state.docMusicMood || 'dramatik', transition: this.state.docTransition || 'yumusak' };
+    const opts = { subStyle: this.state.docSubStyle || 'minimal', music: !!this.state.docMusic, mood: this.state.docMusicMood || 'dramatik', transition: this.state.docTransition || 'yumusak',
+      // Montaj masası ses seviyeleri (%0-100 → 0-1); %0 = kanal kapalı
+      voiceVol: (this.state.docVoiceVol == null ? 100 : this.state.docVoiceVol) / 100,
+      musicVol: (this.state.docMusicVol == null ? 100 : this.state.docMusicVol) / 100 };
     this.buildDocVideo(opts, (pct, msg) => this.setState({ docPct: pct, docMsg: msg }))
       .then(async blob => {
         if (job) { try { await this._belgeselCharge('finalize', { job }); } catch (er) {} }   // ücret kesinleşir
@@ -6611,6 +6792,29 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
 
       steps: stepDefs,
       isSohbet: s.mode === 'sohbet',   // ana ekran üretim sohbeti (STORIA tarzı; yan panel basit kalır)
+      // ÜRETİM TAHTASI (YouMind tarzı): sohbetin yanında canlı üretim durumu
+      ...((() => {
+        const r2 = s.result;
+        const si2 = s.sceneImgs || {};
+        const urls = Object.keys(si2).filter(k => /^gp\d+$/.test(k) && si2[k] && si2[k].url)
+          .sort((a, b) => (+a.slice(2)) - (+b.slice(2))).map(k => si2[k].url);
+        const nG = r2 ? ((r2.gorsel_promptlar || []).length || 0) : 0;
+        const prog = s.generating ? ((s.genMsg || 'ÜRETİLİYOR…') + ' %' + (s.genPct || 0))
+          : s.scenesBusy ? 'SAHNE PROMPTLARI…'
+          : s.docBusy ? (s.docMsg || 'MONTAJ…')
+          : s.batchRunning ? 'GÖRSELLER ÜRETİLİYOR…'
+          : s.sysTtsBusy ? 'SESLENDİRME ÜRETİLİYOR…' : '';
+        return {
+          sbHasFile: !!r2 || !!prog,
+          sbTitle: (r2 && r2.baslik) || (s.idea || '').slice(0, 60),
+          sbHasProg: !!prog, sbProg: prog,
+          sbHasImgs: urls.length > 0,
+          sbImgs: urls.slice(0, 6).map(u => ({ u: this._dispSrc(u, 200) })),
+          sbImgInfo: urls.length + '/' + (nG || '?') + ' sahne görseli',
+          sbHasAudio: !!s.sysAudioUrl, sbAudio: s.sysAudioUrl || '',
+          sbHasDoc: !!s.docUrl, sbDoc: s.docUrl || ''
+        };
+      })()),
       isStep1: s.mode === 'wizard' && s.step === 1,
       isStep2: s.mode === 'wizard' && s.step === 2,
       isStep3: s.mode === 'wizard' && s.step === 3,
@@ -6635,10 +6839,15 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       // açık). Dosya yoksa Dosyalarım'a götürür (kullanıcı dosya seçip döner).
       modeVideo: () => this._goProduce('video', false),
       modeSes: () => this._goProduce('ses', false),
-      modeMontaj: () => this._goProduce('video', true),
-      sideVideoActive: (s.mode === 'wizard' && s.step === 4 && s.tab === 'video' && !s.docMontageOpen) ? SIDE_ON : {},
+      // MONTAJ artık AYRI bir sayfa (mode 'montaj'): sahne ekle/çıkar/sırala,
+      // altyazı düzenle, sahne sesi tek tek üret, ses seviyeleri, render — tek yerde.
+      modeMontaj: () => this.state.result
+        ? this.setState({ mode: 'montaj' }, () => { try { window.scrollTo(0, 0); } catch (e) {} })
+        : this.setState({ mode: 'history', histTab: 'files' }),
+      isMontaj: s.mode === 'montaj',
+      sideVideoActive: (s.mode === 'wizard' && s.step === 4 && s.tab === 'video') ? SIDE_ON : {},
       sideSesActive: (s.mode === 'wizard' && s.step === 4 && s.tab === 'ses') ? SIDE_ON : {},
-      sideMontajActive: (s.mode === 'wizard' && s.step === 4 && s.tab === 'video' && !!s.docMontageOpen) ? SIDE_ON : {},
+      sideMontajActive: s.mode === 'montaj' ? SIDE_ON : {},
       sideDosyalarActive: (s.mode === 'history' && (s.histTab || 'files') === 'files') ? SIDE_ON : {},
       sideGorsellerActive: (s.mode === 'history' && s.histTab === 'images') ? SIDE_ON : {},
       sideVideolarActive: (s.mode === 'history' && s.histTab === 'videos') ? SIDE_ON : {},
@@ -6808,6 +7017,33 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       editIg: () => this.startEdit('ig', 0, 'Instagram açıklaması'),
       suggestIdea: () => this.suggestIdeaNow(),
       findTopic: () => this.findTopic(),
+      // DİREKT KONUŞMA (fikir ekranı): yaz → ana ekran sohbetinde ajan hemen cevaplar
+      ideaChat: s.ideaChat || '',
+      onIdeaChat: e => this.setState({ ideaChat: e.target.value }),
+      onIdeaChatKey: e => { if (e.key === 'Enter') this._ideaChatGo(); },
+      ideaChatGo: () => this._ideaChatGo(),
+      // TARZ ÇİPLERİ (opsiyonel): s.format ile AYNI state — SEN ÖNER de üretim de buna uyar.
+      ideaFormatChips: (() => {
+        const cur = s.format || 'belgesel';
+        const defs = [
+          { id: 'belgesel', l: '🎬 Klasik', t: 'Kanal varsayılanı — belgesel anlatım' },
+          { id: 'pov', l: '👁 Kendi gözünden', t: 'POV: izleyici olayın içinde ("sen oradasın")' },
+          { id: 'soru', l: '❓ Soru-cevap', t: 'Tek büyük soruyla açılır, cevap sona saklanır' },
+          { id: 'liste', l: '🔢 Top liste', t: 'Geri sayımlı liste — en çarpıcı madde sona' },
+          { id: 'neolurdu', l: '🔀 Ne olurdu?', t: 'Alternatif tarih: "Peki ya … olsaydı?"' },
+          { id: 'reels', l: '⚡ Viral Reels', t: 'İlk 2 saniyede kilitleyen kısa video' }
+        ];
+        return defs.map(d => ({
+          label: d.l, title: d.t,
+          pick: () => this.setState({ format: d.id }, () => this.persist()),
+          style: {
+            border: '1px solid ' + (cur === d.id ? '#c19a52' : 'rgba(129,135,151,.3)'),
+            background: cur === d.id ? 'rgba(193,154,82,.18)' : 'transparent',
+            color: cur === d.id ? '#e6c478' : '#818797',
+            padding: '6px 12px', fontSize: '11.5px', cursor: 'pointer', borderRadius: '999px'
+          }
+        }));
+      })(),
       // FİKİR MODU + TASLAK VM
       ideaMode: s.ideaMode || 'suggest',
       isOwnMode: (s.ideaMode || 'suggest') === 'own',
@@ -7434,6 +7670,13 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
       previewMood: () => this.previewMoodNow(),
       // MONTAJ ALANI — sahne sırası + dahil/çıkar
       docMontageOpen: !!s.docMontageOpen,
+      // Montaj sayfası: altyazı düzenleme + ses seviyeleri
+      docEditText: s.docEditText || '',
+      onDocEditText: e => this.setState({ docEditText: e.target.value }),
+      docVoiceVol: (s.docVoiceVol == null ? 100 : s.docVoiceVol),
+      docMusicVol: (s.docMusicVol == null ? 100 : s.docMusicVol),
+      onVoiceVol: e => this.setState({ docVoiceVol: Math.max(0, Math.min(100, parseInt(e.target.value, 10) || 0)) }, () => this.persist()),
+      onMusicVol: e => this.setState({ docMusicVol: Math.max(0, Math.min(100, parseInt(e.target.value, 10) || 0)) }, () => this.persist()),
       toggleDocMontage: () => this.setState({ docMontageOpen: !s.docMontageOpen }),
       docMontageCaret: s.docMontageOpen ? '▾' : '▸',
       docSceneCount: this._docBaseIndices().length,
@@ -7804,8 +8047,13 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     // Kredi harcayan/modal açan işlemde sohbeti KAPAT: mobilde sohbet paneli
     // (z-index 1300) kredi modalını (1290) ve sekme çıktısını ÖRTER — kullanıcı
     // "hiçbir şey olmadı" sanır. Kapatınca modal/sekme/çıktı görünür olur.
-    // Ana ekran sohbetindeysek (mode 'sohbet') stüdyoya dönülür → çıktı görünür.
-    const go = (patch) => this.setState(Object.assign({ chatOpen: false, mode: 'wizard' }, patch || {}));
+    // ANA EKRAN SOHBETİ (YouMind tarzı): mode 'sohbet' ise SOHBETTE KAL — üretim
+    // yandaki ÜRETİM TAHTASI'nda canlı görünür (modallar sabit katman, görünür).
+    // Yan paneldeysek stüdyoya dönülür (panel modalları örtüyordu).
+    const go = (patch) => {
+      const stay = this.state.mode === 'sohbet';
+      this.setState(Object.assign({ chatOpen: false }, stay ? {} : { mode: 'wizard' }, patch || {}));
+    };
     if (kind === 'konu') {
       const t = String(arg || '').trim(); if (!t) return;
       this.setState({ idea: t, ideaWarn: '' }, () => this.persist());
@@ -7814,8 +8062,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     }
     if (kind === 'uret') {
       if (!this.looksLikeTopic(s.idea || '')) { say('Önce geçerli bir tarih konusu verelim; sonra hemen üretirim.'); return; }
-      go({ mode: 'wizard' });
+      go({});   // sohbetteysen SOHBETTE KALIR — üretim tahtada canlı akar
       this.startGenerate();
+      say('✓ Dosyayı üretiyorum — ilerlemeyi yandaki Üretim Tahtası\'nda görebilirsin. Bitince "tüm görselleri üret" ya da "seslendir" diyebilirsin.');
       return;
     }
     if (kind === 'gorseller' || (kind === 'gorsel' && !sceneNo())) {
@@ -7857,9 +8106,11 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
     if (kind === 'belgesel') {
       if (!r) { say('Önce dosyayı üretelim.'); return; }
       if (!this._docReady()) { say('Belgesel montajı için en az 2 üretilmiş sahne görseli gerekli. Önce “tüm sahne görsellerini üret” diyebilirsin; görseller hazır olunca montajlarım.'); return; }
-      go({ tab: 'video' });
+      // Sohbetteysen kal (tahta ilerlemeyi + biten videoyu gösterir); değilsen Montaj Masası açılır
+      if (this.state.mode === 'sohbet') this.setState({ chatOpen: false });
+      else this.setState({ chatOpen: false, mode: 'montaj' });
       this.startDocVideo();
-      say('✓ Belgesel videoyu montajlıyorum — Video sekmesinde ilerlemeyi görebilirsin. Bittiğinde indirme ve paylaşma düğmeleri orada olacak.');
+      say('✓ Belgesel videoyu montajlıyorum — ilerleme ' + (this.state.mode === 'sohbet' ? 'yandaki Üretim Tahtası\'nda' : 'Montaj Masası\'nda') + '. Bittiğinde video, indirme ve paylaşma orada olacak.');
       return;
     }
     if (kind === 'duzenle') {
@@ -8182,6 +8433,37 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   // Fikir bulamayan/takılan kullanıcı için: çıkmaz yerine SORU-CEVAP. Sohbeti
   // açar, ajan "konu bulucu" rolüyle proaktif bir açılışla karşılar. Kullanıcı
   // konuşarak konuyu bulur, beğendiğini konu kutusuna yazar (sohbet kredi harcamaz).
+  // Fikir ekranındaki DİREKT KONUŞMA kutusu: yazılanı ilk mesaj olarak gönderip
+  // ana ekran sohbetini açar; boşsa konu bulma sohbetine düşer.
+  _ideaChatGo() {
+    const t = (this.state.ideaChat || '').trim();
+    if (!t) { this.findTopic(); return; }
+    this.setState({ mode: 'sohbet', chatOpen: false, ideaChat: '', ideaWarn: '', chatInput: t }, () => this.sendChat());
+  }
+  // TARZ SEÇİLİYSE "SEN ÖNER" o tarzda önerir (AI; düşerse havuz + tarz öneki).
+  async _suggestForFormat(f) {
+    if (this.state.suggestBusy) return;
+    this.setState({ suggestBusy: true });
+    const T = {
+      pov: 'POV — izleyici olayın İÇİNDE, ikinci tekil şahıs, şimdiki zaman (ör. "POV: 1453, surların üstündesin — son gece")',
+      soru: 'SORU-CEVAP — tek büyük merak sorusuyla açılır, cevap sona saklanır (ör. "Bir imparatorluk bir gecede nasıl yok olur?")',
+      liste: 'geri sayımlı TOP LİSTE (ör. "Tarihin en pahalı 3 hatası")',
+      neolurdu: 'alternatif tarih (ör. "Peki ya Konstantinopolis düşmeseydi?")',
+      reels: 'ilk 2 saniyede kilitleyen VİRAL kısa video',
+      serbest: 'serbest — en güçlü kancayı sen seç'
+    };
+    try {
+      const r = await this.askAI('Sen tarih içerikleriyle viral olmuş bir içerik stratejistisin. ŞU TARZDA tek bir video fikri öner: ' + (T[f] || '') + '. GERÇEK ve doğrulanabilir bir tarih olayına dayansın, klişe (Titanik/Hitler/piramit) olmasın, TEK cümle olsun. YALNIZCA o cümleyi döndür.', 200);
+      const t = (r || '').trim().replace(/^["']|["']$/g, '');
+      if (t && t.length > 10) { this.setState({ idea: t, suggestBusy: false, ideaWarn: '' }); return; }
+      throw new Error('bos');
+    } catch (e) {
+      const pool = this._suggestPool();
+      const pick = pool[this._sgIdx % pool.length]; this._sgIdx++;
+      const pre = { pov: 'Kendi gözünden: ', soru: 'Nasıl oldu? ', liste: 'Top liste: ', neolurdu: 'Ne olurdu: ' }[f] || '';
+      this.setState({ idea: pre + pick, suggestBusy: false, ideaWarn: '' });
+    }
+  }
   // "Ajanla bulalım" → ANA EKRAN sohbeti açılır (dar yan panel değil; o basit
   // kalır). Konuşma aynı chatMsgs üzerinde sürer — panelden de görünür.
   findTopic() {
@@ -8214,6 +8496,9 @@ SON KONTROL (göndermeden önce doğrula ve eksikse DÜZELT): ⏱ senaryo[].meti
   }
   async suggestIdeaNow() {
     if (this.state.suggestBusy) return;
+    // TARZ seçiliyse öneri O TARZDA gelir; seçilmediyse (klasik) şimdiki genel akış
+    const fmt = this.state.format || 'belgesel';
+    if (fmt !== 'belgesel') return this._suggestForFormat(fmt);
     const pool = this._suggestPool();
     const pick = pool[this._sgIdx % pool.length];
     this._sgIdx++;
