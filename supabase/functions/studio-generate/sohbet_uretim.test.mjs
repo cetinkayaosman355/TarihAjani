@@ -104,6 +104,16 @@ test("Aydınlık tema: sohbet paneli okunur (koyu balon → sıcak kâğıt)", (
   assert.ok(src.includes("bubbleClass: m.role === 'user' ? 'ta-cbub-u' : 'ta-cbub-a'"), "balonlar sınıf taşır");
 });
 
+test("Ana ekran sohbeti: 'Ajanla bulalım' geniş sohbete açılır, yan panel basit kalır", () => {
+  assert.ok(src.includes("isSohbet: s.mode === 'sohbet'"), "sohbet modu");
+  assert.ok(src.includes('sc-if value="{{ isSohbet }}"'), "ana ekran sohbet görünümü");
+  assert.ok(src.includes('id="ta-mainchatlog"'), "ana sohbet günlüğü");
+  assert.ok(src.includes("mode: 'sohbet',\n      chatOpen: false"), "findTopic ana sohbete açar (panel değil)");
+  assert.ok(src.includes("Object.assign({ chatOpen: false, mode: 'wizard' }, patch || {})"), "üretim aksiyonu stüdyoya döner");
+  assert.ok(src.includes("← STÜDYOYA DÖN"), "geri dönüş düğmesi");
+  assert.ok(src.includes(".ta-mchip") && src.includes('html[data-theme="light"] .ta-mchip'), "çipler iki temada da stilli");
+});
+
 test("Sol menü ÜRET: Video / Ses / Montaj aktif çalışma alanlarına gider", () => {
   assert.ok(src.includes('onClick="{{ modeVideo }}"') && src.includes('onClick="{{ modeSes }}"') && src.includes('onClick="{{ modeMontaj }}"'), "üç öğe tıklanır");
   assert.ok(src.includes("modeMontaj: () => this._goProduce('video', true)"), "montaj = video sekmesi + liste açık");
