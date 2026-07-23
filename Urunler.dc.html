@@ -364,26 +364,41 @@ class Component extends DCLogic {
 
   shopDefs() {
     return [
+      { cat: 'OPERASYON DOSYALARI', title: 'Operasyon Dosyaları — Tam Koleksiyon', price: '399', img: 'assets/urun-dosya-set.jpg',
+        blurb: 'Beş üretim rehberinin tamamı + 39 sayfalık birleşik cilt. Fikirden yayına tam teçhizat.',
+        kind: 'DİJİTAL DOSYA · 5 KİTAP', priceKind: 'TEK SEFERLİK ERİŞİM',
+        detail: 'Beş operasyon dosyasının tamamı tek koleksiyonda: Platform Haritası, Senaryo Atölyesi, Prompt Mühendisliği, Araştırma Metodolojisi ve Yayın & Büyüme. Fikirden yayına, bir tarih kanalının tam teçhizatı — 39 sayfalık birleşik "Saha El Kitabı" cildi dahil.',
+        features: ['5 dosyanın tamamı (PDF)', '39 sayfalık birleşik koleksiyon cildi', 'Tekil fiyatın altında (495₺ yerine 399₺)', 'Ömür boyu erişim'] },
+      { cat: 'OPERASYON DOSYALARI', title: 'DOSYA 01 — Platform Haritası', price: '99', img: 'assets/urun-dosya-01.jpg',
+        blurb: 'Platformun altı bölümünü ve ilk adımı açan operasyon rehberi.',
+        kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
+        detail: 'Tarih Ajanı platformunun altı bölümünü (Studio, Arşiv, Akademi, Oyunlar, Zaman Tüneli, E-Kitaplar) ve üyelik seviyelerini açan operasyon rehberi. Nereden başlayacağını gösteren harita.',
+        features: ['Altı bölümün tam haritası', 'Üç ana sütun: Üret · Kullan · Öğren', 'İlk adım ve giriş noktaları', '5 sayfa · PDF'] },
+      { cat: 'OPERASYON DOSYALARI', title: 'DOSYA 02 — Senaryo Atölyesi', price: '99', img: 'assets/urun-dosya-02.jpg',
+        blurb: 'Tarihî olayı, ekrandan kalkamayan bir senaryoya çevirmenin altı modülü.',
+        kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
+        detail: 'Tarihî bir olayı, izleyicinin ekran başından kalkamadığı bir senaryoya çevirmenin altı modüllük yöntemi: çekirdek soru, üç perdelik yapı, sahne tasarımı, seslendirme ve anlatım sesi, kaynak yönetimi ve yapı kontrol listesi.',
+        features: ['Çekirdek soru tekniği', 'Üç perdelik yapı (1453 örneğiyle)', 'Sahne tasarımının dört unsuru', 'Yapı kontrol listesi', '8 sayfa · PDF'] },
+      { cat: 'OPERASYON DOSYALARI', title: 'DOSYA 03 — Prompt Mühendisliği', price: '99', img: 'assets/urun-dosya-03.jpg',
+        blurb: 'AI araçlarını tarihî içerik için ustaca kullanmanın rehberi.',
+        kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
+        detail: 'AI araçlarını tarihî içerik için ustaca kullanmanın rehberi: dört katmanlı prompt anatomisi, sahne promptları, iteratif düzeltme, hazır kalıplar ve en sık yapılan beş hata ile çözümleri.',
+        features: ['Dört katman: Konu · Format · Ton · Sınır', 'Kopyala-doldur prompt kalıpları', 'İteratif promptlama (üç tur)', 'Prompt hataları ve çözümleri', '8 sayfa · PDF'] },
+      { cat: 'OPERASYON DOSYALARI', title: 'DOSYA 04 — Araştırma Metodolojisi', price: '99', img: 'assets/urun-dosya-04.jpg',
+        blurb: 'Bir olayı güvenilir bir vaka dosyasına dönüştürmenin disiplini.',
+        kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
+        detail: 'Bir tarihî olayı güvenilir bir vaka dosyasına dönüştürmenin disiplini: soruşturma planı, kaynak hiyerarşisi, kanıt toplama ve değerlendirme, vaka dosyası hazırlama ve dijital araştırma araçları.',
+        features: ['Soruşturma planı şablonu', 'Birincil/ikincil/üçüncül kaynak hiyerarşisi', 'Kanıt değerlendirme kriterleri', 'Araştırma kontrol listesi', '8 sayfa · PDF'] },
+      { cat: 'OPERASYON DOSYALARI', title: 'DOSYA 05 — Yayın & Büyüme', price: '99', img: 'assets/urun-dosya-05.jpg',
+        blurb: 'Videoyu bir kanala, kanalı bir kitleye dönüştürmenin yöntemi.',
+        kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
+        detail: 'Üretilen videoyu bir kanala, kanalı bir kitleye dönüştürmenin yöntemi: kanal kimliği, paketleme (başlık + kapak), format matrisi ve yayın ritmi, algoritma okuryazarlığı, seri ve evren inşası, ölçüm ve iterasyon.',
+        features: ['Kanal kimliği ve paketleme', 'Başlık + kapak (CTR) teknikleri', 'Algoritma okuryazarlığı', 'Yayın öncesi kontrol listesi', '9 sayfa · PDF'] },
       { cat: 'E-KİTAP', title: '5’li Hikâye — Dijital Kitap', price: '49', img: 'assets/books.jpg',
         blurb: 'Beş vaka kitap formatında; ilk dosya ücretsiz okunur.',
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarih Ajanı arşivinden beş vaka, kitap formatında: Etrüskler, Sümerlerin Sırrı, İbn Fadlan, Türkistan’da Japonya Planı ve Truva. Her dosya kanıtlarla açılır, "Ajanın Hükmü" ile kapanır. Satın alımda beş dosyanın tamamı hesabına açılır.',
         features: ['Etrüskler: Roma’nın Gizli Öğretmeni', 'Sümerlerin Sırrı: 5.000 Yıldır Çözülemedi', 'İbn Fadlan: Türkler ve Vikingler Arasında', 'Türkistan’da Japonya Planı', 'Truva Savaşı Gerçek miydi?'] },
-      { cat: 'E-KİTAP', title: 'Gizli Uygarlıklar — E‑Kitap Seti', price: '279', img: 'assets/product-ebooks.webp',
-        blurb: 'Yayınlanan vaka dosyalarının genişletilmiş kitap hâlleri; 4 dosya.',
-        kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
-        detail: 'Etrüsklerden Sümerlere, ders kitaplarının kenarında kalan uygarlıkları kaynaklarıyla inceleyen dijital dosya koleksiyonu.',
-        features: ['Etrüskler: Roma’nın Gizli Öğretmeni', 'Sümerlerin Sırrı: 5.000 Yıldır Çözülemedi', 'Truva Savaşı Gerçek miydi?', 'İbn Fadlan: Türkler ve Vikingler Notları'] },
-      { cat: 'E-KİTAP', title: 'Tarih Anlatıcılığı — Stüdyo Rehberi', price: '349', img: 'assets/product-studio-guide.webp',
-        blurb: 'Araştırmadan mikrofona: üretim zinciri ve kontrol listeleri.',
-        kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
-        detail: 'Araştırmadan mikrofona, senaryodan kurguya: güçlü bir tarih videosunun üretim zinciri ve uygulanabilir kontrol listeleri.',
-        features: ['Stüdyo ekipman kontrol listesi', 'Senaryodan yayına iş akışı', 'Ses ve kurgu ayar rehberi', 'Örnek bölüm üretim planı'] },
-      { cat: 'EĞİTİM', title: 'Belgeden Hikâyeye — Eğitim Programı', price: '999', img: 'assets/product-course.webp',
-        blurb: 'Kaynak doğrulama, arşiv tarama ve sinematik anlatı kurma.',
-        kind: 'EĞİTİM PROGRAMI', priceKind: 'TEK SEFERLİK ERİŞİM',
-        detail: 'Kaynak doğrulama, arşiv tarama ve sinematik anlatı kurma üzerine yapılandırılmış kapsamlı eğitim programı. Teknik ön koşul yoktur.',
-        features: ['Kaynak doğrulama sistemi', 'Hikâyeleştirme ve senaryo modülleri', 'Görsel ve ses üretim şablonları', 'Uygulamalı proje çalışma dosyası'] },
       { cat: 'STUDIO KREDİ', title: 'Studio — Ajan Paketi · 500 Kredi', price: '199', img: 'assets/product-studio-guide.webp',
         blurb: '500 kredi ≈ 5 eksiksiz üretim dosyası: senaryo, ses, yayın paketi.',
         kind: 'STUDIO KREDİSİ', priceKind: 'TEK SEFERLİK',
@@ -404,16 +419,6 @@ class Component extends DCLogic {
         kind: 'STUDIO KREDİSİ', priceKind: 'TEK SEFERLİK',
         detail: '4.000 Studio kredisi — yaklaşık 40 dosya. Yoğun üretim temposu ve ekip kullanımı için en kapsamlı, kredi başına en uygun paket.',
         features: ['4.000 üretim kredisi (≈ 40 dosya)', 'Öncelikli üretim kuyruğu', 'Ekip kullanımına uygun'] },
-      { cat: 'FİZİKİ ÜRÜN', title: 'Ajan Vaka Defteri', price: '599', img: 'assets/product-notebook.webp',
-        blurb: 'Sert kapaklı, mühür baskılı fiziki soruşturma defteri. Ön sipariş.',
-        kind: 'FİZİKİ ÜRÜN · ÖN SİPARİŞ', priceKind: 'KARGO DAHİL',
-        detail: 'Sert kapaklı, mühür baskılı fiziki soruşturma defteri: vaka şablonları, kanıt listeleri ve zaman çizelgesi sayfalarıyla. Türkiye içi kargo dahildir.',
-        features: ['Mühür baskılı sert kapak', 'Vaka şablonu sayfaları', 'Türkiye içi ücretsiz kargo'] },
-      { cat: 'FİZİKİ ÜRÜN', title: 'Dosya Kutusu — Koleksiyon Seti', price: '1.290', img: 'assets/product-collector.webp',
-        blurb: 'Vaka defteri + metal rozet + mühür seti, koleksiyon kutusunda. Ön sipariş.',
-        kind: 'FİZİKİ ÜRÜN · ÖN SİPARİŞ', priceKind: 'KARGO DAHİL',
-        detail: 'Koleksiyon kutusunda: Ajan vaka defteri, metal rozet ve basılı dosya ayraçları. Türkiye içi kargo dahildir.',
-        features: ['Vaka defteri', 'Metal ajan rozeti', 'Basılı dosya ayraçları', 'Türkiye içi ücretsiz kargo'] }
     ];
   }
 
@@ -429,7 +434,7 @@ class Component extends DCLogic {
       const o = slug && ov[slug];
       return (o && o.price != null && o.price !== '') ? { ...d, price: String(o.price) } : d;
     });
-    const catNames = ['TÜMÜ', 'E-KİTAP', 'HAZIR İÇERİK', 'EĞİTİM', 'STUDIO KREDİ', 'FİZİKİ ÜRÜN'];
+    const catNames = ['TÜMÜ', 'OPERASYON DOSYALARI', 'E-KİTAP', 'HAZIR İÇERİK', 'STUDIO KREDİ'];
     const ql = (s.q || '').toLocaleLowerCase('tr');
     const filtered = defs.filter(d => (s.cat === 'TÜMÜ' || d.cat === s.cat) &&
       (!ql || (d.title + ' ' + d.blurb + ' ' + d.cat).toLocaleLowerCase('tr').includes(ql)));
