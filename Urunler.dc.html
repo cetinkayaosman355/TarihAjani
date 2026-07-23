@@ -134,18 +134,17 @@
       </div>
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px;">
         <sc-for list="{{ items }}" as="it" hint-placeholder-count="0">
-          <div style="border: 1px solid rgba(193,154,82,.2); background: #070a12; display: flex; flex-direction: column; overflow: hidden; animation: ta-rise .4s ease both;" style-hover="border-color: rgba(193,154,82,.55);">
-            <div style="position: relative; aspect-ratio: 16/10; overflow: hidden;">
-              <img src="{{ it.img }}" alt="{{ it.title }}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.9) brightness(.85); transition: transform .5s ease;" style-hover="transform: scale(1.05);">
-              <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(3,5,11,.55), transparent 50%);"></div>
-              <span style="position: absolute; top: 12px; left: 12px; color: #e6c478; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .18em; background: rgba(3,5,11,.8); border: 1px solid rgba(193,154,82,.4); padding: 5px 9px;">{{ it.cat }}</span>
+          <div style="border: 1px solid rgba(193,154,82,.24); background: linear-gradient(180deg,#0a0e17,#070a12); display: flex; flex-direction: column; overflow: hidden; border-radius: 3px; box-shadow: 0 10px 30px rgba(0,0,0,.35); animation: ta-rise .4s ease both;" style-hover="border-color: rgba(214,190,120,.65); box-shadow: 0 16px 44px rgba(0,0,0,.5);">
+            <div style="position: relative; aspect-ratio: 4/5; overflow: hidden; background: #0a0a08;">
+              <img src="{{ it.img }}" alt="{{ it.title }}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .6s ease;" style-hover="transform: scale(1.045);">
+              <span style="position: absolute; top: 12px; left: 12px; color: #f0d9a8; font-family: 'Special Elite', monospace; font-size: 9px; letter-spacing: .18em; background: rgba(6,7,4,.72); border: 1px solid rgba(214,190,120,.5); padding: 5px 9px;">{{ it.cat }}</span>
             </div>
-            <div style="padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1;">
-              <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; line-height: 1.3;">{{ it.title }}</h3>
-              <p style="margin: 0; color: #818797; font-size: 13px; line-height: 1.55; flex: 1;">{{ it.blurb }}</p>
-              <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px;">
-                <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 17px;">{{ it.price }} <span style="font-size: 11px; color: #c19a52;">TL</span></span>
-                <button onClick="{{ it.open }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .16em; padding: 11px 18px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.35);">İNCELE</button>
+            <div style="padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; border-top: 1px solid rgba(193,154,82,.16);">
+              <h3 style="margin: 0; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; line-height: 1.28; color: #f2ecd9;">{{ it.title }}</h3>
+              <p style="margin: 0; color: #9aa0ad; font-size: 12.5px; line-height: 1.55; flex: 1;">{{ it.blurb }}</p>
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; padding-top: 12px; border-top: 1px dashed rgba(193,154,82,.2);">
+                <span style="color: #e6c478; font-family: 'Special Elite', monospace; font-size: 18px;">{{ it.price }} <span style="font-size: 11px; color: #c19a52;">TL</span></span>
+                <button onClick="{{ it.open }}" style="border: 0; cursor: pointer; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); color: #171207; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 11px; letter-spacing: .16em; padding: 11px 20px; border-radius: 2px;" style-hover="box-shadow: 0 6px 26px rgba(230,196,120,.45);">İNCELE</button>
               </div>
             </div>
           </div>
@@ -288,7 +287,8 @@ class Component extends DCLogic {
     return {
       'gizli-uygarliklar': 'gizli uygarl', 'studio-rehberi': 'stüdyo rehber', 'egitim': 'belgeden hikâye',
       '5li-hikaye': '5’li hikâye', 'hazir-arsiv': 'hazır hikâye', 'vaka-defteri': 'ajan vaka defteri',
-      'koleksiyon': 'dosya kutusu', 'studio-5': 'ajan paketi', 'studio-15': 'saha paketi', 'studio-40': 'arşiv paketi'
+      'koleksiyon': 'dosya kutusu', 'studio-5': 'ajan paketi', 'studio-15': 'saha paketi', 'studio-40': 'arşiv paketi',
+      'operasyon-koleksiyon': 'tam koleksiyon', 'platform-haritasi': 'platform harita', 'senaryo-atolyesi': 'senaryo atölye', 'prompt-muhendisligi': 'prompt mühendis', 'arastirma-metodolojisi': 'araştırma metodoloji', 'yayin-buyume': 'yayın & büyüme'
     };
   }
   productSlug(title) {
@@ -369,27 +369,27 @@ class Component extends DCLogic {
         kind: 'DİJİTAL DOSYA · 5 KİTAP', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Beş operasyon dosyasının tamamı tek koleksiyonda: Platform Haritası, Senaryo Atölyesi, Prompt Mühendisliği, Araştırma Metodolojisi ve Yayın & Büyüme. Fikirden yayına, bir tarih kanalının tam teçhizatı — 39 sayfalık birleşik "Saha El Kitabı" cildi dahil.',
         features: ['5 dosyanın tamamı (PDF)', '39 sayfalık birleşik koleksiyon cildi', 'Tekil fiyatın altında (495₺ yerine 399₺)', 'Ömür boyu erişim'] },
-      { cat: 'OPERASYON DOSYALARI', title: 'DOSYA 01 — Platform Haritası', price: '99', img: 'assets/urun-dosya-01.jpg',
+      { cat: 'OPERASYON DOSYALARI', title: 'Platform Haritası', price: '99', img: 'assets/urun-dosya-01.jpg',
         blurb: 'Platformun altı bölümünü ve ilk adımı açan operasyon rehberi.',
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarih Ajanı platformunun altı bölümünü (Studio, Arşiv, Akademi, Oyunlar, Zaman Tüneli, E-Kitaplar) ve üyelik seviyelerini açan operasyon rehberi. Nereden başlayacağını gösteren harita.',
         features: ['Altı bölümün tam haritası', 'Üç ana sütun: Üret · Kullan · Öğren', 'İlk adım ve giriş noktaları', '5 sayfa · PDF'] },
-      { cat: 'OPERASYON DOSYALARI', title: 'DOSYA 02 — Senaryo Atölyesi', price: '99', img: 'assets/urun-dosya-02.jpg',
+      { cat: 'OPERASYON DOSYALARI', title: 'Senaryo Atölyesi', price: '99', img: 'assets/urun-dosya-02.jpg',
         blurb: 'Tarihî olayı, ekrandan kalkamayan bir senaryoya çevirmenin altı modülü.',
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarihî bir olayı, izleyicinin ekran başından kalkamadığı bir senaryoya çevirmenin altı modüllük yöntemi: çekirdek soru, üç perdelik yapı, sahne tasarımı, seslendirme ve anlatım sesi, kaynak yönetimi ve yapı kontrol listesi.',
         features: ['Çekirdek soru tekniği', 'Üç perdelik yapı (1453 örneğiyle)', 'Sahne tasarımının dört unsuru', 'Yapı kontrol listesi', '8 sayfa · PDF'] },
-      { cat: 'OPERASYON DOSYALARI', title: 'DOSYA 03 — Prompt Mühendisliği', price: '99', img: 'assets/urun-dosya-03.jpg',
+      { cat: 'OPERASYON DOSYALARI', title: 'Prompt Mühendisliği', price: '99', img: 'assets/urun-dosya-03.jpg',
         blurb: 'AI araçlarını tarihî içerik için ustaca kullanmanın rehberi.',
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'AI araçlarını tarihî içerik için ustaca kullanmanın rehberi: dört katmanlı prompt anatomisi, sahne promptları, iteratif düzeltme, hazır kalıplar ve en sık yapılan beş hata ile çözümleri.',
         features: ['Dört katman: Konu · Format · Ton · Sınır', 'Kopyala-doldur prompt kalıpları', 'İteratif promptlama (üç tur)', 'Prompt hataları ve çözümleri', '8 sayfa · PDF'] },
-      { cat: 'OPERASYON DOSYALARI', title: 'DOSYA 04 — Araştırma Metodolojisi', price: '99', img: 'assets/urun-dosya-04.jpg',
+      { cat: 'OPERASYON DOSYALARI', title: 'Araştırma Metodolojisi', price: '99', img: 'assets/urun-dosya-04.jpg',
         blurb: 'Bir olayı güvenilir bir vaka dosyasına dönüştürmenin disiplini.',
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Bir tarihî olayı güvenilir bir vaka dosyasına dönüştürmenin disiplini: soruşturma planı, kaynak hiyerarşisi, kanıt toplama ve değerlendirme, vaka dosyası hazırlama ve dijital araştırma araçları.',
         features: ['Soruşturma planı şablonu', 'Birincil/ikincil/üçüncül kaynak hiyerarşisi', 'Kanıt değerlendirme kriterleri', 'Araştırma kontrol listesi', '8 sayfa · PDF'] },
-      { cat: 'OPERASYON DOSYALARI', title: 'DOSYA 05 — Yayın & Büyüme', price: '99', img: 'assets/urun-dosya-05.jpg',
+      { cat: 'OPERASYON DOSYALARI', title: 'Yayın & Büyüme', price: '99', img: 'assets/urun-dosya-05.jpg',
         blurb: 'Videoyu bir kanala, kanalı bir kitleye dönüştürmenin yöntemi.',
         kind: 'DİJİTAL DOSYA', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Üretilen videoyu bir kanala, kanalı bir kitleye dönüştürmenin yöntemi: kanal kimliği, paketleme (başlık + kapak), format matrisi ve yayın ritmi, algoritma okuryazarlığı, seri ve evren inşası, ölçüm ve iterasyon.',
