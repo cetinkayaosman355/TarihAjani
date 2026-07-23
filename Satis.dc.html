@@ -146,6 +146,25 @@
           <div style="width: 62px; height: 62px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c0392b, #7c1f16 70%); border: 3px solid #8e2a1d; color: #f4e4c1; font-family: 'Playfair Display', serif; font-weight: 800; font-size: 22px; display: grid; place-items: center;">TA</div>
           <h2 style="margin: 20px 0 10px; font-family: 'Playfair Display', serif; font-size: 27px; font-weight: 800;">Siparişin alındı, ajan.</h2>
           <p style="margin: 0 auto; max-width: 44ch; color: #a9adba; line-height: 1.7; font-size: 15px;">{{ orderedMsg }}</p>
+
+          <sc-if value="{{ showDownloads }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top: 28px; border: 1px solid rgba(193,154,82,.35); background: #05070d; padding: 22px 20px;">
+              <div style="font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .22em; color: #c19a52;">DOSYANI İNDİR</div>
+              <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <sc-for list="{{ downloads }}" as="d" hint-placeholder-count="2">
+                  <a href="{{ d.href }}" download="" style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 12.5px; letter-spacing: .08em; color: #171207; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); padding: 15px 24px; text-decoration: none; box-shadow: 0 10px 34px rgba(230,196,120,.22);" style-hover="box-shadow: 0 14px 44px rgba(230,196,120,.4);">↓ {{ d.label }}</a>
+                </sc-for>
+              </div>
+              <div style="margin-top: 18px; border-top: 1px solid rgba(129,135,151,.15); padding-top: 16px;">
+                <p style="margin: 0 0 12px; font-size: 12.5px; color: #818797;">İndiremediysen ya da dosyanın e-postana gelmesini istiyorsan:</p>
+                <button onClick="{{ requestMail }}" disabled="{{ mailSent }}" style="cursor: pointer; border: 1px solid rgba(193,154,82,.5); background: transparent; color: #e6c478; font-family: 'Special Elite', monospace; font-weight: 700; font-size: 12px; letter-spacing: .1em; padding: 14px 24px;" style-hover="background: rgba(193,154,82,.1);">{{ mailBtnLabel }}</button>
+                <sc-if value="{{ mailSent }}" hint-placeholder-val="{{ false }}">
+                  <p style="margin: 12px 0 0; font-size: 12px; color: #8bbf8f;">Talebin karargâha ulaştı — dosyanı e-posta adresine en kısa sürede göndereceğiz.</p>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
           <sc-if value="{{ showPayNow }}" hint-placeholder-val="{{ false }}">
             <div style="margin-top: 24px;">
               <a href="{{ payNowUrl }}" target="_blank" rel="noopener" style="display: inline-block; font-family: 'Special Elite', monospace; font-weight: 800; font-size: 13.5px; letter-spacing: .12em; color: #171207; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); padding: 18px 34px; text-decoration: none; box-shadow: 0 12px 44px rgba(230,196,120,.3);">🔒 ŞİMDİ ÖDE · GÜVENLİ ÖDEME →</a>
@@ -212,7 +231,7 @@ class Component extends DCLogic {
     slug: 'egitim', overrides: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {},
     fName: '', fEmail: '', fPhone: '', payMethod: 'iban',
     formOpen: true, ordered: false, sending: false, formError: '', cartLabel: 'SEPETE EKLE',
-    added: false
+    added: false, mailState: 'idle'
   };
 
   SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
@@ -276,31 +295,37 @@ class Component extends DCLogic {
         img: 'assets/urun-dosya-set.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Beş operasyon dosyasının tamamı tek koleksiyonda: Platform Haritası, Senaryo Atölyesi, Prompt Mühendisliği, Araştırma Metodolojisi ve Yayın & Büyüme. 39 sayfalık birleşik "Saha El Kitabı" cildi dahil. Fikirden yayına, bir tarih kanalının tam teçhizatı.',
         features: ['5 dosyanın tamamı (PDF + EPUB)', '39 sayfalık birleşik koleksiyon cildi', 'Tekil fiyatın altında (495₺ yerine 399₺)', 'Ömür boyu erişim ve güncellemeler'],
+        dl: [['Koleksiyon Cildi · PDF (39 sayfa)', '/indir/operasyon-dosyalari-koleksiyon.pdf'], ['Tüm dosyalar · ZIP (5 PDF + 5 EPUB)', '/indir/operasyon-dosyalari-set.zip']],
         badges: [['5', 'KİTAP'], ['39', 'SAYFA'], ['∞', 'ERİŞİM']] },
       'platform-haritasi': { cat: 'OPERASYON DOSYALARI', kicker: 'OPERASYON REHBERİ', title: 'Platform Haritası', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-01.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarih Ajanı platformunun altı bölümünü (Studio, Arşiv, Akademi, Oyunlar, Zaman Tüneli, E-Kitaplar) ve üyelik seviyelerini açan operasyon rehberi. Nereden başlayacağını gösteren harita.',
         features: ['Altı bölümün tam haritası', 'Üç ana sütun: Üret · Kullan · Öğren', 'İlk adım ve giriş noktaları', 'PDF + EPUB · ömür boyu erişim'],
+        dl: [['PDF', '/indir/platform-haritasi.pdf'], ['EPUB', '/indir/platform-haritasi.epub']],
         badges: [['6', 'BÖLÜM'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'senaryo-atolyesi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Senaryo Atölyesi', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-02.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarihî bir olayı, izleyicinin ekran başından kalkamadığı bir senaryoya çevirmenin altı modüllük yöntemi: çekirdek soru, üç perde, sahne tasarımı, seslendirme, kaynak yönetimi ve kontrol listesi.',
         features: ['Çekirdek soru tekniği', 'Üç perdelik yapı (1453 örneğiyle)', 'Sahne tasarımının dört unsuru', 'PDF + EPUB · ömür boyu erişim'],
+        dl: [['PDF', '/indir/senaryo-atolyesi.pdf'], ['EPUB', '/indir/senaryo-atolyesi.epub']],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'prompt-muhendisligi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Prompt Mühendisliği', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-03.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'AI araçlarını tarihî içerik için ustaca kullanmanın rehberi: dört katmanlı prompt anatomisi, sahne promptları, iteratif düzeltme, hazır kalıplar ve en sık beş hata.',
         features: ['Dört katman: Konu · Format · Ton · Sınır', 'Kopyala-doldur prompt kalıpları', 'İteratif promptlama (üç tur)', 'PDF + EPUB · ömür boyu erişim'],
+        dl: [['PDF', '/indir/prompt-muhendisligi.pdf'], ['EPUB', '/indir/prompt-muhendisligi.epub']],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'arastirma-metodolojisi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Araştırma Metodolojisi', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-04.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Bir tarihî olayı güvenilir bir vaka dosyasına dönüştürmenin disiplini: soruşturma planı, kaynak hiyerarşisi, kanıt değerlendirme, vaka dosyası hazırlama ve dijital araçlar.',
         features: ['Soruşturma planı şablonu', 'Birincil/ikincil/üçüncül kaynak hiyerarşisi', 'Kanıt değerlendirme kriterleri', 'PDF + EPUB · ömür boyu erişim'],
+        dl: [['PDF', '/indir/arastirma-metodolojisi.pdf'], ['EPUB', '/indir/arastirma-metodolojisi.epub']],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'yayin-buyume': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Yayın & Büyüme', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-05.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Üretilen videoyu bir kanala, kanalı bir kitleye dönüştürmenin yöntemi: kanal kimliği, paketleme (başlık + kapak), format matrisi, algoritma okuryazarlığı, seri inşası, ölçüm ve iterasyon.',
         features: ['Kanal kimliği ve paketleme', 'Başlık + kapak (CTR) teknikleri', 'Algoritma okuryazarlığı', 'PDF + EPUB · ömür boyu erişim'],
+        dl: [['PDF', '/indir/yayin-buyume.pdf'], ['EPUB', '/indir/yayin-buyume.epub']],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'egitim': { cat: 'EĞİTİM', kicker: 'ONLINE EĞİTİM PROGRAMI', title: 'Belgeden Hikâyeye — Eğitim Programı', price: '999', kind: 'EĞİTİM',
         img: 'assets/product-course.webp', priceKind: 'TEK SEFER · ÖMÜR BOYU ERİŞİM',
@@ -396,6 +421,27 @@ class Component extends DCLogic {
     try { this.sb.from('orders').insert(row).then(() => {}); } catch (e) {}
   }
 
+  // "E-posta ile gönderin" — karargâha bildirim düşürür (posta 'report' → iletisim@tarihajani.com).
+  // Ekip dosyayı manuel olarak alıcının adresine gönderir.
+  async requestMailDelivery() {
+    if (this.state.mailState === 'sending' || this.state.mailState === 'sent') return;
+    const s = this.state, p = this.catalog()[s.slug] || {};
+    this.setState({ mailState: 'sending' });
+    try {
+      await fetch(this.SB_URL + '/functions/v1/posta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.SB_KEY },
+        body: JSON.stringify({
+          action: 'report', area: 'teslimat',
+          email: s.fEmail.trim(),
+          storyTitle: p.title || s.slug,
+          message: 'E-POSTA İLE TESLİMAT TALEBİ\nÜrün: ' + (p.title || s.slug) + '\nAlıcı: ' + s.fName.trim() + ' · ' + s.fEmail.trim() + ' · ' + s.fPhone.trim() + '\nBu alıcıya dosyayı e-posta ile gönderin.'
+        })
+      });
+    } catch (e) {}
+    this.setState({ mailState: 'sent' });
+  }
+
   renderVals() {
     const s = this.state;
     const base = this.catalog()[s.slug] || this.catalog()['egitim'];
@@ -434,9 +480,17 @@ class Component extends DCLogic {
       cartLabel: s.cartLabel,
 
       formOpen: !s.ordered, ordered: s.ordered,
-      orderedMsg: (s.payMethod === 'card' && payUrl)
-        ? 'Talebin bize ulaştı. Aşağıdaki düğmeden güvenli ödemeni tamamla — ödemen alınınca erişimin açılır ve e-posta ile bilgilendirilirsin.'
-        : 'Talebin bize ulaştı. Havale/EFT seçtiysen dekontunu iletisim@tarihajani.com adresine ilet; ödeme onaylanınca erişimin açılır ve e-posta ile bilgilendirilirsin.',
+      orderedMsg: (p.dl && p.dl.length)
+        ? 'Ödemeni tamamladıysan dosyanı hemen aşağıdan indir. Ödemeni Havale/EFT ile yaptıysan dekontunu iletisim@tarihajani.com adresine iletmen yeterli. İndirme sorun çıkarırsa dosyayı e-posta ile de isteyebilirsin.'
+        : (s.payMethod === 'card' && payUrl)
+          ? 'Talebin bize ulaştı. Aşağıdaki düğmeden güvenli ödemeni tamamla — ödemen alınınca erişimin açılır ve e-posta ile bilgilendirilirsin.'
+          : 'Talebin bize ulaştı. Havale/EFT seçtiysen dekontunu iletisim@tarihajani.com adresine ilet; ödeme onaylanınca erişimin açılır ve e-posta ile bilgilendirilirsin.',
+      showDownloads: s.ordered && !!(p.dl && p.dl.length),
+      downloads: (p.dl || []).map(d => ({ label: d[0], href: d[1] })),
+      mailState: s.mailState,
+      mailBtnLabel: s.mailState === 'sent' ? '✓ TALEBİN ALINDI' : (s.mailState === 'sending' ? 'GÖNDERİLİYOR…' : '✉ E-POSTA İLE GÖNDERİN'),
+      mailSent: s.mailState === 'sent',
+      requestMail: () => this.requestMailDelivery(),
       showPayNow: s.ordered && s.payMethod === 'card' && !!payUrl,
       payNowUrl: payUrl,
       cardInfoText: payUrl
