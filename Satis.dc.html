@@ -93,10 +93,17 @@
       <div class="stick" style="position: sticky; top: 92px;">
         <div style="position: relative; border: 1px solid rgba(193,154,82,.3); overflow: hidden; background: #070a12;">
           <div style="aspect-ratio: 4/5; overflow: hidden;">
-            <img src="{{ img }}" alt="{{ title }}" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="{{ heroImg }}" alt="{{ title }}" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
           <span style="position: absolute; top: 14px; left: 14px; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; color: #e6c478; background: rgba(3,5,11,.82); border: 1px solid rgba(193,154,82,.4); padding: 6px 11px;">{{ cat }}</span>
         </div>
+        <sc-if value="{{ hasGallery }}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;">
+            <sc-for list="{{ thumbs }}" as="t" hint-placeholder-count="3">
+              <div onClick="{{ t.pick }}" style="{{ t.style }}"><img src="{{ t.src }}" alt="önizleme" style="width: 100%; height: 100%; object-fit: cover; display: block;"></div>
+            </sc-for>
+          </div>
+        </sc-if>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px;">
           <div style="border: 1px solid rgba(129,135,151,.2); padding: 12px; text-align: center;"><div style="font-family: 'Special Elite', monospace; font-size: 10px; color: #c19a52;">{{ badge1 }}</div><div style="font-size: 10.5px; color: #7c8393; margin-top: 4px;">{{ badge1s }}</div></div>
           <div style="border: 1px solid rgba(129,135,151,.2); padding: 12px; text-align: center;"><div style="font-family: 'Special Elite', monospace; font-size: 10px; color: #c19a52;">{{ badge2 }}</div><div style="font-size: 10.5px; color: #7c8393; margin-top: 4px;">{{ badge2s }}</div></div>
@@ -235,7 +242,7 @@ class Component extends DCLogic {
     slug: 'egitim', overrides: (typeof window !== 'undefined' && window.TAFiyat) ? window.TAFiyat.read() : {},
     fName: '', fEmail: '', fPhone: '', payMethod: 'iban',
     formOpen: true, ordered: false, sending: false, formError: '', cartLabel: 'SEPETE EKLE',
-    added: false, mailState: 'idle'
+    added: false, mailState: 'idle', galIdx: 0
   };
 
   SB_URL = 'https://ddyuopqcvpzaysnfavqc.supabase.co';
@@ -300,36 +307,42 @@ class Component extends DCLogic {
         detail: 'Beş operasyon dosyasının tamamı tek koleksiyonda: Platform Haritası, Senaryo Atölyesi, Prompt Mühendisliği, Araştırma Metodolojisi ve Yayın & Büyüme. 39 sayfalık birleşik "Saha El Kitabı" cildi dahil. Fikirden yayına, bir tarih kanalının tam teçhizatı.',
         features: ['5 dosyanın tamamı (PDF + EPUB)', '39 sayfalık birleşik koleksiyon cildi', 'Tekil fiyatın altında (495₺ yerine 399₺)', 'Ömür boyu erişim ve güncellemeler'],
         dl: [['Koleksiyon Cildi · PDF (39 sayfa)', '/indir/operasyon-dosyalari-koleksiyon.pdf'], ['Tüm dosyalar · ZIP (5 PDF + 5 EPUB)', '/indir/operasyon-dosyalari-set.zip']],
+        gallery: ['assets/urun-dosya-set.jpg', 'assets/urun-flat-set.jpg', 'assets/urun-ic-set.jpg'],
         badges: [['5', 'KİTAP'], ['39', 'SAYFA'], ['∞', 'ERİŞİM']] },
       'platform-haritasi': { cat: 'OPERASYON DOSYALARI', kicker: 'OPERASYON REHBERİ', title: 'Platform Haritası', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-01.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarih Ajanı platformunun altı bölümünü (Studio, Arşiv, Akademi, Oyunlar, Zaman Tüneli, E-Kitaplar) ve üyelik seviyelerini açan operasyon rehberi. Nereden başlayacağını gösteren harita.',
         features: ['Altı bölümün tam haritası', 'Üç ana sütun: Üret · Kullan · Öğren', 'İlk adım ve giriş noktaları', 'PDF + EPUB · ömür boyu erişim'],
         dl: [['PDF', '/indir/platform-haritasi.pdf'], ['EPUB', '/indir/platform-haritasi.epub']],
+        gallery: ['assets/urun-dosya-01.jpg', 'assets/urun-flat-01.jpg', 'assets/urun-ic-01.jpg'],
         badges: [['6', 'BÖLÜM'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'senaryo-atolyesi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Senaryo Atölyesi', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-02.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarihî bir olayı, izleyicinin ekran başından kalkamadığı bir senaryoya çevirmenin altı modüllük yöntemi: çekirdek soru, üç perde, sahne tasarımı, seslendirme, kaynak yönetimi ve kontrol listesi.',
         features: ['Çekirdek soru tekniği', 'Üç perdelik yapı (1453 örneğiyle)', 'Sahne tasarımının dört unsuru', 'PDF + EPUB · ömür boyu erişim'],
         dl: [['PDF', '/indir/senaryo-atolyesi.pdf'], ['EPUB', '/indir/senaryo-atolyesi.epub']],
+        gallery: ['assets/urun-dosya-02.jpg', 'assets/urun-flat-02.jpg', 'assets/urun-ic-02.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'prompt-muhendisligi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Prompt Mühendisliği', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-03.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'AI araçlarını tarihî içerik için ustaca kullanmanın rehberi: dört katmanlı prompt anatomisi, sahne promptları, iteratif düzeltme, hazır kalıplar ve en sık beş hata.',
         features: ['Dört katman: Konu · Format · Ton · Sınır', 'Kopyala-doldur prompt kalıpları', 'İteratif promptlama (üç tur)', 'PDF + EPUB · ömür boyu erişim'],
         dl: [['PDF', '/indir/prompt-muhendisligi.pdf'], ['EPUB', '/indir/prompt-muhendisligi.epub']],
+        gallery: ['assets/urun-dosya-03.jpg', 'assets/urun-flat-03.jpg', 'assets/urun-ic-03.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'arastirma-metodolojisi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Araştırma Metodolojisi', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-04.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Bir tarihî olayı güvenilir bir vaka dosyasına dönüştürmenin disiplini: soruşturma planı, kaynak hiyerarşisi, kanıt değerlendirme, vaka dosyası hazırlama ve dijital araçlar.',
         features: ['Soruşturma planı şablonu', 'Birincil/ikincil/üçüncül kaynak hiyerarşisi', 'Kanıt değerlendirme kriterleri', 'PDF + EPUB · ömür boyu erişim'],
         dl: [['PDF', '/indir/arastirma-metodolojisi.pdf'], ['EPUB', '/indir/arastirma-metodolojisi.epub']],
+        gallery: ['assets/urun-dosya-04.jpg', 'assets/urun-flat-04.jpg', 'assets/urun-ic-04.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'yayin-buyume': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Yayın & Büyüme', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-05.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Üretilen videoyu bir kanala, kanalı bir kitleye dönüştürmenin yöntemi: kanal kimliği, paketleme (başlık + kapak), format matrisi, algoritma okuryazarlığı, seri inşası, ölçüm ve iterasyon.',
         features: ['Kanal kimliği ve paketleme', 'Başlık + kapak (CTR) teknikleri', 'Algoritma okuryazarlığı', 'PDF + EPUB · ömür boyu erişim'],
         dl: [['PDF', '/indir/yayin-buyume.pdf'], ['EPUB', '/indir/yayin-buyume.epub']],
+        gallery: ['assets/urun-dosya-05.jpg', 'assets/urun-flat-05.jpg', 'assets/urun-ic-05.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'gizli-set': { cat: 'E-KİTAP', kicker: 'GİZLİ DOSYALAR · TAM SET', title: 'Tarihin Gizli Dosyaları — Ajan Arşivi · 5 Cilt', price: '249', kind: 'DİJİTAL DOSYA',
         img: 'assets/ekitap-gizli-set.jpg', priceKind: 'TEK SEFERLİK ERİŞİM', mail: true,
@@ -511,6 +524,13 @@ class Component extends DCLogic {
 
     return {
       cat: p.cat, kicker: p.kicker, title: p.title, detail: p.detail, img: p.img,
+      heroImg: (p.gallery && p.gallery[Math.min(s.galIdx, p.gallery.length - 1)]) || p.img,
+      hasGallery: !!(p.gallery && p.gallery.length > 1),
+      thumbs: (p.gallery || []).map((src, i) => ({
+        src: src,
+        pick: () => this.setState({ galIdx: i }),
+        style: 'cursor: pointer; aspect-ratio: 4/5; overflow: hidden; opacity: ' + (i === s.galIdx ? '1' : '.62') + '; border: 1px solid ' + (i === s.galIdx ? '#e6c478' : 'rgba(129,135,151,.28)')
+      })),
       priceLabel: p.price + ' TL', priceKind: p.priceKind,
       features: (p.features || []).map(t => ({ t })),
       badge1: b[0][0], badge1s: b[0][1], badge2: b[1][0], badge2s: b[1][1], badge3: b[2][0], badge3s: b[2][1],
