@@ -30,7 +30,7 @@ function clip(s, n) {
   return t.length <= n ? t : t.slice(0, n).replace(/[\s,.;:]+\S*$/, '') + '…';
 }
 
-function shell(title, desc, canonPath, jsonld, bodyHtml) {
+function shell(title, desc, canonPath, jsonld, bodyHtml, ogImage) {
   return `<!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -48,8 +48,9 @@ function shell(title, desc, canonPath, jsonld, bodyHtml) {
 <meta property="og:url" content="${SITE}${canonPath}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
-<meta property="og:image" content="${SITE}/assets/dossier-bundle.jpg">
+<meta property="og:image" content="${SITE}/${esc(ogImage || 'assets/dossier-bundle.jpg')}">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${SITE}/${esc(ogImage || 'assets/dossier-bundle.jpg')}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400..900&family=Hanken+Grotesk:wght@300..800&family=Special+Elite&display=swap" rel="stylesheet">
@@ -120,7 +121,7 @@ ${bodyHtml}
 }
 
 const slugs = Object.keys(CAT).filter((s) => !/^uyelik-/.test(s));
-const CATLABEL = { 'EĞİTİM': 'Eğitim', 'E-KİTAP': 'E-Kitap', 'REHBER': 'Rehber', 'ARŞİV': 'Hazır Arşiv', 'FİZİKİ': 'Fiziki Ürün', 'STUDIO KREDİ': 'Studio Kredisi' };
+const CATLABEL = { 'EĞİTİM': 'Eğitim', 'E-KİTAP': 'E-Kitap', 'REHBER': 'Rehber', 'ARŞİV': 'Hazır Arşiv', 'FİZİKİ': 'Fiziki Ürün', 'STUDIO KREDİ': 'Studio Kredisi', 'OPERASYON DOSYALARI': 'Operasyon Dosyası' };
 
 let written = 0;
 const smUrls = [];
@@ -133,17 +134,31 @@ slugs.forEach((slug, idx) => {
   // ilgili ürünler (aynı değil, 3 tane)
   const related = slugs.filter((s) => s !== slug).slice(idx % 2, (idx % 2) + 3).concat(slugs.filter((s) => s !== slug)).filter((v, i, a) => a.indexOf(v) === i).slice(0, 3);
 
-  const jsonld = JSON.stringify({
+  const imgs = [SITE + '/' + p.img].concat((p.gallery || []).map((g) => SITE + '/' + g)).filter((v, i, a) => a.indexOf(v) === i);
+  const validUntil = new Date(Date.now() + 365 * 864e5).toISOString().slice(0, 10);
+  const isPhysical = p.cat === 'FİZİKİ';
+  const product = {
     '@context': 'https://schema.org', '@type': 'Product',
-    name: p.title, description: desc, image: SITE + '/' + p.img,
+    name: p.title, description: desc, image: imgs,
     category: CATLABEL[p.cat] || p.cat,
     brand: { '@type': 'Brand', name: 'Tarih Ajanı' },
     offers: {
       '@type': 'Offer', url: SITE + canon, priceCurrency: 'TRY', price: priceNum,
       availability: 'https://schema.org/InStock',
-      seller: { '@type': 'Organization', name: 'Tarih Ajanı' }
+      itemCondition: 'https://schema.org/NewCondition',
+      priceValidUntil: validUntil,
+      seller: { '@type': 'Organization', name: 'Tarih Ajanı', url: SITE }
     }
-  });
+  };
+  const breadcrumb = {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: SITE + '/' },
+      { '@type': 'ListItem', position: 2, name: 'Ürünler', item: SITE + '/urunler' },
+      { '@type': 'ListItem', position: 3, name: p.title, item: SITE + canon }
+    ]
+  };
+  const jsonld = JSON.stringify([product, breadcrumb]);
 
   const body = `
 <main class="wrap">
@@ -181,7 +196,7 @@ slugs.forEach((slug, idx) => {
 
   const dir = path.join(ROOT, 'urun', slug);
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, 'index.html'), shell(title, desc, canon, jsonld, body));
+  fs.writeFileSync(path.join(dir, 'index.html'), shell(title, desc, canon, jsonld, body, p.img));
   smUrls.push(canon);
   written++;
 });
