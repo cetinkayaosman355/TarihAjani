@@ -98,8 +98,8 @@
           <span style="position: absolute; top: 14px; left: 14px; font-family: 'Special Elite', monospace; font-size: 9.5px; letter-spacing: .16em; color: #e6c478; background: rgba(3,5,11,.82); border: 1px solid rgba(193,154,82,.4); padding: 6px 11px;">{{ cat }}</span>
         </div>
         <sc-if value="{{ hasGallery }}" hint-placeholder-val="{{ false }}">
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;">
-            <sc-for list="{{ thumbs }}" as="t" hint-placeholder-count="3">
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <sc-for list="{{ thumbs }}" as="t" hint-placeholder-count="2">
               <div onClick="{{ t.pick }}" style="{{ t.style }}"><img src="{{ t.src }}" alt="önizleme" style="width: 100%; height: 100%; object-fit: cover; display: block;"></div>
             </sc-for>
           </div>
@@ -313,35 +313,35 @@ class Component extends DCLogic {
         img: 'assets/urun-dosya-01.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarih Ajanı platformunun altı bölümünü (Studio, Arşiv, Akademi, Oyunlar, Zaman Tüneli, E-Kitaplar) ve üyelik seviyelerini açan operasyon rehberi. Nereden başlayacağını gösteren harita.',
         features: ['Altı bölümün tam haritası', 'Üç ana sütun: Üret · Kullan · Öğren', 'İlk adım ve giriş noktaları', 'PDF + EPUB · ömür boyu erişim'],
-        dl: [['PDF', '/indir/platform-haritasi.pdf'], ['EPUB', '/indir/platform-haritasi.epub']],
+        dl: [['Tümü · ZIP (PDF + EPUB)', '/indir/platform-haritasi-paket.zip'], ['PDF (baskı & okuma)', '/indir/platform-haritasi.pdf'], ['EPUB (e-okuyucu)', '/indir/platform-haritasi.epub']],
         gallery: ['assets/urun-dosya-01.jpg', 'assets/urun-ic-01.jpg', 'assets/urun-flat-01.jpg'],
         badges: [['6', 'BÖLÜM'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'senaryo-atolyesi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Senaryo Atölyesi', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-02.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarihî bir olayı, izleyicinin ekran başından kalkamadığı bir senaryoya çevirmenin altı modüllük yöntemi: çekirdek soru, üç perde, sahne tasarımı, seslendirme, kaynak yönetimi ve kontrol listesi.',
         features: ['Çekirdek soru tekniği', 'Üç perdelik yapı (1453 örneğiyle)', 'Sahne tasarımının dört unsuru', 'PDF + EPUB · ömür boyu erişim'],
-        dl: [['PDF', '/indir/senaryo-atolyesi.pdf'], ['EPUB', '/indir/senaryo-atolyesi.epub']],
+        dl: [['Tümü · ZIP (PDF + EPUB)', '/indir/senaryo-atolyesi-paket.zip'], ['PDF (baskı & okuma)', '/indir/senaryo-atolyesi.pdf'], ['EPUB (e-okuyucu)', '/indir/senaryo-atolyesi.epub']],
         gallery: ['assets/urun-dosya-02.jpg', 'assets/urun-ic-02.jpg', 'assets/urun-flat-02.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'prompt-muhendisligi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Prompt Mühendisliği', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-03.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'AI araçlarını tarihî içerik için ustaca kullanmanın rehberi: dört katmanlı prompt anatomisi, sahne promptları, iteratif düzeltme, hazır kalıplar ve en sık beş hata.',
         features: ['Dört katman: Konu · Format · Ton · Sınır', 'Kopyala-doldur prompt kalıpları', 'İteratif promptlama (üç tur)', 'PDF + EPUB · ömür boyu erişim'],
-        dl: [['PDF', '/indir/prompt-muhendisligi.pdf'], ['EPUB', '/indir/prompt-muhendisligi.epub']],
+        dl: [['Tümü · ZIP (PDF + EPUB)', '/indir/prompt-muhendisligi-paket.zip'], ['PDF (baskı & okuma)', '/indir/prompt-muhendisligi.pdf'], ['EPUB (e-okuyucu)', '/indir/prompt-muhendisligi.epub']],
         gallery: ['assets/urun-dosya-03.jpg', 'assets/urun-ic-03.jpg', 'assets/urun-flat-03.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'arastirma-metodolojisi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Araştırma Metodolojisi', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-04.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Bir tarihî olayı güvenilir bir vaka dosyasına dönüştürmenin disiplini: soruşturma planı, kaynak hiyerarşisi, kanıt değerlendirme, vaka dosyası hazırlama ve dijital araçlar.',
         features: ['Soruşturma planı şablonu', 'Birincil/ikincil/üçüncül kaynak hiyerarşisi', 'Kanıt değerlendirme kriterleri', 'PDF + EPUB · ömür boyu erişim'],
-        dl: [['PDF', '/indir/arastirma-metodolojisi.pdf'], ['EPUB', '/indir/arastirma-metodolojisi.epub']],
+        dl: [['Tümü · ZIP (PDF + EPUB)', '/indir/arastirma-metodolojisi-paket.zip'], ['PDF (baskı & okuma)', '/indir/arastirma-metodolojisi.pdf'], ['EPUB (e-okuyucu)', '/indir/arastirma-metodolojisi.epub']],
         gallery: ['assets/urun-dosya-04.jpg', 'assets/urun-ic-04.jpg', 'assets/urun-flat-04.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'yayin-buyume': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Yayın & Büyüme', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-05.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Üretilen videoyu bir kanala, kanalı bir kitleye dönüştürmenin yöntemi: kanal kimliği, paketleme (başlık + kapak), format matrisi, algoritma okuryazarlığı, seri inşası, ölçüm ve iterasyon.',
         features: ['Kanal kimliği ve paketleme', 'Başlık + kapak (CTR) teknikleri', 'Algoritma okuryazarlığı', 'PDF + EPUB · ömür boyu erişim'],
-        dl: [['PDF', '/indir/yayin-buyume.pdf'], ['EPUB', '/indir/yayin-buyume.epub']],
+        dl: [['Tümü · ZIP (PDF + EPUB)', '/indir/yayin-buyume-paket.zip'], ['PDF (baskı & okuma)', '/indir/yayin-buyume.pdf'], ['EPUB (e-okuyucu)', '/indir/yayin-buyume.epub']],
         gallery: ['assets/urun-dosya-05.jpg', 'assets/urun-ic-05.jpg', 'assets/urun-flat-05.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'gizli-set': { cat: 'E-KİTAP', kicker: 'GİZLİ DOSYALAR · TAM SET', title: 'Tarihin Gizli Dosyaları — Ajan Arşivi · 5 Cilt', price: '249', kind: 'DİJİTAL DOSYA',
@@ -526,10 +526,10 @@ class Component extends DCLogic {
       cat: p.cat, kicker: p.kicker, title: p.title, detail: p.detail, img: p.img,
       heroImg: (p.gallery && p.gallery[Math.min(s.galIdx, p.gallery.length - 1)]) || p.img,
       hasGallery: !!(p.gallery && p.gallery.length > 1),
-      thumbs: (p.gallery || []).map((src, i) => ({
-        src: src,
-        pick: () => this.setState({ galIdx: i }),
-        style: 'cursor: pointer; aspect-ratio: 4/5; overflow: hidden; opacity: ' + (i === s.galIdx ? '1' : '.62') + '; border: 1px solid ' + (i === s.galIdx ? '#e6c478' : 'rgba(129,135,151,.28)')
+      thumbs: (p.gallery || []).map((src, i) => ({ src: src, i: i })).filter(o => o.i !== s.galIdx).map(o => ({
+        src: o.src,
+        pick: () => this.setState({ galIdx: o.i }),
+        style: 'flex: 0 0 96px; cursor: pointer; aspect-ratio: 4/5; overflow: hidden; opacity: .85; border: 1px solid rgba(193,154,82,.4)'
       })),
       priceLabel: p.price + ' TL', priceKind: p.priceKind,
       features: (p.features || []).map(t => ({ t })),
