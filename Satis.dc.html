@@ -54,6 +54,7 @@
       .split { grid-template-columns: 1fr !important; }
       .stick { position: static !important; }
       .nav-links { display: none !important; }
+      .back-all { display: none !important; }
     }
   </style>
   <script>window.__taFadeBg='#06070d';</script>
@@ -78,7 +79,7 @@
       <a href="/zaman-tuneli" style="color: #171207; font-weight: 700; font-size: 12px; letter-spacing: .1em; text-decoration: none; padding: 10px 16px; background: linear-gradient(110deg, #a77d35, #d8b26a 50%, #c19a52); margin-left: 22px;" style-hover="box-shadow: 0 6px 24px rgba(230,196,120,.4);">OYUN TÜNELİ</a>
       <a href="/uyelik" style="color: #e6c478; font-weight: 700; font-size: 12px; letter-spacing: .12em; text-decoration: none; padding: 10px 18px; border: 1px solid rgba(193,154,82,.55); margin-left: 8px;" style-hover="background: rgba(193,154,82,.12); color: #f2ecd9;">AJAN GİRİŞİ</a>
     </nav>
-    <a href="/urunler" style="font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; color: #a4a9b5; text-decoration: none; border: 1px solid rgba(129,135,151,.3); padding: 10px 15px;" style-hover="color: #e6c478;">← TÜM ÜRÜNLER</a>
+    <a href="/urunler" class="back-all" style="font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: .1em; color: #a4a9b5; text-decoration: none; border: 1px solid rgba(129,135,151,.3); padding: 10px 15px;" style-hover="color: #e6c478;">← TÜM ÜRÜNLER</a>
   </header>
 
   <!-- ÜRÜN DETAY -->
@@ -307,42 +308,42 @@ class Component extends DCLogic {
         detail: 'Beş operasyon dosyasının tamamı tek koleksiyonda: Platform Haritası, Senaryo Atölyesi, Prompt Mühendisliği, Araştırma Metodolojisi ve Yayın & Büyüme. 39 sayfalık birleşik "Saha El Kitabı" cildi dahil. Fikirden yayına, bir tarih kanalının tam teçhizatı.',
         features: ['5 dosyanın tamamı (PDF + EPUB)', '39 sayfalık birleşik koleksiyon cildi', 'Tekil fiyatın altında (495₺ yerine 399₺)', 'Ömür boyu erişim ve güncellemeler'],
         dl: [['Koleksiyon Cildi · PDF (39 sayfa)', '/indir/operasyon-dosyalari-koleksiyon.pdf'], ['Tüm dosyalar · ZIP (5 PDF + 5 EPUB)', '/indir/operasyon-dosyalari-set.zip']],
-        gallery: ['assets/urun-dosya-set.jpg', 'assets/urun-ic-set.jpg', 'assets/urun-flat-set.jpg'],
+        gallery: ['assets/urun-dosya-set.jpg', 'assets/urun-ic-set.jpg'],
         badges: [['5', 'KİTAP'], ['39', 'SAYFA'], ['∞', 'ERİŞİM']] },
       'platform-haritasi': { cat: 'OPERASYON DOSYALARI', kicker: 'OPERASYON REHBERİ', title: 'Platform Haritası', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-01.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarih Ajanı platformunun altı bölümünü (Studio, Arşiv, Akademi, Oyunlar, Zaman Tüneli, E-Kitaplar) ve üyelik seviyelerini açan operasyon rehberi. Nereden başlayacağını gösteren harita.',
         features: ['Altı bölümün tam haritası', 'Üç ana sütun: Üret · Kullan · Öğren', 'İlk adım ve giriş noktaları', 'PDF + EPUB · ömür boyu erişim'],
         dl: [['Tümü · ZIP (PDF + EPUB)', '/indir/platform-haritasi-paket.zip'], ['PDF (baskı & okuma)', '/indir/platform-haritasi.pdf'], ['EPUB (e-okuyucu)', '/indir/platform-haritasi.epub']],
-        gallery: ['assets/urun-dosya-01.jpg', 'assets/urun-ic-01.jpg', 'assets/urun-flat-01.jpg'],
+        gallery: ['assets/urun-dosya-01.jpg', 'assets/urun-ic-01.jpg'],
         badges: [['6', 'BÖLÜM'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'senaryo-atolyesi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Senaryo Atölyesi', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-02.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Tarihî bir olayı, izleyicinin ekran başından kalkamadığı bir senaryoya çevirmenin altı modüllük yöntemi: çekirdek soru, üç perde, sahne tasarımı, seslendirme, kaynak yönetimi ve kontrol listesi.',
         features: ['Çekirdek soru tekniği', 'Üç perdelik yapı (1453 örneğiyle)', 'Sahne tasarımının dört unsuru', 'PDF + EPUB · ömür boyu erişim'],
         dl: [['Tümü · ZIP (PDF + EPUB)', '/indir/senaryo-atolyesi-paket.zip'], ['PDF (baskı & okuma)', '/indir/senaryo-atolyesi.pdf'], ['EPUB (e-okuyucu)', '/indir/senaryo-atolyesi.epub']],
-        gallery: ['assets/urun-dosya-02.jpg', 'assets/urun-ic-02.jpg', 'assets/urun-flat-02.jpg'],
+        gallery: ['assets/urun-dosya-02.jpg', 'assets/urun-ic-02.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'prompt-muhendisligi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Prompt Mühendisliği', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-03.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'AI araçlarını tarihî içerik için ustaca kullanmanın rehberi: dört katmanlı prompt anatomisi, sahne promptları, iteratif düzeltme, hazır kalıplar ve en sık beş hata.',
         features: ['Dört katman: Konu · Format · Ton · Sınır', 'Kopyala-doldur prompt kalıpları', 'İteratif promptlama (üç tur)', 'PDF + EPUB · ömür boyu erişim'],
         dl: [['Tümü · ZIP (PDF + EPUB)', '/indir/prompt-muhendisligi-paket.zip'], ['PDF (baskı & okuma)', '/indir/prompt-muhendisligi.pdf'], ['EPUB (e-okuyucu)', '/indir/prompt-muhendisligi.epub']],
-        gallery: ['assets/urun-dosya-03.jpg', 'assets/urun-ic-03.jpg', 'assets/urun-flat-03.jpg'],
+        gallery: ['assets/urun-dosya-03.jpg', 'assets/urun-ic-03.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'arastirma-metodolojisi': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Araştırma Metodolojisi', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-04.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Bir tarihî olayı güvenilir bir vaka dosyasına dönüştürmenin disiplini: soruşturma planı, kaynak hiyerarşisi, kanıt değerlendirme, vaka dosyası hazırlama ve dijital araçlar.',
         features: ['Soruşturma planı şablonu', 'Birincil/ikincil/üçüncül kaynak hiyerarşisi', 'Kanıt değerlendirme kriterleri', 'PDF + EPUB · ömür boyu erişim'],
         dl: [['Tümü · ZIP (PDF + EPUB)', '/indir/arastirma-metodolojisi-paket.zip'], ['PDF (baskı & okuma)', '/indir/arastirma-metodolojisi.pdf'], ['EPUB (e-okuyucu)', '/indir/arastirma-metodolojisi.epub']],
-        gallery: ['assets/urun-dosya-04.jpg', 'assets/urun-ic-04.jpg', 'assets/urun-flat-04.jpg'],
+        gallery: ['assets/urun-dosya-04.jpg', 'assets/urun-ic-04.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'yayin-buyume': { cat: 'OPERASYON DOSYALARI', kicker: 'AJAN TEÇHİZATI', title: 'Yayın & Büyüme', price: '99', kind: 'DİJİTAL DOSYA',
         img: 'assets/urun-dosya-05.jpg', priceKind: 'TEK SEFERLİK ERİŞİM',
         detail: 'Üretilen videoyu bir kanala, kanalı bir kitleye dönüştürmenin yöntemi: kanal kimliği, paketleme (başlık + kapak), format matrisi, algoritma okuryazarlığı, seri inşası, ölçüm ve iterasyon.',
         features: ['Kanal kimliği ve paketleme', 'Başlık + kapak (CTR) teknikleri', 'Algoritma okuryazarlığı', 'PDF + EPUB · ömür boyu erişim'],
         dl: [['Tümü · ZIP (PDF + EPUB)', '/indir/yayin-buyume-paket.zip'], ['PDF (baskı & okuma)', '/indir/yayin-buyume.pdf'], ['EPUB (e-okuyucu)', '/indir/yayin-buyume.epub']],
-        gallery: ['assets/urun-dosya-05.jpg', 'assets/urun-ic-05.jpg', 'assets/urun-flat-05.jpg'],
+        gallery: ['assets/urun-dosya-05.jpg', 'assets/urun-ic-05.jpg'],
         badges: [['6', 'MODÜL'], ['PDF', 'FORMAT'], ['∞', 'ERİŞİM']] },
       'gizli-set': { cat: 'E-KİTAP', kicker: 'GİZLİ DOSYALAR · TAM SET', title: 'Tarihin Gizli Dosyaları — Ajan Arşivi · 5 Cilt', price: '249', kind: 'DİJİTAL DOSYA',
         img: 'assets/ekitap-gizli-set.jpg', priceKind: 'TEK SEFERLİK ERİŞİM', mail: true,
