@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STORIA · Yönetim</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="/storia/assets/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Hanken+Grotesk:wght@400..700&display=swap" rel="stylesheet">
+<script src="/storia/assets/config.js"></script>
+<style>
+  :root { --paper:#FBF8F2; --surface:#fff; --ink:#1B1712; --ink-2:#4B4339; --muted:#8A7F6E; --line:#eadfce; --champ:#c2a160; --champ-deep:#8B6C31; --champ-wash:#f6efdf; --r:14px; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink-2); font-family:'Hanken Grotesk',sans-serif; font-size:15px; }
+  h1,h2,h3 { font-family:'Fraunces',serif; color:var(--ink); font-weight:500; }
+  .wrap { max-width:1100px; margin:0 auto; padding:28px 22px 80px; }
+  .top { display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+  .mark { width:30px; height:30px; }
+  .top h1 { font-size:24px; margin:0; letter-spacing:.14em; text-transform:uppercase; }
+  .top .word b { color:var(--champ-deep); }
+  .gate { max-width:380px; margin:60px auto; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:28px; text-align:center; box-shadow:0 10px 40px rgba(120,90,40,.08); }
+  .gate h2 { margin:0 0 6px; font-size:22px; }
+  .gate p { color:var(--muted); font-size:14px; margin:0 0 18px; }
+  input,select,button { font:inherit; }
+  .field { width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--surface); color:var(--ink); }
+  .btn { border:0; border-radius:999px; padding:11px 20px; font-weight:600; cursor:pointer; background:var(--champ); color:#241a08; transition:.2s; }
+  .btn:hover { filter:brightness(1.05); transform:translateY(-1px); }
+  .btn.sm { padding:7px 12px; font-size:13px; }
+  .btn.quiet { background:var(--surface); border:1px solid var(--line); color:var(--ink); }
+  .hidden { display:none !important; }
+  .stats { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:22px; }
+  .stat { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:16px 20px; min-width:150px; }
+  .stat .k { font-family:'Fraunces',serif; font-size:28px; color:var(--champ-deep); }
+  .stat .l { font-size:12.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px 20px; margin-bottom:20px; overflow-x:auto; }
+  .card h3 { margin:0 0 14px; font-size:18px; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; min-width:720px; }
+  th,td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600; }
+  td.mail { max-width:220px; overflow:hidden; text-overflow:ellipsis; }
+  .tier-badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--champ-wash); color:var(--champ-deep); }
+  .row-actions { display:flex; gap:6px; align-items:center; }
+  .row-actions input { width:70px; padding:6px 8px; border:1px solid var(--line); border-radius:8px; }
+  .row-actions select { padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:var(--surface); }
+  .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:12px 22px; border-radius:999px; font-size:14px; opacity:0; transition:.3s; pointer-events:none; z-index:50; }
+  .toast.show { opacity:1; }
+  .muted { color:var(--muted); font-size:13px; }
+  .refresh { margin-left:auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <img class="mark" src="/storia/assets/mark.svg" alt="">
+    <h1 class="word">Stor<b>ia</b> · Yönetim</h1>
+    <button class="btn quiet sm refresh hidden" id="refreshBtn">↻ Yenile</button>
+  </div>
+
+  <div class="gate" id="gate">
+    <h2>Yönetici girişi</h2>
+    <p>Bu panel yalnız yöneticiye açıktır.</p>
+    <input class="field" type="password" id="pass" placeholder="Yönetici şifresi" style="margin-bottom:12px">
+    <button class="btn" id="enter" style="width:100%">Gir</button>
+    <p class="muted" id="gateErr" style="margin-top:12px;color:#b4432e"></p>
+  </div>
+
+  <div id="panel" class="hidden">
+    <div class="stats" id="stats"></div>
+    <div class="card">
+      <h3>Kullanıcılar &amp; krediler</h3>
+      <div id="usersBox"><p class="muted">Yükleniyor…</p></div>
+    </div>
+    <div class="card">
+      <h3>Son kredi hareketleri</h3>
+      <div id="logBox"><p class="muted">—</p></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  var CFG = window.STORIA_CONFIG || {};
+  var BASE = (CFG.supabaseUrl || '').replace(/\/$/, '');
+  var ANON = CFG.supabaseAnonKey || '';
+  var URL_ADMIN = BASE + '/functions/v1/storia-admin';
+  var pass = '';
+  var TIERS = [];
+
+  function toast(m) { var t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(function () { t.classList.remove('show'); }, 2400); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+  function call(action, extra) {
+    var body = Object.assign({ action: action, password: pass }, extra || {});
+    return fetch(URL_ADMIN, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ANON, 'apikey': ANON }, body: JSON.stringify(body) }).then(function (r) { return r.json(); });
+  }
+  function fmtDate(s) { if (!s) return '—'; try { return new Date(s).toLocaleDateString('tr-TR'); } catch (e) { return '—'; } }
+
+  document.getElementById('enter').addEventListener('click', tryEnter);
+  document.getElementById('pass').addEventListener('keydown', function (e) { if (e.key === 'Enter') tryEnter(); });
+  document.getElementById('refreshBtn').addEventListener('click', loadAll);
+
+  function tryEnter() {
+    if (!BASE || !ANON) { document.getElementById('gateErr').textContent = 'config.js boş — Supabase URL/anon anahtarını doldur.'; return; }
+    pass = document.getElementById('pass').value;
+    if (!pass) return;
+    document.getElementById('gateErr').textContent = 'Kontrol ediliyor…';
+    call('list').then(function (d) {
+      if (!d.ok) { document.getElementById('gateErr').textContent = d.error || 'Giriş başarısız'; return; }
+      document.getElementById('gate').classList.add('hidden');
+      document.getElementById('panel').classList.remove('hidden');
+      document.getElementById('refreshBtn').classList.remove('hidden');
+      render(d);
+    }).catch(function () { document.getElementById('gateErr').textContent = 'Bağlantı hatası — fonksiyon yayınlandı mı?'; });
+  }
+
+  function loadAll() { call('list').then(function (d) { if (d.ok) render(d); else toast(d.error || 'Yüklenemedi'); }); }
+
+  function render(d) {
+    TIERS = d.tiers || [];
+    var profs = d.profiles || [];
+    var totalCr = profs.reduce(function (a, p) { return a + (p.credits || 0); }, 0);
+    var paid = profs.filter(function (p) { return p.tier && p.tier !== 'kesif'; }).length;
+    document.getElementById('stats').innerHTML =
+      stat(profs.length, 'Üye') + stat(paid, 'Ücretli paket') + stat(totalCr.toLocaleString('tr-TR'), 'Toplam kredi');
+
+    var tierOpts = TIERS.map(function (t) { return '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>'; }).join('');
+    var rows = profs.map(function (p) {
+      return '<tr data-id="' + esc(p.id) + '">' +
+        '<td class="mail" title="' + esc(p.email) + '">' + esc(p.email || '—') + '</td>' +
+        '<td><span class="tier-badge">' + esc(p.tier || 'kesif') + '</span></td>' +
+        '<td><b>' + (p.credits != null ? p.credits : 0) + '</b></td>' +
+        '<td>' + (p.monthly_quota || 0) + '</td>' +
+        '<td>' + fmtDate(p.expires_at) + '</td>' +
+        '<td><div class="row-actions">' +
+          '<input type="number" placeholder="kredi" class="grantAmt">' +
+          '<button class="btn sm grantBtn">＋ Yükle</button>' +
+          '<select class="tierSel">' + tierOpts + '</select>' +
+          '<button class="btn quiet sm tierBtn">Paket ata</button>' +
+        '</div></td></tr>';
+    }).join('');
+    document.getElementById('usersBox').innerHTML = profs.length
+      ? '<table><thead><tr><th>E-posta</th><th>Paket</th><th>Kredi</th><th>Kota</th><th>Bitiş</th><th>İşlem</th></tr></thead><tbody>' + rows + '</tbody></table>'
+      : '<p class="muted">Henüz üye yok.</p>';
+    // preselect current tier
+    profs.forEach(function (p) { var tr = document.querySelector('tr[data-id="' + p.id + '"] .tierSel'); if (tr) tr.value = p.tier || 'kesif'; });
+
+    var logs = d.log || [];
+    document.getElementById('logBox').innerHTML = logs.length
+      ? '<table><thead><tr><th>Tarih</th><th>Değişim</th><th>Sebep</th></tr></thead><tbody>' + logs.map(function (l) {
+          return '<tr><td>' + fmtDate(l.created_at) + '</td><td style="color:' + ((l.delta || 0) < 0 ? '#b4432e' : 'var(--champ-deep)') + '"><b>' + (l.delta > 0 ? '+' : '') + l.delta + '</b></td><td>' + esc(l.reason) + '</td></tr>';
+        }).join('') + '</tbody></table>'
+      : '<p class="muted">Kayıt yok.</p>';
+
+    document.querySelectorAll('.grantBtn').forEach(function (b) { b.addEventListener('click', onGrant); });
+    document.querySelectorAll('.tierBtn').forEach(function (b) { b.addEventListener('click', onTier); });
+  }
+  function stat(k, l) { return '<div class="stat"><div class="k">' + k + '</div><div class="l">' + l + '</div></div>'; }
+
+  function onGrant(e) {
+    var tr = e.target.closest('tr'), id = tr.getAttribute('data-id');
+    var amt = Math.floor(Number(tr.querySelector('.grantAmt').value));
+    if (!amt) { toast('Kredi miktarı gir'); return; }
+    e.target.disabled = true;
+    call('grant', { id: id, amount: amt, reason: 'admin_yukleme' }).then(function (d) {
+      e.target.disabled = false;
+      if (d.ok) { toast('✓ ' + amt + ' kredi yüklendi'); loadAll(); } else toast(d.error || 'Hata');
+    });
+  }
+  function onTier(e) {
+    var tr = e.target.closest('tr'), id = tr.getAttribute('data-id');
+    var tier = tr.querySelector('.tierSel').value;
+    if (!confirm(tier + ' paketi atansın mı? (kota + kredi eklenir, 30 gün süre)')) return;
+    e.target.disabled = true;
+    call('setTier', { id: id, tier: tier }).then(function (d) {
+      e.target.disabled = false;
+      if (d.ok) { toast('✓ Paket atandı: ' + tier); loadAll(); } else toast(d.error || 'Hata');
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "STORIA — Yapay Zekâ İçerik Stüdyosu",
+  "short_name": "Storia",
+  "description": "Fikirden yayına: senaryo, seslendirme, görsel ve yayın paketi tek stüdyoda.",
+  "start_url": "/storia/studio.html",
+  "scope": "/storia/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FBF8F2",
+  "theme_color": "#FBF8F2",
+  "lang": "tr",
+  "icons": [
+    { "src": "/storia/assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/storia/assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

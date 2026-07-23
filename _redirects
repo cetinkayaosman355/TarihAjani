@@ -43,3 +43,7 @@
 /Uyelik.dc.html            /uyelik            301!
 /Arsiv.dc.html             /arsiv             301!
 /arsiv/rahotep-ve-nofret-bu-yuzu-tanidiniz-mi   /arsiv   301!
+
+# ── STORIA (bağımsız yapay zekâ içerik stüdyosu — ayrı uygulama, /storia/ altında) ──
+# Temiz URL'ler; dosyalar zaten /storia/ altında doğrudan sunulur (bu kurallar opsiyonel kolaylık).
+/storia/studio     /storia/studio.html   200
